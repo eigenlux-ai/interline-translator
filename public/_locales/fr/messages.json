@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "Traduction IA interlinéaire : glose entre les lignes sur toute la page, traduction de la sélection, traduction sur place dans les champs de saisie."
+  },
+  "menuTranslatePage": {
+    "message": "Traduire cette page"
+  },
+  "commandTogglePageTranslation": {
+    "message": "Activer ou désactiver la traduction de la page"
+  }
+}

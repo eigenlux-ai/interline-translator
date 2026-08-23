@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Interleave fixture</title></head>
+<body>
+  <h1>Paragraph interleave fixture</h1>
+  <p id="multi">The morning fog rolled over the harbor before sunrise, and the fishermen were already loading their boats with nets and lanterns.<br><br>By noon the market square had filled with travelers from the mountain villages, each carrying baskets of dried herbs and woven cloth.<br><br>When evening came, the lighthouse keeper climbed the spiral stairs alone, as he had done every night for thirty years.</p>
+  <p id="single">A single short paragraph that needs no interleaving at all.</p>
+  <div id="prewrap" style="white-space:pre-wrap">The lighthouse keeper wrote his first letter in October, when the storms began to circle the bay.
+
+His second letter, sent in December, spoke only of the gulls and the frozen rail along the gallery.
+
+The third letter never arrived, though the ferryman swears it was posted before the ice took the harbor.</div>
+  <!-- X tweetText shape: prose sliced into inline spans, \n separators INSIDE span text -->
+  <div id="spans" style="white-space:pre-wrap"><span>Trust her tonight friends, the numbers all point one way.
+
+1u- </span><span style="font-weight:bold">Kayla Thornton</span><span> Over 8.5 Points tonight.
+
+Already dropped fifteen against this team twice recently.</span></div>
+  <!-- X mention-chip shape: inline-flex DIV amid running text (isInlineChip) -->
+  <div id="chip"><span>Could you ask </span><div style="display:inline-flex;align-items:center"><a href="#u">@harbormaster</a></div><span> about the ferry schedule for tomorrow morning?</span></div>
+</body>
+</html>

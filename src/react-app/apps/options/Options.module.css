@@ -1,0 +1,194 @@
+/*
+ * Options surface — "an annotated manuscript". Warm paper canvas, a serif
+ * masthead whose wordmark carries its own interlinear 译文 (the product,
+ * demonstrating itself), a table-of-contents nav whose active row wears the
+ * 朱批 tick (the same cinnabar marginal mark the page-translation gloss uses).
+ * All colours go through scheme-aware Mantine vars so light/dark just work.
+ */
+
+.page {
+  min-height: 100vh;
+  background-color: var(--mantine-color-body);
+  /* a faint warm vignette so the paper isn't a flat slab */
+  background-image: radial-gradient(
+    120% 80% at 50% -10%,
+    color-mix(in srgb, var(--mantine-color-cinnabar-6) 5%, transparent),
+    transparent 60%
+  );
+}
+
+.shell {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 40px) 64px;
+}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+.masthead {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--mantine-color-default-border);
+  position: relative;
+}
+/* the cinnabar hair-rule that sits ON the masthead divider — a 朱 underline */
+.masthead::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 72px;
+  height: 2px;
+  background: var(--mantine-color-cinnabar-6);
+  border-radius: 2px;
+}
+
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+/* 行间 — set ABOVE the latin wordmark as an interlinear gloss, in the kai hand */
+.gloss {
+  font-family: 'LXGW WenKai', 'Kaiti SC', 'Noto Serif SC', serif;
+  font-size: 15px;
+  letter-spacing: 0.18em;
+  color: var(--mantine-color-cinnabar-6);
+  margin-bottom: 5px;
+  padding-left: 1px;
+}
+.brand {
+  font-family: var(--mantine-font-family-headings);
+  font-size: clamp(30px, 5vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.012em;
+  color: var(--mantine-color-text);
+}
+.tagline {
+  text-align: right;
+  max-width: 220px;
+  padding-bottom: 4px;
+}
+
+/* ── body: index + content ──────────────────────────────────────────────── */
+.body {
+  display: grid;
+  grid-template-columns: 188px 1fr;
+  gap: clamp(28px, 5vw, 56px);
+  margin-top: 36px;
+  align-items: start;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  position: sticky;
+  top: 28px;
+}
+
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 12px 9px 13px;
+  border: 0;
+  border-radius: var(--mantine-radius-md);
+  background: transparent;
+  color: var(--mantine-color-dimmed);
+  font: inherit;
+  font-size: var(--mantine-font-size-sm);
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease;
+}
+.navItem:hover {
+  background: color-mix(in srgb, var(--mantine-color-cinnabar-6) 7%, transparent);
+  color: var(--mantine-color-text);
+}
+.navItem svg {
+  flex: none;
+  opacity: 0.75;
+}
+
+.navItemActive {
+  color: var(--mantine-color-cinnabar-6);
+  background: color-mix(in srgb, var(--mantine-color-cinnabar-6) 11%, transparent);
+  font-weight: 600;
+}
+.navItemActive svg {
+  opacity: 1;
+}
+/* 朱批 tick — the cinnabar marginal mark, echoing the gloss tick token */
+.navItemActive::before {
+  content: '';
+  position: absolute;
+  left: -1px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 16px;
+  border-radius: 2px;
+  background: var(--mantine-color-cinnabar-6);
+}
+
+.navLabel {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+.navHint {
+  font-size: 11px;
+  color: var(--mantine-color-dimmed);
+  font-weight: 400;
+}
+
+.content {
+  min-width: 0;
+}
+
+.footer {
+  margin-top: 56px;
+  padding-top: 16px;
+  border-top: 1px solid var(--mantine-color-default-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ── narrow: index folds to a horizontal scroller above the content ─────── */
+@media (max-width: 720px) {
+  .body {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .nav {
+    position: static;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 4px;
+    padding-bottom: 4px;
+  }
+  .navItem {
+    flex: none;
+  }
+  .navHint {
+    display: none;
+  }
+  .navItemActive::before {
+    left: 50%;
+    top: auto;
+    bottom: -2px;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 3px;
+  }
+  .tagline {
+    display: none;
+  }
+}

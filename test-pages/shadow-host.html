@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>omni-translator · shadow DOM test page</title>
+    <style>
+      body { font: 16px/1.6 system-ui; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+      section { border: 1px solid #ddd; border-radius: 8px; padding: 0.5rem 1rem; margin: 1rem 0; }
+      h2 { font-size: 1rem; color: #666; }
+    </style>
+  </head>
+  <body>
+    <h1>Shadow DOM injection matrix</h1>
+    <p>Light DOM paragraph as the control group for translation.</p>
+
+    <section><h2>1 · open shadow root</h2><div id="open-host"></div></section>
+    <section><h2>2 · nested open roots</h2><div id="nested-host"></div></section>
+    <section><h2>3 · slotted light content</h2><div id="slot-host"><p>Slotted light paragraph rendered through the shadow slot.</p></div></section>
+    <section><h2>4 · closed root (expected UNTRANSLATED in v1)</h2><div id="closed-host"></div></section>
+    <section><h2>5 · dynamic: host attached 2s after load</h2><div id="late-mount"></div></section>
+
+    <script>
+      const p = (text) => { const el = document.createElement('p'); el.textContent = text; return el; };
+
+      document.getElementById('open-host').attachShadow({ mode: 'open' })
+        .append(p('Text living inside an open shadow root should translate.'));
+
+      const outer = document.getElementById('nested-host').attachShadow({ mode: 'open' });
+      const mid = document.createElement('div');
+      outer.append(p('Outer shadow level text.'), mid);
+      mid.attachShadow({ mode: 'open' }).append(p('Inner nested shadow level text.'));
+
+      const slotRoot = document.getElementById('slot-host').attachShadow({ mode: 'open' });
+      slotRoot.append(p('Shadow-side text above the slot.'), document.createElement('slot'));
+
+      document.getElementById('closed-host').attachShadow({ mode: 'closed' })
+        .append(p('Closed shadow text — v1 deliberately cannot see this.'));
+
+      setTimeout(() => {
+        const host = document.createElement('div');
+        document.getElementById('late-mount').append(host);
+        host.attachShadow({ mode: 'open' })
+          .append(p('Host mounted two seconds after load, content in its shadow.'));
+      }, 2000);
+    </script>
+  </body>
+</html>

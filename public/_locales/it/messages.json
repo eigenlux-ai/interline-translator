@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "Traduzione IA interlineare: glosse tra le righe su tutta la pagina, traduzione della selezione e traduzione direttamente nel campo di testo."
+  },
+  "menuTranslatePage": {
+    "message": "Traduci questa pagina"
+  },
+  "commandTogglePageTranslation": {
+    "message": "Attiva o disattiva la traduzione dell'intera pagina"
+  }
+}

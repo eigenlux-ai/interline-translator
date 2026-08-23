@@ -1,0 +1,14 @@
+{
+  "extDescription": {
+    "message": "In-place bilingual reading for Chrome: whole-page translation between lines, selection translation, and in-input translation.",
+    "description": "Extension description shown in the store and chrome://extensions. Manifest-only: UI strings live in src/i18n (they must switch at runtime; browser.i18n cannot)."
+  },
+  "menuTranslatePage": {
+    "message": "Translate this page",
+    "description": "Right-click context menu entry. Manifest-only: browser-rendered chrome, so only browser.i18n can localize it (UI strings live in src/i18n)."
+  },
+  "commandTogglePageTranslation": {
+    "message": "Toggle whole-page translation",
+    "description": "Keyboard shortcut label on chrome://extensions/shortcuts. Manifest-only: browser-rendered chrome, so only browser.i18n can localize it."
+  }
+}

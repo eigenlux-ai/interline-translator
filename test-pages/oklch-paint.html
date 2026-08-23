@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>oklch-painted theme — no color-scheme declaration anywhere</title>
+    <!-- Tailwind-v4-style: real paint in a modern color space, and the site
+         never declares color-scheme. Detection must read the oklch paint. -->
+    <style>
+      body {
+        font: 16px/1.6 system-ui, sans-serif;
+        max-width: 40em;
+        margin: 0 auto;
+        padding: 2em 1em;
+        background: oklch(0.985 0.002 247.839); /* near-white */
+        color: oklch(0.208 0.042 265.755);
+      }
+      body.dark {
+        background: oklch(0.129 0.042 264.695); /* near-black slate */
+        color: oklch(0.984 0.003 247.858);
+      }
+      button { font: inherit; padding: 6px 12px; }
+    </style>
+  </head>
+  <body>
+    <button id="toggle">Toggle dark class</button>
+    <p>This page paints opaque oklch() backgrounds and never touches
+      color-scheme. The quick brown fox jumps over the lazy dog.</p>
+    <script>
+      document.getElementById('toggle').addEventListener('click', () => {
+        document.body.classList.toggle('dark');
+      });
+    </script>
+  </body>
+</html>

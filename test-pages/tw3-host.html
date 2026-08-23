@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en" style="font-size: 62.5%">
+  <!-- Phase-0 hostile host page:
+       1. rem trap     — html font-size 62.5% (10px), surface must compensate via theme.scale
+       2. TW collision — Tailwind v3 Play CDN uses unprefixed --tw-* variables;
+                         the extension's prefixed --<prefix>-tw-* must not break the ring/shadow below
+       3. hotkeys      — page-level keydown handler; typing inside the surface must NOT trigger it
+       4. anchors      — paragraphs for satellite mounting / lifecycle tests -->
+  <head>
+    <meta charset="UTF-8" />
+    <title>TW3 hostile host page</title>
+    <!-- Tailwind v3.4.16 Play CDN, vendored locally (reproducible & offline; no CDN trust needed) -->
+    <script src="./tw3-play.js"></script>
+    <style>
+      body { font-size: 1.6rem; padding: 2rem; max-width: 72rem; margin: 0 auto; }
+    </style>
+  </head>
+  <body>
+    <h1 class="text-3xl font-bold">Hostile host page (Tailwind v3 + 62.5% rem)</h1>
+
+    <div id="hotkey-log" class="my-4 rounded bg-slate-100 p-4 font-mono text-sm">hotkey log: (none)</div>
+
+    <div class="my-6 flex items-center gap-4">
+      <div class="h-16 w-16 rotate-6 rounded-lg bg-emerald-400 shadow-2xl ring-4 ring-pink-500"></div>
+      <p>← host-page TW3 ring/shadow/rotate. If the extension's @property registrations leak, this box breaks.</p>
+    </div>
+
+    <p>Paragraph one — satellite anchor target.</p>
+    <p>Paragraph two — satellite anchor target.</p>
+    <p id="removable">Paragraph three — click the button below to remove me and test satellite lifecycle custody.</p>
+    <button class="rounded bg-red-200 px-3 py-1" onclick="document.getElementById('removable')?.remove()">
+      remove paragraph three
+    </button>
+
+    <script>
+      document.addEventListener('keydown', (e) => {
+        document.getElementById('hotkey-log').textContent = `hotkey log: keydown "${e.key}" reached the page!`;
+      });
+    </script>
+  </body>
+</html>

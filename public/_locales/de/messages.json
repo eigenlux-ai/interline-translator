@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "KI-native Interlinearübersetzung: ganzseitige Übersetzung zwischen den Zeilen, Auswahlübersetzung und Übersetzung direkt im Eingabefeld."
+  },
+  "menuTranslatePage": {
+    "message": "Diese Seite übersetzen"
+  },
+  "commandTogglePageTranslation": {
+    "message": "Ganzseitige Übersetzung ein-/ausschalten"
+  }
+}

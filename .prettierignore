@@ -1,0 +1,10 @@
+# Ignore artifacts:
+build
+coverage
+.wxt
+.output
+public
+test-pages/tw3-play.js
+
+# Paraglide-compiled output is committed; keep prettier off it.
+src/paraglide/

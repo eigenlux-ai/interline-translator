@@ -1,0 +1,34 @@
+# The backstop the guardrails assume exists: lint can be bypassed with a
+# disable comment and audit:ascii is by design a fail-open tripwire — they only
+# guard anything if something runs them on every push. This chain mirrors the
+# local pre-commit checklist, plus the two audits that were manual-only before.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4 # reads the version from packageManager
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile # postinstall runs `wxt prepare`
+
+      - run: pnpm compile
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build # check-prefix-sync fails the build on prefix drift
+      - run: pnpm audit:css
+      - run: pnpm audit:ascii
+      - run: pnpm audit:bundle

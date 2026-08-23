@@ -1,0 +1,90 @@
+# ── Dependencies ─────────────────────────────────────────────────────────────
+node_modules
+
+# ── Build output & bundler artifacts ─────────────────────────────────────────
+.output
+.wxt
+zip/
+*.zip
+*.tsbuildinfo
+stats.html
+stats-*.json
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ── Test & coverage artifacts ────────────────────────────────────────────────
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# ── Tool caches ──────────────────────────────────────────────────────────────
+.cache/
+.eslintcache
+.vite/
+
+# ── Secrets / env ────────────────────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Extension signing keys / packed artifacts ────────────────────────────────
+*.pem
+*.crx
+*.xpi
+
+# ── Local dev overrides ──────────────────────────────────────────────────────
+web-ext.config.ts
+*.local.json
+*.local.ts
+.test-llm-config.json
+
+# ── Local-only research / planning material (not project source) ─────────────
+docs/
+references/
+
+# ── AI agent / assistant working files (never part of the source tree) ───────
+.claude/
+.impeccable/
+.cursor/
+.aider*
+CLAUDE.local.md
+
+# ── Editor & IDE ─────────────────────────────────────────────────────────────
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~
+*.bak
+*.orig
+*.rej
+
+# ── OS cruft ─────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Un-ignore the extension icon dir: a common GLOBAL gitignore has a bare `Icon`
+# rule (meant for macOS `Icon\r` folder-icon files) which, with macOS
+# case-insensitivity, swallows any icon/ directory. Repo rules outrank global.
+!public/icon/
+!public/icon/**

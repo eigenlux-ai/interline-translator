@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="400" viewBox="0 0 1200 400"
+     role="img" aria-labelledby="hero-title hero-desc">
+  <title id="hero-title">Interline · 行間 —— 오픈 소스 Chrome 대역 번역 확장 프로그램</title>
+  <desc id="hero-desc">Interline 확장 프로그램 소개: 문단 아래에 바로 대역 번역을 삽입하여 기존 웹페이지 레이아웃을 그대로 보존합니다.</desc>
+
+  <rect x="0.5" y="0.5" width="1199" height="399" rx="26" fill="#FAF6EE" stroke="#CFC4B0"/>
+
+  <g id="title-block">
+    <text x="64" y="64" font-family="-apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;, &quot;Pretendard&quot;, sans-serif" font-size="18" letter-spacing="3" fill="#74695B">오픈 소스 브라우저 확장 · CHROME MV3</text>
+
+    <text x="64" y="152" font-family="Georgia, &quot;Songti SC&quot;, serif" font-size="78" fill="#211C15">Interline</text>
+
+    <rect x="66" y="178" width="3.5" height="46" rx="1.75" fill="#C2402A"/>
+    <text x="88" y="214" font-family="Georgia, &quot;Songti SC&quot;, serif" font-size="42" letter-spacing="4" fill="#C2402A">行間</text>
+
+    <text x="64" y="282" font-family="-apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;, sans-serif" font-size="26" font-weight="500" fill="#3A332A">문단 아래에 바로 대역 번역을 표시 ——</text>
+    <text x="64" y="318" font-family="-apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;, sans-serif" font-size="26" fill="#574E42">기존 레이아웃을 유지하며, 사이드바 이동 없음.</text>
+
+    <text x="64" y="358" font-family="-apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;, sans-serif" font-size="18" letter-spacing="1.4" fill="#74695B">MIT 라이선스 · 무료 엔진 기본 내장 · 원격 측정 없음</text>
+  </g>
+
+  <g id="page-sample">
+    <rect x="620.5" y="56.5" width="515" height="287" rx="14" fill="#FFFDF8" stroke="#CFC4B0"/>
+
+    <g id="seal" transform="translate(1032 74) scale(0.72)">
+      <rect width="100" height="100" rx="21" fill="#A8241C"/>
+      <line x1="16" y1="25" x2="84" y2="25" stroke="#FFFDF8" stroke-width="10" stroke-linecap="round"/>
+      <g font-family="-apple-system, &quot;Apple SD Gothic Neo&quot;, sans-serif" font-size="25" font-weight="600" fill="#FFFDF8" text-anchor="middle">
+        <text x="26" y="63">文</text>
+        <text x="50" y="63">A</text>
+        <text x="74" y="63">あ</text>
+      </g>
+      <line x1="16" y1="79" x2="84" y2="79" stroke="#FFFDF8" stroke-width="10" stroke-linecap="round"/>
+    </g>
+
+    <g font-family="-apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, sans-serif" font-size="21" fill="#211C15">
+      <text x="652" y="118">Good tools never interrupt your flow.</text>
+      <text x="652" y="150">They surface information in context</text>
+      <text x="652" y="182">without breaking the original page.</text>
+    </g>
+
+    <rect x="652" y="204" width="3.5" height="62" rx="1.75" fill="#C2402A"/>
+    <g font-family="Georgia, &quot;Batang&quot;, serif" font-size="20" fill="#3A332A">
+      <text x="674" y="228">좋은 도구는 읽는 흐름을 방해하지 않습니다.</text>
+      <text x="674" y="258">문맥에 맞춰 번역을 보여주며 페이지를 보존합니다.</text>
+    </g>
+
+    <line x1="652" y1="292" x2="1104" y2="292" stroke="#CFC4B0"/>
+    <text x="652" y="318" font-family="-apple-system, BlinkMacSystemFont, &quot;Apple SD Gothic Neo&quot;, sans-serif" font-size="17" letter-spacing="1" fill="#74695B">즉각적인 뷰 전환 · 재번역 불필요</text>
+  </g>
+</svg>

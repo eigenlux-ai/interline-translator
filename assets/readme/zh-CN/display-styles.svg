@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg"
+     width="1200" height="712" viewBox="0 0 1200 712"
+     role="img" aria-labelledby="ds-title ds-desc">
+  <title id="ds-title">译文的十种显示样式</title>
+  <desc id="ds-desc">同一句中文译文排成十种样式，依次是融入、弱化、下划线、虚线、点线、波浪、高亮、引用条、卡片和模糊；下方的暗色条带把其中四种放到深色页面上，说明两种配色下对比度都成立。</desc>
+
+  <rect x="0.5" y="0.5" width="1199" height="711" rx="26" fill="#FAF6EE" stroke="#CFC4B0"/>
+
+  <text x="64" y="62" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" letter-spacing="3.2" fill="#74695B">显示样式</text>
+  <text x="1136" y="62" text-anchor="end" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" fill="#74695B">每种样式在明暗两种页面下都核对过对比度</text>
+
+  <g id="column-one" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" fill="#74695B">
+    <text x="64" y="128">融入</text>
+    <text x="64" y="206">弱化</text>
+    <text x="64" y="284">下划线</text>
+    <text x="64" y="362">虚线</text>
+    <text x="64" y="440">点线</text>
+  </g>
+
+  <g id="column-one-samples" font-family="Georgia, &quot;Songti SC&quot;, serif" font-size="22" fill="#3A332A">
+    <text x="210" y="128">这是一句译文</text>
+    <text x="210" y="206" opacity="0.5">这是一句译文</text>
+    <text x="210" y="284">这是一句译文</text>
+    <line x1="210" y1="292" x2="342" y2="292" stroke="#C2402A" stroke-width="1.6"/>
+    <text x="210" y="362">这是一句译文</text>
+    <line x1="210" y1="370" x2="342" y2="370" stroke="#C2402A" stroke-width="1.6" stroke-dasharray="7 5"/>
+    <text x="210" y="440">这是一句译文</text>
+    <line x1="210" y1="449" x2="342" y2="449" stroke="#C2402A" stroke-width="2.8" stroke-linecap="round" stroke-dasharray="0.1 6.5"/>
+  </g>
+
+  <g id="column-two" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" fill="#74695B">
+    <text x="624" y="128">波浪</text>
+    <text x="624" y="206">高亮</text>
+    <text x="624" y="284">引用条</text>
+    <text x="624" y="362">卡片</text>
+    <text x="624" y="440">模糊</text>
+  </g>
+
+  <g id="column-two-samples" font-family="Georgia, &quot;Songti SC&quot;, serif" font-size="22" fill="#3A332A">
+    <text x="770" y="128">这是一句译文</text>
+    <path d="M 770 136 q 4.5 -5 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0 t 9 0" fill="none" stroke="#C2402A" stroke-width="1.6"/>
+
+    <rect x="764" y="186" width="144" height="28" rx="3" fill="#C2402A" opacity="0.12"/>
+    <text x="770" y="206">这是一句译文</text>
+
+    <rect x="770" y="264" width="3.5" height="26" rx="1.75" fill="#C2402A"/>
+    <text x="786" y="284">这是一句译文</text>
+
+    <rect x="760.5" y="338.5" width="151" height="35" rx="8" fill="#FFFDF8" stroke="#CFC4B0"/>
+    <text x="770" y="362">这是一句译文</text>
+
+    <text x="770" y="440" opacity="0.26">这是一句译文</text>
+    <text x="920" y="440" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" fill="#74695B">悬浮才显现</text>
+  </g>
+
+  <line x1="64" y1="492" x2="1136" y2="492" stroke="#CFC4B0"/>
+
+  <g id="dark-page">
+    <rect x="64" y="516" width="1072" height="152" rx="14" fill="#16130E"/>
+    <text x="96" y="552" font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" letter-spacing="2.4" fill="#7D7464">同样的样式放在深色页面上</text>
+
+    <g font-family="-apple-system, BlinkMacSystemFont, &quot;PingFang SC&quot;, sans-serif" font-size="18" fill="#7D7464">
+      <text x="96" y="604">融入</text>
+      <text x="96" y="648">卡片</text>
+      <text x="616" y="604">高亮</text>
+      <text x="616" y="648">模糊</text>
+    </g>
+
+    <g font-family="Georgia, &quot;Songti SC&quot;, serif" font-size="22" fill="#D8CFBE">
+      <text x="232" y="604">这是一句译文</text>
+
+      <rect x="222.5" y="624.5" width="151" height="33" rx="8" fill="#1E1A14" stroke="#2D2820"/>
+      <text x="232" y="648">这是一句译文</text>
+
+      <rect x="746" y="584" width="144" height="28" rx="3" fill="#E2614A" opacity="0.18"/>
+      <text x="752" y="604">这是一句译文</text>
+
+      <text x="752" y="648" opacity="0.3">这是一句译文</text>
+    </g>
+  </g>
+</svg>

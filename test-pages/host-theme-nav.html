@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Host theme + nav — omni-translator injection test</title>
+    <style>
+      :root {
+        --fg: #1a1a1a;
+        --bg: #ffffff;
+        --nav-bg: #f3f3f3;
+      }
+      /* Host's OWN dark mode — a class on <html>, NOT prefers-color-scheme.
+         This is the case where hardcoded 译文 colour fails to follow. */
+      html.dark {
+        --fg: #e8e8e8;
+        --bg: #16181d;
+        --nav-bg: #21242b;
+      }
+      body {
+        margin: 0;
+        font: 16px/1.6 Georgia, serif;
+        color: var(--fg);
+        background: var(--bg);
+        transition: background 0.2s, color 0.2s;
+      }
+      nav {
+        display: flex;
+        gap: 20px;
+        align-items: center;
+        padding: 12px 24px;
+        background: var(--nav-bg);
+      }
+      nav a {
+        color: var(--fg);
+        text-decoration: none;
+        font-family: system-ui, sans-serif;
+        font-size: 14px;
+      }
+      nav .brand {
+        font-weight: 700;
+        margin-right: auto;
+      }
+      main {
+        max-width: 640px;
+        margin: 32px auto;
+        padding: 0 16px;
+      }
+      button.toggle {
+        font: inherit;
+        padding: 6px 12px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a class="brand" href="#">The Daily Reader</a>
+      <a href="#">Home</a>
+      <a href="#">Articles</a>
+      <a href="#">About</a>
+      <a href="#">Subscribe</a>
+      <button class="toggle" id="theme">Toggle theme</button>
+    </nav>
+    <main>
+      <h1>On reading well</h1>
+      <p>
+        Reading well is a quiet discipline. It asks for attention, patience, and a willingness to follow a thought
+        wherever it leads.
+      </p>
+      <p>
+        A good translation should honour that same discipline: present alongside the original, never in its place, and
+        never breaking the rhythm of the page.
+      </p>
+    </main>
+    <script>
+      document.getElementById('theme').addEventListener('click', () => {
+        document.documentElement.classList.toggle('dark');
+      });
+    </script>
+  </body>
+</html>

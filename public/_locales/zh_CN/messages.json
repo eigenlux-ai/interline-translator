@@ -1,0 +1,14 @@
+{
+  "extDescription": {
+    "message": "行间对照的双语阅读扩展：整页就地翻译、划词翻译、输入框就地翻译。",
+    "description": "Extension description shown in the store and chrome://extensions. Manifest-only: UI strings live in src/i18n (they must switch at runtime; browser.i18n cannot)."
+  },
+  "menuTranslatePage": {
+    "message": "翻译此页",
+    "description": "Right-click context menu entry. Manifest-only: browser-rendered chrome, so only browser.i18n can localize it (UI strings live in src/i18n)."
+  },
+  "commandTogglePageTranslation": {
+    "message": "切换整页翻译",
+    "description": "Keyboard shortcut label on chrome://extensions/shortcuts. Manifest-only: browser-rendered chrome, so only browser.i18n can localize it."
+  }
+}

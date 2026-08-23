@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Radio label injection test</title>
+    <style>
+      body {
+        font: 15px/1.5 system-ui, sans-serif;
+        margin: 40px;
+        max-width: 320px;
+      }
+      h3 {
+        color: #666;
+        font-size: 13px;
+        text-transform: uppercase;
+      }
+      /* Replica of MediaWiki Codex cdx-radio */
+      .cdx-radio__wrapper {
+        display: flex;
+        align-items: flex-start;
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .cdx-radio__icon {
+        width: 20px;
+        height: 20px;
+        border: 1px solid #72777d;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      /* Real MediaWiki: the label is a flex-COLUMN (label + optional description
+         stacked) — this is what made our inline 译文 drop to its own line. */
+      .cdx-radio__label {
+        padding-inline-start: 8px;
+        display: flex;
+        flex-direction: column;
+      }
+      /* A simpler flex radio */
+      .simple-radio {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Text</h3>
+    <!-- Codex-style (the MediaWiki appearance radios) -->
+    <div class="cdx-radio__wrapper">
+      <span class="cdx-radio__icon"></span>
+      <div class="cdx-radio__label"><label class="cdx-label__label"><span class="cdx-label__label__text">Small</span></label></div>
+    </div>
+    <div class="cdx-radio__wrapper">
+      <span class="cdx-radio__icon"></span>
+      <div class="cdx-radio__label"><label class="cdx-label__label"><span class="cdx-label__label__text">Standard</span></label></div>
+    </div>
+    <div class="cdx-radio__wrapper">
+      <span class="cdx-radio__icon"></span>
+      <div class="cdx-radio__label"><label class="cdx-label__label"><span class="cdx-label__label__text">Large</span></label></div>
+    </div>
+
+    <h3>Simple flex radios</h3>
+    <label class="simple-radio"><input type="radio" name="s" /> Automatic</label>
+    <label class="simple-radio"><input type="radio" name="s" /> Light</label>
+    <label class="simple-radio"><input type="radio" name="s" /> Dark</label>
+  </body>
+</html>

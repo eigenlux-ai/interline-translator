@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>omni-translator · rich editor injection matrix (10)</title>
+    <link href="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css" rel="stylesheet" />
+    <link href="https://unpkg.com/@wangeditor/editor@5/dist/css/style.css" rel="stylesheet" />
+    <style>
+      body { font: 14px/1.5 system-ui, sans-serif; margin: 20px; max-width: 820px; }
+      section { margin: 14px 0; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; }
+      h2 { font-size: 13px; margin: 0 0 6px; color: #555; }
+      .box { border: 1px solid #ccc; border-radius: 6px; padding: 6px 10px; min-height: 34px; }
+      .cm-editor, #monaco { height: 80px; }
+      #monaco { border: 1px solid #ccc; }
+      code { background: #f4f4f4; padding: 1px 5px; border-radius: 4px; }
+    </style>
+  </head>
+  <body>
+    <h1>Rich editor injection matrix — 10 editors</h1>
+    <p>Focus a field, press <code>Space</code> ×3 to translate in place.</p>
+
+    <section><h2>1 · Quill</h2><div id="quill"><div class="box">hello from quill</div></div></section>
+    <section><h2>2 · Lexical</h2><div id="lexical" class="box" data-lexical-editor="true" contenteditable="true"></div></section>
+    <section><h2>3 · Slate.js (slate-react)</h2><div id="slate" class="box"></div></section>
+    <section><h2>3b · Draft.js (React 18 — draft needs findDOMNode)</h2><div id="draft" class="box"></div></section>
+    <section><h2>4 · CodeMirror 6</h2><div id="cm6"></div></section>
+    <section><h2>5 · TipTap (ProseMirror)</h2><div id="tiptap" class="box"></div></section>
+    <section><h2>6 · ProseMirror (vanilla)</h2><div id="pm" class="box"></div></section>
+    <section><h2>7 · CKEditor 5</h2><div id="cke"><p>hello from ckeditor</p></div></section>
+    <section><h2>8 · TinyMCE (inline)</h2><div id="tinymce" class="box">hello from tinymce</div></section>
+    <section><h2>8b · TinyMCE (IFRAME mode — WordPress classic)</h2><textarea id="tinymce-iframe">hello from tinymce iframe</textarea></section>
+    <section><h2>8c · same-origin iframe (plain textarea + CE)</h2><iframe id="plain-frame" style="width:100%;height:90px;border:1px solid #ccc"></iframe></section>
+    <section><h2>9 · WangEditor v5</h2><div id="wang-toolbar"></div><div id="wang" class="box"></div></section>
+    <section><h2>10 · Editor.js</h2><div id="editorjs" class="box"></div></section>
+    <section><h2>+ · Monaco</h2><div id="monaco"></div></section>
+
+    <!-- ── UMD globals (must load BEFORE Monaco's AMD loader) ── -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"></script>
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.4.2/classic/ckeditor.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tinymce@6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://unpkg.com/@wangeditor/editor@5/dist/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@editorjs/editorjs@2/dist/editorjs.umd.js"></script>
+    <script>
+      window.__mounted = {};
+      // 1 · Quill
+      try { const q = new Quill('#quill', { theme: 'snow', placeholder: 'Write something…' }); q.setText('hello from quill\n'); window.__mounted.quill = true; }
+      catch (e) { console.error('[quill]', e); }
+      // 7 · CKEditor 5
+      try {
+        ClassicEditor.create(document.querySelector('#cke'))
+          .then((ed) => { window.__ckeInstance = ed; window.__mounted.cke = true; })
+          .catch((e) => console.error('[cke]', e));
+      } catch (e) { console.error('[cke]', e); }
+      // 8 · TinyMCE (inline — no iframe)
+      try {
+        tinymce.init({ selector: '#tinymce', inline: true, menubar: false, toolbar: false, license_key: 'gpl', base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6', suffix: '.min' })
+          .then(() => { window.__mounted.tinymce = true; })
+          .catch((e) => console.error('[tinymce]', e));
+      } catch (e) { console.error('[tinymce]', e); }
+      // 8b · TinyMCE iframe mode (default): editable body lives inside an about:blank iframe
+      try {
+        tinymce.init({ selector: '#tinymce-iframe', menubar: false, toolbar: false, license_key: 'gpl', base_url: 'https://cdn.jsdelivr.net/npm/tinymce@6', suffix: '.min', height: 120 })
+          .then(() => { window.__mounted.tinymceIframe = true; })
+          .catch((e) => console.error('[tinymce-iframe]', e));
+      } catch (e) { console.error('[tinymce-iframe]', e); }
+      // 8c · same-origin iframe with plain fields
+      try {
+        const frame = document.getElementById('plain-frame');
+        frame.srcdoc = '<body style="font:13px system-ui;margin:8px">' +
+          '<input id="f-input" value="hello from iframe input" style="width:90%"><br><br>' +
+          '<div id="f-ce" contenteditable="true" style="border:1px solid #aaa;padding:4px">hello from iframe ce</div></body>';
+        frame.addEventListener('load', () => { window.__mounted.plainFrame = true; });
+      } catch (e) { console.error('[plain-frame]', e); }
+      // 9 · WangEditor v5
+      try {
+        const { createEditor, createToolbar } = window.wangEditor;
+        const wangEditorInstance = createEditor({
+          selector: '#wang',
+          html: '<p>hello from wangeditor</p>',
+          config: { placeholder: '' },
+        });
+        window.__wangInstance = wangEditorInstance;
+        window.__mounted.wang = true;
+      } catch (e) { console.error('[wang]', e); }
+      // 10 · Editor.js
+      try {
+        window.__ejInstance = new EditorJS({
+          holder: 'editorjs',
+          data: { blocks: [{ type: 'paragraph', data: { text: 'hello from editorjs' } }] },
+          onReady: () => { window.__mounted.editorjs = true; },
+        });
+      } catch (e) { console.error('[editorjs]', e); }
+    </script>
+
+    <!-- ── Monaco: AMD loader LAST (it sets define.amd) ── -->
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs/loader.js"></script>
+    <script>
+      require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min/vs' } });
+      require(['vs/editor/editor.main'], function () {
+        monaco.editor.create(document.getElementById('monaco'), { value: 'hello from monaco', language: 'javascript', minimap: { enabled: false } });
+        window.__mounted.monaco = true;
+      });
+    </script>
+
+    <!-- ── ESM editors ── -->
+    <script type="module">
+      // 2 · Lexical (vanilla + rich-text)
+      try {
+        const { createEditor, $getRoot, $createParagraphNode, $createTextNode } = await import('https://esm.sh/lexical@0.21');
+        const { registerRichText } = await import('https://esm.sh/@lexical/rich-text@0.21?deps=lexical@0.21');
+        const editor = createEditor({ namespace: 't', onError: (e) => console.error('[lexical]', e) });
+        editor.setRootElement(document.getElementById('lexical'));
+        registerRichText(editor);
+        editor.update(() => { const p = $createParagraphNode(); p.append($createTextNode('hello from lexical')); $getRoot().clear().append(p); });
+        window.__mounted.lexical = true;
+      } catch (e) { console.error('[lexical]', e); }
+
+      // 3 · Slate.js (slate-react, via React.createElement)
+      try {
+        const React = (await import('https://esm.sh/react@19')).default;
+        const { createRoot } = await import('https://esm.sh/react-dom@19/client?deps=react@19');
+        const { createEditor } = await import('https://esm.sh/slate@0.103');
+        const { Slate, Editable, withReact } = await import('https://esm.sh/slate-react@0.110?deps=react@19,react-dom@19,slate@0.103');
+        const editor = withReact(createEditor());
+        const initial = [{ type: 'paragraph', children: [{ text: 'hello from slate' }] }];
+        const App = () => React.createElement(Slate, { editor, initialValue: initial }, React.createElement(Editable));
+        createRoot(document.getElementById('slate')).render(React.createElement(App));
+        window.__mounted.slate = true;
+      } catch (e) { console.error('[slate]', e); }
+
+      // 3b · Draft.js — on its OWN React 18 (draft-js needs findDOMNode, removed in React 19)
+      try {
+        const React18 = (await import('https://esm.sh/react@18')).default;
+        const { createRoot: createRoot18 } = await import('https://esm.sh/react-dom@18/client?deps=react@18');
+        const { Editor, EditorState, ContentState } = await import('https://esm.sh/draft-js@0.11.7?deps=react@18,react-dom@18');
+        const DraftApp = () => {
+          const [state, setState] = React18.useState(() =>
+            EditorState.createWithContent(ContentState.createFromText('hello from draftjs')));
+          return React18.createElement(Editor, { editorState: state, onChange: setState, placeholder: 'Write something…' });
+        };
+        createRoot18(document.getElementById('draft')).render(React18.createElement(DraftApp));
+        window.__mounted.draft = true;
+      } catch (e) { console.error('[draft]', e); }
+
+      // 4 · CodeMirror 6
+      try {
+        const { EditorView, basicSetup } = await import('https://esm.sh/codemirror@6.0.1');
+        new EditorView({ doc: 'hello from codemirror', extensions: [basicSetup], parent: document.getElementById('cm6') });
+        window.__mounted.cm6 = true;
+      } catch (e) { console.error('[cm6]', e); }
+
+      // 5 · TipTap
+      try {
+        const { Editor } = await import('https://esm.sh/@tiptap/core@2');
+        const StarterKit = (await import('https://esm.sh/@tiptap/starter-kit@2?deps=@tiptap/core@2')).default;
+        window.__tiptap = new Editor({ element: document.getElementById('tiptap'), extensions: [StarterKit], content: '<p>hello from tiptap</p>' });
+        window.__mounted.tiptap = true;
+      } catch (e) { console.error('[tiptap]', e); }
+
+      // 6 · ProseMirror (vanilla — view NOT exposed, mirrors real hosts)
+      try {
+        const { EditorState } = await import('https://esm.sh/prosemirror-state@1.4.3');
+        const { EditorView } = await import('https://esm.sh/prosemirror-view@1.33?deps=prosemirror-state@1.4.3,prosemirror-model@1.19.4');
+        const { DOMParser } = await import('https://esm.sh/prosemirror-model@1.19.4');
+        const { schema } = await import('https://esm.sh/prosemirror-schema-basic@1.2.2?deps=prosemirror-model@1.19.4');
+        const src = document.createElement('div'); src.innerHTML = '<p>hello from prosemirror</p>';
+        new EditorView(document.getElementById('pm'), { state: EditorState.create({ doc: DOMParser.fromSchema(schema).parse(src) }) });
+        window.__mounted.pm = true;
+      } catch (e) { console.error('[pm]', e); }
+
+      window.__editorsReady = true;
+    </script>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "行間對照的 AI 翻譯:整頁行間譯文、劃選翻譯、輸入框就地翻譯。"
+  },
+  "menuTranslatePage": {
+    "message": "翻譯此頁"
+  },
+  "commandTogglePageTranslation": {
+    "message": "切換整頁翻譯"
+  }
+}

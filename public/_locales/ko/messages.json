@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "행간 대역 AI 번역: 페이지 전체 행간 번역, 선택 텍스트 번역, 입력창 즉석 번역."
+  },
+  "menuTranslatePage": {
+    "message": "이 페이지 번역"
+  },
+  "commandTogglePageTranslation": {
+    "message": "페이지 전체 번역 켜기/끄기"
+  }
+}

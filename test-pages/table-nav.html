@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Table + nav injection test</title>
+    <style>
+      body { font: 15px/1.6 system-ui, sans-serif; margin: 40px; max-width: 760px; }
+      table { border-collapse: collapse; width: 100%; margin: 1em 0; }
+      td, th { border: 1px solid #ccc; padding: 8px 12px; text-align: left; }
+      th { background: #f4f4f4; }
+      nav { display: flex; gap: 16px; padding: 10px; background: #fafafa; }
+      nav a { color: #1a6dd6; text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <h1>Reference table</h1>
+
+    <!-- Nav with links: 译文 must sit OUTSIDE each <a>, not become clickable link text -->
+    <nav>
+      <a href="/docs">Documentation</a>
+      <a href="/guides">Getting started guide</a>
+      <a href="/api">API reference</a>
+    </nav>
+
+    <!-- Table: short cells inline-inside; long cells must NOT spawn a stray block sibling -->
+    <table>
+      <thead>
+        <tr><th>Feature</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Isolation</td>
+          <td>The shadow surface keeps host page styles from leaking into the extension UI and the reverse, which is the core promise of this whole architecture.</td>
+        </tr>
+        <tr>
+          <td>Injection</td>
+          <td>Bilingual translation is injected directly next to the source text in the host document, so it follows the page's own light and dark theme automatically.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>This is a regular standalone paragraph of prose that is long enough to be injected as a block translation on its own line below the source text, matching the immersive-translate reading experience for body content.</p>
+  </body>
+</html>

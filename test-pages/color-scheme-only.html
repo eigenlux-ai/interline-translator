@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en" style="color-scheme: light; --demo-sbw: 0px;">
+  <head>
+    <meta charset="utf-8" />
+    <title>color-scheme-only theme switch — no painted backgrounds</title>
+    <!-- Deliberately NO background-color anywhere: the dark canvas is painted
+         by the UA from color-scheme alone, invisible to computed styles. -->
+    <style>
+      body { font: 16px/1.6 system-ui, sans-serif; max-width: 40em; margin: 2em auto; }
+      button { font: inherit; padding: 6px 12px; }
+    </style>
+  </head>
+  <body>
+    <button id="toggle">Toggle color-scheme</button>
+    <p>This page never paints a background. Its dark mode is purely the UA
+      canvas driven by the color-scheme declaration on the html style attribute.</p>
+    <p>Some translatable prose so the extension has content to work with. The
+      quick brown fox jumps over the lazy dog.</p>
+    <script>
+      document.getElementById('toggle').addEventListener('click', () => {
+        const el = document.documentElement;
+        const dark = el.style.colorScheme.includes('dark');
+        el.style.cssText = `color-scheme: ${dark ? 'light' : 'dark'}; --demo-sbw: 0px;`;
+      });
+    </script>
+  </body>
+</html>

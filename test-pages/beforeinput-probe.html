@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>beforeinput probe — omni-translator</title>
+    <style>
+      body {
+        font:
+          14px/1.5 ui-monospace,
+          monospace;
+        margin: 24px;
+        max-width: 900px;
+      }
+      h1 {
+        font-size: 18px;
+      }
+      .field {
+        margin: 14px 0;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      input,
+      textarea,
+      [contenteditable] {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 6px;
+        border: 1px solid #999;
+        border-radius: 4px;
+        min-height: 28px;
+        font: inherit;
+      }
+      table {
+        border-collapse: collapse;
+        margin-top: 20px;
+        width: 100%;
+      }
+      th,
+      td {
+        border: 1px solid #bbb;
+        padding: 6px 10px;
+        text-align: left;
+      }
+      th {
+        background: #f0f0f0;
+      }
+      .ok {
+        color: #0a7a2f;
+        font-weight: 600;
+      }
+      .no {
+        color: #b00020;
+        font-weight: 600;
+      }
+      button {
+        margin-top: 16px;
+        padding: 8px 16px;
+        font: inherit;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>beforeinput replacement probe</h1>
+    <p>
+      Simulates omni-translator's input-translation core: select-all →
+      <code>beforeinput{deleteContentBackward}</code> →
+      <code>beforeinput{insertText}</code>, checking <code>defaultPrevented</code> and whether the field value actually
+      changed. Run, then read the matrix.
+    </p>
+
+    <div class="field">
+      <label for="f-input">&lt;input&gt;</label>
+      <input id="f-input" value="hello world" />
+    </div>
+    <div class="field">
+      <label for="f-textarea">&lt;textarea&gt;</label>
+      <textarea id="f-textarea" rows="2">hello world</textarea>
+    </div>
+    <div class="field">
+      <label for="f-ce">plain [contenteditable]</label>
+      <div id="f-ce" contenteditable="true">hello world</div>
+    </div>
+
+    <button id="run">Run probe</button>
+
+    <table id="results" hidden>
+      <thead>
+        <tr>
+          <th>editor</th>
+          <th>delete defaultPrevented</th>
+          <th>insert defaultPrevented</th>
+          <th>value changed</th>
+          <th>final value</th>
+          <th>verdict</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <script>
+      const TRANSLATION = '你好世界';
+
+      function readValue(el) {
+        if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) return el.value;
+        return el.textContent ?? '';
+      }
+
+      // Fire the synthetic beforeinput sequence a content script would use.
+      function probe(el) {
+        el.focus();
+        const before = readValue(el);
+
+        // 1) select all
+        if (el.setSelectionRange && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+          el.setSelectionRange(0, el.value.length);
+        } else {
+          const range = document.createRange();
+          range.selectNodeContents(el);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
+        }
+
+        // 2) beforeinput: deleteContentBackward
+        const delEvt = new InputEvent('beforeinput', {
+          inputType: 'deleteContentBackward',
+          bubbles: true,
+          cancelable: true,
+        });
+        const delDispatched = el.dispatchEvent(delEvt);
+        const deletePrevented = !delDispatched; // dispatchEvent returns false if preventDefault was called
+
+        // 3) beforeinput: insertText
+        const insEvt = new InputEvent('beforeinput', {
+          inputType: 'insertText',
+          data: TRANSLATION,
+          bubbles: true,
+          cancelable: true,
+        });
+        const insDispatched = el.dispatchEvent(insEvt);
+        const insertPrevented = !insDispatched;
+
+        // For native fields the page JS must apply the edit when NOT prevented
+        // (browsers don't mutate the value for synthetic events). This mirrors
+        // the fallback: if the editor didn't handle beforeinput itself, we set
+        // the value directly. Rich editors (Lexical etc.) DO handle it and call
+        // preventDefault — there the value reflects their own handling.
+        if (!insertPrevented && (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement)) {
+          el.value = TRANSLATION;
+          el.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+
+        const after = readValue(el);
+        return {
+          deletePrevented,
+          insertPrevented,
+          changed: after !== before && after.includes(TRANSLATION),
+          finalValue: after,
+        };
+      }
+
+      document.getElementById('run').addEventListener('click', () => {
+        const cases = [
+          ['<input>', document.getElementById('f-input')],
+          ['<textarea>', document.getElementById('f-textarea')],
+          ['contenteditable', document.getElementById('f-ce')],
+        ];
+        const tbody = document.querySelector('#results tbody');
+        tbody.innerHTML = '';
+        for (const [name, el] of cases) {
+          const r = probe(el);
+          const tr = document.createElement('tr');
+          const verdict = r.changed ? '<span class="ok">REPLACED</span>' : '<span class="no">NO CHANGE</span>';
+          tr.innerHTML =
+            `<td>${name}</td>` +
+            `<td>${r.deletePrevented}</td>` +
+            `<td>${r.insertPrevented}</td>` +
+            `<td>${r.changed}</td>` +
+            `<td>${r.finalValue}</td>` +
+            `<td>${verdict}</td>`;
+          tbody.appendChild(tr);
+        }
+        document.getElementById('results').hidden = false;
+        // Expose for automation to read.
+        window.__PROBE_RESULTS__ = cases.map(([name, el]) => ({ name, ...probe(el) }));
+      });
+    </script>
+  </body>
+</html>

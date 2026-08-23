@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>omni-translator · input-field translation test</title>
+  <style>
+    body { font: 15px/1.5 -apple-system, system-ui, sans-serif; max-width: 720px; margin: 24px auto; padding: 0 16px; color: #1a1a1a; }
+    h1 { font-size: 20px; }
+    fieldset { margin: 16px 0; border: 1px solid #ccc; border-radius: 8px; padding: 12px 16px; }
+    legend { font-weight: 600; padding: 0 6px; }
+    textarea, input[type=text], input[type=password] { width: 100%; box-sizing: border-box; font-size: 15px; padding: 8px; }
+    textarea { height: 70px; }
+    .ce { min-height: 44px; border: 1px solid #999; border-radius: 6px; padding: 8px; }
+    .mirror { margin-top: 6px; font-size: 12px; color: #666; white-space: pre-wrap; word-break: break-all; }
+    code { background: #f2f2f2; padding: 1px 4px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>omni-translator — input-field translation test page</h1>
+  <p>Type text, then hit <b>space 3×</b> quickly to translate the focused field in place. Prefix <code>/en …</code> or <code>en: …</code> to pick a target.</p>
+
+  <fieldset>
+    <legend>1 · native &lt;textarea&gt;</legend>
+    <textarea id="ta" placeholder="Type English here, then triple-space…"></textarea>
+    <div class="mirror" id="ta-m">value: (empty)</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>2 · native &lt;input type=text&gt;</legend>
+    <input id="txt" type="text" placeholder="Type here, then triple-space…" />
+    <div class="mirror" id="txt-m">value: (empty)</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>3 · &lt;div contenteditable&gt;</legend>
+    <div id="ce" class="ce" contenteditable="true" data-placeholder="Type here…"></div>
+    <div class="mirror" id="ce-m">textContent: (empty)</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>4 · React-controlled &lt;textarea&gt; (value tracker)</legend>
+    <div id="react-root"></div>
+    <div class="mirror" id="rx-m">react state: (empty)</div>
+  </fieldset>
+
+  <fieldset>
+    <legend>6 · password field (must be skipped)</legend>
+    <input id="pw" type="password" placeholder="password — should NOT translate" />
+    <div class="mirror" id="pw-m">value length: 0</div>
+  </fieldset>
+
+  <script>
+    // Live mirrors so we can watch input events fire (esp. for React-controlled sync).
+    const ta = document.getElementById('ta');
+    const txt = document.getElementById('txt');
+    const ce = document.getElementById('ce');
+    const pw = document.getElementById('pw');
+    ta.addEventListener('input', () => document.getElementById('ta-m').textContent = 'value: ' + JSON.stringify(ta.value));
+    txt.addEventListener('input', () => document.getElementById('txt-m').textContent = 'value: ' + JSON.stringify(txt.value));
+    ce.addEventListener('input', () => document.getElementById('ce-m').textContent = 'textContent: ' + JSON.stringify(ce.textContent));
+    pw.addEventListener('input', () => document.getElementById('pw-m').textContent = 'value length: ' + pw.value.length);
+  </script>
+
+  <!-- Minimal React 19 controlled textarea via ESM CDN. Falls back gracefully if offline. -->
+  <script type="module">
+    try {
+      const React = (await import('https://esm.sh/react@19.2')).default;
+      const { createRoot } = await import('https://esm.sh/react-dom@19.2/client');
+      const { useState } = React;
+      function App() {
+        const [v, setV] = useState('');
+        React.useEffect(() => {
+          document.getElementById('rx-m').textContent = 'react state: ' + JSON.stringify(v);
+        }, [v]);
+        return React.createElement('textarea', {
+          id: 'rx',
+          value: v,
+          placeholder: 'React-controlled — type then triple-space…',
+          style: { width: '100%', height: '70px', boxSizing: 'border-box', fontSize: '15px', padding: '8px' },
+          onChange: (e) => setV(e.target.value),
+        });
+      }
+      createRoot(document.getElementById('react-root')).render(React.createElement(App));
+      window.__reactReady = true;
+    } catch (err) {
+      document.getElementById('react-root').innerHTML =
+        '<em style="color:#a00">React CDN unavailable — skip field 4. (' + err + ')</em>';
+      window.__reactReady = false;
+    }
+  </script>
+</body>
+</html>

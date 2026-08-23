@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Robustness batch — SPA re-inject / pre / closed shadow</title>
+    <style>
+      body { font: 16px/1.6 system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; }
+      section { margin-bottom: 2.5rem; border-top: 1px solid #ddd; padding-top: 1rem; }
+      pre { background: #f6f6f6; padding: 0.6rem; }
+      button { margin-right: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <h1>Robustness test page</h1>
+
+    <section id="sec-pre">
+      <h2>1 · Plain pre (prose — SHOULD translate, line structure kept)</h2>
+      <pre id="pre-plain">Dear reader, this is the first line of an old mail archive.
+The second line continues the letter with more prose.
+Sincerely, the archive.</pre>
+
+      <h2>1b · pre&gt;code (Markdown code block — must NOT translate)</h2>
+      <pre id="pre-code"><code>const value = compute()
+return value + 1</code></pre>
+
+      <h2>1c · highlighter-classed pre (must NOT translate)</h2>
+      <div class="highlight"><pre id="pre-hl"><span>def compute():</span>
+<span>    return 42</span></pre></div>
+    </section>
+
+    <section id="sec-spa">
+      <h2>2 · SPA re-injection (host deletes our gloss)</h2>
+      <p id="spa-target">This paragraph will lose its translation to a simulated React commit.</p>
+      <button id="btn-del-once">delete gloss once</button>
+      <button id="btn-del-fight">fight ×5 (checks the concede cap)</button>
+      <span id="spa-status"></span>
+    </section>
+
+    <section id="sec-shadow">
+      <h2>3 · Closed shadow roots</h2>
+      <closed-box id="closed-simple"></closed-box>
+      <closed-nest id="closed-nested"></closed-nest>
+      <closed-late id="closed-late"></closed-late>
+      <p>(the late one attaches its root 2s after load — exercises the MAIN-world signal)</p>
+
+      <h2>3b · Editor inside a CLOSED root (input translation target)</h2>
+      <closed-editor id="closed-editor"></closed-editor>
+    </section>
+
+    <script>
+      // ---- 2 · SPA simulation ------------------------------------------------
+      const status = (t) => (document.getElementById('spa-status').textContent = t);
+      document.getElementById('btn-del-once').onclick = () => {
+        const g = document.querySelector('#spa-target [data-omni-translated], #spa-target + [data-omni-translated]');
+        if (g) { g.remove(); status('deleted 1'); } else status('no gloss found');
+      };
+      document.getElementById('btn-del-fight').onclick = () => {
+        let n = 0;
+        const t = setInterval(() => {
+          const g = document.querySelector('#spa-target [data-omni-translated], #spa-target + [data-omni-translated]');
+          if (g) { g.remove(); n++; status('fight deleted ' + n); }
+          if (n >= 5) clearInterval(t);
+        }, 400);
+      };
+
+      // ---- 3 · closed shadow -------------------------------------------------
+      // NOTE: roots are attached from PAGE script — exactly what a web component
+      // does — so the extension only ever sees them via chrome.dom / the hook.
+      const R = (window.__closedRoots = {});
+      const closed = (host) => host.attachShadow({ mode: 'closed' });
+
+      customElements.define('closed-box', class extends HTMLElement {
+        connectedCallback() {
+          const r = closed(this);
+          r.innerHTML = '<p>Closed shadow content that deserves a translation.</p>'; R.simple = r;
+        }
+      });
+
+      customElements.define('closed-nest', class extends HTMLElement {
+        connectedCallback() {
+          const outer = closed(this);
+          const inner = document.createElement('div');
+          outer.appendChild(inner);
+          const r2 = inner.attachShadow({ mode: 'closed' });
+          r2.innerHTML = '<p>Nested closed shadow paragraph, two levels deep.</p>'; R.nested = r2;
+        }
+      });
+
+      customElements.define('closed-late', class extends HTMLElement {
+        connectedCallback() {
+          setTimeout(() => {
+            const r = closed(this);
+            r.innerHTML = '<p>Late-attached closed shadow content, two seconds in.</p>'; R.late = r;
+          }, 2000);
+        }
+      });
+
+      customElements.define('closed-editor', class extends HTMLElement {
+        connectedCallback() {
+          const r = closed(this);
+          r.innerHTML =
+            '<label>closed input: <input id="ci" type="text" style="width:22rem"></label>' +
+            '<div id="cce" contenteditable="true" style="border:1px solid #aaa;min-height:2rem;margin-top:.5rem"></div>';
+          // Expose ONLY for the test harness to focus/read (a real page could too).
+          window.__closedEditorRoot = r;
+        }
+      });
+    </script>
+  </body>
+</html>

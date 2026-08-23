@@ -1,0 +1,77 @@
+name: Bug report
+description: Something in Interline does not work as documented
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a report. Please fill in the sections below so the issue can be reproduced quickly.
+
+        **Never paste an API key.** Redact it from any log or screenshot you attach.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. A public URL where the problem reproduces is ideal.
+      placeholder: |
+        1. Open https://example.com/some-article
+        2. Press the floating seal to translate the page
+        3. Switch the view mode to "translation only"
+        4. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Affected area
+      multiple: true
+      options:
+        - Whole-page translation
+        - Selection translation (slip card)
+        - Input-field translation (3-space trigger)
+        - Floating seal / control panel
+        - Settings page
+        - Glossary / prompt styles / site rules
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: engine
+    attributes:
+      label: Engine and model
+      description: Which provider and model? Leave blank if you use the bundled keyless engine.
+      placeholder: OpenRouter · google/gemini-3.7-flash
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Your browser + OS, and the extension version (shown at the bottom of the settings page).
+      placeholder: |
+        - OS: macOS 15.5
+        - Browser: Chrome 126
+        - Interline: v1.0.0
+        - Installed from: Chrome Web Store / built from source
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / output
+      description: Console errors from the page or the extension's service worker. Redact API keys.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate.
+          required: true
+        - label: I removed any API key from the logs and screenshots above.
+          required: true

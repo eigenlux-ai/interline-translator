@@ -1,0 +1,11 @@
+{
+  "extDescription": {
+    "message": "行間対訳の AI 翻訳:ページ全体の行間訳、選択テキストの翻訳、入力欄でのその場翻訳。"
+  },
+  "menuTranslatePage": {
+    "message": "このページを翻訳"
+  },
+  "commandTogglePageTranslation": {
+    "message": "ページ全体の翻訳を切り替え"
+  }
+}
