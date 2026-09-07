@@ -22,7 +22,7 @@ const ja_display_bilingual = /** @type {(inputs: Display_BilingualInputs) => Loc
 };
 
 const ko_display_bilingual = /** @type {(inputs: Display_BilingualInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`대역`)
+	return /** @type {LocalizedString} */ (`원문과 번역`)
 };
 
 const fr_display_bilingual = /** @type {(inputs: Display_BilingualInputs) => LocalizedString} */ () => {

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Import_Err_UnrecognizedInputs */
 
 const zh_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`无法解析该文件——支持导出的 JSON 术语集，或 source,target[,note] 格式的 CSV/TSV。`)
+	return /** @type {LocalizedString} */ (`无法解析文件。支持导出的 JSON 术语集，以及包含 source、target 和可选 note 列的 CSV/TSV 文件。`)
 };
 
 const zh_tw2_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`無法解析該檔案——支援匯出的 JSON 術語集，或 source,target[,note] 格式的 CSV/TSV。`)
+	return /** @type {LocalizedString} */ (`無法解析檔案。支援匯出的 JSON 術語集，以及包含 source、target 與選填 note 欄的 CSV/TSV 檔案。`)
 };
 
 const en_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_
 };
 
 const fr_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Impossible d'analyser le fichier — formats pris en charge : un jeu JSON exporté ou des lignes CSV/TSV source,target[,note].`)
+	return /** @type {LocalizedString} */ (`Impossible de lire le fichier. Utilisez un glossaire JSON exporté ou un fichier CSV/TSV avec les colonnes source, target et, éventuellement, note.`)
 };
 
 const de_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Datei nicht lesbar — unterstützt: ein exportiertes JSON-Set oder CSV/TSV-Zeilen source,target[,note].`)
+	return /** @type {LocalizedString} */ (`Die Datei konnte nicht gelesen werden. Verwenden Sie ein exportiertes JSON-Glossar oder eine CSV/TSV-Datei mit source, target und optional note als Spalten.`)
 };
 
 const es_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`No se pudo analizar el archivo: se admite un conjunto JSON exportado o filas CSV/TSV de source,target[,note].`)
+	return /** @type {LocalizedString} */ (`No se pudo leer el archivo. Usa un glosario JSON exportado o un archivo CSV/TSV con las columnas source, target y, opcionalmente, note.`)
 };
 
 const ru_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_
 };
 
 const pt_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Não foi possível analisar o ficheiro — suportado: um conjunto JSON exportado ou linhas CSV/TSV de source,target[,note].`)
+	return /** @type {LocalizedString} */ (`Não foi possível ler o arquivo. Use um glossário JSON exportado ou um arquivo CSV/TSV com as colunas source, target e, opcionalmente, note.`)
 };
 
 const it_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Impossibile analizzare il file — supportati: un set JSON esportato o righe CSV/TSV source,target[,note].`)
+	return /** @type {LocalizedString} */ (`Impossibile leggere il file. Usa un glossario JSON esportato o un file CSV/TSV con le colonne source, target e, facoltativamente, note.`)
 };
 
 const ar_glossary_import_err_unrecognized = /** @type {(inputs: Glossary_Import_Err_UnrecognizedInputs) => LocalizedString} */ () => {

@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_Preview_LabelInputs */
 
 const zh_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`组装预览（实际发送的 system prompt）`)
+	return /** @type {LocalizedString} */ (`系统提示词预览`)
 };
 
 const zh_tw2_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`組裝預覽（實際傳送的 system prompt）`)
+	return /** @type {LocalizedString} */ (`系統提示詞預覽`)
 };
 
 const en_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Assembled preview (the system prompt actually sent)`)
+	return /** @type {LocalizedString} */ (`System prompt preview`)
 };
 
 const ja_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`組み立てプレビュー（実際に送信される system prompt）`)
+	return /** @type {LocalizedString} */ (`システムプロンプトのプレビュー`)
 };
 
 const ko_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`조립 미리보기(실제 전송되는 system prompt)`)
+	return /** @type {LocalizedString} */ (`시스템 프롬프트 미리보기`)
 };
 
 const fr_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aperçu assemblé (le system prompt réellement envoyé)`)
+	return /** @type {LocalizedString} */ (`Aperçu du prompt système`)
 };
 
 const de_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zusammengesetzte Vorschau (der tatsächlich gesendete System-Prompt)`)
+	return /** @type {LocalizedString} */ (`Vorschau des System-Prompts`)
 };
 
 const es_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vista previa ensamblada (el system prompt que se envía)`)
+	return /** @type {LocalizedString} */ (`Vista previa del prompt del sistema`)
 };
 
 const ru_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Собранный вид (реально отправляемый system prompt)`)
+	return /** @type {LocalizedString} */ (`Предпросмотр системного промпта`)
 };
 
 const pt_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pré-visualização montada (o system prompt realmente enviado)`)
+	return /** @type {LocalizedString} */ (`Prévia do prompt do sistema`)
 };
 
 const it_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Anteprima assemblata (il system prompt realmente inviato)`)
+	return /** @type {LocalizedString} */ (`Anteprima del prompt di sistema`)
 };
 
 const ar_styles_preview_label = /** @type {(inputs: Styles_Preview_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`معاينة مجمّعة (موجّه النظام المُرسل فعلاً)`)
+	return /** @type {LocalizedString} */ (`معاينة موجّه النظام`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Assembled preview (the system prompt actually sent)" |
+* | "System prompt preview" |
 *
 * @param {Styles_Preview_LabelInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Pick a concrete source language to swap" |
+* | "Choose a source language before swapping." |
 *
 * @param {Panel_Swap_DisabledInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

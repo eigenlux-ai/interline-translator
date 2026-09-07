@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Set_DeleteInputs */
 
 const zh_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`删除集合`)
+	return /** @type {LocalizedString} */ (`删除术语集`)
 };
 
 const zh_tw2_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`刪除集合`)
+	return /** @type {LocalizedString} */ (`刪除術語集`)
 };
 
 const en_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) =>
 };
 
 const fr_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Supprimer le jeu`)
+	return /** @type {LocalizedString} */ (`Supprimer le glossaire`)
 };
 
 const de_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Set löschen`)
+	return /** @type {LocalizedString} */ (`Glossar löschen`)
 };
 
 const es_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Eliminar conjunto`)
+	return /** @type {LocalizedString} */ (`Eliminar glosario`)
 };
 
 const ru_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) =>
 };
 
 const pt_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Eliminar conjunto`)
+	return /** @type {LocalizedString} */ (`Excluir glossário`)
 };
 
 const it_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Elimina set`)
+	return /** @type {LocalizedString} */ (`Elimina glossario`)
 };
 
 const ar_glossary_set_delete = /** @type {(inputs: Glossary_Set_DeleteInputs) => LocalizedString} */ () => {

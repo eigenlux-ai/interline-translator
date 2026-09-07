@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Input_TriggerInputs */
 
 const zh_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`触发空格数`)
+	return /** @type {LocalizedString} */ (`连续按空格键的次数`)
 };
 
 const zh_tw2_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`觸發空白鍵數`)
+	return /** @type {LocalizedString} */ (`連續按空白鍵的次數`)
 };
 
 const en_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Spaces to trigger`)
+	return /** @type {LocalizedString} */ (`Consecutive Space presses`)
 };
 
 const ja_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`起動に必要なスペース数`)
+	return /** @type {LocalizedString} */ (`スペースキーを連続で押す回数`)
 };
 
 const ko_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`실행에 필요한 스페이스 수`)
+	return /** @type {LocalizedString} */ (`스페이스바 연속 입력 횟수`)
 };
 
 const fr_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Espaces pour déclencher`)
+	return /** @type {LocalizedString} */ (`Appuis consécutifs sur Espace`)
 };
 
 const de_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Leertasten zum Auslösen`)
+	return /** @type {LocalizedString} */ (`Aufeinanderfolgende Leertastendrücke`)
 };
 
 const es_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Espacios para activar`)
+	return /** @type {LocalizedString} */ (`Pulsaciones seguidas de Espacio`)
 };
 
 const ru_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пробелов для запуска`)
+	return /** @type {LocalizedString} */ (`Число нажатий пробела подряд`)
 };
 
 const pt_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Espaços para acionar`)
+	return /** @type {LocalizedString} */ (`Toques seguidos na barra de espaço`)
 };
 
 const it_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Spazi per attivare`)
+	return /** @type {LocalizedString} */ (`Pressioni consecutive della barra spaziatrice`)
 };
 
 const ar_settings_input_trigger = /** @type {(inputs: Settings_Input_TriggerInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`عدد المسافات للتفعيل`)
+	return /** @type {LocalizedString} */ (`عدد الضغطات المتتالية على المسافة`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Spaces to trigger" |
+* | "Consecutive Space presses" |
 *
 * @param {Settings_Input_TriggerInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_Name_PlaceholderInputs */
 
 const zh_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`例如：新闻编译腔`)
+	return /** @type {LocalizedString} */ (`例如：新闻报道`)
 };
 
 const zh_tw2_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`例如：新聞編譯腔`)
+	return /** @type {LocalizedString} */ (`例如：新聞報導`)
 };
 
 const en_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderIn
 };
 
 const de_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`z. B. Nachrichtenton`)
+	return /** @type {LocalizedString} */ (`z. B. Journalistisch`)
 };
 
 const es_styles_name_placeholder = /** @type {(inputs: Styles_Name_PlaceholderInputs) => LocalizedString} */ () => {

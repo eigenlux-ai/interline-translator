@@ -10,7 +10,7 @@ const zh_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => Local
 };
 
 const zh_tw2_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`新建術語集`)
+	return /** @type {LocalizedString} */ (`新增術語集`)
 };
 
 const en_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => Local
 };
 
 const fr_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nouveau jeu`)
+	return /** @type {LocalizedString} */ (`Nouveau glossaire`)
 };
 
 const de_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Neues Set`)
+	return /** @type {LocalizedString} */ (`Neues Glossar`)
 };
 
 const es_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nuevo conjunto`)
+	return /** @type {LocalizedString} */ (`Nuevo glosario`)
 };
 
 const ru_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => Local
 };
 
 const pt_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Novo conjunto`)
+	return /** @type {LocalizedString} */ (`Novo glossário`)
 };
 
 const it_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nuovo set`)
+	return /** @type {LocalizedString} */ (`Nuovo glossario`)
 };
 
 const ar_glossary_set_new = /** @type {(inputs: Glossary_Set_NewInputs) => LocalizedString} */ () => {

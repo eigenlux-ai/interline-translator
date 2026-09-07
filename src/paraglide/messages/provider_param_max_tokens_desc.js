@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Param_Max_Tokens_DescInputs */
 
 const zh_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`设得太低会截断整页批量翻译。`)
+	return /** @type {LocalizedString} */ (`上限过低可能导致译文被截断，整页批量翻译时尤需注意。`)
 };
 
 const zh_tw2_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`設太低會截斷整頁批量翻譯。`)
+	return /** @type {LocalizedString} */ (`上限過低可能導致譯文截斷，整頁批次翻譯時尤其需要注意。`)
 };
 
 const en_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Set too low, this truncates whole-page batch translation.`)
+	return /** @type {LocalizedString} */ (`A low limit may cut off translations, especially when translating a page in batches.`)
 };
 
 const ja_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
@@ -26,11 +26,11 @@ const ko_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max
 };
 
 const fr_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Une valeur trop basse tronque la traduction pleine page en lot.`)
+	return /** @type {LocalizedString} */ (`Une limite trop basse peut couper la traduction, surtout pour les pages traduites par lots.`)
 };
 
 const de_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zu niedrig gesetzt, schneidet das die Ganzseiten-Batch-Übersetzung ab.`)
+	return /** @type {LocalizedString} */ (`Ein niedriger Grenzwert kann Übersetzungen abschneiden, besonders bei der abschnittsweisen Übersetzung ganzer Seiten.`)
 };
 
 const es_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max
 };
 
 const pt_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Um valor demasiado baixo trunca a tradução da página inteira em lote.`)
+	return /** @type {LocalizedString} */ (`Um limite baixo pode cortar a tradução, principalmente ao traduzir páginas em lotes.`)
 };
 
 const it_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max_Tokens_DescInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_provider_param_max_tokens_desc = /** @type {(inputs: Provider_Param_Max
 /**
 * | output |
 * | --- |
-* | "Set too low, this truncates whole-page batch translation." |
+* | "A low limit may cut off translations, especially when translating a page in batches." |
 *
 * @param {Provider_Param_Max_Tokens_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

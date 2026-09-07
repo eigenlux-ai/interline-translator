@@ -10,11 +10,11 @@ const zh_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) 
 };
 
 const zh_tw2_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`已匯入「${i?.name}」：${i?.count} 條`)
+	return /** @type {LocalizedString} */ (`已匯入「${i?.name}」：${i?.count} 筆術語`)
 };
 
 const en_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Imported “${i?.name}”: ${i?.count} terms`)
+	return /** @type {LocalizedString} */ (`Imported “${i?.name}”. Terms: ${i?.count}`)
 };
 
 const ja_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
@@ -26,37 +26,37 @@ const ko_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) 
 };
 
 const fr_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`« ${i?.name} » importé : ${i?.count} termes`)
+	return /** @type {LocalizedString} */ (`« ${i?.name} » importé. Nombre de termes : ${i?.count}`)
 };
 
 const de_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`„${i?.name}“ importiert: ${i?.count} Begriffe`)
+	return /** @type {LocalizedString} */ (`„${i?.name}“ importiert. Begriffe: ${i?.count}`)
 };
 
 const es_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`«${i?.name}» importado: ${i?.count} términos`)
+	return /** @type {LocalizedString} */ (`«${i?.name}» importado. Términos: ${i?.count}`)
 };
 
 const ru_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Импортирован «${i?.name}»: ${i?.count} терминов`)
+	return /** @type {LocalizedString} */ (`Набор «${i?.name}» импортирован. Терминов: ${i?.count}`)
 };
 
 const pt_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`«${i?.name}» importado: ${i?.count} termos`)
+	return /** @type {LocalizedString} */ (`“${i?.name}” importado. Termos: ${i?.count}`)
 };
 
 const it_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`«${i?.name}» importato: ${i?.count} termini`)
+	return /** @type {LocalizedString} */ (`«${i?.name}» importato. Termini: ${i?.count}`)
 };
 
 const ar_glossary_import_done = /** @type {(inputs: Glossary_Import_DoneInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`تم استيراد «${i?.name}»: ${i?.count} مصطلحاً`)
+	return /** @type {LocalizedString} */ (`تم استيراد «${i?.name}». عدد المصطلحات: ${i?.count}`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Imported “{name}”: {count} terms" |
+* | "Imported “{name}”. Terms: {count}" |
 *
 * @param {Glossary_Import_DoneInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

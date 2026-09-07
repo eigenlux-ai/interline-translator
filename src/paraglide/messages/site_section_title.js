@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Site_Section_TitleInputs */
 
 const zh_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站点控制`)
+	return /** @type {LocalizedString} */ (`网站翻译规则`)
 };
 
 const zh_tw2_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`網站控制`)
+	return /** @type {LocalizedString} */ (`網站翻譯規則`)
 };
 
 const en_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const en_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => L
 };
 
 const ja_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`サイトの制御`)
+	return /** @type {LocalizedString} */ (`サイトの翻訳設定`)
 };
 
 const ko_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`사이트 제어`)
+	return /** @type {LocalizedString} */ (`사이트 번역 설정`)
 };
 
 const fr_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => L
 };
 
 const pt_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Controlo de sites`)
+	return /** @type {LocalizedString} */ (`Tradução por site`)
 };
 
 const it_site_section_title = /** @type {(inputs: Site_Section_TitleInputs) => LocalizedString} */ () => {

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "({skipped} invalid or duplicate rows skipped)" |
+* | "(Invalid or duplicate rows skipped: {skipped})" |
 *
 * @param {Glossary_Import_SkippedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

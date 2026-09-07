@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Section_DescInputs */
 
 const zh_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`将设置(含 API key)导出为 JSON 文件,或从文件恢复。`)
+	return /** @type {LocalizedString} */ (`将设置（含 API 密钥）导出为 JSON 文件，或从备份文件恢复。`)
 };
 
 const zh_tw2_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`將設定(含 API key)匯出成 JSON 檔,或從檔案還原。`)
+	return /** @type {LocalizedString} */ (`將設定（含 API 金鑰）匯出為 JSON 檔案，或從備份檔案還原。`)
 };
 
 const en_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const en_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) =>
 };
 
 const ja_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`設定(API key を含む)を JSON ファイルに書き出す、またはファイルから復元します。`)
+	return /** @type {LocalizedString} */ (`設定(API キー を含む)を JSON ファイルに書き出す、またはファイルから復元します。`)
 };
 
 const ko_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`설정(API key 포함)을 JSON 파일로 내보내거나 파일에서 복원합니다.`)
+	return /** @type {LocalizedString} */ (`설정(API 키 포함)을 JSON 파일로 내보내거나 파일에서 복원합니다.`)
 };
 
 const fr_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) =>
 };
 
 const de_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Exportieren Sie Ihre Einstellungen (samt API keys) in eine JSON-Datei oder stellen Sie sie aus einer Datei wieder her.`)
+	return /** @type {LocalizedString} */ (`Exportieren Sie Ihre Einstellungen (samt API-Schlüssel) in eine JSON-Datei oder stellen Sie sie aus einer Datei wieder her.`)
 };
 
 const es_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
@@ -38,15 +38,15 @@ const es_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) =>
 };
 
 const ru_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Экспортируйте настройки (вместе с API keys) в файл JSON или восстановите их из файла.`)
+	return /** @type {LocalizedString} */ (`Экспортируйте настройки, включая API-ключи, в файл JSON или восстановите их из резервной копии.`)
 };
 
 const pt_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Exporte as suas definições (API keys incluídas) para um ficheiro JSON, ou reponha-as a partir de um ficheiro.`)
+	return /** @type {LocalizedString} */ (`Exporte suas configurações, incluindo chaves de API, para um arquivo JSON ou restaure um backup.`)
 };
 
 const it_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Esporta le tue impostazioni (API key incluse) in un file JSON, o ripristinale da un file.`)
+	return /** @type {LocalizedString} */ (`Esporta le impostazioni, incluse le chiavi API, in un file JSON oppure ripristinale da un backup.`)
 };
 
 const ar_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {

@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Input_FailedInputs */
 
 const zh_input_failed = /** @type {(inputs: Input_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`未能翻译，原文未动`)
+	return /** @type {LocalizedString} */ (`翻译失败，已保留原文。`)
 };
 
 const zh_tw2_input_failed = /** @type {(inputs: Input_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`未能翻譯,原文未動`)
+	return /** @type {LocalizedString} */ (`翻譯失敗，已保留原文。`)
 };
 
 const en_input_failed = /** @type {(inputs: Input_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Couldn't translate — your draft is untouched`)
+	return /** @type {LocalizedString} */ (`Translation failed. Your original text has been kept.`)
 };
 
 const ja_input_failed = /** @type {(inputs: Input_FailedInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_input_failed = /** @type {(inputs: Input_FailedInputs) => LocalizedStri
 /**
 * | output |
 * | --- |
-* | "Couldn't translate — your draft is untouched" |
+* | "Translation failed. Your original text has been kept." |
 *
 * @param {Input_FailedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

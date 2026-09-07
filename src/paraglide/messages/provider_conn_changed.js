@@ -22,7 +22,7 @@ const ja_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs
 };
 
 const ko_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`설정이 변경되었습니다. 다시 확인해 주세요`)
+	return /** @type {LocalizedString} */ (`설정이 변경되었습니다. 연결을 다시 검증해 주세요.`)
 };
 
 const fr_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs
 };
 
 const de_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Einstellungen geändert — bitte erneut validieren`)
+	return /** @type {LocalizedString} */ (`Einstellungen geändert. Bitte prüfen Sie die Verbindung erneut.`)
 };
 
 const es_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
@@ -38,7 +38,7 @@ const es_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs
 };
 
 const ru_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Настройки изменились — проверьте еще раз`)
+	return /** @type {LocalizedString} */ (`Настройки изменены. Проверьте соединение ещё раз.`)
 };
 
 const pt_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
@@ -46,7 +46,7 @@ const pt_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs
 };
 
 const it_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Impostazioni modificate — convalida di nuovo`)
+	return /** @type {LocalizedString} */ (`Impostazioni modificate. Verifica di nuovo la connessione.`)
 };
 
 const ar_provider_conn_changed = /** @type {(inputs: Provider_Conn_ChangedInputs) => LocalizedString} */ () => {

@@ -22,7 +22,7 @@ const ja_interleave_label = /** @type {(inputs: Interleave_LabelInputs) => Local
 };
 
 const ko_interleave_label = /** @type {(inputs: Interleave_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`문단별 대역`)
+	return /** @type {LocalizedString} */ (`문단별 원문·번역 표시`)
 };
 
 const fr_interleave_label = /** @type {(inputs: Interleave_LabelInputs) => LocalizedString} */ () => {

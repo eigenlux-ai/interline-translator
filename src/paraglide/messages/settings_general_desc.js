@@ -6,23 +6,23 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_General_DescInputs */
 
 const zh_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`语言对、默认引擎,以及译文的呈现方式。`)
+	return /** @type {LocalizedString} */ (`设置原文与译文语言、默认翻译引擎及显示方式。`)
 };
 
 const zh_tw2_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`語言配對、預設引擎,以及譯文的呈現方式。`)
+	return /** @type {LocalizedString} */ (`設定原文與譯文語言、預設翻譯引擎及顯示方式。`)
 };
 
 const en_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Language pair, default engine, and how translations are presented.`)
+	return /** @type {LocalizedString} */ (`Choose your languages, default translation engine, and display preferences.`)
 };
 
 const ja_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`言語ペア、既定のエンジン、そして訳文の見せ方。`)
+	return /** @type {LocalizedString} */ (`翻訳する言語、既定のエンジン、訳文の表示方法を設定します。`)
 };
 
 const ko_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`언어 쌍, 기본 엔진, 그리고 번역문을 보여 주는 방식.`)
+	return /** @type {LocalizedString} */ (`번역할 언어, 기본 번역 엔진, 번역문 표시 방식을 설정합니다.`)
 };
 
 const fr_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
@@ -38,7 +38,7 @@ const es_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs
 };
 
 const ru_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Пара языков, движок по умолчанию и то, как показывается перевод.`)
+	return /** @type {LocalizedString} */ (`Выберите языки, движок по умолчанию и способ отображения перевода.`)
 };
 
 const pt_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
@@ -50,13 +50,13 @@ const it_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs
 };
 
 const ar_settings_general_desc = /** @type {(inputs: Settings_General_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`زوج اللغتين، والمحرّك الافتراضي، وطريقة عرض الترجمات.`)
+	return /** @type {LocalizedString} */ (`اختر لغتي الترجمة والمحرّك الافتراضي وطريقة عرض النص المترجم.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Language pair, default engine, and how translations are presented." |
+* | "Choose your languages, default translation engine, and display preferences." |
 *
 * @param {Settings_General_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

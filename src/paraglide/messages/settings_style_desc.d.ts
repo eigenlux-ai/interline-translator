@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "How the translation is marked beside the original — it blends in by default. The swatches below are live; click to apply." |
+* | "Choose how translations look on the page. By default, they match the page. Select a preview to apply it." |
 *
 * @param {Settings_Style_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Natural spoken phrasing, short rhythms, no stiff literalism." |
+* | "Natural, conversational wording and short sentences, without stiff literal translations." |
 *
 * @param {Style_Builtin_Colloquial_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

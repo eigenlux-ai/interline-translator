@@ -42,7 +42,7 @@ const ru_settings_source_auto = /** @type {(inputs: Settings_Source_AutoInputs) 
 };
 
 const pt_settings_source_auto = /** @type {(inputs: Settings_Source_AutoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Deteção automática`)
+	return /** @type {LocalizedString} */ (`Detecção automática`)
 };
 
 const it_settings_source_auto = /** @type {(inputs: Settings_Source_AutoInputs) => LocalizedString} */ () => {

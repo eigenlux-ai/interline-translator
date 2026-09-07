@@ -42,7 +42,7 @@ const ru_glossary_target_ph = /** @type {(inputs: Glossary_Target_PhInputs) => L
 };
 
 const pt_glossary_target_ph = /** @type {(inputs: Glossary_Target_PhInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`grupo de contentores`)
+	return /** @type {LocalizedString} */ (`grupo de contêineres`)
 };
 
 const it_glossary_target_ph = /** @type {(inputs: Glossary_Target_PhInputs) => LocalizedString} */ () => {

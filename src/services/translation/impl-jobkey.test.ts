@@ -5,8 +5,8 @@
  */
 import { describe, expect, it } from 'vitest';
 import type { Config, ProviderConfig } from '@/data/models';
-import { jobKey } from './impl';
 import { makeTestConfig } from '@/test-utils/config';
+import { jobKey } from './impl';
 
 const llm: ProviderConfig = { id: 'oai', kind: 'openai', apiKeys: ['sk'], model: 'g', enabled: true };
 const mt: ProviderConfig = { id: 'google-free', kind: 'google-mt', apiKeys: [], model: '', enabled: true };
@@ -46,4 +46,14 @@ describe('jobKey', () => {
       jobKey(config, { ...base, context: { title: 'T', domain: 'a.com' } })
     );
   });
+});
+
+it('changing the model does not share the old in-flight job', () => {
+  const changed = {
+    ...config,
+    providers: config.providers.map((p) => (p.id === 'oai' ? { ...p, model: 'different-model' } : p)),
+  };
+  expect(jobKey(config, { text: 'hello', source: 'auto', target: 'zh-CN' })).not.toBe(
+    jobKey(changed, { text: 'hello', source: 'auto', target: 'zh-CN' })
+  );
 });

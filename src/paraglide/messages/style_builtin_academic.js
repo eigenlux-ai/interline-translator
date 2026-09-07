@@ -42,7 +42,7 @@ const ru_style_builtin_academic = /** @type {(inputs: Style_Builtin_AcademicInpu
 };
 
 const pt_style_builtin_academic = /** @type {(inputs: Style_Builtin_AcademicInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Académico`)
+	return /** @type {LocalizedString} */ (`Acadêmico`)
 };
 
 const it_style_builtin_academic = /** @type {(inputs: Style_Builtin_AcademicInputs) => LocalizedString} */ () => {

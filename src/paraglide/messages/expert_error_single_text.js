@@ -6,23 +6,23 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ text: NonNullable<unknown> }} Expert_Error_Single_TextInputs */
 
 const zh_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`正文模板必须包含 ${i?.text}，否则待译文本根本不会被发送。`)
+	return /** @type {LocalizedString} */ (`用户模板须包含 ${i?.text}，才能将待译文本发送给引擎。`)
 };
 
 const zh_tw2_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`內文模板必須包含 ${i?.text}，否則待譯文字根本不會被傳送。`)
+	return /** @type {LocalizedString} */ (`使用者範本須包含 ${i?.text}，才能將待譯文字傳送給引擎。`)
 };
 
 const en_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`The user template must contain ${i?.text}, or the text to translate is never sent at all.`)
+	return /** @type {LocalizedString} */ (`Include ${i?.text} in the user template so the text to translate is sent to the engine.`)
 };
 
 const ja_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`本文テンプレートには ${i?.text} が必要です。ないと翻訳対象のテキストが送信されません。`)
+	return /** @type {LocalizedString} */ (`翻訳する文章を送信できるように、ユーザーテンプレートに ${i?.text} を含めてください。`)
 };
 
 const ko_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`본문 템플릿에는 ${i?.text}가 있어야 합니다. 없으면 번역할 텍스트가 아예 전송되지 않습니다.`)
+	return /** @type {LocalizedString} */ (`번역할 글을 엔진에 보낼 수 있도록 사용자 템플릿에 ${i?.text}를 포함하세요.`)
 };
 
 const fr_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
@@ -42,7 +42,7 @@ const ru_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_Text
 };
 
 const pt_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`O modelo de utilizador tem de conter ${i?.text}, caso contrário o texto a traduzir nunca é enviado.`)
+	return /** @type {LocalizedString} */ (`Inclua ${i?.text} no template do usuário para que o texto a traduzir seja enviado ao motor.`)
 };
 
 const it_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
@@ -50,13 +50,13 @@ const it_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_Text
 };
 
 const ar_expert_error_single_text = /** @type {(inputs: Expert_Error_Single_TextInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`يجب أن يتضمن قالب النص ${i?.text}، وإلا فلن يُرسل النص المراد ترجمته أصلاً.`)
+	return /** @type {LocalizedString} */ (`أدرج ${i?.text} في قالب المستخدم لإرسال النص المراد ترجمته إلى المحرّك.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The user template must contain {text}, or the text to translate is never sent at all." |
+* | "Include {text} in the user template so the text to translate is sent to the engine." |
 *
 * @param {Expert_Error_Single_TextInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

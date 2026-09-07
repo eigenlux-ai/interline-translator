@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The user template must contain {text}, or the text to translate is never sent at all." |
+* | "Include {text} in the user template so the text to translate is sent to the engine." |
 *
 * @param {Expert_Error_Single_TextInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

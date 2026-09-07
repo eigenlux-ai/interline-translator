@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Rich_Text_DescInputs */
 
 const zh_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`译文保留原文的链接、加粗、行内代码等样式。个别引擎会被样式标记干扰、译文生硬时，可关闭此项换取更自然的纯文本译文。`)
+	return /** @type {LocalizedString} */ (`在译文中保留链接、加粗和行内代码。若格式标记影响翻译质量，可关闭此项，改用纯文本译文。`)
 };
 
 const zh_tw2_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`譯文保留原文的連結、粗體、行內程式碼等樣式。個別引擎會被樣式標記干擾、譯文生硬時，可關閉此項換取更自然的純文字譯文。`)
+	return /** @type {LocalizedString} */ (`在譯文中保留連結、粗體與行內程式碼。若格式標記影響翻譯品質，可關閉此項，改用純文字譯文。`)
 };
 
 const en_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Translations keep the original's links, bold and inline code. If format markers confuse an engine and the translation reads stilted, turn this off for cleaner plain-text output.`)
+	return /** @type {LocalizedString} */ (`Keep links, bold text, and inline code in translations. If formatting affects translation quality, turn this off to use plain text.`)
 };
 
 const ja_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`リンク・太字・インラインコードなどの書式を訳文に引き継ぎます。書式マーカーが翻訳エンジンの妨げになり訳文が不自然な場合は、オフにするとプレーンテキストでより自然に翻訳されます。`)
+	return /** @type {LocalizedString} */ (`訳文にリンク、太字、インラインコードを引き継ぎます。書式が翻訳の質に影響する場合は、オフにしてプレーンテキストで翻訳できます。`)
 };
 
 const ko_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`링크, 굵게, 인라인 코드 등 원문 서식을 번역문에 유지합니다. 서식 마커 때문에 번역이 어색해지는 엔진이 있다면 끄고 일반 텍스트로 더 자연스럽게 번역하세요.`)
+	return /** @type {LocalizedString} */ (`번역문에 링크, 굵은 글씨, 인라인 코드를 유지합니다. 서식이 번역 품질에 영향을 주면 이 옵션을 끄고 일반 텍스트로 번역하세요.`)
 };
 
 const fr_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Les traductions conservent les liens, le gras et le code en ligne de l'original. Si les marqueurs de format perturbent un moteur et rendent la traduction maladroite, désactivez cette option pour un texte brut plus naturel.`)
+	return /** @type {LocalizedString} */ (`Conserve les liens, le gras et le code en ligne dans la traduction. Si la mise en forme nuit à la qualité du texte, désactivez cette option pour traduire en texte brut.`)
 };
 
 const de_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzungen übernehmen Links, Fettdruck und Inline-Code des Originals. Falls Formatmarker eine Engine stören und die Übersetzung hölzern wirkt, schalten Sie dies für natürlicheren reinen Text aus.`)
+	return /** @type {LocalizedString} */ (`Behält Links, Fettdruck und Inline-Code in der Übersetzung bei. Falls die Formatierung die Übersetzungsqualität beeinträchtigt, deaktivieren Sie diese Option für reinen Text.`)
 };
 
 const es_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Las traducciones conservan los enlaces, negritas y código en línea del original. Si los marcadores de formato confunden a un motor y la traducción resulta forzada, desactívalo para obtener texto plano más natural.`)
+	return /** @type {LocalizedString} */ (`Conserva los enlaces, la negrita y el código en línea en las traducciones. Si el formato afecta a la calidad, desactiva esta opción para traducir como texto sin formato.`)
 };
 
 const ru_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перевод сохраняет ссылки, полужирный шрифт и встроенный код оригинала. Если маркеры форматирования мешают движку и перевод звучит неестественно, отключите эту опцию — получите более естественный простой текст.`)
+	return /** @type {LocalizedString} */ (`Сохраняет ссылки, полужирное начертание и встроенный код в переводе. Если форматирование влияет на качество, отключите эту опцию для перевода обычным текстом.`)
 };
 
 const pt_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`As traduções preservam links, negrito e código embutido do original. Se os marcadores de formato confundirem um mecanismo e a tradução soar travada, desative para obter texto simples mais natural.`)
+	return /** @type {LocalizedString} */ (`Mantém links, negrito e código em linha nas traduções. Se a formatação afetar a qualidade, desative esta opção para traduzir como texto simples.`)
 };
 
 const it_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Le traduzioni conservano link, grassetto e codice inline dell'originale. Se i marcatori di formato disturbano un motore e la traduzione risulta rigida, disattivalo per un testo semplice più naturale.`)
+	return /** @type {LocalizedString} */ (`Mantiene link, grassetto e codice inline nelle traduzioni. Se la formattazione influisce sulla qualità, disattiva questa opzione per tradurre in testo semplice.`)
 };
 
 const ar_settings_rich_text_desc = /** @type {(inputs: Settings_Rich_Text_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تحتفظ الترجمة بروابط النص الأصلي وخطه الغامق والشيفرة المضمّنة. إذا أربكت علامات التنسيق أحد المحركات وبدت الترجمة متكلفة، أوقف هذا الخيار للحصول على نص عادي أكثر سلاسة.`)
+	return /** @type {LocalizedString} */ (`يحافظ على الروابط والخط العريض والشيفرة المضمّنة في الترجمة. إذا أثّر التنسيق في جودة الترجمة، أوقف هذا الخيار للترجمة كنص عادي.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Translations keep the original's links, bold and inline code. If format markers confuse an engine and the translation reads stilted, turn this off for cleane..." |
+* | "Keep links, bold text, and inline code in translations. If formatting affects translation quality, turn this off to use plain text." |
 *
 * @param {Settings_Rich_Text_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

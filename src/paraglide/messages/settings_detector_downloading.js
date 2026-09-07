@@ -42,7 +42,7 @@ const ru_settings_detector_downloading = /** @type {(inputs: Settings_Detector_D
 };
 
 const pt_settings_detector_downloading = /** @type {(inputs: Settings_Detector_DownloadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Transferindo o modelo…`)
+	return /** @type {LocalizedString} */ (`Baixando o modelo…`)
 };
 
 const it_settings_detector_downloading = /** @type {(inputs: Settings_Detector_DownloadingInputs) => LocalizedString} */ () => {

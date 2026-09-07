@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Plain_NameInputs */
 
 const zh_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`素译`)
+	return /** @type {LocalizedString} */ (`忠实原文`)
 };
 
 const zh_tw2_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`素譯`)
+	return /** @type {LocalizedString} */ (`忠於原文`)
 };
 
 const en_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
@@ -18,7 +18,7 @@ const en_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => Local
 };
 
 const ja_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`素訳`)
+	return /** @type {LocalizedString} */ (`原文に忠実`)
 };
 
 const ko_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => Local
 };
 
 const de_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Treu`)
+	return /** @type {LocalizedString} */ (`Originalgetreu`)
 };
 
 const es_style_plain_name = /** @type {(inputs: Style_Plain_NameInputs) => LocalizedString} */ () => {

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Enable" |
+* | "Enable translation engine" |
 *
 * @param {Provider_Enable_AriaInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

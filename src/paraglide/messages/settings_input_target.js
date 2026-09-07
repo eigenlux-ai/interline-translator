@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Input_TargetInputs */
 
 const zh_settings_input_target = /** @type {(inputs: Settings_Input_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`译入`)
+	return /** @type {LocalizedString} */ (`输入内容翻译为`)
 };
 
 const zh_tw2_settings_input_target = /** @type {(inputs: Settings_Input_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`譯入`)
+	return /** @type {LocalizedString} */ (`輸入內容翻譯成`)
 };
 
 const en_settings_input_target = /** @type {(inputs: Settings_Input_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Into`)
+	return /** @type {LocalizedString} */ (`Translate input to`)
 };
 
 const ja_settings_input_target = /** @type {(inputs: Settings_Input_TargetInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_settings_input_target = /** @type {(inputs: Settings_Input_TargetInputs
 /**
 * | output |
 * | --- |
-* | "Into" |
+* | "Translate input to" |
 *
 * @param {Settings_Input_TargetInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

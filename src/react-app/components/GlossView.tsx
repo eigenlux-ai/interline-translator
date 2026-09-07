@@ -65,15 +65,21 @@ export default function GlossView({ text, provider, loading }: GlossViewProps) {
           </Text>
           {text && (
             <Group gap={4}>
-              <Tooltip label="朗读 / Pronounce" withArrow>
-                <ActionIcon size="sm" variant="subtle" color="gray" onClick={speak} aria-label="Pronounce">
+              <Tooltip label={m.sel_speak()} withArrow>
+                <ActionIcon size="sm" variant="subtle" color="gray" onClick={speak} aria-label={m.sel_speak()}>
                   <VolumeIcon width={14} height={14} />
                 </ActionIcon>
               </Tooltip>
               <CopyButton value={text} timeout={1200}>
                 {({ copied, copy }) => (
                   <Tooltip label={copied ? m.gloss_copied() : m.gloss_copy()} withArrow>
-                    <ActionIcon size="sm" variant="subtle" color={copied ? 'teal' : 'gray'} onClick={copy} aria-label={m.gloss_copy()}>
+                    <ActionIcon
+                      size="sm"
+                      variant="subtle"
+                      color={copied ? 'teal' : 'gray'}
+                      onClick={copy}
+                      aria-label={m.gloss_copy()}
+                    >
                       {copied ? <CheckIcon width={14} height={14} /> : <CopyIcon width={14} height={14} />}
                     </ActionIcon>
                   </Tooltip>

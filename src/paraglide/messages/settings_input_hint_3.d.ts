@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "to pick the language for that one rewrite." |
+* | "to choose the target language for this translation only." |
 *
 * @param {Settings_Input_Hint_3Inputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

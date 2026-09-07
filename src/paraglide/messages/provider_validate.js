@@ -42,7 +42,7 @@ const ru_provider_validate = /** @type {(inputs: Provider_ValidateInputs) => Loc
 };
 
 const pt_provider_validate = /** @type {(inputs: Provider_ValidateInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validar a ligação`)
+	return /** @type {LocalizedString} */ (`Validar conexão`)
 };
 
 const it_provider_validate = /** @type {(inputs: Provider_ValidateInputs) => LocalizedString} */ () => {

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Base_UrlInputs */
 
 const zh_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL(可选)`)
+	return /** @type {LocalizedString} */ (`API 基础地址（可选）`)
 };
 
 const zh_tw2_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL(選填)`)
+	return /** @type {LocalizedString} */ (`API 基底網址（選填）`)
 };
 
 const en_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
@@ -18,39 +18,39 @@ const en_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => Loc
 };
 
 const ja_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL(任意)`)
+	return /** @type {LocalizedString} */ (`ベース URL（任意）`)
 };
 
 const ko_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL(선택)`)
+	return /** @type {LocalizedString} */ (`기본 URL(선택)`)
 };
 
 const fr_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (facultatif)`)
+	return /** @type {LocalizedString} */ (`URL de base (facultative)`)
 };
 
 const de_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (optional)`)
+	return /** @type {LocalizedString} */ (`Basis-URL (optional)`)
 };
 
 const es_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (opcional)`)
+	return /** @type {LocalizedString} */ (`URL base (opcional)`)
 };
 
 const ru_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (необязательно)`)
+	return /** @type {LocalizedString} */ (`Базовый URL (необязательно)`)
 };
 
 const pt_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (opcional)`)
+	return /** @type {LocalizedString} */ (`URL base (opcional)`)
 };
 
 const it_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (facoltativo)`)
+	return /** @type {LocalizedString} */ (`URL di base (facoltativo)`)
 };
 
 const ar_provider_base_url = /** @type {(inputs: Provider_Base_UrlInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Base URL (اختياري)`)
+	return /** @type {LocalizedString} */ (`عنوان URL الأساسي (اختياري)`)
 };
 
 /**

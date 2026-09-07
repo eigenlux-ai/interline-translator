@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Validate_Hint_ModelInputs */
 
 const zh_provider_validate_hint_model = /** @type {(inputs: Provider_Validate_Hint_ModelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`先设置模型,再验证启用。`)
+	return /** @type {LocalizedString} */ (`请先选择模型，再验证连接以启用。`)
 };
 
 const zh_tw2_provider_validate_hint_model = /** @type {(inputs: Provider_Validate_Hint_ModelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`先設定模型,再驗證啟用。`)
+	return /** @type {LocalizedString} */ (`請先選擇模型，再驗證連線以啟用。`)
 };
 
 const en_provider_validate_hint_model = /** @type {(inputs: Provider_Validate_Hint_ModelInputs) => LocalizedString} */ () => {

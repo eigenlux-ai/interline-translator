@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Detector_PrefixInputs */
 
 const zh_settings_detector_prefix = /** @type {(inputs: Settings_Detector_PrefixInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`设备端语言检测:`)
+	return /** @type {LocalizedString} */ (`本地语言检测：`)
 };
 
 const zh_tw2_settings_detector_prefix = /** @type {(inputs: Settings_Detector_PrefixInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`裝置端語言偵測:`)
+	return /** @type {LocalizedString} */ (`本機語言偵測：`)
 };
 
 const en_settings_detector_prefix = /** @type {(inputs: Settings_Detector_PrefixInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_settings_detector_prefix = /** @type {(inputs: Settings_Detector_Prefix
 };
 
 const pt_settings_detector_prefix = /** @type {(inputs: Settings_Detector_PrefixInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Deteção de idioma no dispositivo:`)
+	return /** @type {LocalizedString} */ (`Detecção de idioma no dispositivo:`)
 };
 
 const it_settings_detector_prefix = /** @type {(inputs: Settings_Detector_PrefixInputs) => LocalizedString} */ () => {

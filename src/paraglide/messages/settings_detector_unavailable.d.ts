@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Not supported by this browser (falls back to script heuristics plus a post-translation check)" |
+* | "Unavailable in this browser. Uses writing-system detection and checks for unchanged translations instead." |
 *
 * @param {Settings_Detector_UnavailableInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

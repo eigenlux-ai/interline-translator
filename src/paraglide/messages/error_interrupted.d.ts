@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Translation interrupted. A retry usually fixes this." |
+* | "Translation was interrupted. Please try again." |
 *
 * @param {Error_InterruptedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -14,7 +14,7 @@ const zh_tw2_panel_swap_disabled = /** @type {(inputs: Panel_Swap_DisabledInputs
 };
 
 const en_panel_swap_disabled = /** @type {(inputs: Panel_Swap_DisabledInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pick a concrete source language to swap`)
+	return /** @type {LocalizedString} */ (`Choose a source language before swapping.`)
 };
 
 const ja_panel_swap_disabled = /** @type {(inputs: Panel_Swap_DisabledInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_panel_swap_disabled = /** @type {(inputs: Panel_Swap_DisabledInputs) =>
 /**
 * | output |
 * | --- |
-* | "Pick a concrete source language to swap" |
+* | "Choose a source language before swapping." |
 *
 * @param {Panel_Swap_DisabledInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

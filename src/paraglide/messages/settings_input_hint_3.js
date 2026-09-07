@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Input_Hint_3Inputs */
 
 const zh_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` 开头可为这一次改写指定语言。`)
+	return /** @type {LocalizedString} */ (` 开头，可单独指定本次翻译的目标语言。`)
 };
 
 const zh_tw2_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` 開頭,可為這一次改寫指定語言。`)
+	return /** @type {LocalizedString} */ (` 開頭，即可單獨指定這次翻譯的目標語言。`)
 };
 
 const en_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` to pick the language for that one rewrite.`)
+	return /** @type {LocalizedString} */ (` to choose the target language for this translation only.`)
 };
 
 const ja_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` を付けると、その一回の書き換えの言語を指定できます。`)
+	return /** @type {LocalizedString} */ (` を付けると、今回の翻訳に限り翻訳先の言語を指定できます。`)
 };
 
 const ko_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` 를 붙이면 이번 한 번의 바꿔쓰기 언어를 지정할 수 있습니다.`)
+	return /** @type {LocalizedString} */ (` 접두어를 붙이면 이번 번역에만 적용할 대상 언어를 지정할 수 있습니다.`)
 };
 
 const fr_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` pour choisir la langue de cette réécriture.`)
+	return /** @type {LocalizedString} */ (` pour choisir la langue de cette traduction uniquement.`)
 };
 
 const de_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` als Präfix, um die Sprache für diese eine Umschreibung zu wählen.`)
+	return /** @type {LocalizedString} */ (`, um die Zielsprache nur für diese Übersetzung festzulegen.`)
 };
 
 const es_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` para elegir el idioma de esa reescritura.`)
+	return /** @type {LocalizedString} */ (` para elegir el idioma de destino solo para esta traducción.`)
 };
 
 const ru_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` как префикс, чтобы выбрать язык для этой замены.`)
+	return /** @type {LocalizedString} */ (`, чтобы выбрать язык только для этого перевода.`)
 };
 
 const pt_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` para escolher o idioma dessa reescrita.`)
+	return /** @type {LocalizedString} */ (` para escolher o idioma de destino apenas desta tradução.`)
 };
 
 const it_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` per scegliere la lingua di quella riscrittura.`)
+	return /** @type {LocalizedString} */ (` per scegliere la lingua di destinazione solo per questa traduzione.`)
 };
 
 const ar_settings_input_hint_3 = /** @type {(inputs: Settings_Input_Hint_3Inputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (` لتحديد لغة إعادة الصياغة هذه المرة.`)
+	return /** @type {LocalizedString} */ (` لتحديد لغة الهدف لهذه الترجمة فقط.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "to pick the language for that one rewrite." |
+* | "to choose the target language for this translation only." |
 *
 * @param {Settings_Input_Hint_3Inputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,6 +1,6 @@
 {
   "extDescription": {
-    "message": "Fully open-source bilingual reading: translate pages, selections and drafts. Start with a key-free engine or bring your own AI key.",
+    "message": "Open-source bilingual reading: translate pages, selected text, and what you write. Free engine included; connect your own AI.",
     "description": "Extension description shown in the store and chrome://extensions. Manifest-only: UI strings live in src/i18n (they must switch at runtime; browser.i18n cannot)."
   },
   "menuTranslatePage": {

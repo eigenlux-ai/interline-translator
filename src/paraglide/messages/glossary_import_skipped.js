@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ skipped: NonNullable<unknown> }} Glossary_Import_SkippedInputs */
 
 const zh_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`（另跳过 ${i?.skipped} 条无效或重复行）`)
+	return /** @type {LocalizedString} */ (`（已跳过 ${i?.skipped} 条无效或重复记录）`)
 };
 
 const zh_tw2_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`（另跳過 ${i?.skipped} 條無效或重複行）`)
+	return /** @type {LocalizedString} */ (`（已略過 ${i?.skipped} 筆無效或重複資料）`)
 };
 
 const en_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} invalid or duplicate rows skipped)`)
+	return /** @type {LocalizedString} */ (` (Invalid or duplicate rows skipped: ${i?.skipped})`)
 };
 
 const ja_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
@@ -26,37 +26,37 @@ const ko_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedIn
 };
 
 const fr_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} lignes invalides ou en double ignorées)`)
+	return /** @type {LocalizedString} */ (` (Lignes invalides ou en double ignorées : ${i?.skipped})`)
 };
 
 const de_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} ungültige oder doppelte Zeilen übersprungen)`)
+	return /** @type {LocalizedString} */ (` (Übersprungene ungültige oder doppelte Zeilen: ${i?.skipped})`)
 };
 
 const es_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} filas inválidas o duplicadas omitidas)`)
+	return /** @type {LocalizedString} */ (` (Filas no válidas o duplicadas omitidas: ${i?.skipped})`)
 };
 
 const ru_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (пропущено ${i?.skipped} неверных или повторных строк)`)
+	return /** @type {LocalizedString} */ (` (пропущено строк с ошибками или дубликатами: ${i?.skipped})`)
 };
 
 const pt_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} linhas inválidas ou duplicadas ignoradas)`)
+	return /** @type {LocalizedString} */ (` (Linhas inválidas ou duplicadas ignoradas: ${i?.skipped})`)
 };
 
 const it_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (${i?.skipped} righe non valide o duplicate saltate)`)
+	return /** @type {LocalizedString} */ (` (Righe non valide o duplicate ignorate: ${i?.skipped})`)
 };
 
 const ar_glossary_import_skipped = /** @type {(inputs: Glossary_Import_SkippedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (` (تم تخطي ${i?.skipped} صفوف غير صالحة أو مكررة)`)
+	return /** @type {LocalizedString} */ (` (عدد الصفوف غير الصالحة أو المكررة التي تم تخطّيها: ${i?.skipped})`)
 };
 
 /**
 * | output |
 * | --- |
-* | "({skipped} invalid or duplicate rows skipped)" |
+* | "(Invalid or duplicate rows skipped: {skipped})" |
 *
 * @param {Glossary_Import_SkippedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

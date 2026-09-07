@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Site_Mode_AlwaysInputs */
 
 const zh_site_mode_always = /** @type {(inputs: Site_Mode_AlwaysInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`总是`)
+	return /** @type {LocalizedString} */ (`自动翻译`)
 };
 
 const zh_tw2_site_mode_always = /** @type {(inputs: Site_Mode_AlwaysInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`總是`)
+	return /** @type {LocalizedString} */ (`自動翻譯`)
 };
 
 const en_site_mode_always = /** @type {(inputs: Site_Mode_AlwaysInputs) => LocalizedString} */ () => {

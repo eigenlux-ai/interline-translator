@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Site (optional, empty = everywhere)" |
+* | "Site pattern (optional; blank applies to all sites)" |
 *
 * @param {Glossary_Pattern_LabelInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

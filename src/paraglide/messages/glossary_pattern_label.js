@@ -6,19 +6,19 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Pattern_LabelInputs */
 
 const zh_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站点（可选，空 = 所有站点）`)
+	return /** @type {LocalizedString} */ (`网站匹配规则（可选，留空适用于所有网站）`)
 };
 
 const zh_tw2_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站點（可選，空 = 所有站點）`)
+	return /** @type {LocalizedString} */ (`網站比對規則（選填，留空適用於所有網站）`)
 };
 
 const en_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Site (optional, empty = everywhere)`)
+	return /** @type {LocalizedString} */ (`Site pattern (optional; blank applies to all sites)`)
 };
 
 const ja_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`サイト（任意、空 = すべて）`)
+	return /** @type {LocalizedString} */ (`サイトパターン（任意、空欄なら全サイト）`)
 };
 
 const ko_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_glossary_pattern_label = /** @type {(inputs: Glossary_Pattern_LabelInpu
 /**
 * | output |
 * | --- |
-* | "Site (optional, empty = everywhere)" |
+* | "Site pattern (optional; blank applies to all sites)" |
 *
 * @param {Glossary_Pattern_LabelInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

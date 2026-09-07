@@ -6,31 +6,31 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Default_Provider_DescInputs */
 
 const zh_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`请求未指定引擎时使用`)
+	return /** @type {LocalizedString} */ (`未另行选择引擎时，使用此引擎翻译。`)
 };
 
 const zh_tw2_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`請求未指定引擎時使用`)
+	return /** @type {LocalizedString} */ (`未另外選擇引擎時，使用此引擎翻譯。`)
 };
 
 const en_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Used when a request names no engine`)
+	return /** @type {LocalizedString} */ (`Used unless you choose another engine for a translation.`)
 };
 
 const ja_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`リクエストでエンジンを指定しないとき使用します`)
+	return /** @type {LocalizedString} */ (`別のエンジンを選択しない場合に使用します。`)
 };
 
 const ko_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`요청에서 엔진을 지정하지 않을 때 사용합니다`)
+	return /** @type {LocalizedString} */ (`다른 엔진을 선택하지 않으면 이 엔진을 사용합니다.`)
 };
 
 const fr_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Utilisé quand une requête ne nomme aucun moteur`)
+	return /** @type {LocalizedString} */ (`Utilisé si vous ne choisissez pas un autre moteur.`)
 };
 
 const de_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Wird verwendet, wenn eine Anfrage keine Engine nennt`)
+	return /** @type {LocalizedString} */ (`Wird verwendet, wenn Sie keine andere Engine auswählen.`)
 };
 
 const es_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_settings_default_provider_desc = /** @type {(inputs: Settings_Default_P
 };
 
 const pt_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Usado quando um pedido não indica nenhum motor`)
+	return /** @type {LocalizedString} */ (`Usado quando você não escolhe outro motor.`)
 };
 
 const it_settings_default_provider_desc = /** @type {(inputs: Settings_Default_Provider_DescInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_settings_default_provider_desc = /** @type {(inputs: Settings_Default_P
 /**
 * | output |
 * | --- |
-* | "Used when a request names no engine" |
+* | "Used unless you choose another engine for a translation." |
 *
 * @param {Settings_Default_Provider_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

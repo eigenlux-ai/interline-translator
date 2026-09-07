@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Translations keep the original's links, bold and inline code. If format markers confuse an engine and the translation reads stilted, turn this off for cleane..." |
+* | "Keep links, bold text, and inline code in translations. If formatting affects translation quality, turn this off to use plain text." |
 *
 * @param {Settings_Rich_Text_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

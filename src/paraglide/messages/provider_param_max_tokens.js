@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Param_Max_TokensInputs */
 
 const zh_provider_param_max_tokens = /** @type {(inputs: Provider_Param_Max_TokensInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`最大输出 token`)
+	return /** @type {LocalizedString} */ (`最大输出 token 数`)
 };
 
 const zh_tw2_provider_param_max_tokens = /** @type {(inputs: Provider_Param_Max_TokensInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`最大輸出 token`)
+	return /** @type {LocalizedString} */ (`輸出 token 上限`)
 };
 
 const en_provider_param_max_tokens = /** @type {(inputs: Provider_Param_Max_TokensInputs) => LocalizedString} */ () => {

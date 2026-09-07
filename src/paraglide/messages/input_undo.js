@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Input_UndoInputs */
 
 const zh_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`↩ 撤销原文`)
+	return /** @type {LocalizedString} */ (`↩ 还原原文`)
 };
 
 const zh_tw2_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`↩ 復原原文`)
+	return /** @type {LocalizedString} */ (`↩ 還原原文`)
 };
 
 const en_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} 
 };
 
 const pt_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`↩ Repor o original`)
+	return /** @type {LocalizedString} */ (`↩ Restaurar o original`)
 };
 
 const it_input_undo = /** @type {(inputs: Input_UndoInputs) => LocalizedString} */ () => {

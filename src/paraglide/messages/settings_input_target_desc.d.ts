@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The language you write into — usually the opposite of your reading target" |
+* | "Choose a language for writing. This can differ from your reading language." |
 *
 * @param {Settings_Input_Target_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

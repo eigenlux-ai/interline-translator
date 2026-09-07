@@ -42,7 +42,7 @@ const ru_options_footer_autosave = /** @type {(inputs: Options_Footer_AutosaveIn
 };
 
 const pt_options_footer_autosave = /** @type {(inputs: Options_Footer_AutosaveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`As alterações são guardadas automaticamente`)
+	return /** @type {LocalizedString} */ (`As alterações são salvas automaticamente`)
 };
 
 const it_options_footer_autosave = /** @type {(inputs: Options_Footer_AutosaveInputs) => LocalizedString} */ () => {

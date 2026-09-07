@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ label: NonNullable<unknown> }} Style_AriaInputs */
 
 const zh_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`译文样式:${i?.label}`)
+	return /** @type {LocalizedString} */ (`译文样式：${i?.label}`)
 };
 
 const zh_tw2_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`譯文樣式:${i?.label}`)
+	return /** @type {LocalizedString} */ (`譯文樣式：${i?.label}`)
 };
 
 const en_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Translation style: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Translation appearance: ${i?.label}`)
 };
 
 const ja_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`翻訳スタイル:${i?.label}`)
+	return /** @type {LocalizedString} */ (`訳文の表示形式：${i?.label}`)
 };
 
 const ko_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`번역 스타일: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`번역문 표시 방식: ${i?.label}`)
 };
 
 const fr_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Style de traduction : ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Apparence de la traduction : ${i?.label}`)
 };
 
 const de_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Übersetzungsstil: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Darstellung der Übersetzung: ${i?.label}`)
 };
 
 const es_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Estilo de traducción: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Apariencia de la traducción: ${i?.label}`)
 };
 
 const ru_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Стиль перевода: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Оформление перевода: ${i?.label}`)
 };
 
 const pt_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Estilo da tradução: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Aparência da tradução: ${i?.label}`)
 };
 
 const it_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Stile della traduzione: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Aspetto della traduzione: ${i?.label}`)
 };
 
 const ar_style_aria = /** @type {(inputs: Style_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`نمط الترجمة: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`مظهر الترجمة: ${i?.label}`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Translation style: {label}" |
+* | "Translation appearance: {label}" |
 *
 * @param {Style_AriaInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

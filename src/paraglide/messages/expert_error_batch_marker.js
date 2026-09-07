@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ salt: NonNullable<unknown> }} Expert_Error_Batch_MarkerInputs */
 
 const zh_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`批量模板必须保留字面片段 [[${i?.salt}# ——整页翻译依赖这段标记指令，删掉它会让整页翻译直接失效。`)
+	return /** @type {LocalizedString} */ (`批量模板须原样保留 [[${i?.salt}#，以便将每段译文与原文对应。`)
 };
 
 const zh_tw2_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`批量模板必須保留字面片段 [[${i?.salt}# ——整頁翻譯依賴這段標記指令，刪掉它會讓整頁翻譯直接失效。`)
+	return /** @type {LocalizedString} */ (`批次範本須原樣保留 [[${i?.salt}#，才能讓每段譯文對應到原文。`)
 };
 
 const en_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`The batch template must keep the literal fragment [[${i?.salt}# — whole-page translation depends on this marker instruction; removing it breaks it outright.`)
+	return /** @type {LocalizedString} */ (`Keep the exact fragment [[${i?.salt}# in the batch template. It is required to match each translation to its source text.`)
 };
 
 const ja_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`バッチテンプレートには [[${i?.salt}# の断片が必須です。ページ全体の翻訳はこのマーカー指示に依存しており、削除すると動かなくなります。`)
+	return /** @type {LocalizedString} */ (`一括翻訳テンプレートには [[${i?.salt}# をそのまま残してください。訳文をそれぞれの原文に対応付けるために必要です。`)
 };
 
 const ko_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`배치 템플릿에는 [[${i?.salt}# 조각이 반드시 있어야 합니다. 전체 페이지 번역이 이 마커 지시에 의존하며, 삭제하면 즉시 작동을 멈춥니다.`)
+	return /** @type {LocalizedString} */ (`일괄 번역 템플릿에 [[${i?.salt}# 부분을 그대로 남겨 두세요. 각 번역문을 해당 원문과 연결하는 데 필요합니다.`)
 };
 
 const fr_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Le modèle de lot doit garder le fragment littéral [[${i?.salt}# — la traduction pleine page dépend de cette instruction ; la retirer la casse net.`)
+	return /** @type {LocalizedString} */ (`Conservez exactement le fragment [[${i?.salt}# dans le modèle de lot. Il permet d’associer chaque traduction à son texte source.`)
 };
 
 const de_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Die Batch-Vorlage muss das Fragment [[${i?.salt}# behalten — die Ganzseitenübersetzung hängt an dieser Marker-Anweisung; ohne sie bricht sie sofort.`)
+	return /** @type {LocalizedString} */ (`Behalten Sie das Fragment [[${i?.salt}# unverändert in der Batch-Vorlage. Es wird benötigt, um jede Übersetzung ihrem Ausgangstext zuzuordnen.`)
 };
 
 const es_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`La plantilla de lote debe conservar el fragmento literal [[${i?.salt}# — la traducción de página completa depende de esa instrucción; quitarla la rompe de inmediato.`)
+	return /** @type {LocalizedString} */ (`Conserva el fragmento exacto [[${i?.salt}# en la plantilla por lotes. Permite vincular cada traducción con su texto original.`)
 };
 
 const ru_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`В пакетном шаблоне обязан остаться фрагмент [[${i?.salt}# — перевод всей страницы держится на этой инструкции; без неё он сразу ломается.`)
+	return /** @type {LocalizedString} */ (`Сохраните в пакетном шаблоне точный фрагмент [[${i?.salt}#. Он нужен для сопоставления каждого перевода с исходным текстом.`)
 };
 
 const pt_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`O modelo de lote tem de manter o fragmento literal [[${i?.salt}# — a tradução da página inteira depende dessa instrução; removê-la quebra-a de imediato.`)
+	return /** @type {LocalizedString} */ (`Mantenha o trecho exato [[${i?.salt}# no template em lotes. Ele permite associar cada tradução ao texto original.`)
 };
 
 const it_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Il template batch deve mantenere il frammento [[${i?.salt}# — la traduzione dell'intera pagina dipende da questa istruzione; toglierla la rompe subito.`)
+	return /** @type {LocalizedString} */ (`Conserva il frammento esatto [[${i?.salt}# nel template batch. Serve ad associare ogni traduzione al testo originale.`)
 };
 
 const ar_expert_error_batch_marker = /** @type {(inputs: Expert_Error_Batch_MarkerInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`يجب أن يحتفظ قالب الدفعة بالمقطع الحرفي [[${i?.salt}# — تعتمد ترجمة الصفحة الكاملة على هذه التعليمة، وحذفها يعطّلها فوراً.`)
+	return /** @type {LocalizedString} */ (`أبقِ المقطع [[${i?.salt}# كما هو في قالب الدفعة. فهو ضروري لربط كل ترجمة بنصها الأصلي.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The batch template must keep the literal fragment [[{salt}# — whole-page translation depends on this marker instruction; removing it breaks it outright." |
+* | "Keep the exact fragment [[{salt}# in the batch template. It is required to match each translation to its source text." |
 *
 * @param {Expert_Error_Batch_MarkerInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

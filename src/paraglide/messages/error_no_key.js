@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Error_No_KeyInputs */
 
 const zh_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`该引擎尚未配置 API key，请前往设置添加。`)
+	return /** @type {LocalizedString} */ (`此引擎尚未设置 API 密钥，请前往设置添加。`)
 };
 
 const zh_tw2_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`該引擎尚未配置 API key，請前往設定新增。`)
+	return /** @type {LocalizedString} */ (`此引擎尚未設定 API 金鑰，請前往設定新增。`)
 };
 
 const en_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedStri
 };
 
 const fr_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ce moteur ne dispose pas de clé API. Veuillez en ajouter une dans les paramètres.`)
+	return /** @type {LocalizedString} */ (`Ce moteur n’a pas de clé API. Ajoutez-en une dans les réglages.`)
 };
 
 const de_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedStri
 };
 
 const pt_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Este motor precisa de uma chave API. Adicione-a nas configurações.`)
+	return /** @type {LocalizedString} */ (`Este motor precisa de uma chave de API. Adicione-a nas configurações.`)
 };
 
 const it_error_no_key = /** @type {(inputs: Error_No_KeyInputs) => LocalizedString} */ () => {

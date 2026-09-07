@@ -42,7 +42,7 @@ const ru_provider_validated_usable = /** @type {(inputs: Provider_Validated_Usab
 };
 
 const pt_provider_validated_usable = /** @type {(inputs: Provider_Validated_UsableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Validado · pronto a usar`)
+	return /** @type {LocalizedString} */ (`Validado · pronto para usar`)
 };
 
 const it_provider_validated_usable = /** @type {(inputs: Provider_Validated_UsableInputs) => LocalizedString} */ () => {

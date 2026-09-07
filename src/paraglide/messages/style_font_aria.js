@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ label: NonNullable<unknown> }} Style_Font_AriaInputs */
 
 const zh_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`译文字体:${i?.label}`)
+	return /** @type {LocalizedString} */ (`译文字体：${i?.label}`)
 };
 
 const zh_tw2_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`譯文字體:${i?.label}`)
+	return /** @type {LocalizedString} */ (`譯文字型：${i?.label}`)
 };
 
 const en_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
@@ -18,7 +18,7 @@ const en_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => Localiz
 };
 
 const ja_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`翻訳の書体:${i?.label}`)
+	return /** @type {LocalizedString} */ (`訳文の書体：${i?.label}`)
 };
 
 const ko_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
@@ -42,7 +42,7 @@ const ru_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => Localiz
 };
 
 const pt_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Tipo de letra da tradução: ${i?.label}`)
+	return /** @type {LocalizedString} */ (`Fonte da tradução: ${i?.label}`)
 };
 
 const it_style_font_aria = /** @type {(inputs: Style_Font_AriaInputs) => LocalizedString} */ (i) => {

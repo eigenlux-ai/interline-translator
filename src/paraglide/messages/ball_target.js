@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Ball_TargetInputs */
 
 const zh_ball_target = /** @type {(inputs: Ball_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`译入`)
+	return /** @type {LocalizedString} */ (`翻译为`)
 };
 
 const zh_tw2_ball_target = /** @type {(inputs: Ball_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`譯入`)
+	return /** @type {LocalizedString} */ (`翻譯成`)
 };
 
 const en_ball_target = /** @type {(inputs: Ball_TargetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Into`)
+	return /** @type {LocalizedString} */ (`Translate to`)
 };
 
 const ja_ball_target = /** @type {(inputs: Ball_TargetInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_ball_target = /** @type {(inputs: Ball_TargetInputs) => LocalizedString
 /**
 * | output |
 * | --- |
-* | "Into" |
+* | "Translate to" |
 *
 * @param {Ball_TargetInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

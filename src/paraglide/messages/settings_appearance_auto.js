@@ -10,7 +10,7 @@ const zh_settings_appearance_auto = /** @type {(inputs: Settings_Appearance_Auto
 };
 
 const zh_tw2_settings_appearance_auto = /** @type {(inputs: Settings_Appearance_AutoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`跟隨系統`)
+	return /** @type {LocalizedString} */ (`依系統設定`)
 };
 
 const en_settings_appearance_auto = /** @type {(inputs: Settings_Appearance_AutoInputs) => LocalizedString} */ () => {

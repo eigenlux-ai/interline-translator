@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Draft" |
+* | "Not validated" |
 *
 * @param {Provider_Badge_DraftInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

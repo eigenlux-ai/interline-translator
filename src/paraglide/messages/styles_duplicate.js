@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_DuplicateInputs */
 
 const zh_styles_duplicate = /** @type {(inputs: Styles_DuplicateInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`复制为自建`)
+	return /** @type {LocalizedString} */ (`创建副本`)
 };
 
 const zh_tw2_styles_duplicate = /** @type {(inputs: Styles_DuplicateInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`複製為自建`)
+	return /** @type {LocalizedString} */ (`建立副本`)
 };
 
 const en_styles_duplicate = /** @type {(inputs: Styles_DuplicateInputs) => LocalizedString} */ () => {

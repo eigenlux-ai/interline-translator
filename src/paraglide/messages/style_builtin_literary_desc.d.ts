@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Rhythm and imagery first, freer word order, the original voice preserved." |
+* | "Preserve the original voice, rhythm, and imagery with flexible phrasing." |
 *
 * @param {Style_Builtin_Literary_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

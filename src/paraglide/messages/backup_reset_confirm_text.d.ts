@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "This wipes every engine, API key and site rule. Consider exporting first." |
+* | "This resets all settings and removes your added engines, API keys, site rules, custom styles, and glossaries. Export a backup first if you want to keep them." |
 *
 * @param {Backup_Reset_Confirm_TextInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Language pair, default engine, and how translations are presented." |
+* | "Choose your languages, default translation engine, and display preferences." |
 *
 * @param {Settings_General_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

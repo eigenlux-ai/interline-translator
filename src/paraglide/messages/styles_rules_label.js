@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_Rules_LabelInputs */
 
 const zh_styles_rules_label = /** @type {(inputs: Styles_Rules_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站点风格规则`)
+	return /** @type {LocalizedString} */ (`网站专属翻译风格`)
 };
 
 const zh_tw2_styles_rules_label = /** @type {(inputs: Styles_Rules_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站點風格規則`)
+	return /** @type {LocalizedString} */ (`個別網站翻譯風格`)
 };
 
 const en_styles_rules_label = /** @type {(inputs: Styles_Rules_LabelInputs) => LocalizedString} */ () => {

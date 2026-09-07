@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Remove_Confirm_TextInputs */
 
 const zh_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`将移除该引擎及其 API key。`)
+	return /** @type {LocalizedString} */ (`将移除此引擎及其 API 密钥。`)
 };
 
 const zh_tw2_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`將移除這個引擎及其 API key。`)
+	return /** @type {LocalizedString} */ (`將移除此引擎及其 API 金鑰。`)
 };
 
 const en_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const en_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Conf
 };
 
 const ja_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`このエンジンと API key を削除します。`)
+	return /** @type {LocalizedString} */ (`このエンジンと API キー を削除します。`)
 };
 
 const ko_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이 엔진과 API key를 제거합니다.`)
+	return /** @type {LocalizedString} */ (`이 엔진과 API 키를 제거합니다.`)
 };
 
 const fr_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
@@ -30,23 +30,23 @@ const fr_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Conf
 };
 
 const de_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Damit werden die Engine und ihr API key entfernt.`)
+	return /** @type {LocalizedString} */ (`Damit werden die Engine und ihr API-Schlüssel entfernt.`)
 };
 
 const es_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Se quitará el motor y su clave API.`)
+	return /** @type {LocalizedString} */ (`Se eliminarán este motor y su clave API.`)
 };
 
 const ru_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Движок и его API key будут удалены.`)
+	return /** @type {LocalizedString} */ (`Движок и его API-ключ будут удалены.`)
 };
 
 const pt_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Isto remove o motor e a respetiva API key.`)
+	return /** @type {LocalizedString} */ (`Este motor e sua chave de API serão removidos.`)
 };
 
 const it_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Verranno rimossi il motore e la sua API key.`)
+	return /** @type {LocalizedString} */ (`Verranno rimossi il motore e la sua chiave API.`)
 };
 
 const ar_provider_remove_confirm_text = /** @type {(inputs: Provider_Remove_Confirm_TextInputs) => LocalizedString} */ () => {

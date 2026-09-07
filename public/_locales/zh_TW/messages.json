@@ -1,6 +1,6 @@
 {
   "extDescription": {
-    "message": "行間對照的 AI 翻譯:整頁行間譯文、劃選翻譯、輸入框就地翻譯。"
+    "message": "開源雙語閱讀與翻譯擴充功能：整頁對照、選取文字翻譯、輸入框翻譯。內建免費引擎，不需金鑰；也可連接自己的 AI 服務。"
   },
   "menuTranslatePage": {
     "message": "翻譯此頁"

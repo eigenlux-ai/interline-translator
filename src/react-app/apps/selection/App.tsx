@@ -26,19 +26,13 @@ import {
   useComputedColorScheme,
   useMantineTheme,
 } from '@mantine/core';
-import {
-  CheckIcon,
-  CloseIcon,
-  CopyIcon,
-  PinIcon,
-  SparklesIcon,
-  VolumeIcon,
-} from '@/react-app/components/icons';
+import { CheckIcon, CloseIcon, CopyIcon, PinIcon, SparklesIcon, VolumeIcon } from '@/react-app/components/icons';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
 import { DATA_OMNI, Z_INDEX } from '@/constants';
 import { selectionNeighbors } from '@/dom/selection-context';
 import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
+import { isSiteEnabled } from '@/services/config/site-control';
 import { streamAnnotate, streamTranslate } from '@/services/stream/client';
 
 interface SelectionInfo {
@@ -164,6 +158,7 @@ export default function SelectionApp() {
   const [notesLoading, setNotesLoading] = useState(false);
   const [notesFailed, setNotesFailed] = useState(false);
   const [config] = usePublicConfig();
+  const siteEnabled = !!config && isSiteEnabled(config.siteControl, location.hostname);
   // 注疏 — the reader's-companion notes under the translation. LLM-only: with
   // the free MT as the default engine the affordance simply doesn't exist.
   const canAnnotate = config ? config.defaultProviderKind !== '' && config.defaultProviderKind !== 'google-mt' : false;
@@ -249,6 +244,12 @@ export default function SelectionApp() {
     };
   }, [dismiss, pinned]);
 
+  useEffect(() => {
+    // A storage policy change must invalidate the active stream and its transient UI.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (config && !siteEnabled) dismiss();
+  }, [config, siteEnabled, dismiss]);
+
   const annotate = useCallback(async (source: string, translation: string) => {
     const id = reqId.current;
     setNotesLoading(true);
@@ -270,12 +271,13 @@ export default function SelectionApp() {
   }, []);
 
   const translate = useCallback(async () => {
-    if (!sel) return;
+    if (!sel || !siteEnabled) return;
     const id = ++reqId.current;
     setOpen(true);
     setLoading(true);
     setResult('');
     setFailed(false);
+    setNotesLoading(false);
     setNotesOpen(false);
     setNotes('');
     setNotesFailed(false);
@@ -301,7 +303,7 @@ export default function SelectionApp() {
     } finally {
       if (id === reqId.current) setLoading(false);
     }
-  }, [sel]);
+  }, [sel, siteEnabled]);
 
   const speak = (txt: string) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window && txt) {
@@ -311,7 +313,7 @@ export default function SelectionApp() {
     }
   };
 
-  if (!sel) return null;
+  if (!sel || !siteEnabled) return null;
   const other = theme.other as {
     fontKai?: string;
     paperRaised: { light: string; dark: string };
@@ -386,7 +388,14 @@ export default function SelectionApp() {
               }}
             >
               {/* Header */}
-              <Group justify="space-between" align="center" px={10} py={6} wrap="nowrap" style={{ borderBottom: `1px solid ${other.hair[scheme]}` }}>
+              <Group
+                justify="space-between"
+                align="center"
+                px={10}
+                py={6}
+                wrap="nowrap"
+                style={{ borderBottom: `1px solid ${other.hair[scheme]}` }}
+              >
                 <Group gap={6} align="center">
                   <Box
                     aria-hidden
@@ -414,13 +423,13 @@ export default function SelectionApp() {
                 <Group gap={4} align="center">
                   {result && !loading && !failed && (
                     <>
-                      <Tooltip label="朗读" withArrow>
+                      <Tooltip label={m.sel_speak()} withArrow>
                         <ActionIcon
                           size="sm"
                           variant="subtle"
                           color="gray"
                           onClick={() => speak(result)}
-                          aria-label="朗读"
+                          aria-label={m.sel_speak()}
                         >
                           <VolumeIcon width={13} height={13} />
                         </ActionIcon>
@@ -443,26 +452,20 @@ export default function SelectionApp() {
                     </>
                   )}
 
-                  <Tooltip label={pinned ? '取消固定' : '固定卡片'} withArrow>
+                  <Tooltip label={pinned ? m.sel_unpin() : m.sel_pin()} withArrow>
                     <ActionIcon
                       size="sm"
                       variant={pinned ? 'light' : 'subtle'}
                       color={pinned ? 'cinnabar' : 'gray'}
                       onClick={() => setPinned(!pinned)}
-                      aria-label="Pin card"
+                      aria-label={pinned ? m.sel_unpin() : m.sel_pin()}
                     >
                       <PinIcon width={13} height={13} />
                     </ActionIcon>
                   </Tooltip>
 
-                  <Tooltip label="关闭" withArrow>
-                    <ActionIcon
-                      size="sm"
-                      variant="subtle"
-                      color="gray"
-                      onClick={dismiss}
-                      aria-label="Close"
-                    >
+                  <Tooltip label={m.common_close()} withArrow>
+                    <ActionIcon size="sm" variant="subtle" color="gray" onClick={dismiss} aria-label={m.common_close()}>
                       <CloseIcon width={13} height={13} />
                     </ActionIcon>
                   </Tooltip>
@@ -544,7 +547,10 @@ export default function SelectionApp() {
                               <Box py={2}>
                                 <Skeleton height={12} radius="sm" mb={4} width="80%" />
                                 <Skeleton height={12} radius="sm" width="60%" />
-                                <Text mt={4} style={{ fontFamily: fontKai, fontSize: 11, color: other.inkFaint[scheme] }}>
+                                <Text
+                                  mt={4}
+                                  style={{ fontFamily: fontKai, fontSize: 11, color: other.inkFaint[scheme] }}
+                                >
                                   {m.sel_notes_loading()}
                                 </Text>
                               </Box>

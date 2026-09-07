@@ -14,7 +14,7 @@ const zh_tw2_provider_models_loaded = /** @type {(inputs: Provider_Models_Loaded
 };
 
 const en_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Loaded ${i?.count} models`)
+	return /** @type {LocalizedString} */ (`Models loaded: ${i?.count}`)
 };
 
 const ja_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
@@ -26,15 +26,15 @@ const ko_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInpu
 };
 
 const fr_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} modèles chargés`)
+	return /** @type {LocalizedString} */ (`Modèles chargés : ${i?.count}`)
 };
 
 const de_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} Modelle geladen`)
+	return /** @type {LocalizedString} */ (`Geladene Modelle: ${i?.count}`)
 };
 
 const es_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} modelos cargados`)
+	return /** @type {LocalizedString} */ (`Modelos cargados: ${i?.count}`)
 };
 
 const ru_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
@@ -42,21 +42,21 @@ const ru_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInpu
 };
 
 const pt_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} modelos carregados`)
+	return /** @type {LocalizedString} */ (`Modelos carregados: ${i?.count}`)
 };
 
 const it_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`${i?.count} modelli caricati`)
+	return /** @type {LocalizedString} */ (`Modelli caricati: ${i?.count}`)
 };
 
 const ar_provider_models_loaded = /** @type {(inputs: Provider_Models_LoadedInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`تم تحميل ${i?.count} نموذجًا`)
+	return /** @type {LocalizedString} */ (`عدد النماذج المحمّلة: ${i?.count}`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Loaded {count} models" |
+* | "Models loaded: {count}" |
 *
 * @param {Provider_Models_LoadedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

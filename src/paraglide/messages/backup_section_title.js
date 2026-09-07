@@ -34,7 +34,7 @@ const de_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) 
 };
 
 const es_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copia y restablecimiento`)
+	return /** @type {LocalizedString} */ (`Copia de seguridad y restablecimiento`)
 };
 
 const ru_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) 
 };
 
 const pt_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cópia de segurança e reposição`)
+	return /** @type {LocalizedString} */ (`Backup e restauração`)
 };
 
 const it_backup_section_title = /** @type {(inputs: Backup_Section_TitleInputs) => LocalizedString} */ () => {

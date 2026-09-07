@@ -14,49 +14,49 @@ const zh_tw2_settings_style_title = /** @type {(inputs: Settings_Style_TitleInpu
 };
 
 const en_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Translation style`)
+	return /** @type {LocalizedString} */ (`Translation appearance`)
 };
 
 const ja_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`訳文のスタイル`)
+	return /** @type {LocalizedString} */ (`訳文の表示形式`)
 };
 
 const ko_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`번역 스타일`)
+	return /** @type {LocalizedString} */ (`번역문 표시 방식`)
 };
 
 const fr_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Style de traduction`)
+	return /** @type {LocalizedString} */ (`Apparence des traductions`)
 };
 
 const de_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzungsstil`)
+	return /** @type {LocalizedString} */ (`Darstellung der Übersetzung`)
 };
 
 const es_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Estilo de traducción`)
+	return /** @type {LocalizedString} */ (`Apariencia de las traducciones`)
 };
 
 const ru_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Стиль перевода`)
+	return /** @type {LocalizedString} */ (`Оформление перевода`)
 };
 
 const pt_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Estilo da tradução`)
+	return /** @type {LocalizedString} */ (`Aparência das traduções`)
 };
 
 const it_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stile della traduzione`)
+	return /** @type {LocalizedString} */ (`Aspetto delle traduzioni`)
 };
 
 const ar_settings_style_title = /** @type {(inputs: Settings_Style_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`نمط الترجمة`)
+	return /** @type {LocalizedString} */ (`مظهر الترجمة`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Translation style" |
+* | "Translation appearance" |
 *
 * @param {Settings_Style_TitleInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

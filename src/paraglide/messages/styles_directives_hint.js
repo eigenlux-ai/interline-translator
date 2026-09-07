@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_Directives_HintInputs */
 
 const zh_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`用自然语言描述想要的语气与用词；建议用英文书写（模型执行最稳、耗费更少）。只管品味——输出格式由引擎守护。`)
+	return /** @type {LocalizedString} */ (`描述你希望使用的语气、文风与措辞即可，输出格式要求会自动添加。`)
 };
 
 const zh_tw2_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`用自然語言描述想要的語氣與用詞；建議用英文書寫（模型執行最穩、耗費更少）。只管品味——輸出格式由引擎守護。`)
+	return /** @type {LocalizedString} */ (`描述你希望使用的語氣、文風與措辭即可，輸出格式要求會自動加入。`)
 };
 
 const en_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Describe the tone and wording you want in natural language; English works best. Taste only — the engine guards the output format.`)
+	return /** @type {LocalizedString} */ (`Describe the tone and wording you want. Focus on style; output-format instructions are added automatically.`)
 };
 
 const ja_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`望む語調や言い回しを自然言語で記述します（英語が最も安定）。指定するのは好みだけ——出力形式はエンジンが守ります。`)
+	return /** @type {LocalizedString} */ (`希望する語調や言い回しを普段の言葉で記述してください。出力形式の指示は自動で追加されます。`)
 };
 
 const ko_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`원하는 어조와 표현을 자연어로 적으세요(영어가 가장 안정적). 취향만 지정하세요 — 출력 형식은 엔진이 지킵니다.`)
+	return /** @type {LocalizedString} */ (`원하는 어조와 표현을 일상적인 말로 설명하세요. 출력 형식에 관한 지시는 자동으로 추가됩니다.`)
 };
 
 const fr_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Décrivez le ton et le vocabulaire souhaités en langage naturel (l'anglais est le plus fiable). Le goût seulement — le moteur garde le format de sortie.`)
+	return /** @type {LocalizedString} */ (`Décrivez simplement le ton et les formulations souhaités. Les consignes de format sont ajoutées automatiquement.`)
 };
 
 const de_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Beschreiben Sie Ton und Wortwahl in natürlicher Sprache (Englisch ist am zuverlässigsten). Nur Geschmack — das Ausgabeformat schützt die Engine.`)
+	return /** @type {LocalizedString} */ (`Beschreiben Sie den gewünschten Ton und die Wortwahl in eigenen Worten. Vorgaben zum Ausgabeformat werden automatisch ergänzt.`)
 };
 
 const es_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Describe el tono y el vocabulario deseados en lenguaje natural (el inglés es lo más fiable). Solo el gusto: el motor protege el formato de salida.`)
+	return /** @type {LocalizedString} */ (`Describe con tus propias palabras el tono y las expresiones que buscas. Las instrucciones de formato se añaden automáticamente.`)
 };
 
 const ru_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Опишите желаемый тон и лексику обычным языком (надёжнее всего — по-английски). Только вкус: формат вывода защищает движок.`)
+	return /** @type {LocalizedString} */ (`Опишите своими словами желаемый тон и формулировки. Инструкции по формату ответа добавляются автоматически.`)
 };
 
 const pt_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Descreva o tom e o vocabulário desejados em linguagem natural (inglês é o mais fiável). Apenas o gosto — o motor protege o formato de saída.`)
+	return /** @type {LocalizedString} */ (`Descreva com suas próprias palavras o tom e as expressões que deseja. As instruções de formato são adicionadas automaticamente.`)
 };
 
 const it_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Descrivi il tono e il lessico desiderati in linguaggio naturale (l'inglese è il più affidabile). Solo il gusto: il formato di output lo difende il motore.`)
+	return /** @type {LocalizedString} */ (`Descrivi con parole tue il tono e le espressioni che desideri. Le istruzioni sul formato vengono aggiunte automaticamente.`)
 };
 
 const ar_styles_directives_hint = /** @type {(inputs: Styles_Directives_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`صف النبرة والمفردات المطلوبة بلغة طبيعية (الإنجليزية الأكثر موثوقية). الذوق فقط — المحرك يحمي تنسيق الإخراج.`)
+	return /** @type {LocalizedString} */ (`صف بكلماتك النبرة والصياغة التي تريدها. تُضاف تعليمات تنسيق المخرجات تلقائيًا.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Describe the tone and wording you want in natural language; English works best. Taste only — the engine guards the output format." |
+* | "Describe the tone and wording you want. Focus on style; output-format instructions are added automatically." |
 *
 * @param {Styles_Directives_HintInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

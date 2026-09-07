@@ -14,49 +14,49 @@ const zh_tw2_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedStri
 };
 
 const en_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Style`)
+	return /** @type {LocalizedString} */ (`Appearance`)
 };
 
 const ja_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`スタイル`)
+	return /** @type {LocalizedString} */ (`表示形式`)
 };
 
 const ko_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`스타일`)
+	return /** @type {LocalizedString} */ (`표시 방식`)
 };
 
 const fr_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Style`)
+	return /** @type {LocalizedString} */ (`Apparence`)
 };
 
 const de_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stil`)
+	return /** @type {LocalizedString} */ (`Darstellung`)
 };
 
 const es_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Estilo`)
+	return /** @type {LocalizedString} */ (`Apariencia`)
 };
 
 const ru_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Стиль`)
+	return /** @type {LocalizedString} */ (`Оформление`)
 };
 
 const pt_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Estilo`)
+	return /** @type {LocalizedString} */ (`Aparência`)
 };
 
 const it_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Stile`)
+	return /** @type {LocalizedString} */ (`Aspetto`)
 };
 
 const ar_ball_style = /** @type {(inputs: Ball_StyleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`النمط`)
+	return /** @type {LocalizedString} */ (`المظهر`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Style" |
+* | "Appearance" |
 *
 * @param {Ball_StyleInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

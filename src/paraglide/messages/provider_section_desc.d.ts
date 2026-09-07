@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The built-in free machine translation, plus LLM providers you add (bring your own key)." |
+* | "Use the built-in free engine or connect an AI service with your own API key. Compatible local services may work without a key." |
 *
 * @param {Provider_Section_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

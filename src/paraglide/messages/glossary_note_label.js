@@ -10,7 +10,7 @@ const zh_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) =>
 };
 
 const zh_tw2_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`備註（可選）`)
+	return /** @type {LocalizedString} */ (`備註（選填）`)
 };
 
 const en_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) =>
 };
 
 const fr_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Note (facultatif)`)
+	return /** @type {LocalizedString} */ (`Note (facultative)`)
 };
 
 const de_glossary_note_label = /** @type {(inputs: Glossary_Note_LabelInputs) => LocalizedString} */ () => {

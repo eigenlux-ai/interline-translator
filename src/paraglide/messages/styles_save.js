@@ -42,7 +42,7 @@ const ru_styles_save = /** @type {(inputs: Styles_SaveInputs) => LocalizedString
 };
 
 const pt_styles_save = /** @type {(inputs: Styles_SaveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guardar`)
+	return /** @type {LocalizedString} */ (`Salvar`)
 };
 
 const it_styles_save = /** @type {(inputs: Styles_SaveInputs) => LocalizedString} */ () => {

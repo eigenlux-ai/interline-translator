@@ -6,23 +6,23 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Site_Section_DescInputs */
 
 const zh_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`站点的默认翻译行为,以及按站覆盖规则。`)
+	return /** @type {LocalizedString} */ (`设置默认翻译方式，也可为特定网站单独指定规则。`)
 };
 
 const zh_tw2_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`所有網站的預設翻譯行為,以及逐站覆寫規則。`)
+	return /** @type {LocalizedString} */ (`設定預設翻譯方式，也可為特定網站個別指定規則。`)
 };
 
 const en_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The default behaviour on every site, plus per-site overrides.`)
+	return /** @type {LocalizedString} */ (`Choose a default translation behavior and add rules for individual sites.`)
 };
 
 const ja_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`すべてのサイトの既定の翻訳動作と、サイトごとの上書き。`)
+	return /** @type {LocalizedString} */ (`既定の翻訳方法を設定し、サイトごとに個別のルールを追加できます。`)
 };
 
 const ko_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`모든 사이트의 기본 번역 동작과 사이트별 재정의.`)
+	return /** @type {LocalizedString} */ (`기본 번역 방식을 정하고 사이트별로 규칙을 추가할 수 있습니다.`)
 };
 
 const fr_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_site_section_desc = /** @type {(inputs: Site_Section_DescInputs) => Loc
 /**
 * | output |
 * | --- |
-* | "The default behaviour on every site, plus per-site overrides." |
+* | "Choose a default translation behavior and add rules for individual sites." |
 *
 * @param {Site_Section_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

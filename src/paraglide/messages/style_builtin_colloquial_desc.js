@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Builtin_Colloquial_DescInputs */
 
 const zh_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自然口语，短句节奏，拒绝生硬直译。`)
+	return /** @type {LocalizedString} */ (`用语自然、句式简洁，贴近日常表达，避免生硬直译。`)
 };
 
 const zh_tw2_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自然口語，短句節奏，拒絕生硬直譯。`)
+	return /** @type {LocalizedString} */ (`用語自然、句式簡潔，貼近日常表達，避免生硬直譯。`)
 };
 
 const en_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Natural spoken phrasing, short rhythms, no stiff literalism.`)
+	return /** @type {LocalizedString} */ (`Natural, conversational wording and short sentences, without stiff literal translations.`)
 };
 
 const ja_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Collo
 };
 
 const fr_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tournures orales naturelles, phrases courtes, pas de littéralisme rigide.`)
+	return /** @type {LocalizedString} */ (`Des formulations naturelles et des phrases courtes, sans traduction mot à mot maladroite.`)
 };
 
 const de_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
@@ -34,7 +34,7 @@ const de_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Collo
 };
 
 const es_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Frases orales naturales, ritmo corto, nada de literalidad rígida.`)
+	return /** @type {LocalizedString} */ (`Expresiones naturales y frases cortas, sin traducciones literales forzadas.`)
 };
 
 const ru_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
@@ -46,7 +46,7 @@ const pt_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Collo
 };
 
 const it_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Frasi orali naturali, ritmo breve, niente rigidità letterale.`)
+	return /** @type {LocalizedString} */ (`Espressioni naturali e frasi brevi, senza traduzioni letterali forzate.`)
 };
 
 const ar_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Colloquial_DescInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_style_builtin_colloquial_desc = /** @type {(inputs: Style_Builtin_Collo
 /**
 * | output |
 * | --- |
-* | "Natural spoken phrasing, short rhythms, no stiff literalism." |
+* | "Natural, conversational wording and short sentences, without stiff literal translations." |
 *
 * @param {Style_Builtin_Colloquial_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

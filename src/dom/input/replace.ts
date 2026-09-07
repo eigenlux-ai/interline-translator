@@ -24,7 +24,7 @@
  * as a no-op without escalating to destructive DOM rewrites.
  */
 
-import type { EditableKind } from './active-element';
+import { getDeepActiveElement, readEditableText, type EditableKind } from './active-element';
 import { injectViaMainWorld, isMainWorldEditor } from './injector-bridge';
 import { squashWhitespace, stripTriggerSpaces, type RichSnapshot } from './protocol';
 
@@ -85,7 +85,7 @@ function dispatchPaste(el: HTMLElement, value: string): void {
   el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true, composed: true }));
 }
 
-async function replaceContentEditable(el: HTMLElement, value: string): Promise<boolean> {
+async function replaceContentEditable(el: HTMLElement, value: string, signal?: AbortSignal): Promise<boolean> {
   const before = el.textContent ?? '';
   // Identity no-op: the field (minus trigger-space residue) already reads as
   // the translation — success, and nothing to write.
@@ -100,9 +100,18 @@ async function replaceContentEditable(el: HTMLElement, value: string): Promise<b
     // via a THROTTLED selectionchange listener (~100ms in WangEditor). Pasting
     // before that sync lands makes the editor paste at its OLD selection —
     // appending after the original instead of replacing it.
+    const snapshot = readEditableText(el);
     await sleep(120);
+    const active = getDeepActiveElement();
+    if (signal?.aborted || readEditableText(el) !== snapshot || (active !== el && !(active && el.contains(active))))
+      return false;
     dispatchPaste(el, value);
+    const pastedSnapshot = readEditableText(el);
     await sleep(15); // let the editor's async model update + re-render settle
+    if (signal?.aborted) return false;
+    const focused = getDeepActiveElement();
+    if (focused !== el && !(focused && el.contains(focused))) return false;
+    if (readEditableText(el) !== pastedSnapshot && !replaced(el, value, before)) return false;
     if (replaced(el, value, before)) return true;
   } catch {
     /* ClipboardEvent/DataTransfer unavailable — fall through */
@@ -138,8 +147,10 @@ async function replaceContentEditable(el: HTMLElement, value: string): Promise<b
  * Replace `el`'s text with `value`. Returns true on success.
  *
  * `expectedBefore` (trigger-space-stripped snapshot from the same read that
- * sourced the translation) arms the main-world atomic race check; omit it for
- * writes that must land unconditionally (undo/restore).
+ * sourced the translation) guards the native write and the main-world atomic
+ * update. DOM fallback writes also recheck text and focus across their awaits.
+ * `signal` invalidates pending fallback work when the feature stops. Undo omits
+ * the baseline check, but still preserves edits made during an async fallback.
  *
  * `rich` is 撤销's snapshot of the document as the EDITOR serialized it, so a
  * restore puts the bold/links/lists back instead of the flattened text. Only
@@ -153,23 +164,31 @@ export async function replaceEditableText(
   el: Element,
   kind: EditableKind,
   value: string,
-  opts: { expectedBefore?: string; rich?: RichSnapshot } = {}
+  opts: { expectedBefore?: string; rich?: RichSnapshot; signal?: AbortSignal } = {}
 ): Promise<boolean> {
+  if (opts.signal?.aborted) return false;
   if (isMainWorldEditor(el)) {
-    const outcome = await injectViaMainWorld(el, value, opts);
+    const snapshot = readEditableText(el);
+    const outcome = await injectViaMainWorld(el, value, {
+      ...(opts.expectedBefore !== undefined ? { expectedBefore: opts.expectedBefore } : {}),
+      ...(opts.rich ? { rich: opts.rich } : {}),
+    });
     if (outcome === 'applied') return true;
     if (outcome === 'raced') return false; // user kept typing — never clobber, never fall back
     // 'miss': a native field matching the main-world list is a hidden conduit
     // (Monaco/CM5) — writing IT would change nothing visible while reporting
     // success, so fail honestly. Contenteditable bodies still get the chain.
     if (kind !== 'contenteditable') return false;
-    return replaceContentEditable(el as HTMLElement, value);
+    if (opts.signal?.aborted || readEditableText(el) !== snapshot) return false;
+    return replaceContentEditable(el as HTMLElement, value, opts.signal);
   }
 
+  if (opts.expectedBefore !== undefined && stripTriggerSpaces(readEditableText(el)) !== opts.expectedBefore)
+    return false;
   if (kind === 'input' || kind === 'textarea') {
     const field = el as HTMLInputElement | HTMLTextAreaElement;
     if (field.value !== value) setNativeValue(field, value);
     return true;
   }
-  return replaceContentEditable(el as HTMLElement, value);
+  return replaceContentEditable(el as HTMLElement, value, opts.signal);
 }

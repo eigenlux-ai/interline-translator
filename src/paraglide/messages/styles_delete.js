@@ -42,7 +42,7 @@ const ru_styles_delete = /** @type {(inputs: Styles_DeleteInputs) => LocalizedSt
 };
 
 const pt_styles_delete = /** @type {(inputs: Styles_DeleteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Eliminar`)
+	return /** @type {LocalizedString} */ (`Excluir`)
 };
 
 const it_styles_delete = /** @type {(inputs: Styles_DeleteInputs) => LocalizedString} */ () => {

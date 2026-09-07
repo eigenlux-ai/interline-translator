@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Options_Nav_Sites_HintInputs */
 
 const zh_options_nav_sites_hint = /** @type {(inputs: Options_Nav_Sites_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`按站规则`)
+	return /** @type {LocalizedString} */ (`网站专属规则`)
 };
 
 const zh_tw2_options_nav_sites_hint = /** @type {(inputs: Options_Nav_Sites_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`逐站規則`)
+	return /** @type {LocalizedString} */ (`個別網站規則`)
 };
 
 const en_options_nav_sites_hint = /** @type {(inputs: Options_Nav_Sites_HintInputs) => LocalizedString} */ () => {

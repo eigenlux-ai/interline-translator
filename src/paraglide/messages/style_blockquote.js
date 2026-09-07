@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_BlockquoteInputs */
 
 const zh_style_blockquote = /** @type {(inputs: Style_BlockquoteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`引用条`)
+	return /** @type {LocalizedString} */ (`引用竖线`)
 };
 
 const zh_tw2_style_blockquote = /** @type {(inputs: Style_BlockquoteInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`引用條`)
+	return /** @type {LocalizedString} */ (`引用直線`)
 };
 
 const en_style_blockquote = /** @type {(inputs: Style_BlockquoteInputs) => LocalizedString} */ () => {

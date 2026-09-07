@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Section_DescInputs */
 
 const zh_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`为特定术语固定译法。按需注入：只有译文里真出现该术语时才进入提示词，术语表再大也不多花一个 token。可选站点范围，与站点规则同一套匹配。`)
+	return /** @type {LocalizedString} */ (`为术语指定译法。只有在原文中匹配到的条目才会加入 AI 提示词，未使用的条目不增加 token 用量。每个术语集可限定适用网站，匹配方式与网站规则相同。`)
 };
 
 const zh_tw2_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`為特定術語固定譯法。按需注入：只有譯文裡真出現該術語時才進入提示詞，術語表再大也不多花一個 token。可選站點範圍，與站點規則同一套匹配。`)
+	return /** @type {LocalizedString} */ (`為術語指定譯法。只有在原文中比對到的項目才會加入 AI 提示詞，未使用的項目不增加 token 用量。每個術語集可限定適用網站，比對方式與網站規則相同。`)
 };
 
 const en_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pin exact translations for terms. Injected on demand: an entry only enters the prompt when its term occurs in the text — a large glossary costs nothing extra. Optional site scope, same matching as site rules.`)
+	return /** @type {LocalizedString} */ (`Specify preferred translations for terms. Only entries matching the source text are added to AI prompts; unused entries add no tokens. You can limit each set to specific sites using the same patterns as site rules.`)
 };
 
 const ja_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`用語の訳語を固定します。オンデマンド注入：その用語が本文に現れたときだけプロンプトに入るため、用語集が大きくても余分なコストはかかりません。サイト範囲の指定も可能です。`)
+	return /** @type {LocalizedString} */ (`用語の訳し方を指定します。原文に一致する項目だけを AI プロンプトに追加するため、使われない項目はトークンを消費しません。サイトルールと同じ指定方法で、用語集の適用先を限定できます。`)
 };
 
 const ko_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`용어의 번역어를 고정합니다. 온디맨드 주입: 해당 용어가 본문에 나타날 때만 프롬프트에 포함되어, 용어집이 커져도 추가 비용이 없습니다. 사이트 범위 지정 가능.`)
+	return /** @type {LocalizedString} */ (`용어별 번역어를 지정합니다. 원문과 일치하는 항목만 AI 프롬프트에 추가하므로 사용하지 않는 항목은 토큰을 소비하지 않습니다. 사이트 규칙과 같은 방식으로 용어집의 적용 사이트를 제한할 수 있습니다.`)
 };
 
 const fr_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixez la traduction exacte de certains termes. Injection à la demande : une entrée n'entre dans le prompt que si son terme apparaît dans le texte — un grand glossaire ne coûte rien de plus. Portée par site en option.`)
+	return /** @type {LocalizedString} */ (`Définissez la traduction souhaitée pour vos termes. Seules les entrées correspondant au texte source sont ajoutées aux prompts IA ; les autres ne consomment aucun token. Chaque glossaire peut être limité à certains sites, selon les mêmes motifs que les règles de site.`)
 };
 
 const de_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Feste Übersetzungen für Begriffe. Bedarfsgesteuerte Injektion: Ein Eintrag gelangt nur in den Prompt, wenn sein Begriff im Text vorkommt — ein großes Glossar kostet nichts extra. Optionaler Site-Bereich.`)
+	return /** @type {LocalizedString} */ (`Legen Sie bevorzugte Übersetzungen für Begriffe fest. Nur Einträge, die zum Ausgangstext passen, werden dem KI-Prompt hinzugefügt; ungenutzte Einträge verbrauchen keine Tokens. Jedes Glossar lässt sich mit denselben Mustern wie die Website-Regeln auf bestimmte Websites beschränken.`)
 };
 
 const es_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fija traducciones exactas para términos. Inyección bajo demanda: una entrada solo entra en el prompt cuando su término aparece en el texto; un glosario grande no cuesta nada extra. Ámbito por sitio opcional.`)
+	return /** @type {LocalizedString} */ (`Define cómo traducir cada término. Solo se añaden al prompt de IA las entradas que coinciden con el texto original; las demás no consumen tokens. Puedes limitar cada glosario a ciertos sitios con los mismos patrones que las reglas de sitios.`)
 };
 
 const ru_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Закрепите точный перевод терминов. Внедрение по требованию: запись попадает в промпт, только если термин встречается в тексте — большой глоссарий ничего не стоит. Необязательная привязка к сайтам.`)
+	return /** @type {LocalizedString} */ (`Задайте предпочтительный перевод терминов. В ИИ-промпт добавляются только записи, совпавшие с исходным текстом; остальные не расходуют токены. Каждый набор можно ограничить отдельными сайтами по тем же шаблонам, что и правила сайтов.`)
 };
 
 const pt_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fixe traduções exatas para termos. Injeção sob demanda: uma entrada só entra no prompt quando o termo ocorre no texto — um glossário grande não custa nada extra. Âmbito por site opcional.`)
+	return /** @type {LocalizedString} */ (`Defina como traduzir cada termo. Só as entradas que correspondem ao texto original são adicionadas ao prompt de IA; as demais não consomem tokens. Você pode limitar cada glossário a determinados sites com os mesmos padrões das regras de sites.`)
 };
 
 const it_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fissa traduzioni esatte per i termini. Iniezione on demand: una voce entra nel prompt solo quando il termine compare nel testo — un glossario grande non costa nulla in più. Ambito per sito opzionale.`)
+	return /** @type {LocalizedString} */ (`Specifica come tradurre i termini. Solo le voci che corrispondono al testo originale vengono aggiunte al prompt di IA; quelle inutilizzate non consumano token. Puoi limitare ogni glossario a determinati siti con gli stessi pattern delle regole dei siti.`)
 };
 
 const ar_glossary_section_desc = /** @type {(inputs: Glossary_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ثبّت ترجمات دقيقة للمصطلحات. حقن عند الطلب: لا يدخل المدخل إلى الموجّه إلا إذا ظهر مصطلحه في النص — المسرد الكبير لا يكلف شيئاً إضافياً. نطاق الموقع اختياري.`)
+	return /** @type {LocalizedString} */ (`حدّد الترجمات المفضلة للمصطلحات. لا تُضاف إلى موجّه الذكاء الاصطناعي إلا المدخلات المطابقة للنص الأصلي؛ أما غير المستخدمة فلا تستهلك توكنات. يمكنك قصر كل مجموعة على مواقع محددة باستخدام أنماط قواعد المواقع نفسها.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Pin exact translations for terms. Injected on demand: an entry only enters the prompt when its term occurs in the text — a large glossary costs nothing extra..." |
+* | "Specify preferred translations for terms. Only entries matching the source text are added to AI prompts; unused entries add no tokens. You can limit each set..." |
 *
 * @param {Glossary_Section_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Text detected in these languages is left alone (the target is always skipped)" |
+* | "Skip text in these languages. Text in your target language is always skipped." |
 *
 * @param {Settings_Skip_Langs_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

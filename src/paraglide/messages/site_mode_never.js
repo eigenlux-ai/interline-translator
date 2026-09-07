@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Site_Mode_NeverInputs */
 
 const zh_site_mode_never = /** @type {(inputs: Site_Mode_NeverInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`从不`)
+	return /** @type {LocalizedString} */ (`不翻译`)
 };
 
 const zh_tw2_site_mode_never = /** @type {(inputs: Site_Mode_NeverInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`從不`)
+	return /** @type {LocalizedString} */ (`不翻譯`)
 };
 
 const en_site_mode_never = /** @type {(inputs: Site_Mode_NeverInputs) => LocalizedString} */ () => {

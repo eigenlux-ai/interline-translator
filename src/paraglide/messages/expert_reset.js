@@ -10,7 +10,7 @@ const zh_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedStri
 };
 
 const zh_tw2_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`恢復預設`)
+	return /** @type {LocalizedString} */ (`還原預設值`)
 };
 
 const en_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedStri
 };
 
 const pt_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Repor predefinições`)
+	return /** @type {LocalizedString} */ (`Restaurar padrões`)
 };
 
 const it_expert_reset = /** @type {(inputs: Expert_ResetInputs) => LocalizedString} */ () => {

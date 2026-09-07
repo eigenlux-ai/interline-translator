@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Straight translation with no style directives (default)." |
+* | "Translate without additional style instructions (default)." |
 *
 * @param {Style_Plain_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

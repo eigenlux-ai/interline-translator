@@ -10,7 +10,7 @@ const zh_settings_ui_language_auto = /** @type {(inputs: Settings_Ui_Language_Au
 };
 
 const zh_tw2_settings_ui_language_auto = /** @type {(inputs: Settings_Ui_Language_AutoInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`跟隨目標語言`)
+	return /** @type {LocalizedString} */ (`依目標語言`)
 };
 
 const en_settings_ui_language_auto = /** @type {(inputs: Settings_Ui_Language_AutoInputs) => LocalizedString} */ () => {

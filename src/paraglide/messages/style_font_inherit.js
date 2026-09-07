@@ -10,11 +10,11 @@ const zh_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => L
 };
 
 const zh_tw2_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`跟隨頁面`)
+	return /** @type {LocalizedString} */ (`沿用頁面字型`)
 };
 
 const en_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Match the page`)
+	return /** @type {LocalizedString} */ (`Page font`)
 };
 
 const ja_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => L
 };
 
 const fr_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Suivre la page`)
+	return /** @type {LocalizedString} */ (`Police de la page`)
 };
 
 const de_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Seite übernehmen`)
+	return /** @type {LocalizedString} */ (`Schrift der Seite`)
 };
 
 const es_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Seguir la página`)
+	return /** @type {LocalizedString} */ (`Fuente de la página`)
 };
 
 const ru_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => L
 };
 
 const pt_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Seguir a página`)
+	return /** @type {LocalizedString} */ (`Fonte da página`)
 };
 
 const it_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Segui la pagina`)
+	return /** @type {LocalizedString} */ (`Carattere della pagina`)
 };
 
 const ar_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => L
 /**
 * | output |
 * | --- |
-* | "Match the page" |
+* | "Page font" |
 *
 * @param {Style_Font_InheritInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Models_FailedInputs */
 
 const zh_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`未能获取模型列表，请检查网络或 API key`)
+	return /** @type {LocalizedString} */ (`无法获取模型列表，请检查网络连接或 API 密钥。`)
 };
 
 const zh_tw2_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`無法取得模型列表，請檢查網路或 API key`)
+	return /** @type {LocalizedString} */ (`無法取得模型清單，請檢查網路連線或 API 金鑰。`)
 };
 
 const en_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInpu
 };
 
 const pt_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Não foi possível obter a lista de modelos — verifique a rede ou a chave API`)
+	return /** @type {LocalizedString} */ (`Não foi possível obter a lista de modelos — verifique a rede ou a chave de API`)
 };
 
 const it_provider_models_failed = /** @type {(inputs: Provider_Models_FailedInputs) => LocalizedString} */ () => {

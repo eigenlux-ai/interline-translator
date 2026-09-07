@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Config imported. Every engine came in as a draft — validate the connection to switch it back on." |
+* | "Settings imported. Validate the imported AI engines before enabling them. The built-in free engine does not require validation." |
 *
 * @param {Backup_ImportedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

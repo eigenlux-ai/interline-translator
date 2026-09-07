@@ -42,7 +42,7 @@ const ru_options_nav_aria = /** @type {(inputs: Options_Nav_AriaInputs) => Local
 };
 
 const pt_options_nav_aria = /** @type {(inputs: Options_Nav_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Secções das definições`)
+	return /** @type {LocalizedString} */ (`Seções das configurações`)
 };
 
 const it_options_nav_aria = /** @type {(inputs: Options_Nav_AriaInputs) => LocalizedString} */ () => {

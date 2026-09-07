@@ -42,7 +42,7 @@ const ru_common_retry = /** @type {(inputs: Common_RetryInputs) => LocalizedStri
 };
 
 const pt_common_retry = /** @type {(inputs: Common_RetryInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tentar de novo`)
+	return /** @type {LocalizedString} */ (`Tentar novamente`)
 };
 
 const it_common_retry = /** @type {(inputs: Common_RetryInputs) => LocalizedString} */ () => {

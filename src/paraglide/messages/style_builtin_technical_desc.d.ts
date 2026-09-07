@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "API names stay untranslated, imperative mood, consistent terminology." |
+* | "Keep API names and identifiers unchanged, use clear instructions, and maintain consistent terminology." |
 *
 * @param {Style_Builtin_Technical_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

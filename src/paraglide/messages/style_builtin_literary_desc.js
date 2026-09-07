@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Builtin_Literary_DescInputs */
 
 const zh_style_builtin_literary_desc = /** @type {(inputs: Style_Builtin_Literary_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`以气韵与意象优先，语序可自由，保留原作声口。`)
+	return /** @type {LocalizedString} */ (`兼顾节奏与意象，灵活调整语序，保留原作的独特语气。`)
 };
 
 const zh_tw2_style_builtin_literary_desc = /** @type {(inputs: Style_Builtin_Literary_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`以氣韻與意象優先，語序可自由，保留原作聲口。`)
+	return /** @type {LocalizedString} */ (`兼顧節奏與意象，靈活調整語序，保留原作獨特的語氣。`)
 };
 
 const en_style_builtin_literary_desc = /** @type {(inputs: Style_Builtin_Literary_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rhythm and imagery first, freer word order, the original voice preserved.`)
+	return /** @type {LocalizedString} */ (`Preserve the original voice, rhythm, and imagery with flexible phrasing.`)
 };
 
 const ja_style_builtin_literary_desc = /** @type {(inputs: Style_Builtin_Literary_DescInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_style_builtin_literary_desc = /** @type {(inputs: Style_Builtin_Literar
 /**
 * | output |
 * | --- |
-* | "Rhythm and imagery first, freer word order, the original voice preserved." |
+* | "Preserve the original voice, rhythm, and imagery with flexible phrasing." |
 *
 * @param {Style_Builtin_Literary_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -156,3 +156,23 @@ describe('replaceEditableText', () => {
     expect(onInput).toHaveBeenCalledOnce();
   });
 });
+
+it('preserves edits made during the async paste delay', async () => {
+  vi.useFakeTimers();
+  try {
+    const el = document.createElement('div');
+    el.contentEditable = 'true';
+    el.textContent = 'original draft';
+    document.body.append(el);
+    const writing = replaceEditableText(el, 'contenteditable', 'translated draft', {
+      expectedBefore: 'original draft',
+    });
+    await vi.advanceTimersByTimeAsync(60);
+    el.textContent = 'new text typed by the user';
+    await vi.advanceTimersByTimeAsync(100);
+    await writing;
+    expect(el.textContent).toBe('new text typed by the user');
+  } finally {
+    vi.useRealTimers();
+  }
+});

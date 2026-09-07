@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Expert_DescInputs */
 
 const zh_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`整体接管提示词模板（如需塞入 few-shot 示例）。设置后对应管线不再注入翻译风格。`)
+	return /** @type {LocalizedString} */ (`自定义完整的提示词模板，例如添加翻译示例。使用自定义模板时，对应翻译模式不再附加风格指令。`)
 };
 
 const zh_tw2_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`整體接管提示詞模板（如需塞入 few-shot 範例）。設定後對應管線不再注入翻譯風格。`)
+	return /** @type {LocalizedString} */ (`自訂完整的提示詞範本，例如加入翻譯範例。使用自訂範本時，對應的翻譯模式不再加入風格指令。`)
 };
 
 const en_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Take over the whole prompt template (e.g. to add few-shot examples). When set, that pipeline no longer injects the translation style.`)
+	return /** @type {LocalizedString} */ (`Customize the full prompt templates, for example by adding translation examples. Custom templates replace the style instructions for the corresponding translation mode.`)
 };
 
 const ja_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`プロンプトテンプレート全体を差し替えます（few-shot 例の追加など）。設定したパイプラインにはスタイルが注入されません。`)
+	return /** @type {LocalizedString} */ (`翻訳例を加えるなど、プロンプトテンプレート全体を編集できます。独自のテンプレートを使う翻訳モードには、スタイル指示が追加されません。`)
 };
 
 const ko_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`프롬프트 템플릿 전체를 교체합니다(few-shot 예시 등). 설정한 파이프라인에는 스타일이 주입되지 않습니다.`)
+	return /** @type {LocalizedString} */ (`번역 예시를 추가하는 등 프롬프트 템플릿 전체를 수정할 수 있습니다. 사용자 템플릿을 사용하는 번역 모드에는 문체 지시가 추가되지 않습니다.`)
 };
 
 const fr_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Remplacez tout le modèle de prompt (p. ex. pour des exemples few-shot). Le style n'est alors plus injecté dans ce pipeline.`)
+	return /** @type {LocalizedString} */ (`Personnalisez les modèles de prompt complets, par exemple en ajoutant des exemples de traduction. Les modèles personnalisés remplacent les consignes de style pour le mode de traduction concerné.`)
 };
 
 const de_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übernehmen Sie die gesamte Prompt-Vorlage (z. B. für Few-Shot-Beispiele). Der Stil wird in dieser Pipeline dann nicht mehr injiziert.`)
+	return /** @type {LocalizedString} */ (`Passen Sie die vollständigen Prompt-Vorlagen an, etwa mit Übersetzungsbeispielen. Eigene Vorlagen ersetzen die Stilvorgaben für den jeweiligen Übersetzungsmodus.`)
 };
 
 const es_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sustituye toda la plantilla del prompt (p. ej., para ejemplos few-shot). Con ello, ese pipeline deja de inyectar el estilo.`)
+	return /** @type {LocalizedString} */ (`Personaliza las plantillas completas del prompt, por ejemplo con ejemplos de traducción. Las plantillas personalizadas sustituyen las instrucciones de estilo del modo de traducción correspondiente.`)
 };
 
 const ru_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Полная замена шаблона промпта (например, для few-shot примеров). Стиль в этот конвейер больше не внедряется.`)
+	return /** @type {LocalizedString} */ (`Настройте полные шаблоны промптов, например добавьте примеры перевода. Собственные шаблоны заменяют указания по стилю для соответствующего режима перевода.`)
 };
 
 const pt_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Substitua todo o modelo de prompt (p. ex., exemplos few-shot). Esse pipeline deixa de injetar o estilo.`)
+	return /** @type {LocalizedString} */ (`Personalize os templates completos do prompt, por exemplo, com exemplos de tradução. Os templates personalizados substituem as instruções de estilo do modo de tradução correspondente.`)
 };
 
 const it_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sostituisci l'intero template del prompt (es. per esempi few-shot). Quel pipeline non inietta più lo stile.`)
+	return /** @type {LocalizedString} */ (`Personalizza i template completi del prompt, ad esempio aggiungendo esempi di traduzione. I template personalizzati sostituiscono le istruzioni di stile nella modalità di traduzione corrispondente.`)
 };
 
 const ar_expert_desc = /** @type {(inputs: Expert_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`استبدل قالب الموجّه بالكامل (مثلاً لإضافة أمثلة few-shot). عندها لا يُحقن النمط في ذلك المسار.`)
+	return /** @type {LocalizedString} */ (`خصّص قوالب الموجّه كاملة، كأن تضيف أمثلة للترجمة. تحل القوالب المخصصة محل التوجيهات الأسلوبية في وضع الترجمة المعني.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Take over the whole prompt template (e.g. to add few-shot examples). When set, that pipeline no longer injects the translation style." |
+* | "Customize the full prompt templates, for example by adding translation examples. Custom templates replace the style instructions for the corresponding transl..." |
 *
 * @param {Expert_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

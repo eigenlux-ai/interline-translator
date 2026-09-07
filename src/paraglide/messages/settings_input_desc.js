@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ count: NonNullable<unknown> }} Settings_Input_DescInputs */
 
 const zh_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`在任意输入框打字后,连按 ${i?.count} 下空格,就地翻译你写的内容。`)
+	return /** @type {LocalizedString} */ (`在支持的输入框中写好内容后，连续按 ${i?.count} 次空格键，即可将原文替换为译文。`)
 };
 
 const zh_tw2_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`在任何輸入框打字後,連按 ${i?.count} 下空白鍵,就地翻譯你寫的內容。`)
+	return /** @type {LocalizedString} */ (`在支援的輸入框中寫好內容後，連續按 ${i?.count} 次空白鍵，即可將原文替換成譯文。`)
 };
 
 const en_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Type in any field, then tap the space bar ${i?.count} times in a row — what you wrote is translated in place.`)
+	return /** @type {LocalizedString} */ (`After typing in a supported text field, press Space ${i?.count} times in a row to replace your text with its translation.`)
 };
 
 const ja_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`どの入力欄でも、打ち込んだあとスペースキーを ${i?.count} 回続けて押すと、書いた内容をその場で翻訳します。`)
+	return /** @type {LocalizedString} */ (`対応する入力欄に文章を書き、スペースキーを ${i?.count} 回続けて押すと、原文が訳文に置き換わります。`)
 };
 
 const ko_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`어떤 입력창에서든 입력한 뒤 스페이스바를 ${i?.count}번 연달아 누르면, 쓴 내용을 그 자리에서 번역합니다.`)
+	return /** @type {LocalizedString} */ (`지원되는 입력창에 글을 쓴 뒤 스페이스바를 ${i?.count}번 연속으로 누르면 원문이 번역문으로 바뀝니다.`)
 };
 
 const fr_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Tapez dans n'importe quel champ, puis appuyez sur la barre d'espace ${i?.count} fois de suite — ce que vous avez écrit est traduit sur place.`)
+	return /** @type {LocalizedString} */ (`Dans un champ compatible, saisissez votre texte puis appuyez ${i?.count} fois de suite sur la barre d’espace pour le remplacer par sa traduction.`)
 };
 
 const de_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Tippen Sie in ein beliebiges Feld und drücken Sie dann ${i?.count}-mal hintereinander die Leertaste — das Geschriebene wird an Ort und Stelle übersetzt.`)
+	return /** @type {LocalizedString} */ (`Schreiben Sie in ein unterstütztes Eingabefeld und drücken Sie ${i?.count}-mal nacheinander die Leertaste. Ihr Text wird durch die Übersetzung ersetzt.`)
 };
 
 const es_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Escribe en cualquier campo y luego pulsa la barra espaciadora ${i?.count} veces seguidas: lo que escribiste se traduce en el sitio.`)
+	return /** @type {LocalizedString} */ (`Escribe en un campo compatible y pulsa la barra espaciadora ${i?.count} veces seguidas para sustituir el texto por su traducción.`)
 };
 
 const ru_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Наберите текст в любом поле, затем нажмите пробел ${i?.count} раза подряд — написанное переводится на месте.`)
+	return /** @type {LocalizedString} */ (`Введите текст в поддерживаемом поле и нажмите пробел несколько раз подряд, чтобы заменить текст переводом. Число нажатий: ${i?.count}.`)
 };
 
 const pt_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Escreva em qualquer campo e depois pressione a barra de espaço ${i?.count} vezes seguidas — o que escreveu é traduzido no local.`)
+	return /** @type {LocalizedString} */ (`Escreva em um campo compatível e pressione a barra de espaço ${i?.count} vezes seguidas para substituir o texto pela tradução.`)
 };
 
 const it_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Scrivi in un campo qualsiasi, poi premi la barra spaziatrice ${i?.count} volte di seguito — ciò che hai scritto viene tradotto sul posto.`)
+	return /** @type {LocalizedString} */ (`Scrivi in un campo compatibile e premi la barra spaziatrice ${i?.count} volte di seguito per sostituire il testo con la traduzione.`)
 };
 
 const ar_settings_input_desc = /** @type {(inputs: Settings_Input_DescInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`اكتب في أي حقل، ثم اضغط مفتاح المسافة ${i?.count} مرات متتالية — يُترجَم ما كتبته في مكانه.`)
+	return /** @type {LocalizedString} */ (`اكتب في حقل مدعوم، ثم اضغط مفتاح المسافة بشكل متتالٍ لاستبدال النص بترجمته. عدد الضغطات: ${i?.count}.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Type in any field, then tap the space bar {count} times in a row — what you wrote is translated in place." |
+* | "After typing in a supported text field, press Space {count} times in a row to replace your text with its translation." |
 *
 * @param {Settings_Input_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

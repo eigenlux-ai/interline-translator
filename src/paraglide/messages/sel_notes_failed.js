@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Sel_Notes_FailedInputs */
 
 const zh_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`未能生成注疏`)
+	return /** @type {LocalizedString} */ (`无法生成注释`)
 };
 
 const zh_tw2_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`未能產生注疏`)
+	return /** @type {LocalizedString} */ (`無法產生註解`)
 };
 
 const en_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
@@ -22,7 +22,7 @@ const ja_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => Local
 };
 
 const ko_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`주해를 만들지 못했습니다`)
+	return /** @type {LocalizedString} */ (`해설을 작성하지 못했습니다`)
 };
 
 const fr_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
@@ -50,7 +50,7 @@ const it_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => Local
 };
 
 const ar_sel_notes_failed = /** @type {(inputs: Sel_Notes_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تعذّر إنشاء الحواشي`)
+	return /** @type {LocalizedString} */ (`تعذّر إعداد الشروح`)
 };
 
 /**

@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Ui_Language_DescInputs */
 
 const zh_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`默认跟随目标语言——界面说你正在阅读的语言`)
+	return /** @type {LocalizedString} */ (`默认使用翻译的目标语言显示界面。`)
 };
 
 const zh_tw2_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`預設跟隨目標語言——介面說你正在閱讀的語言`)
+	return /** @type {LocalizedString} */ (`預設以翻譯的目標語言顯示介面。`)
 };
 
 const en_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Follows the target language by default — the UI speaks the language you read`)
+	return /** @type {LocalizedString} */ (`By default, the interface uses your translation target language.`)
 };
 
 const ja_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`既定では翻訳先の言語に従います——あなたが読んでいる言語で表示します`)
+	return /** @type {LocalizedString} */ (`既定では、翻訳先の言語で画面を表示します。`)
 };
 
 const ko_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`기본적으로 번역 대상 언어를 따릅니다 — 화면이 당신이 읽는 언어로 표시됩니다`)
+	return /** @type {LocalizedString} */ (`기본적으로 번역 대상 언어로 화면을 표시합니다.`)
 };
 
 const fr_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Suit la langue cible par défaut — l'interface parle la langue que vous lisez`)
+	return /** @type {LocalizedString} */ (`Par défaut, l’interface utilise la langue de traduction choisie.`)
 };
 
 const de_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Folgt standardmäßig der Zielsprache — die Oberfläche spricht die Sprache, die Sie lesen`)
+	return /** @type {LocalizedString} */ (`Die Oberfläche verwendet standardmäßig die Zielsprache der Übersetzung.`)
 };
 
 const es_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sigue el idioma de destino por defecto: la interfaz habla el idioma que lees`)
+	return /** @type {LocalizedString} */ (`De forma predeterminada, la interfaz utiliza el idioma de destino de la traducción.`)
 };
 
 const ru_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`По умолчанию следует за языком перевода — интерфейс говорит на языке, который вы читаете`)
+	return /** @type {LocalizedString} */ (`По умолчанию интерфейс использует язык перевода.`)
 };
 
 const pt_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Segue o idioma de destino por padrão — a interface fala o idioma que você lê`)
+	return /** @type {LocalizedString} */ (`Por padrão, a interface usa o idioma de destino da tradução.`)
 };
 
 const it_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Segue la lingua di destinazione per impostazione predefinita — l'interfaccia parla la lingua che leggi`)
+	return /** @type {LocalizedString} */ (`Per impostazione predefinita, l’interfaccia usa la lingua di destinazione della traduzione.`)
 };
 
 const ar_settings_ui_language_desc = /** @type {(inputs: Settings_Ui_Language_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تتبع لغة الهدف افتراضيًا — تتحدث الواجهة اللغة التي تقرأها`)
+	return /** @type {LocalizedString} */ (`تستخدم الواجهة لغة الترجمة المستهدفة افتراضيًا.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Follows the target language by default — the UI speaks the language you read" |
+* | "By default, the interface uses your translation target language." |
 *
 * @param {Settings_Ui_Language_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

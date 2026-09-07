@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Import_Err_EmptyInputs */
 
 const zh_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`文件里没有可用的术语行——需要 source/target 两列（CSV/TSV）或对应的 JSON 字段。`)
+	return /** @type {LocalizedString} */ (`文件中没有可用术语。CSV/TSV 需包含 source 和 target 列，JSON 需包含对应字段。`)
 };
 
 const zh_tw2_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`檔案裡沒有可用的術語行——需要 source/target 兩欄（CSV/TSV）或對應的 JSON 欄位。`)
+	return /** @type {LocalizedString} */ (`檔案中沒有可用術語。CSV/TSV 需包含 source 與 target 欄，JSON 需包含對應欄位。`)
 };
 
 const en_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_EmptyInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_Emp
 };
 
 const pt_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sem linhas de termos utilizáveis — são precisas colunas source/target (CSV/TSV) ou os campos JSON correspondentes.`)
+	return /** @type {LocalizedString} */ (`O arquivo não contém termos válidos. Use as colunas source e target em CSV/TSV ou os campos correspondentes em JSON.`)
 };
 
 const it_glossary_import_err_empty = /** @type {(inputs: Glossary_Import_Err_EmptyInputs) => LocalizedString} */ () => {

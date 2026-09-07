@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Pin a style to matching sites; the longest matching pattern wins, otherwise the global default applies." |
+* | "Assign styles to specific sites. The longest matching site pattern takes priority; otherwise, your default style applies." |
 *
 * @param {Styles_Rules_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

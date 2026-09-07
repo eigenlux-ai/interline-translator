@@ -10,7 +10,7 @@ const zh_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString
 };
 
 const zh_tw2_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`儲存專家模板`)
+	return /** @type {LocalizedString} */ (`儲存專家範本`)
 };
 
 const en_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString
 };
 
 const pt_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guardar modelos`)
+	return /** @type {LocalizedString} */ (`Salvar templates`)
 };
 
 const it_expert_save = /** @type {(inputs: Expert_SaveInputs) => LocalizedString} */ () => {

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Used when a request names no engine" |
+* | "Used unless you choose another engine for a translation." |
 *
 * @param {Settings_Default_Provider_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

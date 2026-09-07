@@ -42,7 +42,7 @@ const ru_options_nav_styles_hint = /** @type {(inputs: Options_Nav_Styles_HintIn
 };
 
 const pt_options_nav_styles_hint = /** @type {(inputs: Options_Nav_Styles_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tom e registo`)
+	return /** @type {LocalizedString} */ (`Tom e registro`)
 };
 
 const it_options_nav_styles_hint = /** @type {(inputs: Options_Nav_Styles_HintInputs) => LocalizedString} */ () => {

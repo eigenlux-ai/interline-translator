@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ sample: NonNullable<unknown> }} Provider_Validate_Passed_SampleInputs */
 
 const zh_provider_validate_passed_sample = /** @type {(inputs: Provider_Validate_Passed_SampleInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`验证通过:「${i?.sample}」`)
+	return /** @type {LocalizedString} */ (`验证通过：「${i?.sample}」`)
 };
 
 const zh_tw2_provider_validate_passed_sample = /** @type {(inputs: Provider_Validate_Passed_SampleInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`驗證通過:「${i?.sample}」`)
+	return /** @type {LocalizedString} */ (`驗證通過：「${i?.sample}」`)
 };
 
 const en_provider_validate_passed_sample = /** @type {(inputs: Provider_Validate_Passed_SampleInputs) => LocalizedString} */ (i) => {

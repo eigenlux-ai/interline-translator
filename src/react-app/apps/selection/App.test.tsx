@@ -4,6 +4,7 @@ import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { storage } from '#imports';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { interlineTheme } from '@/react-app/managers/VisualManager/theme';
+import { m } from '@/paraglide/messages.js';
 import { defaultPublicConfig, PUBLIC_CONFIG_KEY } from '@/services/config/public';
 import SelectionApp from './App';
 
@@ -191,7 +192,7 @@ describe('SelectionApp', () => {
       await tick(40);
     });
 
-    const toggle = [...baseElement.querySelectorAll('button')].find((b) => b.textContent?.includes('注疏'));
+    const toggle = [...baseElement.querySelectorAll('button')].find((b) => b.textContent?.includes(m.sel_notes()));
     expect(toggle).toBeDefined(); // LLM engine → the affordance exists
     await act(async () => {
       toggle!.click();
@@ -227,7 +228,7 @@ describe('SelectionApp', () => {
       pill(baseElement)!.click();
       await tick(40);
     });
-    expect([...baseElement.querySelectorAll('button')].some((b) => b.textContent?.includes('注疏'))).toBe(false);
+    expect([...baseElement.querySelectorAll('button')].some((b) => b.textContent?.includes(m.sel_notes()))).toBe(false);
     expect(baseElement.textContent).toContain('译文'); // translation itself unaffected
   });
 
@@ -368,4 +369,60 @@ describe('SelectionApp', () => {
       expect(pill(baseElement)).toBeNull();
     });
   });
+});
+
+it('new selection can load notes after previous notes were interrupted', async () => {
+  const { streamAnnotate } = await import('@/services/stream/client');
+  vi.mocked(streamAnnotate).mockClear();
+  let release!: () => void;
+  vi.mocked(streamAnnotate).mockImplementationOnce(async function* () {
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    yield 'old notes';
+  });
+  await storage.setItem(PUBLIC_CONFIG_KEY, { ...defaultPublicConfig(), defaultProviderKind: 'openai' });
+  const { baseElement } = await mountWithSelection();
+  await act(async () => {
+    pill(baseElement)!.click();
+    await tick(40);
+  });
+  const notesButton = () =>
+    [...baseElement.querySelectorAll('button')].find((b) => b.textContent?.includes(m.sel_notes()))!;
+  await act(async () => {
+    notesButton().click();
+    await tick();
+  });
+  expect(streamAnnotate).toHaveBeenCalledTimes(1);
+  await act(async () => {
+    mockSelection('a different selection', { left: 120, bottom: 100 });
+    mouseUp();
+    await tick();
+  });
+  await act(async () => {
+    pill(baseElement)!.click();
+    await tick(40);
+  });
+  await act(async () => {
+    release();
+    await tick();
+    notesButton().click();
+    await tick();
+  });
+  expect(streamAnnotate).toHaveBeenCalledTimes(2);
+});
+it('never sites do not offer selection translation', async () => {
+  await storage.setItem(PUBLIC_CONFIG_KEY, {
+    ...defaultPublicConfig(),
+    siteControl: { defaultMode: 'never', rules: [] },
+  });
+  const { streamTranslate } = await import('@/services/stream/client');
+  vi.mocked(streamTranslate).mockClear();
+  const { baseElement } = await mountWithSelection();
+  if (pill(baseElement))
+    await act(async () => {
+      pill(baseElement)!.click();
+      await tick(40);
+    });
+  expect(streamTranslate).not.toHaveBeenCalled();
 });

@@ -15,6 +15,7 @@ import { m } from '@/paraglide/messages.js';
 import { migrate } from '@/services/config/migrations/v001';
 import { configSchema, defaultConfig } from '@/services/config/schema';
 import SettingsSection from './SettingsSection';
+
 export interface BackupSettingsProps {
   config: Config;
   onSave: (next: Config) => void;
@@ -155,10 +156,10 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
           <Stack gap={6} align="center">
             <ArchiveIcon width={24} height={24} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
             <Text size="sm" fw={600}>
-              点击或拖拽备份 JSON 文件至此
+              {m.backup_drop_label()}
             </Text>
             <Text size="xs" c="dimmed">
-              支持从旧版本或其它设备导出的 interline-config.json
+              {m.backup_drop_hint()}
             </Text>
           </Stack>
         </Paper>
@@ -177,28 +178,33 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
 
         {/* Parsed summary preview */}
         {parsedPreview && (
-          <Paper p="md" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+          <Paper
+            p="md"
+            radius="md"
+            withBorder
+            style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+          >
             <Stack gap="xs">
               <Group justify="space-between" align="center">
                 <Group gap={6} align="center">
                   <CheckCircleIcon width={16} height={16} style={{ color: 'var(--mantine-color-teal-6)' }} />
                   <Text size="sm" fw={600}>
-                    配置解析成功
+                    {m.backup_preview_ready()}
                   </Text>
                 </Group>
                 <Button size="xs" color="cinnabar" onClick={applyImport}>
-                  确认载入配置
+                  {m.backup_apply_import()}
                 </Button>
               </Group>
               <Group gap="md">
                 <Badge size="sm" variant="light" color="cinnabar">
-                  AI 引擎: {parsedPreview.providers} 个
+                  {m.backup_count_providers({ count: String(parsedPreview.providers) })}
                 </Badge>
                 <Badge size="sm" variant="light" color="sand">
-                  术语集: {parsedPreview.glossary} 个
+                  {m.backup_count_glossaries({ count: String(parsedPreview.glossary) })}
                 </Badge>
                 <Badge size="sm" variant="light" color="sand">
-                  站点规则: {parsedPreview.rules} 条
+                  {m.backup_count_rules({ count: String(parsedPreview.rules) })}
                 </Badge>
               </Group>
             </Stack>

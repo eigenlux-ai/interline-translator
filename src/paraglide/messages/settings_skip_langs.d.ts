@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Languages you already read" |
+* | "Languages you understand" |
 *
 * @param {Settings_Skip_LangsInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

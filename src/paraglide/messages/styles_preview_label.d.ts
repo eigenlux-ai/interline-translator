@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Assembled preview (the system prompt actually sent)" |
+* | "System prompt preview" |
 *
 * @param {Styles_Preview_LabelInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

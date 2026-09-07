@@ -42,7 +42,7 @@ const ru_expert_saved = /** @type {(inputs: Expert_SavedInputs) => LocalizedStri
 };
 
 const pt_expert_saved = /** @type {(inputs: Expert_SavedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Guardado`)
+	return /** @type {LocalizedString} */ (`Salvo`)
 };
 
 const it_expert_saved = /** @type {(inputs: Expert_SavedInputs) => LocalizedString} */ () => {

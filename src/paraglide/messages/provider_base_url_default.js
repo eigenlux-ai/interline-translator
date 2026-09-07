@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Base_Url_DefaultInputs */
 
 const zh_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_DefaultInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`服务商默认`)
+	return /** @type {LocalizedString} */ (`使用服务商默认地址`)
 };
 
 const zh_tw2_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_DefaultInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`服務商預設`)
+	return /** @type {LocalizedString} */ (`使用服務商預設網址`)
 };
 
 const en_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_DefaultInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_Defau
 };
 
 const pt_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_DefaultInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Predefinição do fornecedor`)
+	return /** @type {LocalizedString} */ (`Endereço padrão do provedor`)
 };
 
 const it_provider_base_url_default = /** @type {(inputs: Provider_Base_Url_DefaultInputs) => LocalizedString} */ () => {

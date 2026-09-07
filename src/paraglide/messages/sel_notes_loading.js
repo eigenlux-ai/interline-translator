@@ -6,15 +6,15 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Sel_Notes_LoadingInputs */
 
 const zh_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`批注中…`)
+	return /** @type {LocalizedString} */ (`正在生成注释…`)
 };
 
 const zh_tw2_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`批註中…`)
+	return /** @type {LocalizedString} */ (`正在產生註解…`)
 };
 
 const en_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Annotating…`)
+	return /** @type {LocalizedString} */ (`Preparing notes…`)
 };
 
 const ja_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
@@ -22,7 +22,7 @@ const ja_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => Loc
 };
 
 const ko_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`주해 다는 중…`)
+	return /** @type {LocalizedString} */ (`해설 작성 중…`)
 };
 
 const fr_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => Loc
 };
 
 const de_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Wird annotiert…`)
+	return /** @type {LocalizedString} */ (`Anmerkungen werden erstellt…`)
 };
 
 const es_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
@@ -50,13 +50,13 @@ const it_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => Loc
 };
 
 const ar_sel_notes_loading = /** @type {(inputs: Sel_Notes_LoadingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`جارٍ إعداد الحواشي…`)
+	return /** @type {LocalizedString} */ (`جارٍ إعداد الشروح…`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Annotating…" |
+* | "Preparing notes…" |
 *
 * @param {Sel_Notes_LoadingInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

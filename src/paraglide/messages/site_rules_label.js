@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Site_Rules_LabelInputs */
 
 const zh_site_rules_label = /** @type {(inputs: Site_Rules_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`按站规则`)
+	return /** @type {LocalizedString} */ (`网站专属规则`)
 };
 
 const zh_tw2_site_rules_label = /** @type {(inputs: Site_Rules_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`逐站規則`)
+	return /** @type {LocalizedString} */ (`個別網站規則`)
 };
 
 const en_site_rules_label = /** @type {(inputs: Site_Rules_LabelInputs) => LocalizedString} */ () => {

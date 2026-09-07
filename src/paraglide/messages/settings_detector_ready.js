@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Detector_ReadyInputs */
 
 const zh_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已就绪,非目标语言在翻译前即被跳过`)
+	return /** @type {LocalizedString} */ (`已就绪。翻译前识别并跳过目标语言及无需翻译的语言。`)
 };
 
 const zh_tw2_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已就緒,非目標語言會在翻譯前先略過`)
+	return /** @type {LocalizedString} */ (`已就緒。翻譯前辨識並略過目標語言及不需翻譯的語言。`)
 };
 
 const en_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ready — non-target languages are skipped before translating`)
+	return /** @type {LocalizedString} */ (`Ready. Detects text in your target language and excluded languages so it can be skipped before translation.`)
 };
 
 const ja_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`準備完了——翻訳先以外の言語は翻訳前にスキップします`)
+	return /** @type {LocalizedString} */ (`準備完了。翻訳先の言語と対象外に設定した言語を検出し、翻訳前にスキップします。`)
 };
 
 const ko_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`준비됨 — 대상이 아닌 언어는 번역 전에 건너뜁니다`)
+	return /** @type {LocalizedString} */ (`준비되었습니다. 번역 대상 언어와 제외한 언어를 감지하여 번역 전에 건너뜁니다.`)
 };
 
 const fr_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prête — les langues autres que la cible sont ignorées avant la traduction`)
+	return /** @type {LocalizedString} */ (`Prête. Repère les textes dans la langue cible et les langues exclues pour ne pas les traduire.`)
 };
 
 const de_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bereit — Sprachen außer der Zielsprache werden vor dem Übersetzen übersprungen`)
+	return /** @type {LocalizedString} */ (`Bereit. Erkennt Texte in der Zielsprache und in ausgeschlossenen Sprachen, damit sie nicht übersetzt werden.`)
 };
 
 const es_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Lista: los idiomas distintos del destino se omiten antes de traducir`)
+	return /** @type {LocalizedString} */ (`Lista. Detecta el texto en el idioma de destino y en los idiomas excluidos para omitirlo antes de traducir.`)
 };
 
 const ru_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Готово — языки, кроме целевого, пропускаются до перевода`)
+	return /** @type {LocalizedString} */ (`Готово. Текст на языке перевода и исключённых языках распознаётся и пропускается до перевода.`)
 };
 
 const pt_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pronta — os idiomas que não são o destino são ignorados antes de traduzir`)
+	return /** @type {LocalizedString} */ (`Pronta. Identifica textos no idioma de destino e nos idiomas excluídos para ignorá-los antes da tradução.`)
 };
 
 const it_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pronto — le lingue diverse dalla destinazione vengono saltate prima di tradurre`)
+	return /** @type {LocalizedString} */ (`Pronto. Riconosce i testi nella lingua di destinazione e nelle lingue escluse, così da non tradurli.`)
 };
 
 const ar_settings_detector_ready = /** @type {(inputs: Settings_Detector_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`جاهز — تُتخطّى اللغات غير الهدف قبل الترجمة`)
+	return /** @type {LocalizedString} */ (`جاهز. يتعرّف على النصوص بلغة الهدف واللغات المستثناة لتخطّيها قبل الترجمة.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Ready — non-target languages are skipped before translating" |
+* | "Ready. Detects text in your target language and excluded languages so it can be skipped before translation." |
 *
 * @param {Settings_Detector_ReadyInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

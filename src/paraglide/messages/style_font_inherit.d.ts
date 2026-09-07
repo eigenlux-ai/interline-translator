@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Match the page" |
+* | "Page font" |
 *
 * @param {Style_Font_InheritInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

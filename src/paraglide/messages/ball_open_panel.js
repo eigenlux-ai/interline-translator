@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Ball_Open_PanelInputs */
 
 const zh_ball_open_panel = /** @type {(inputs: Ball_Open_PanelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打开控制面板`)
+	return /** @type {LocalizedString} */ (`打开翻译面板`)
 };
 
 const zh_tw2_ball_open_panel = /** @type {(inputs: Ball_Open_PanelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`打開控制面板`)
+	return /** @type {LocalizedString} */ (`開啟翻譯面板`)
 };
 
 const en_ball_open_panel = /** @type {(inputs: Ball_Open_PanelInputs) => LocalizedString} */ () => {

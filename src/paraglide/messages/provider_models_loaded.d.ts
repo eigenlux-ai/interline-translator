@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Loaded {count} models" |
+* | "Models loaded: {count}" |
 *
 * @param {Provider_Models_LoadedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

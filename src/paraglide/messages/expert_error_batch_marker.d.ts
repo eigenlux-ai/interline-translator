@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The batch template must keep the literal fragment [[{salt}# — whole-page translation depends on this marker instruction; removing it breaks it outright." |
+* | "Keep the exact fragment [[{salt}# in the batch template. It is required to match each translation to its source text." |
 *
 * @param {Expert_Error_Batch_MarkerInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

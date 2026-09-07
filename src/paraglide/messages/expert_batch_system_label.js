@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ salt: NonNullable<unknown> }} Expert_Batch_System_LabelInputs */
 
 const zh_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`整页批量 · system 模板（必须保留 [[${i?.salt}#N]] 标记指令）`)
+	return /** @type {LocalizedString} */ (`整页批量翻译 · 系统模板（须保留 [[${i?.salt}#N]] 标记指令）`)
 };
 
 const zh_tw2_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`整頁批量 · system 模板（必須保留 [[${i?.salt}#N]] 標記指令）`)
+	return /** @type {LocalizedString} */ (`整頁批次翻譯 · 系統範本（須保留 [[${i?.salt}#N]] 標記指令）`)
 };
 
 const en_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
@@ -18,15 +18,15 @@ const en_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_Lab
 };
 
 const ja_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`ページ一括 · system テンプレート（[[${i?.salt}#N]] マーカー指示は必須）`)
+	return /** @type {LocalizedString} */ (`ページ一括翻訳 · システムテンプレート（[[${i?.salt}#N]] の指示を保持）`)
 };
 
 const ko_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`페이지 일괄 · system 템플릿([[${i?.salt}#N]] 마커 지시 필수)`)
+	return /** @type {LocalizedString} */ (`페이지 일괄 번역 · 시스템 템플릿([[${i?.salt}#N]] 지시 유지)`)
 };
 
 const fr_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Lot pleine page · modèle system (doit garder l'instruction de marqueur [[${i?.salt}#N]])`)
+	return /** @type {LocalizedString} */ (`Traduction de page par lots · modèle système (conserver la consigne [[${i?.salt}#N]])`)
 };
 
 const de_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
@@ -34,23 +34,23 @@ const de_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_Lab
 };
 
 const es_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Lote de página · plantilla system (debe conservar la instrucción de marcador [[${i?.salt}#N]])`)
+	return /** @type {LocalizedString} */ (`Traducción de página por lotes · plantilla del sistema (conservar la instrucción [[${i?.salt}#N]])`)
 };
 
 const ru_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Пакет страницы · шаблон system (инструкция маркеров [[${i?.salt}#N]] обязательна)`)
+	return /** @type {LocalizedString} */ (`Пакетный перевод страницы · системный шаблон (сохраните инструкцию [[${i?.salt}#N]])`)
 };
 
 const pt_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Lote de página · modelo system (tem de manter a instrução de marcador [[${i?.salt}#N]])`)
+	return /** @type {LocalizedString} */ (`Tradução de página em lotes · template do sistema (manter a instrução [[${i?.salt}#N]])`)
 };
 
 const it_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Batch di pagina · template system (deve mantenere l'istruzione marker [[${i?.salt}#N]])`)
+	return /** @type {LocalizedString} */ (`Traduzione di pagina in batch · template di sistema (conservare l’istruzione [[${i?.salt}#N]])`)
 };
 
 const ar_expert_batch_system_label = /** @type {(inputs: Expert_Batch_System_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`دفعة الصفحة · قالب system (يجب إبقاء تعليمة العلامة [[${i?.salt}#N]])`)
+	return /** @type {LocalizedString} */ (`ترجمة الصفحة على دفعات · قالب النظام (يجب إبقاء تعليمة [[${i?.salt}#N]])`)
 };
 
 /**

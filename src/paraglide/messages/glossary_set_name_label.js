@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Glossary_Set_Name_LabelInputs */
 
 const zh_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`集合名称`)
+	return /** @type {LocalizedString} */ (`术语集名称`)
 };
 
 const zh_tw2_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`集合名稱`)
+	return /** @type {LocalizedString} */ (`術語集名稱`)
 };
 
 const en_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelIn
 };
 
 const fr_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nom du jeu`)
+	return /** @type {LocalizedString} */ (`Nom du glossaire`)
 };
 
 const de_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Set-Name`)
+	return /** @type {LocalizedString} */ (`Name des Glossars`)
 };
 
 const es_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nombre del conjunto`)
+	return /** @type {LocalizedString} */ (`Nombre del glosario`)
 };
 
 const ru_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelIn
 };
 
 const pt_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nome do conjunto`)
+	return /** @type {LocalizedString} */ (`Nome do glossário`)
 };
 
 const it_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Nome del set`)
+	return /** @type {LocalizedString} */ (`Nome del glossario`)
 };
 
 const ar_glossary_set_name_label = /** @type {(inputs: Glossary_Set_Name_LabelInputs) => LocalizedString} */ () => {

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "A small on-device model enables precise pre-translation skipping" |
+* | "Download a small local model to better identify text that does not need translation." |
 *
 * @param {Settings_Detector_DownloadableInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

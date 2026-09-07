@@ -50,7 +50,7 @@ const it_style_builtin_colloquial = /** @type {(inputs: Style_Builtin_Colloquial
 };
 
 const ar_style_builtin_colloquial = /** @type {(inputs: Style_Builtin_ColloquialInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`عامّي`)
+	return /** @type {LocalizedString} */ (`محادثة`)
 };
 
 /**

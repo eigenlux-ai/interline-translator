@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Set too low, this truncates whole-page batch translation." |
+* | "A low limit may cut off translations, especially when translating a page in batches." |
 *
 * @param {Provider_Param_Max_Tokens_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

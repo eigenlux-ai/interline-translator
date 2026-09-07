@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Plain_DescInputs */
 
 const zh_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`原味直译，不附加任何风格指令（默认）。`)
+	return /** @type {LocalizedString} */ (`不添加额外风格指令，按原文翻译（默认）。`)
 };
 
 const zh_tw2_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`原味直譯，不附加任何風格指令（預設）。`)
+	return /** @type {LocalizedString} */ (`不加入額外風格指令，依原文翻譯（預設）。`)
 };
 
 const en_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Straight translation with no style directives (default).`)
+	return /** @type {LocalizedString} */ (`Translate without additional style instructions (default).`)
 };
 
 const ja_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`スタイル指示を付けない素直な訳（既定）。`)
+	return /** @type {LocalizedString} */ (`追加のスタイル指示を付けずに翻訳します（既定）。`)
 };
 
 const ko_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`스타일 지시 없이 그대로 번역합니다(기본값).`)
+	return /** @type {LocalizedString} */ (`추가 문체 지시 없이 원문에 충실하게 번역합니다(기본값).`)
 };
 
 const fr_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduction directe, sans directive de style (par défaut).`)
+	return /** @type {LocalizedString} */ (`Traduction sans consignes de style supplémentaires (par défaut).`)
 };
 
 const de_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Direkte Übersetzung ohne Stilvorgaben (Standard).`)
+	return /** @type {LocalizedString} */ (`Übersetzung ohne zusätzliche Stilvorgaben (Standard).`)
 };
 
 const es_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traducción directa sin directrices de estilo (predeterminado).`)
+	return /** @type {LocalizedString} */ (`Traducción sin instrucciones de estilo adicionales (predeterminado).`)
 };
 
 const ru_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Прямой перевод без стилевых указаний (по умолчанию).`)
+	return /** @type {LocalizedString} */ (`Перевод без дополнительных указаний по стилю (по умолчанию).`)
 };
 
 const pt_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tradução direta, sem diretivas de estilo (padrão).`)
+	return /** @type {LocalizedString} */ (`Tradução sem instruções de estilo adicionais (padrão).`)
 };
 
 const it_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzione diretta senza direttive di stile (predefinito).`)
+	return /** @type {LocalizedString} */ (`Traduzione senza istruzioni di stile aggiuntive (predefinito).`)
 };
 
 const ar_style_plain_desc = /** @type {(inputs: Style_Plain_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ترجمة مباشرة دون أي توجيهات أسلوبية (الافتراضي).`)
+	return /** @type {LocalizedString} */ (`ترجمة دون توجيهات أسلوبية إضافية (الافتراضي).`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Straight translation with no style directives (default)." |
+* | "Translate without additional style instructions (default)." |
 *
 * @param {Style_Plain_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Ball_Action_RestoreInputs */
 
 const zh_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已翻译 · 还原原文`)
+	return /** @type {LocalizedString} */ (`还原原文`)
 };
 
 const zh_tw2_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已翻譯 · 還原原文`)
+	return /** @type {LocalizedString} */ (`還原原文`)
 };
 
 const en_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Translated · restore original`)
+	return /** @type {LocalizedString} */ (`Restore original`)
 };
 
 const ja_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`翻訳済み · 原文に戻す`)
+	return /** @type {LocalizedString} */ (`原文に戻す`)
 };
 
 const ko_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`번역됨 · 원문 복원`)
+	return /** @type {LocalizedString} */ (`원문 복원`)
 };
 
 const fr_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduit · rétablir l'original`)
+	return /** @type {LocalizedString} */ (`Rétablir l’original`)
 };
 
 const de_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzt · Original wiederherstellen`)
+	return /** @type {LocalizedString} */ (`Original wiederherstellen`)
 };
 
 const es_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traducida · restaurar el original`)
+	return /** @type {LocalizedString} */ (`Restaurar el original`)
 };
 
 const ru_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Переведено · вернуть оригинал`)
+	return /** @type {LocalizedString} */ (`Вернуть оригинал`)
 };
 
 const pt_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzida · repor o original`)
+	return /** @type {LocalizedString} */ (`Restaurar o original`)
 };
 
 const it_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tradotta · ripristina l'originale`)
+	return /** @type {LocalizedString} */ (`Ripristina l’originale`)
 };
 
 const ar_ball_action_restore = /** @type {(inputs: Ball_Action_RestoreInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`مترجمة · استعادة الأصل`)
+	return /** @type {LocalizedString} */ (`استعادة النص الأصلي`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Translated · restore original" |
+* | "Restore original" |
 *
 * @param {Ball_Action_RestoreInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

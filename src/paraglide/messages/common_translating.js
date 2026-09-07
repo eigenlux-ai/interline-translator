@@ -26,11 +26,11 @@ const ko_common_translating = /** @type {(inputs: Common_TranslatingInputs) => L
 };
 
 const fr_common_translating = /** @type {(inputs: Common_TranslatingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduction…`)
+	return /** @type {LocalizedString} */ (`Traduction en cours…`)
 };
 
 const de_common_translating = /** @type {(inputs: Common_TranslatingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzen…`)
+	return /** @type {LocalizedString} */ (`Wird übersetzt…`)
 };
 
 const es_common_translating = /** @type {(inputs: Common_TranslatingInputs) => LocalizedString} */ () => {
@@ -46,11 +46,11 @@ const pt_common_translating = /** @type {(inputs: Common_TranslatingInputs) => L
 };
 
 const it_common_translating = /** @type {(inputs: Common_TranslatingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzione…`)
+	return /** @type {LocalizedString} */ (`Traduzione in corso…`)
 };
 
 const ar_common_translating = /** @type {(inputs: Common_TranslatingInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`جارٍ الترجمة…`)
+	return /** @type {LocalizedString} */ (`الترجمة جارية…`)
 };
 
 /**

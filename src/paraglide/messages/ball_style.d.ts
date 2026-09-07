@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Style" |
+* | "Appearance" |
 *
 * @param {Ball_StyleInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

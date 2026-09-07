@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Styles_Custom_GroupInputs */
 
 const zh_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自建风格`)
+	return /** @type {LocalizedString} */ (`自定义风格`)
 };
 
 const zh_tw2_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`自建風格`)
+	return /** @type {LocalizedString} */ (`自訂風格`)
 };
 
 const en_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) =>
 };
 
 const pt_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Os seus estilos`)
+	return /** @type {LocalizedString} */ (`Seus estilos`)
 };
 
 const it_styles_custom_group = /** @type {(inputs: Styles_Custom_GroupInputs) => LocalizedString} */ () => {

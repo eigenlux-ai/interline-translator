@@ -26,15 +26,15 @@ const ko_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => Localiz
 };
 
 const fr_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Importer un jeu`)
+	return /** @type {LocalizedString} */ (`Importer un glossaire`)
 };
 
 const de_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Set importieren`)
+	return /** @type {LocalizedString} */ (`Glossar importieren`)
 };
 
 const es_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Importar conjunto`)
+	return /** @type {LocalizedString} */ (`Importar glosario`)
 };
 
 const ru_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => Localiz
 };
 
 const pt_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Importar conjunto`)
+	return /** @type {LocalizedString} */ (`Importar glossário`)
 };
 
 const it_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Importa set`)
+	return /** @type {LocalizedString} */ (`Importa glossario`)
 };
 
 const ar_glossary_import = /** @type {(inputs: Glossary_ImportInputs) => LocalizedString} */ () => {

@@ -6,35 +6,35 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Skip_LangsInputs */
 
 const zh_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已经读得懂的语言`)
+	return /** @type {LocalizedString} */ (`无需翻译的语言`)
 };
 
 const zh_tw2_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`已經讀得懂的語言`)
+	return /** @type {LocalizedString} */ (`不需翻譯的語言`)
 };
 
 const en_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Languages you already read`)
+	return /** @type {LocalizedString} */ (`Languages you understand`)
 };
 
 const ja_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`すでに読める言語`)
+	return /** @type {LocalizedString} */ (`翻訳しない言語`)
 };
 
 const ko_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이미 읽을 수 있는 언어`)
+	return /** @type {LocalizedString} */ (`번역하지 않을 언어`)
 };
 
 const fr_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Langues que vous lisez déjà`)
+	return /** @type {LocalizedString} */ (`Langues que vous comprenez`)
 };
 
 const de_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sprachen, die Sie schon lesen`)
+	return /** @type {LocalizedString} */ (`Sprachen, die Sie verstehen`)
 };
 
 const es_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Idiomas que ya lees`)
+	return /** @type {LocalizedString} */ (`Idiomas que entiendes`)
 };
 
 const ru_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
@@ -42,21 +42,21 @@ const ru_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) =>
 };
 
 const pt_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Idiomas que você já lê`)
+	return /** @type {LocalizedString} */ (`Idiomas que você entende`)
 };
 
 const it_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Lingue che già leggi`)
+	return /** @type {LocalizedString} */ (`Lingue che conosci`)
 };
 
 const ar_settings_skip_langs = /** @type {(inputs: Settings_Skip_LangsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`لغات تقرأها بالفعل`)
+	return /** @type {LocalizedString} */ (`اللغات التي تفهمها`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Languages you already read" |
+* | "Languages you understand" |
 *
 * @param {Settings_Skip_LangsInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

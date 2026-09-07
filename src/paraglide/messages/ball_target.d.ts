@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Into" |
+* | "Translate to" |
 *
 * @param {Ball_TargetInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

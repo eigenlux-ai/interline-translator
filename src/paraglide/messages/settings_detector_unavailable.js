@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Detector_UnavailableInputs */
 
 const zh_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`当前浏览器不支持(回退为文字系统判断加译后校验)`)
+	return /** @type {LocalizedString} */ (`当前浏览器不支持。将根据文字特征判断，并在翻译后检查译文是否与原文相同。`)
 };
 
 const zh_tw2_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`目前的瀏覽器不支援(改用文字系統判斷加譯後校驗)`)
+	return /** @type {LocalizedString} */ (`目前瀏覽器不支援。將依文字特徵判斷，並在翻譯後檢查譯文是否與原文相同。`)
 };
 
 const en_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Not supported by this browser (falls back to script heuristics plus a post-translation check)`)
+	return /** @type {LocalizedString} */ (`Unavailable in this browser. Uses writing-system detection and checks for unchanged translations instead.`)
 };
 
 const ja_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`このブラウザーでは非対応(文字体系による判定と翻訳後チェックに切り替えます)`)
+	return /** @type {LocalizedString} */ (`このブラウザーでは利用できません。文字の種類による判定と、翻訳後に原文と同じかどうかの確認を行います。`)
 };
 
 const ko_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`이 브라우저에서는 지원되지 않습니다(문자 체계 판별과 번역 후 확인으로 대체)`)
+	return /** @type {LocalizedString} */ (`이 브라우저에서는 지원하지 않습니다. 대신 문자 체계로 언어를 판단하고 번역 후 원문과 같은지 확인합니다.`)
 };
 
 const fr_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Non pris en charge par ce navigateur (repli sur l'analyse de l'écriture et une vérification après traduction)`)
+	return /** @type {LocalizedString} */ (`Indisponible dans ce navigateur. Le système d’écriture sert à identifier la langue, puis les traductions identiques à l’original sont vérifiées.`)
 };
 
 const de_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Von diesem Browser nicht unterstützt (Rückfall auf Schrifterkennung und eine Prüfung nach der Übersetzung)`)
+	return /** @type {LocalizedString} */ (`In diesem Browser nicht verfügbar. Stattdessen wird das Schriftsystem geprüft und nach der Übersetzung auf unveränderten Text geprüft.`)
 };
 
 const es_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`No compatible con este navegador (se recurre al análisis de la escritura y a una comprobación posterior)`)
+	return /** @type {LocalizedString} */ (`No disponible en este navegador. Se analiza el sistema de escritura y se comprueba si la traducción coincide con el original.`)
 };
 
 const ru_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Не поддерживается этим браузером (используются определение по письменности и проверка после перевода)`)
+	return /** @type {LocalizedString} */ (`Недоступно в этом браузере. Вместо этого проверяется система письма, а после перевода — совпадение с оригиналом.`)
 };
 
 const pt_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Não suportado por este navegador (recorre à análise da escrita e a uma verificação após a tradução)`)
+	return /** @type {LocalizedString} */ (`Indisponível neste navegador. O sistema de escrita é analisado e a tradução é verificada para identificar textos iguais ao original.`)
 };
 
 const it_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Non supportato da questo browser (ricorre all'analisi della scrittura e a un controllo dopo la traduzione)`)
+	return /** @type {LocalizedString} */ (`Non disponibile in questo browser. Viene analizzato il sistema di scrittura e viene verificato se la traduzione è identica all’originale.`)
 };
 
 const ar_settings_detector_unavailable = /** @type {(inputs: Settings_Detector_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`غير مدعوم في هذا المتصفّح (يُستعاض عنه بتحليل نظام الكتابة وفحص بعد الترجمة)`)
+	return /** @type {LocalizedString} */ (`غير متاح في هذا المتصفّح. يُحلَّل نظام الكتابة بدلًا من ذلك، وتُفحص الترجمة للتأكد من عدم تطابقها مع الأصل.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Not supported by this browser (falls back to script heuristics plus a post-translation check)" |
+* | "Unavailable in this browser. Uses writing-system detection and checks for unchanged translations instead." |
 *
 * @param {Settings_Detector_UnavailableInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

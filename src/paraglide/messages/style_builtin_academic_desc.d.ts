@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Formal register, precise terminology, hedged claims preserved." |
+* | "Formal language and precise terminology, preserving the original qualifications and uncertainty." |
 *
 * @param {Style_Builtin_Academic_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

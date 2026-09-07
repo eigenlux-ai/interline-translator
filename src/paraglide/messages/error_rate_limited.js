@@ -30,7 +30,7 @@ const fr_error_rate_limited = /** @type {(inputs: Error_Rate_LimitedInputs) => L
 };
 
 const de_error_rate_limited = /** @type {(inputs: Error_Rate_LimitedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zu viele Anfragen. Bitte warte einen Moment und versuche es erneut.`)
+	return /** @type {LocalizedString} */ (`Zu viele Anfragen. Bitte warten Sie einen Moment und versuchen Sie es erneut.`)
 };
 
 const es_error_rate_limited = /** @type {(inputs: Error_Rate_LimitedInputs) => LocalizedString} */ () => {

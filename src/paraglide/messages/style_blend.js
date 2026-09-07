@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_BlendInputs */
 
 const zh_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`融入`)
+	return /** @type {LocalizedString} */ (`融入页面`)
 };
 
 const zh_tw2_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`融入`)
+	return /** @type {LocalizedString} */ (`融入頁面`)
 };
 
 const en_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Blend`)
+	return /** @type {LocalizedString} */ (`Match page`)
 };
 
 const ja_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`なじませる`)
+	return /** @type {LocalizedString} */ (`ページになじませる`)
 };
 
 const ko_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`스며들기`)
+	return /** @type {LocalizedString} */ (`페이지에 맞춤`)
 };
 
 const fr_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fondu`)
+	return /** @type {LocalizedString} */ (`Intégré à la page`)
 };
 
 const de_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Verschmelzen`)
+	return /** @type {LocalizedString} */ (`An Seite anpassen`)
 };
 
 const es_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fundido`)
+	return /** @type {LocalizedString} */ (`Integrado en la página`)
 };
 
 const ru_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Слияние`)
+	return /** @type {LocalizedString} */ (`Как на странице`)
 };
 
 const pt_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fundir`)
+	return /** @type {LocalizedString} */ (`Integrado à página`)
 };
 
 const it_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fusione`)
+	return /** @type {LocalizedString} */ (`Integrato nella pagina`)
 };
 
 const ar_style_blend = /** @type {(inputs: Style_BlendInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`دمج`)
+	return /** @type {LocalizedString} */ (`مطابقة مظهر الصفحة`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Blend" |
+* | "Match page" |
 *
 * @param {Style_BlendInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

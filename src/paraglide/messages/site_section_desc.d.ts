@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The default behaviour on every site, plus per-site overrides." |
+* | "Choose a default translation behavior and add rules for individual sites." |
 *
 * @param {Site_Section_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

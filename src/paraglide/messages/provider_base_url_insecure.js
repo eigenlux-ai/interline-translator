@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Base_Url_InsecureInputs */
 
 const zh_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_InsecureInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`请填 https:// 地址，http:// 只对本机开放。`)
+	return /** @type {LocalizedString} */ (`请使用 https:// 地址。仅本机地址允许使用 http://。`)
 };
 
 const zh_tw2_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_InsecureInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`請填 https:// 網址，http:// 僅對本機開放。`)
+	return /** @type {LocalizedString} */ (`請使用 https:// 網址。僅本機位址允許使用 http://。`)
 };
 
 const en_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_InsecureInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_Inse
 };
 
 const pt_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_InsecureInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Use um URL https:// — http:// só é aceite para localhost.`)
+	return /** @type {LocalizedString} */ (`Use uma URL https://. Endereços http:// só são permitidos para localhost.`)
 };
 
 const it_provider_base_url_insecure = /** @type {(inputs: Provider_Base_Url_InsecureInputs) => LocalizedString} */ () => {

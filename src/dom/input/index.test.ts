@@ -294,3 +294,27 @@ describe('InputTranslator', () => {
     t.stop();
   });
 });
+
+it('stop prevents an in-flight translation from modifying the draft', async () => {
+  let release!: (value: { text: string; providerId: string }) => void;
+  translate.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      })
+  );
+  const input = document.createElement('input');
+  input.value = 'original draft';
+  document.body.append(input);
+  input.focus();
+  const t = new InputTranslator({ defaultTarget: 'zh-CN' });
+  t.start();
+  pressSpace(input);
+  pressSpace(input);
+  pressSpace(input);
+  await tick();
+  t.stop();
+  release({ text: 'translated draft', providerId: 'mock' });
+  await tick();
+  expect(input.value).toBe('original draft');
+});

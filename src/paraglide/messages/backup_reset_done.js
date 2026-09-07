@@ -42,7 +42,7 @@ const ru_backup_reset_done = /** @type {(inputs: Backup_Reset_DoneInputs) => Loc
 };
 
 const pt_backup_reset_done = /** @type {(inputs: Backup_Reset_DoneInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Predefinições repostas.`)
+	return /** @type {LocalizedString} */ (`Configurações padrão restauradas.`)
 };
 
 const it_backup_reset_done = /** @type {(inputs: Backup_Reset_DoneInputs) => LocalizedString} */ () => {

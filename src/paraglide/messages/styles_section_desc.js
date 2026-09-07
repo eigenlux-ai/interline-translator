@@ -10,7 +10,7 @@ const zh_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) =>
 };
 
 const zh_tw2_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`用自然語言控制譯文的語氣、文風與用詞——所選風格在整頁、劃詞與輸入翻譯中一併生效。`)
+	return /** @type {LocalizedString} */ (`以自然語言指定譯文的語氣、文風與用詞，適用於整頁、選取文字及輸入框翻譯。`)
 };
 
 const en_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) =>
 };
 
 const pt_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Defina o tom, o registo e o vocabulário em linguagem natural — o estilo ativo aplica-se à página, à seleção e à escrita.`)
+	return /** @type {LocalizedString} */ (`Defina o tom, o registro e o vocabulário com suas próprias palavras. O estilo escolhido vale para páginas, textos selecionados e campos de texto.`)
 };
 
 const it_styles_section_desc = /** @type {(inputs: Styles_Section_DescInputs) => LocalizedString} */ () => {

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Overview the page before translating: names and context stay consistent page-wide. Sends the FULL page text (including parts you never scroll to) to the engi..." |
+* | "Before translating, send up to the first 8,000 characters of page text, including content outside the viewport, to the AI engine for context. This helps keep..." |
 *
 * @param {Settings_Page_Context_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

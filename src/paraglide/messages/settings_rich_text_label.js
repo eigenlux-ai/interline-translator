@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Settings_Rich_Text_LabelInputs */
 
 const zh_settings_rich_text_label = /** @type {(inputs: Settings_Rich_Text_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`带样式翻译`)
+	return /** @type {LocalizedString} */ (`保留原文格式`)
 };
 
 const zh_tw2_settings_rich_text_label = /** @type {(inputs: Settings_Rich_Text_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`帶樣式翻譯`)
+	return /** @type {LocalizedString} */ (`保留原文格式`)
 };
 
 const en_settings_rich_text_label = /** @type {(inputs: Settings_Rich_Text_LabelInputs) => LocalizedString} */ () => {

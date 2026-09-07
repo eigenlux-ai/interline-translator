@@ -7,17 +7,17 @@
  */
 
 import { defineContentScript } from '#imports';
-import { SHADOW_ATTACH_SIGNAL } from '@/constants';
 import { onMessage, sendMessage } from '@/core/messaging';
 import {
   emitPageTranslationState,
   onPageTranslationStateQuery,
   onSetPageTranslation,
 } from '@/core/page-translation-bridge';
+import { humanizeError } from '@/react-app/error-copy';
+import { SHADOW_ATTACH_SIGNAL } from '@/constants';
 import { effectiveHostname, InputTranslator } from '@/dom/input';
 import { PageTranslator } from '@/dom/page-translation';
 import { syncUiLocaleFrom } from '@/i18n';
-import { humanizeError } from '@/react-app/error-copy';
 import { getPublicConfig, watchPublicConfig } from '@/services/config/public';
 import { isSiteEnabled, shouldAutoTranslate } from '@/services/config/site-control';
 
@@ -30,32 +30,35 @@ export default defineContentScript({
   matchAboutBlank: true,
   cssInjectionMode: 'manual',
   async main(ctx) {
-    // The ONLY localized strings in this bundle are the input pills
-    // (dom/input/indicator) — so the Paraglide locale is synced exactly where
-    // an InputTranslator starts, and kept live for that frame. Frames that
-    // never host a pill (ad iframes, input-disabled sites) register nothing.
-    const startLocaleSync = (config: Awaited<ReturnType<typeof getPublicConfig>>) => {
+    // Keep input policy and gesture settings live in every frame.
+    let inputTranslator: InputTranslator | null = null;
+    let inputSignature = '';
+    const applyInputConfig = (config: Awaited<ReturnType<typeof getPublicConfig>>) => {
       syncUiLocaleFrom(config);
-      ctx.onInvalidated(watchPublicConfig((c) => void syncUiLocaleFrom(c)));
+      const enabled = config.inputTranslation.enabled && isSiteEnabled(config.siteControl, effectiveHostname());
+      const signature = JSON.stringify([
+        enabled,
+        config.translate.source,
+        config.inputTranslation.target,
+        config.inputTranslation.triggerCount,
+      ]);
+      if (signature === inputSignature) return;
+      inputSignature = signature;
+      inputTranslator?.stop();
+      inputTranslator = enabled
+        ? new InputTranslator({
+            source: config.translate.source,
+            defaultTarget: config.inputTranslation.target,
+            count: config.inputTranslation.triggerCount,
+          })
+        : null;
+      inputTranslator?.start();
     };
-
-    // Subframes get ONLY input translation. Page-level features stay in the
-    // top frame: a PageTranslator per ad-iframe would burn CPU for nothing,
-    // and duplicated onMessage handlers would double-answer popup/command
-    // messages (tabs.sendMessage broadcasts to every frame).
+    ctx.onInvalidated(watchPublicConfig(applyInputConfig));
+    ctx.onInvalidated(() => inputTranslator?.stop());
     if (window.self !== window.top) {
       const config = await getPublicConfig();
-      const inputCfg = config.inputTranslation;
-      if (inputCfg.enabled && isSiteEnabled(config.siteControl, effectiveHostname())) {
-        startLocaleSync(config); // before start(): the first pill already speaks the right language
-        const frameInput = new InputTranslator({
-          source: config.translate.source,
-          defaultTarget: inputCfg.target,
-          count: inputCfg.triggerCount,
-        });
-        frameInput.start();
-        ctx.onInvalidated(() => frameInput.stop());
-      }
+      if (!inputSignature) applyInputConfig(config);
       return;
     }
     let translator: PageTranslator | null = null;
@@ -153,20 +156,7 @@ export default defineContentScript({
 
     const config = await getPublicConfig();
 
-    // Input-box translation (N-space gesture) — user-toggleable, skipped on
-    // blacklisted (handled inside) or `never` sites.
-    const inputCfg = config.inputTranslation;
-    let inputTranslator: InputTranslator | null = null;
-    if (inputCfg.enabled && isSiteEnabled(config.siteControl, location.hostname)) {
-      startLocaleSync(config); // before start(): the first pill already speaks the right language
-      inputTranslator = new InputTranslator({
-        source: config.translate.source,
-        // The WRITE target — independent of the page-reading target on purpose.
-        defaultTarget: inputCfg.target,
-        count: inputCfg.triggerCount,
-      });
-      inputTranslator.start();
-    }
+    if (!inputSignature) applyInputConfig(config);
 
     // Whole-page translation auto-starts only on sites the user marked "always".
     if (shouldAutoTranslate(config.siteControl, location.hostname)) void start();
@@ -184,7 +174,6 @@ export default defineContentScript({
       offSet();
       offQuery();
       stop();
-      inputTranslator?.stop();
     });
   },
 });

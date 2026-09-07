@@ -11,15 +11,40 @@
  */
 
 import { useMemo, useState } from 'react';
-import { Badge, Button, Code, Collapse, Group, Modal, Radio, Select, Stack, Switch, Text, Textarea, TextInput } from '@mantine/core';
-import type { Config, PromptExpertConfig, PromptStyle } from '@/data/models';
+import {
+  Badge,
+  Button,
+  Code,
+  Collapse,
+  Group,
+  Modal,
+  Radio,
+  Select,
+  Stack,
+  Switch,
+  Text,
+  Textarea,
+  TextInput,
+} from '@mantine/core';
 import { randomId } from '@/core/uid';
-import { BUILTIN_STYLES, isBuiltinStyleId } from '@/services/translation/prompts/builtin-styles';
-import { buildTranslatePrompt, validateExpertTemplates, type ExpertTemplateError } from '@/services/translation/prompts';
+import type { Config, PromptExpertConfig, PromptStyle } from '@/data/models';
 import { m } from '@/paraglide/messages.js';
+import {
+  buildTranslatePrompt,
+  validateExpertTemplates,
+  type ExpertTemplateError,
+} from '@/services/translation/prompts';
+import { BUILTIN_STYLES, isBuiltinStyleId } from '@/services/translation/prompts/builtin-styles';
 import PatternRuleTable from './PatternRuleTable';
 import SettingsSection from './SettingsSection';
-import { PLAIN_STYLE as PLAIN, builtinCopy, fromStyleSelectValue, styleDisplayName, styleSelectData, toStyleSelectValue } from './style-options';
+import {
+  builtinCopy,
+  fromStyleSelectValue,
+  PLAIN_STYLE as PLAIN,
+  styleDisplayName,
+  styleSelectData,
+  toStyleSelectValue,
+} from './style-options';
 
 // Paraglide parses `{name}` in the catalog as message parameters — but these
 // braces ARE the copy (we're documenting the placeholder syntax itself), so we
@@ -30,7 +55,6 @@ const expertError: Record<ExpertTemplateError, () => string> = {
   'batch-marker-missing': () => m.expert_error_batch_marker(PH),
   'single-text-missing': () => m.expert_error_single_text(PH),
 };
-
 
 export interface PromptStyleSettingsProps {
   config: Config;
@@ -118,33 +142,50 @@ export default function PromptStyleSettings({ config, onSave }: PromptStyleSetti
 
       <ExpertMode
         expert={prompt.expert}
-        onSave={(expert) => onSave({ ...config, prompt: { ...prompt, ...(expert ? { expert } : { expert: undefined }) } })}
+        onSave={(expert) =>
+          onSave({ ...config, prompt: { ...prompt, ...(expert ? { expert } : { expert: undefined }) } })
+        }
       />
 
       <Modal
         opened={editing !== null}
         onClose={() => setEditing(null)}
-        title={editing && prompt.styles.some((s) => s.id === editing.id) ? m.styles_editor_title_edit() : m.styles_editor_title_new()}
+        title={
+          editing && prompt.styles.some((s) => s.id === editing.id)
+            ? m.styles_editor_title_edit()
+            : m.styles_editor_title_new()
+        }
         lockScroll={false}
         size="lg"
       >
         {editing && (
-          <StyleEditor key={editing.id} draft={editing} target={config.translate.target} onSave={upsertStyle} onCancel={() => setEditing(null)} />
+          <StyleEditor
+            key={editing.id}
+            draft={editing}
+            target={config.translate.target}
+            onSave={upsertStyle}
+            onCancel={() => setEditing(null)}
+          />
         )}
       </Modal>
     </SettingsSection>
   );
 }
 
-function StyleRow({ value, name, desc, actions }: { value: string; name: string; desc: string; actions?: React.ReactNode }) {
+function StyleRow({
+  value,
+  name,
+  desc,
+  actions,
+}: {
+  value: string;
+  name: string;
+  desc: string;
+  actions?: React.ReactNode;
+}) {
   return (
     <Group gap="xs" wrap="nowrap" align="flex-start">
-      <Radio
-        value={value}
-        style={{ flex: 1 }}
-        label={name}
-        description={desc}
-      />
+      <Radio value={value} style={{ flex: 1 }} label={name} description={desc} />
       {actions}
     </Group>
   );
@@ -191,7 +232,7 @@ function StyleEditor({
           </Text>
           <Group gap={4} align="center">
             <Text size="10px" c="dimmed">
-              插入变量:
+              {m.expert_insert_variable()}
             </Text>
             {['{target}', '{source}', '{text}', '{title}'].map((variable) => (
               <Button
@@ -230,7 +271,10 @@ function StyleEditor({
         <Button variant="subtle" onClick={onCancel}>
           {m.styles_cancel()}
         </Button>
-        <Button disabled={!name.trim() || !directives.trim()} onClick={() => onSave({ id: draft.id, name: name.trim(), directives: directives.trim() })}>
+        <Button
+          disabled={!name.trim() || !directives.trim()}
+          onClick={() => onSave({ id: draft.id, name: name.trim(), directives: directives.trim() })}
+        >
           {m.styles_save()}
         </Button>
       </Group>
@@ -262,16 +306,36 @@ function SiteRules({ config, onSave }: PromptStyleSettingsProps) {
         addLabel={m.styles_rule_add()}
         removeAria={m.styles_rule_remove_aria()}
         controlWidth={200}
-        addExtra={<Select data={selectData} value={styleId} onChange={(v) => v && setStyleId(v)} w={160} allowDeselect={false} />}
+        addExtra={
+          <Select
+            data={selectData}
+            value={styleId}
+            onChange={(v) => v && setStyleId(v)}
+            w={160}
+            allowDeselect={false}
+          />
+        }
         renderControl={(r, replace) => (
-          <Select size="xs" data={selectData} value={r.styleId} allowDeselect={false} onChange={(v) => v && replace({ ...r, styleId: v })} />
+          <Select
+            size="xs"
+            data={selectData}
+            value={r.styleId}
+            allowDeselect={false}
+            onChange={(v) => v && replace({ ...r, styleId: v })}
+          />
         )}
       />
     </Stack>
   );
 }
 
-function ExpertMode({ expert, onSave }: { expert: PromptExpertConfig | undefined; onSave: (e: PromptExpertConfig | undefined) => void }) {
+function ExpertMode({
+  expert,
+  onSave,
+}: {
+  expert: PromptExpertConfig | undefined;
+  onSave: (e: PromptExpertConfig | undefined) => void;
+}) {
   // Drafts live in ExpertForm, remounted (via key) whenever the STORED expert
   // changes: an edit saved in another window/context resets these drafts to
   // the new truth instead of being silently clobbered by our stale copies on
@@ -280,7 +344,13 @@ function ExpertMode({ expert, onSave }: { expert: PromptExpertConfig | undefined
   return <ExpertForm key={JSON.stringify(expert ?? null)} expert={expert} onSave={onSave} />;
 }
 
-function ExpertForm({ expert, onSave }: { expert: PromptExpertConfig | undefined; onSave: (e: PromptExpertConfig | undefined) => void }) {
+function ExpertForm({
+  expert,
+  onSave,
+}: {
+  expert: PromptExpertConfig | undefined;
+  onSave: (e: PromptExpertConfig | undefined) => void;
+}) {
   const [open, setOpen] = useState(Boolean(expert));
   const [singleSystem, setSingleSystem] = useState(expert?.single?.system ?? '');
   const [singleUser, setSingleUser] = useState(expert?.single?.user ?? '');
@@ -291,7 +361,12 @@ function ExpertForm({ expert, onSave }: { expert: PromptExpertConfig | undefined
   const save = () => {
     const next: PromptExpertConfig = {
       ...(singleSystem.trim() || singleUser.trim()
-        ? { single: { ...(singleSystem.trim() ? { system: singleSystem.trim() } : {}), ...(singleUser.trim() ? { user: singleUser.trim() } : {}) } }
+        ? {
+            single: {
+              ...(singleSystem.trim() ? { system: singleSystem.trim() } : {}),
+              ...(singleUser.trim() ? { user: singleUser.trim() } : {}),
+            },
+          }
         : {}),
       ...(batchSystem.trim() ? { batch: { system: batchSystem.trim() } } : {}),
     };
@@ -325,9 +400,30 @@ function ExpertForm({ expert, onSave }: { expert: PromptExpertConfig | undefined
           <Text size="xs" c="dimmed">
             {m.expert_placeholders_hint(PH)}
           </Text>
-          <Textarea label={m.expert_single_system_label()} value={singleSystem} onChange={(e) => setSingleSystem(e.currentTarget.value)} autosize minRows={2} maxRows={8} />
-          <Textarea label={m.expert_single_user_label(PH)} value={singleUser} onChange={(e) => setSingleUser(e.currentTarget.value)} autosize minRows={2} maxRows={6} />
-          <Textarea label={m.expert_batch_system_label(PH)} value={batchSystem} onChange={(e) => setBatchSystem(e.currentTarget.value)} autosize minRows={2} maxRows={8} />
+          <Textarea
+            label={m.expert_single_system_label()}
+            value={singleSystem}
+            onChange={(e) => setSingleSystem(e.currentTarget.value)}
+            autosize
+            minRows={2}
+            maxRows={8}
+          />
+          <Textarea
+            label={m.expert_single_user_label(PH)}
+            value={singleUser}
+            onChange={(e) => setSingleUser(e.currentTarget.value)}
+            autosize
+            minRows={2}
+            maxRows={6}
+          />
+          <Textarea
+            label={m.expert_batch_system_label(PH)}
+            value={batchSystem}
+            onChange={(e) => setBatchSystem(e.currentTarget.value)}
+            autosize
+            minRows={2}
+            maxRows={8}
+          />
           {error && (
             <Text size="sm" c="danger">
               {expertError[error]()}

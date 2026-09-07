@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Read the whole page first" |
+* | "Use page context" |
 *
 * @param {Settings_Page_Context_LabelInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

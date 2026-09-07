@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Type in any field, then tap the space bar {count} times in a row — what you wrote is translated in place." |
+* | "After typing in a supported text field, press Space {count} times in a row to replace your text with its translation." |
 *
 * @param {Settings_Input_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

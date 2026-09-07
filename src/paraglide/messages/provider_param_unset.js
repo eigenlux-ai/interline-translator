@@ -42,7 +42,7 @@ const ru_provider_param_unset = /** @type {(inputs: Provider_Param_UnsetInputs) 
 };
 
 const pt_provider_param_unset = /** @type {(inputs: Provider_Param_UnsetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Predefinição`)
+	return /** @type {LocalizedString} */ (`Padrão`)
 };
 
 const it_provider_param_unset = /** @type {(inputs: Provider_Param_UnsetInputs) => LocalizedString} */ () => {

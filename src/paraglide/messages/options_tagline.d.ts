@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "An AI-native reader's translator · Settings" |
+* | "AI translation for thoughtful reading · Settings" |
 *
 * @param {Options_TaglineInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

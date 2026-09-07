@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Badge_DraftInputs */
 
 const zh_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`草稿`)
+	return /** @type {LocalizedString} */ (`待验证`)
 };
 
 const zh_tw2_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`草稿`)
+	return /** @type {LocalizedString} */ (`待驗證`)
 };
 
 const en_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Draft`)
+	return /** @type {LocalizedString} */ (`Not validated`)
 };
 
 const ja_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`下書き`)
+	return /** @type {LocalizedString} */ (`未検証`)
 };
 
 const ko_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`초안`)
+	return /** @type {LocalizedString} */ (`검증 전`)
 };
 
 const fr_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Brouillon`)
+	return /** @type {LocalizedString} */ (`Non validé`)
 };
 
 const de_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Entwurf`)
+	return /** @type {LocalizedString} */ (`Ungeprüft`)
 };
 
 const es_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Borrador`)
+	return /** @type {LocalizedString} */ (`Sin validar`)
 };
 
 const ru_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Черновик`)
+	return /** @type {LocalizedString} */ (`Не проверено`)
 };
 
 const pt_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Rascunho`)
+	return /** @type {LocalizedString} */ (`Não validado`)
 };
 
 const it_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Bozza`)
+	return /** @type {LocalizedString} */ (`Da verificare`)
 };
 
 const ar_provider_badge_draft = /** @type {(inputs: Provider_Badge_DraftInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`مسوّدة`)
+	return /** @type {LocalizedString} */ (`لم يُتحقّق منه`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Draft" |
+* | "Not validated" |
 *
 * @param {Provider_Badge_DraftInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

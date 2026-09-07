@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Enable_AriaInputs */
 
 const zh_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`启用`)
+	return /** @type {LocalizedString} */ (`启用翻译引擎`)
 };
 
 const zh_tw2_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`啟用`)
+	return /** @type {LocalizedString} */ (`啟用翻譯引擎`)
 };
 
 const en_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Enable`)
+	return /** @type {LocalizedString} */ (`Enable translation engine`)
 };
 
 const ja_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`有効にする`)
+	return /** @type {LocalizedString} */ (`翻訳エンジンを有効にする`)
 };
 
 const ko_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`켜기`)
+	return /** @type {LocalizedString} */ (`번역 엔진 활성화`)
 };
 
 const fr_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activer`)
+	return /** @type {LocalizedString} */ (`Activer le moteur de traduction`)
 };
 
 const de_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aktivieren`)
+	return /** @type {LocalizedString} */ (`Übersetzungs-Engine aktivieren`)
 };
 
 const es_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activar`)
+	return /** @type {LocalizedString} */ (`Activar el motor de traducción`)
 };
 
 const ru_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Включить`)
+	return /** @type {LocalizedString} */ (`Включить движок перевода`)
 };
 
 const pt_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ativar`)
+	return /** @type {LocalizedString} */ (`Ativar motor de tradução`)
 };
 
 const it_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Attiva`)
+	return /** @type {LocalizedString} */ (`Attiva il motore di traduzione`)
 };
 
 const ar_provider_enable_aria = /** @type {(inputs: Provider_Enable_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تفعيل`)
+	return /** @type {LocalizedString} */ (`تفعيل محرّك الترجمة`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Enable" |
+* | "Enable translation engine" |
 *
 * @param {Provider_Enable_AriaInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

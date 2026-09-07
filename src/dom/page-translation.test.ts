@@ -1864,3 +1864,18 @@ describe('逐段对照 — no carving into interactive elements (v2.1 self-revie
     pt.stop();
   });
 });
+
+it('refreshes the translation when an inline source element is removed', async () => {
+  document.body.innerHTML = '<p>This is a sentence with <strong>important extra words</strong> at the end.</p>';
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  try {
+    pt.start();
+    await waitFor(() => !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
+    const before = translateBatch.mock.calls.length;
+    document.querySelector('p > strong')!.remove();
+    await tick(400);
+    expect(translateBatch.mock.calls.length).toBeGreaterThan(before);
+  } finally {
+    pt.stop();
+  }
+});

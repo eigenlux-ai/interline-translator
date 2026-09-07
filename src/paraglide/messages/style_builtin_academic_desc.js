@@ -6,35 +6,35 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Builtin_Academic_DescInputs */
 
 const zh_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正式书面语，术语精确，保留原文的谨慎限定。`)
+	return /** @type {LocalizedString} */ (`采用正式文体与准确术语，保留原文的限定条件和不确定性。`)
 };
 
 const zh_tw2_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`正式書面語，術語精確，保留原文的謹慎限定。`)
+	return /** @type {LocalizedString} */ (`採用正式文體與精確術語，保留原文的限定條件與不確定性。`)
 };
 
 const en_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Formal register, precise terminology, hedged claims preserved.`)
+	return /** @type {LocalizedString} */ (`Formal language and precise terminology, preserving the original qualifications and uncertainty.`)
 };
 
 const ja_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`フォーマルな文体。正確な術語を用い、原文の慎重な限定を保持します。`)
+	return /** @type {LocalizedString} */ (`正式な文体と正確な用語を使い、原文の留保や不確実性を保ちます。`)
 };
 
 const ko_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`격식체와 정확한 용어, 원문의 신중한 한정 표현을 유지합니다.`)
+	return /** @type {LocalizedString} */ (`격식 있는 문체와 정확한 용어를 사용하고, 원문의 조건과 불확실성을 유지합니다.`)
 };
 
 const fr_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Registre soutenu, terminologie précise, nuances prudentes préservées.`)
+	return /** @type {LocalizedString} */ (`Un registre formel et des termes précis, en respectant les réserves et les incertitudes du texte source.`)
 };
 
 const de_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Formales Register, präzise Terminologie, vorsichtige Einschränkungen bleiben erhalten.`)
+	return /** @type {LocalizedString} */ (`Formelle Sprache und präzise Begriffe; Einschränkungen und Unsicherheiten des Originals bleiben erhalten.`)
 };
 
 const es_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Registro formal, terminología precisa, matices cautelosos preservados.`)
+	return /** @type {LocalizedString} */ (`Lenguaje formal y términos precisos, respetando los matices de cautela y las limitaciones del original.`)
 };
 
 const ru_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
@@ -42,21 +42,21 @@ const ru_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academi
 };
 
 const pt_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Registo formal, terminologia precisa, ressalvas do original preservadas.`)
+	return /** @type {LocalizedString} */ (`Linguagem formal e termos precisos, preservando as ressalvas e incertezas do original.`)
 };
 
 const it_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Registro formale, terminologia precisa, cautele dell'originale preservate.`)
+	return /** @type {LocalizedString} */ (`Registro formale e termini precisi, nel rispetto delle riserve e delle incertezze dell’originale.`)
 };
 
 const ar_style_builtin_academic_desc = /** @type {(inputs: Style_Builtin_Academic_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`أسلوب رسمي ومصطلحات دقيقة مع الحفاظ على تحفّظات الأصل.`)
+	return /** @type {LocalizedString} */ (`لغة رسمية ومصطلحات دقيقة مع الحفاظ على التحفّظات ودرجات اليقين في الأصل.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Formal register, precise terminology, hedged claims preserved." |
+* | "Formal language and precise terminology, preserving the original qualifications and uncertainty." |
 *
 * @param {Style_Builtin_Academic_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

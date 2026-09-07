@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Follows the target language by default — the UI speaks the language you read" |
+* | "By default, the interface uses your translation target language." |
 *
 * @param {Settings_Ui_Language_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -14,7 +14,7 @@ const zh_tw2_style_builtin_technical = /** @type {(inputs: Style_Builtin_Technic
 };
 
 const en_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Technical docs`)
+	return /** @type {LocalizedString} */ (`Technical`)
 };
 
 const ja_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
@@ -26,15 +26,15 @@ const ko_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalIn
 };
 
 const fr_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs techniques`)
+	return /** @type {LocalizedString} */ (`Technique`)
 };
 
 const de_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Technische Doku`)
+	return /** @type {LocalizedString} */ (`Technisch`)
 };
 
 const es_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs técnicos`)
+	return /** @type {LocalizedString} */ (`Técnico`)
 };
 
 const ru_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalIn
 };
 
 const pt_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Docs técnicos`)
+	return /** @type {LocalizedString} */ (`Técnico`)
 };
 
 const it_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Doc tecnica`)
+	return /** @type {LocalizedString} */ (`Tecnico`)
 };
 
 const ar_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_style_builtin_technical = /** @type {(inputs: Style_Builtin_TechnicalIn
 /**
 * | output |
 * | --- |
-* | "Technical docs" |
+* | "Technical" |
 *
 * @param {Style_Builtin_TechnicalInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

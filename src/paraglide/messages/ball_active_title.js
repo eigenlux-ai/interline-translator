@@ -50,7 +50,7 @@ const it_ball_active_title = /** @type {(inputs: Ball_Active_TitleInputs) => Loc
 };
 
 const ar_ball_active_title = /** @type {(inputs: Ball_Active_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`جارٍ ترجمة هذه الصفحة`)
+	return /** @type {LocalizedString} */ (`تجري ترجمة هذه الصفحة`)
 };
 
 /**

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Translation style: {label}" |
+* | "Translation appearance: {label}" |
 *
 * @param {Style_AriaInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

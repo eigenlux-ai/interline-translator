@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Ready — non-target languages are skipped before translating" |
+* | "Ready. Detects text in your target language and excluded languages so it can be skipped before translation." |
 *
 * @param {Settings_Detector_ReadyInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

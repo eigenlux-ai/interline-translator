@@ -6,19 +6,19 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_Builtin_Technical_DescInputs */
 
 const zh_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`API 名与标识符不译，祈使语气，全篇术语一致。`)
+	return /** @type {LocalizedString} */ (`保留 API 名称和标识符，指令清晰，术语统一。`)
 };
 
 const zh_tw2_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`API 名與識別碼不譯，祈使語氣，全篇術語一致。`)
+	return /** @type {LocalizedString} */ (`保留 API 名稱與識別字，指令清楚，術語一致。`)
 };
 
 const en_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`API names stay untranslated, imperative mood, consistent terminology.`)
+	return /** @type {LocalizedString} */ (`Keep API names and identifiers unchanged, use clear instructions, and maintain consistent terminology.`)
 };
 
 const ja_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`API 名や識別子は訳さず、命令形で、術語を全体で統一します。`)
+	return /** @type {LocalizedString} */ (`API 名と識別子はそのままに、明確な指示と統一した用語で訳します。`)
 };
 
 const ko_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
@@ -50,13 +50,13 @@ const it_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Techni
 };
 
 const ar_style_builtin_technical_desc = /** @type {(inputs: Style_Builtin_Technical_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`أسماء الواجهات تبقى دون ترجمة، بصيغة أمر ومصطلحات متسقة.`)
+	return /** @type {LocalizedString} */ (`الحفاظ على أسماء API والمعرّفات، مع تعليمات واضحة ومصطلحات موحّدة.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "API names stay untranslated, imperative mood, consistent terminology." |
+* | "Keep API names and identifiers unchanged, use clear instructions, and maintain consistent terminology." |
 *
 * @param {Style_Builtin_Technical_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

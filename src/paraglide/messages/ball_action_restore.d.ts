@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Translated · restore original" |
+* | "Restore original" |
 *
 * @param {Ball_Action_RestoreInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

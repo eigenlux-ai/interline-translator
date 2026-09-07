@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Describe the tone and wording you want in natural language; English works best. Taste only — the engine guards the output format." |
+* | "Describe the tone and wording you want. Focus on style; output-format instructions are added automatically." |
 *
 * @param {Styles_Directives_HintInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

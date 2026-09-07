@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Annotating…" |
+* | "Preparing notes…" |
 *
 * @param {Sel_Notes_LoadingInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

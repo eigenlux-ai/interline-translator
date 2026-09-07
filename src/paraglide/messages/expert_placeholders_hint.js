@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ target: NonNullable<unknown>, source: NonNullable<unknown>, title: NonNullable<unknown>, text: NonNullable<unknown>, salt: NonNullable<unknown> }} Expert_Placeholders_HintInputs */
 
 const zh_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`可用占位符：${i?.target} 目标语 · ${i?.source} 源语 · ${i?.title} 页面标题 · ${i?.text} 待译文本（仅正文模板）· ${i?.salt} 批量标记盐值（仅批量模板）`)
+	return /** @type {LocalizedString} */ (`可用占位符：${i?.target} 目标语言 · ${i?.source} 源语言 · ${i?.title} 页面标题 · ${i?.text} 待译文本（仅用户模板）· ${i?.salt} 批量标记标识（仅批量模板）`)
 };
 
 const zh_tw2_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`可用佔位符：${i?.target} 目標語 · ${i?.source} 來源語 · ${i?.title} 頁面標題 · ${i?.text} 待譯文字（僅內文模板）· ${i?.salt} 批量標記鹽值（僅批量模板）`)
+	return /** @type {LocalizedString} */ (`可用預留位置：${i?.target} 目標語言 · ${i?.source} 來源語言 · ${i?.title} 頁面標題 · ${i?.text} 待譯文字（僅使用者範本）· ${i?.salt} 批次標記識別值（僅批次範本）`)
 };
 
 const en_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
@@ -18,11 +18,11 @@ const en_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_Hint
 };
 
 const ja_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`プレースホルダー：${i?.target} 目標言語 · ${i?.source} 原語 · ${i?.title} ページタイトル · ${i?.text} 対象テキスト（本文のみ）· ${i?.salt} バッチ用ソルト（バッチのみ）`)
+	return /** @type {LocalizedString} */ (`変数：${i?.target} 翻訳先の言語 · ${i?.source} 元の言語 · ${i?.title} ページタイトル · ${i?.text} 翻訳する文章（ユーザーテンプレートのみ）· ${i?.salt} 一括翻訳マーカーの識別子（一括テンプレートのみ）`)
 };
 
 const ko_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`자리표시자: ${i?.target} 대상 언어 · ${i?.source} 원어 · ${i?.title} 페이지 제목 · ${i?.text} 대상 텍스트(본문 전용) · ${i?.salt} 배치 마커 솔트(배치 전용)`)
+	return /** @type {LocalizedString} */ (`변수: ${i?.target} 대상 언어 · ${i?.source} 원본 언어 · ${i?.title} 페이지 제목 · ${i?.text} 번역할 글(사용자 템플릿 전용) · ${i?.salt} 일괄 번역 마커 식별자(일괄 템플릿 전용)`)
 };
 
 const fr_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
@@ -42,7 +42,7 @@ const ru_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_Hint
 };
 
 const pt_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Marcadores: ${i?.target} língua de destino · ${i?.source} língua de origem · ${i?.title} título da página · ${i?.text} o texto (apenas modelo de utilizador) · ${i?.salt} sal dos marcadores (apenas lote)`)
+	return /** @type {LocalizedString} */ (`Variáveis: ${i?.target} idioma de destino · ${i?.source} idioma de origem · ${i?.title} título da página · ${i?.text} texto a traduzir (apenas template do usuário) · ${i?.salt} identificador dos marcadores (apenas template em lotes)`)
 };
 
 const it_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
@@ -50,7 +50,7 @@ const it_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_Hint
 };
 
 const ar_expert_placeholders_hint = /** @type {(inputs: Expert_Placeholders_HintInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`العناصر النائبة: ${i?.target} اللغة الهدف · ${i?.source} لغة المصدر · ${i?.title} عنوان الصفحة · ${i?.text} النص (قالب النص فقط) · ${i?.salt} ملح العلامات (قالب الدفعة فقط)`)
+	return /** @type {LocalizedString} */ (`المتغيّرات: ${i?.target} لغة الهدف · ${i?.source} لغة المصدر · ${i?.title} عنوان الصفحة · ${i?.text} النص المراد ترجمته (قالب المستخدم فقط) · ${i?.salt} معرّف علامات الدفعة (قالب الدفعة فقط)`)
 };
 
 /**

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Sel_NotesInputs */
 
 const zh_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`注疏`)
+	return /** @type {LocalizedString} */ (`注释`)
 };
 
 const zh_tw2_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`注疏`)
+	return /** @type {LocalizedString} */ (`註解`)
 };
 
 const en_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
@@ -22,7 +22,7 @@ const ja_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */
 };
 
 const ko_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`주해`)
+	return /** @type {LocalizedString} */ (`해설`)
 };
 
 const fr_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
@@ -50,7 +50,7 @@ const it_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */
 };
 
 const ar_sel_notes = /** @type {(inputs: Sel_NotesInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`حواشٍ`)
+	return /** @type {LocalizedString} */ (`شروح`)
 };
 
 /**

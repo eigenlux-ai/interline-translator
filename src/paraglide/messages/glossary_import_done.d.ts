@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Imported “{name}”: {count} terms" |
+* | "Imported “{name}”. Terms: {count}" |
 *
 * @param {Glossary_Import_DoneInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

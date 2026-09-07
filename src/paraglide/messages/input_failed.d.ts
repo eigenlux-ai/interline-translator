@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Couldn't translate — your draft is untouched" |
+* | "Translation failed. Your original text has been kept." |
 *
 * @param {Input_FailedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

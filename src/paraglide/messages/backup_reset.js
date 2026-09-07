@@ -42,7 +42,7 @@ const ru_backup_reset = /** @type {(inputs: Backup_ResetInputs) => LocalizedStri
 };
 
 const pt_backup_reset = /** @type {(inputs: Backup_ResetInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Repor as predefinições`)
+	return /** @type {LocalizedString} */ (`Restaurar padrões`)
 };
 
 const it_backup_reset = /** @type {(inputs: Backup_ResetInputs) => LocalizedString} */ () => {

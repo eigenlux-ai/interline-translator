@@ -50,6 +50,7 @@ export class InputTranslator {
   private readonly trigger: SpaceTrigger;
   private readonly hint = new InputHint();
   private busy = false;
+  private pending: AbortController | null = null;
   private stopFn: (() => void) | null = null;
   /**
    * The last in-place edit, kept so the 撤销 affordance can restore the original.
@@ -87,6 +88,10 @@ export class InputTranslator {
   }
 
   stop(): void {
+    this.pending?.abort();
+    this.pending = null;
+    this.busy = false;
+    this.trigger.reset();
     this.stopFn?.();
     this.stopFn = null;
     this.hint.hide();
@@ -147,6 +152,9 @@ export class InputTranslator {
   private async translateField(el: Element, kind: EditableKind): Promise<void> {
     if (this.busy) return;
     this.busy = true;
+    const controller = new AbortController();
+    this.pending = controller;
+    const signal = controller.signal;
     try {
       // Local snapshot for the race re-check. Only the trigger's OWN residue —
       // trailing ASCII spaces (the gesture can produce nothing else) — is
@@ -160,6 +168,7 @@ export class InputTranslator {
       // everything else (and injector miss) uses the DOM read. The same read
       // brings back the rich snapshot 撤销 restores from.
       const model = isMainWorldEditor(el) ? await readViaMainWorld(el) : null;
+      if (signal.aborted) return;
       const baseline = stripTriggerSpaces(model?.text ?? readEditableText(el));
       const { target, text } = parseInputCommand(baseline);
       if (!text.trim()) return;
@@ -187,6 +196,7 @@ export class InputTranslator {
           TRANSLATE_TIMEOUT_MS
         )
       );
+      if (signal.aborted) return;
       // Empty output guard: engines legitimately return '' (think-only LLM
       // output, untranslatable scraps). Writing '' isn't a no-op — the replace
       // chains CLEAR the field first and only then fail verification, wiping
@@ -211,7 +221,9 @@ export class InputTranslator {
         this.hint.hide();
         return;
       }
-      if (await replaceEditableText(el, kind, out.text, { expectedBefore: baseline })) {
+      const applied = await replaceEditableText(el, kind, out.text, { expectedBefore: baseline, signal });
+      if (signal.aborted) return;
+      if (applied) {
         this.lastEdit = { el, kind, original: baseline, ...(model?.rich ? { rich: model.rich } : {}) };
         this.hint.undo(el, () => this.restoreLast()); // brief 撤销 affordance
       } else {
@@ -220,11 +232,15 @@ export class InputTranslator {
         this.hint.fail(el);
       }
     } catch {
+      if (signal.aborted) return;
       // Quietly, not silently: the user pressed the gesture — a 1.6s notice
       // ("未能翻译，原文未动") acknowledges it without interrupting typing.
       this.hint.fail(el);
     } finally {
-      this.busy = false;
+      if (this.pending === controller) {
+        this.pending = null;
+        this.busy = false;
+      }
     }
   }
 

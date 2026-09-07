@@ -10,7 +10,7 @@ const zh_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) =>
 };
 
 const zh_tw2_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`譯文字體`)
+	return /** @type {LocalizedString} */ (`譯文字型`)
 };
 
 const en_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) =>
 };
 
 const pt_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tipo de letra da tradução`)
+	return /** @type {LocalizedString} */ (`Fonte da tradução`)
 };
 
 const it_settings_font_title = /** @type {(inputs: Settings_Font_TitleInputs) => LocalizedString} */ () => {

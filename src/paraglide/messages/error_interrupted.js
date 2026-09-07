@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Error_InterruptedInputs */
 
 const zh_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`翻译已中断，重试通常即可解决。`)
+	return /** @type {LocalizedString} */ (`翻译已中断，请重试。`)
 };
 
 const zh_tw2_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`翻譯已中斷，重試通常即可解決。`)
+	return /** @type {LocalizedString} */ (`翻譯已中斷，請再試一次。`)
 };
 
 const en_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Translation interrupted. A retry usually fixes this.`)
+	return /** @type {LocalizedString} */ (`Translation was interrupted. Please try again.`)
 };
 
 const ja_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`翻訳が中断されました。通常は再試行することで解決します。`)
+	return /** @type {LocalizedString} */ (`翻訳が中断されました。もう一度お試しください。`)
 };
 
 const ko_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`번역이 중단되었습니다. 다시 시도하면 보통 해결됩니다.`)
+	return /** @type {LocalizedString} */ (`번역이 중단되었습니다. 다시 시도해 주세요.`)
 };
 
 const fr_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`La traduction a été interrompue. Réessayer résout généralement le problème.`)
+	return /** @type {LocalizedString} */ (`La traduction a été interrompue. Veuillez réessayer.`)
 };
 
 const de_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzung unterbrochen. Ein erneuter Versuch löst das Problem in der Regel.`)
+	return /** @type {LocalizedString} */ (`Die Übersetzung wurde unterbrochen. Bitte versuchen Sie es erneut.`)
 };
 
 const es_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traducción interrumpida. Normalmente se soluciona al reintentar.`)
+	return /** @type {LocalizedString} */ (`La traducción se ha interrumpido. Vuelve a intentarlo.`)
 };
 
 const ru_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Перевод прерван. Обычно помогает повторная попытка.`)
+	return /** @type {LocalizedString} */ (`Перевод прерван. Повторите попытку.`)
 };
 
 const pt_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A tradução foi interrompida. Tentar novamente costuma resolver.`)
+	return /** @type {LocalizedString} */ (`A tradução foi interrompida. Tente novamente.`)
 };
 
 const it_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzione interrotta. Di solito riprovando si risolve.`)
+	return /** @type {LocalizedString} */ (`La traduzione è stata interrotta. Riprova.`)
 };
 
 const ar_error_interrupted = /** @type {(inputs: Error_InterruptedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تمت مقاطعة الترجمة. إعادة المحاولة عادة ما تصلح المشكلة.`)
+	return /** @type {LocalizedString} */ (`توقفت الترجمة. يرجى إعادة المحاولة.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Translation interrupted. A retry usually fixes this." |
+* | "Translation was interrupted. Please try again." |
 *
 * @param {Error_InterruptedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

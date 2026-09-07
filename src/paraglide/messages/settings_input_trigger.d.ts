@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Spaces to trigger" |
+* | "Consecutive Space presses" |
 *
 * @param {Settings_Input_TriggerInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

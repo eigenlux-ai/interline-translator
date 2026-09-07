@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Options_TaglineInputs */
 
 const zh_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 原生的读者翻译器 · 设置`)
+	return /** @type {LocalizedString} */ (`为阅读而生的 AI 翻译 · 设置`)
 };
 
 const zh_tw2_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 原生的讀者翻譯器 · 設定`)
+	return /** @type {LocalizedString} */ (`為閱讀而生的 AI 翻譯 · 設定`)
 };
 
 const en_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`An AI-native reader's translator · Settings`)
+	return /** @type {LocalizedString} */ (`AI translation for thoughtful reading · Settings`)
 };
 
 const ja_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI ネイティブの読み手のための翻訳ツール · 設定`)
+	return /** @type {LocalizedString} */ (`読むための AI 翻訳 · 設定`)
 };
 
 const ko_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`AI 네이티브 독자용 번역기 · 설정`)
+	return /** @type {LocalizedString} */ (`읽기를 위한 AI 번역 · 설정`)
 };
 
 const fr_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un traducteur pour le lecteur, nativement IA · Réglages`)
+	return /** @type {LocalizedString} */ (`La traduction par IA au service de la lecture · Réglages`)
 };
 
 const de_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ein KI-nativer Übersetzer für Lesende · Einstellungen`)
+	return /** @type {LocalizedString} */ (`KI-Übersetzung zum Lesen · Einstellungen`)
 };
 
 const es_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un traductor para quien lee, nativo de IA · Ajustes`)
+	return /** @type {LocalizedString} */ (`Traducción con IA para disfrutar de la lectura · Ajustes`)
 };
 
 const ru_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Переводчик для читателя, созданный вокруг ИИ · Настройки`)
+	return /** @type {LocalizedString} */ (`ИИ-перевод для вдумчивого чтения · Настройки`)
 };
 
 const pt_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Um tradutor para quem lê, nativo de IA · Definições`)
+	return /** @type {LocalizedString} */ (`Tradução com IA para quem lê · Configurações`)
 };
 
 const it_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Un traduttore per chi legge, nativo IA · Impostazioni`)
+	return /** @type {LocalizedString} */ (`La traduzione con IA al servizio della lettura · Impostazioni`)
 };
 
 const ar_options_tagline = /** @type {(inputs: Options_TaglineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`مترجم للقارئ أصيل الذكاء الاصطناعي · الإعدادات`)
+	return /** @type {LocalizedString} */ (`ترجمة بالذكاء الاصطناعي لقراءة أعمق · الإعدادات`)
 };
 
 /**
 * | output |
 * | --- |
-* | "An AI-native reader's translator · Settings" |
+* | "AI translation for thoughtful reading · Settings" |
 *
 * @param {Options_TaglineInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

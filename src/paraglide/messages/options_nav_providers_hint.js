@@ -42,7 +42,7 @@ const ru_options_nav_providers_hint = /** @type {(inputs: Options_Nav_Providers_
 };
 
 const pt_options_nav_providers_hint = /** @type {(inputs: Options_Nav_Providers_HintInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Fornecedores · Chaves`)
+	return /** @type {LocalizedString} */ (`Provedores · Chaves`)
 };
 
 const it_options_nav_providers_hint = /** @type {(inputs: Options_Nav_Providers_HintInputs) => LocalizedString} */ () => {

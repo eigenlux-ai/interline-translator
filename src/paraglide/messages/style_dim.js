@@ -6,7 +6,7 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_DimInputs */
 
 const zh_style_dim = /** @type {(inputs: Style_DimInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`弱化`)
+	return /** @type {LocalizedString} */ (`淡化`)
 };
 
 const zh_tw2_style_dim = /** @type {(inputs: Style_DimInputs) => LocalizedString} */ () => {
@@ -42,7 +42,7 @@ const ru_style_dim = /** @type {(inputs: Style_DimInputs) => LocalizedString} */
 };
 
 const pt_style_dim = /** @type {(inputs: Style_DimInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Esbatido`)
+	return /** @type {LocalizedString} */ (`Atenuado`)
 };
 
 const it_style_dim = /** @type {(inputs: Style_DimInputs) => LocalizedString} */ () => {

@@ -25,25 +25,27 @@ import {
   Text,
   TextInput,
 } from '@mantine/core';
+import { randomId } from '@/core/uid';
 import { BookIcon, PlusIcon, SearchIcon, TrashIcon } from '@/react-app/components/icons';
 import type { Config, GlossaryEntry, GlossarySet } from '@/data/models';
-import { randomId } from '@/core/uid';
+import { m } from '@/paraglide/messages.js';
 import {
   glossaryExportFilename,
   parseGlossaryImport,
   serializeGlossarySet,
   type GlossaryImportError,
 } from '@/services/translation/glossary-io';
-import { m } from '@/paraglide/messages.js';
 import SettingsSection from './SettingsSection';
+
 const importError: Record<GlossaryImportError, () => string> = {
   empty: m.glossary_import_err_empty,
   unrecognized: m.glossary_import_err_unrecognized,
 };
 
-const GLOSSARY_PRESETS: Array<{ name: string; entries: GlossaryEntry[] }> = [
+// Preset term data translates English into Simplified Chinese, regardless of UI locale.
+const GLOSSARY_PRESETS: Array<{ name: () => string; entries: GlossaryEntry[] }> = [
   {
-    name: '计算机与前沿技术',
+    name: m.glossary_preset_tech,
     entries: [
       { source: 'Token', target: '标记 / 词元', note: 'LLM 计量单位' },
       { source: 'Prompt', target: '提示词', note: '指令' },
@@ -58,7 +60,7 @@ const GLOSSARY_PRESETS: Array<{ name: string; entries: GlossaryEntry[] }> = [
     ],
   },
   {
-    name: '金融经济与商贸',
+    name: m.glossary_preset_finance,
     entries: [
       { source: 'Gross margin', target: '毛利率' },
       { source: 'Operating income', target: '营业利润' },
@@ -71,7 +73,7 @@ const GLOSSARY_PRESETS: Array<{ name: string; entries: GlossaryEntry[] }> = [
     ],
   },
   {
-    name: '生物医药与临床',
+    name: m.glossary_preset_medical,
     entries: [
       { source: 'Placebo', target: '安慰剂' },
       { source: 'Double-blind', target: '双盲试验' },
@@ -113,7 +115,13 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
       const id = randomId();
       save([
         ...config.glossary,
-        { id, name: parsed.name, enabled: true, ...(parsed.pattern ? { pattern: parsed.pattern } : {}), entries: parsed.entries },
+        {
+          id,
+          name: parsed.name,
+          enabled: true,
+          ...(parsed.pattern ? { pattern: parsed.pattern } : {}),
+          entries: parsed.entries,
+        },
       ]);
       setOpenSet(id);
       setStatus({
@@ -139,9 +147,9 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
     setOpenSet(id);
   };
 
-  const addPreset = (preset: { name: string; entries: GlossaryEntry[] }) => {
+  const addPreset = (preset: { name: () => string; entries: GlossaryEntry[] }) => {
     const id = randomId();
-    save([...config.glossary, { id, name: preset.name, enabled: true, entries: [...preset.entries] }]);
+    save([...config.glossary, { id, name: preset.name(), enabled: true, entries: [...preset.entries] }]);
     setOpenSet(id);
   };
 
@@ -155,19 +163,22 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
           onKeyDown={(e) => e.key === 'Enter' && addSet()}
           style={{ flex: '1 1 200px' }}
         />
-        <Button variant="light" onClick={addSet} disabled={!newName.trim()} leftSection={<PlusIcon width={12} height={12} />}>
+        <Button
+          variant="light"
+          onClick={addSet}
+          disabled={!newName.trim()}
+          leftSection={<PlusIcon width={12} height={12} />}
+        >
           {m.glossary_set_new()}
         </Button>
         <Menu position="bottom-end">
           <Menu.Target>
-            <Button variant="default">
-              预设模板
-            </Button>
+            <Button variant="default">{m.glossary_presets()}</Button>
           </Menu.Target>
           <Menu.Dropdown>
             {GLOSSARY_PRESETS.map((gp) => (
-              <Menu.Item key={gp.name} onClick={() => addPreset(gp)}>
-                {gp.name} ({gp.entries.length})
+              <Menu.Item key={gp.name()} onClick={() => addPreset(gp)}>
+                {gp.name()} ({gp.entries.length})
               </Menu.Item>
             ))}
           </Menu.Dropdown>
@@ -208,15 +219,15 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
           <Stack gap="xs" align="center" py="sm">
             <BookIcon width={24} height={24} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
             <Text size="sm" fw={600}>
-              暂无术语集
+              {m.glossary_empty()}
             </Text>
             <Text size="xs" c="dimmed" ta="center">
-              您可以新建术语集、导入 CSV/JSON 文件，或载入常用专业预设：
+              {m.glossary_empty_hint()}
             </Text>
             <Group gap="xs" mt={4}>
               {GLOSSARY_PRESETS.map((gp) => (
-                <Button key={gp.name} size="xs" variant="light" onClick={() => addPreset(gp)}>
-                  + {gp.name}
+                <Button key={gp.name()} size="xs" variant="light" onClick={() => addPreset(gp)}>
+                  + {gp.name()}
                 </Button>
               ))}
             </Group>
@@ -225,7 +236,11 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
       ) : (
         <Accordion value={openSet} onChange={setOpenSet} variant="separated">
           {config.glossary.map((set) => (
-            <Accordion.Item key={set.id} value={set.id} style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+            <Accordion.Item
+              key={set.id}
+              value={set.id}
+              style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+            >
               <Accordion.Control>
                 <Group gap="sm" wrap="nowrap">
                   <Text size="sm" fw={500} style={{ flex: 1 }}>
@@ -352,7 +367,12 @@ function SetPanel({
           onKeyDown={(e) => e.key === 'Enter' && addEntry()}
           style={{ flex: '1 1 130px' }}
         />
-        <Button variant="light" onClick={addEntry} disabled={!source.trim() || !target.trim()} leftSection={<PlusIcon width={12} height={12} />}>
+        <Button
+          variant="light"
+          onClick={addEntry}
+          disabled={!source.trim() || !target.trim()}
+          leftSection={<PlusIcon width={12} height={12} />}
+        >
           {m.glossary_add()}
         </Button>
       </Group>
@@ -360,7 +380,7 @@ function SetPanel({
       {set.entries.length > 5 && (
         <TextInput
           size="xs"
-          placeholder="搜索术语或释义…"
+          placeholder={m.glossary_search()}
           leftSection={<SearchIcon width={12} height={12} />}
           value={search}
           onChange={(e) => setSearch(e.currentTarget.value)}
@@ -386,7 +406,13 @@ function SetPanel({
                   </Text>
                 </Table.Td>
                 <Table.Td w={40}>
-                  <ActionIcon variant="subtle" color="danger" size="sm" onClick={() => removeEntry(i)} aria-label={m.glossary_remove_aria()}>
+                  <ActionIcon
+                    variant="subtle"
+                    color="danger"
+                    size="sm"
+                    onClick={() => removeEntry(i)}
+                    aria-label={m.glossary_remove_aria()}
+                  >
                     <TrashIcon width={13} height={13} />
                   </ActionIcon>
                 </Table.Td>

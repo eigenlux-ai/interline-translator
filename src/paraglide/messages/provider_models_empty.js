@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Models_EmptyInputs */
 
 const zh_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`该端点未返回任何模型`)
+	return /** @type {LocalizedString} */ (`此服务未返回任何可用模型`)
 };
 
 const zh_tw2_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`這個端點沒有傳回任何模型`)
+	return /** @type {LocalizedString} */ (`此服務未傳回任何可用模型`)
 };
 
 const en_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {
@@ -38,11 +38,11 @@ const es_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs
 };
 
 const ru_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Эта конечная точка не вернула ни одной модели`)
+	return /** @type {LocalizedString} */ (`Сервис не вернул ни одной модели`)
 };
 
 const pt_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Este endpoint não devolveu nenhum modelo`)
+	return /** @type {LocalizedString} */ (`Este serviço não retornou nenhum modelo`)
 };
 
 const it_provider_models_empty = /** @type {(inputs: Provider_Models_EmptyInputs) => LocalizedString} */ () => {

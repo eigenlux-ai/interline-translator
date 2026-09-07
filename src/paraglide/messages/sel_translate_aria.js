@@ -50,7 +50,7 @@ const it_sel_translate_aria = /** @type {(inputs: Sel_Translate_AriaInputs) => L
 };
 
 const ar_sel_translate_aria = /** @type {(inputs: Sel_Translate_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ترجمة التحديد`)
+	return /** @type {LocalizedString} */ (`ترجمة النص المحدد`)
 };
 
 /**

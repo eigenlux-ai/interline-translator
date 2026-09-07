@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Style_WavyInputs */
 
 const zh_style_wavy = /** @type {(inputs: Style_WavyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`波浪`)
+	return /** @type {LocalizedString} */ (`波浪线`)
 };
 
 const zh_tw2_style_wavy = /** @type {(inputs: Style_WavyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`波浪`)
+	return /** @type {LocalizedString} */ (`波浪線`)
 };
 
 const en_style_wavy = /** @type {(inputs: Style_WavyInputs) => LocalizedString} */ () => {

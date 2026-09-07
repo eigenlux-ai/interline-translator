@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Expert_Single_System_LabelInputs */
 
 const zh_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`单条翻译 · system 模板`)
+	return /** @type {LocalizedString} */ (`单条翻译 · 系统模板`)
 };
 
 const zh_tw2_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`單條翻譯 · system 模板`)
+	return /** @type {LocalizedString} */ (`單筆翻譯 · 系統範本`)
 };
 
 const en_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
@@ -18,15 +18,15 @@ const en_expert_single_system_label = /** @type {(inputs: Expert_Single_System_L
 };
 
 const ja_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`単発翻訳 · system テンプレート`)
+	return /** @type {LocalizedString} */ (`単発翻訳 · システムテンプレート`)
 };
 
 const ko_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`단건 번역 · system 템플릿`)
+	return /** @type {LocalizedString} */ (`단건 번역 · 시스템 템플릿`)
 };
 
 const fr_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduction unitaire · modèle system`)
+	return /** @type {LocalizedString} */ (`Traduction individuelle · modèle système`)
 };
 
 const de_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
@@ -34,23 +34,23 @@ const de_expert_single_system_label = /** @type {(inputs: Expert_Single_System_L
 };
 
 const es_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traducción única · plantilla system`)
+	return /** @type {LocalizedString} */ (`Traducción individual · plantilla del sistema`)
 };
 
 const ru_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Одиночный перевод · шаблон system`)
+	return /** @type {LocalizedString} */ (`Отдельный перевод · системный шаблон`)
 };
 
 const pt_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Tradução única · modelo system`)
+	return /** @type {LocalizedString} */ (`Tradução individual · template do sistema`)
 };
 
 const it_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzione singola · template system`)
+	return /** @type {LocalizedString} */ (`Traduzione singola · template di sistema`)
 };
 
 const ar_expert_single_system_label = /** @type {(inputs: Expert_Single_System_LabelInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ترجمة مفردة · قالب system`)
+	return /** @type {LocalizedString} */ (`ترجمة فردية · قالب النظام`)
 };
 
 /**

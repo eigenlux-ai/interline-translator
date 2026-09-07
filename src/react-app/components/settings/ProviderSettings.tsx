@@ -53,6 +53,7 @@ import { getTranslationService } from '@/services/translation/contract';
 import { inferModelCapabilities } from '@/services/translation/model-capabilities';
 import { CheckIcon, ChevronIcon, PlusIcon, SparklesIcon } from '../icons';
 import SettingsSection from './SettingsSection';
+
 const ADDABLE: Array<{ kind: LlmProviderKind; label: string; defaultModel: string }> = [
   { kind: 'openai', label: 'OpenAI', defaultModel: 'gpt-4o-mini' },
   { kind: 'anthropic', label: 'Anthropic', defaultModel: 'claude-haiku-4-5' },
@@ -298,7 +299,12 @@ function ProviderCard({
 
   if (p.kind === 'google-mt') {
     return (
-      <Card withBorder radius="md" padding="md" style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+      <Card
+        withBorder
+        radius="md"
+        padding="md"
+        style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+      >
         <Stack gap="sm">
           <Group justify="space-between">
             <Group gap="xs">
@@ -323,7 +329,12 @@ function ProviderCard({
   }
 
   return (
-    <Card withBorder radius="md" padding="md" style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+    <Card
+      withBorder
+      radius="md"
+      padding="md"
+      style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+    >
       <Stack gap="sm">
         <Group justify="space-between" wrap="nowrap">
           <UnstyledButton onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ flex: 1, minWidth: 0 }}>
@@ -346,7 +357,7 @@ function ProviderCard({
               </Badge>
               {inferModelCapabilities(p.kind, p.model).reasoning === 'mandatory' && (
                 <Badge variant="light" color="cinnabar" size="sm" style={{ flexShrink: 0 }}>
-                  原生思考
+                  {m.provider_reasoning_required()}
                 </Badge>
               )}
               <Badge
@@ -436,7 +447,7 @@ function ProviderCard({
               }}
             />
             <PasswordInput
-              label="API key"
+              label={m.provider_api_key()}
               size="xs"
               placeholder="sk-…"
               value={p.apiKeys[0] ?? ''}
@@ -567,12 +578,12 @@ function ProviderCard({
                   </Text>
                   {inferModelCapabilities(p.kind, p.model).reasoning === 'mandatory' && (
                     <Text size="xs" c="cinnabar" fw={500}>
-                      💡 该模型为原生深度思考模型，思考过程由服务商强制开启。
+                      {m.provider_reasoning_required_desc()}
                     </Text>
                   )}
                   {inferModelCapabilities(p.kind, p.model).fixedTemperature && (
                     <Text size="xs" c="dimmed">
-                      💡 该模型由服务商锁定采样温度，自定义温度将被安全忽略。
+                      {m.provider_temperature_fixed_desc()}
                     </Text>
                   )}
                 </Stack>
@@ -676,7 +687,8 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
             withBorder
             style={{
               borderStyle: 'dashed',
-              borderColor: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 30%, var(--mantine-color-default-border))',
+              borderColor:
+                'color-mix(in srgb, var(--mantine-color-cinnabar-6) 30%, var(--mantine-color-default-border))',
               backgroundColor: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 3%, var(--mantine-color-default))',
             }}
           >

@@ -30,7 +30,7 @@ const fr_error_unavailable = /** @type {(inputs: Error_UnavailableInputs) => Loc
 };
 
 const de_error_unavailable = /** @type {(inputs: Error_UnavailableInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Der Übersetzungsdienst ist vorübergehend nicht erreichbar. Bitte versuche es erneut.`)
+	return /** @type {LocalizedString} */ (`Der Übersetzungsdienst ist vorübergehend nicht verfügbar. Bitte versuchen Sie es später erneut.`)
 };
 
 const es_error_unavailable = /** @type {(inputs: Error_UnavailableInputs) => LocalizedString} */ () => {

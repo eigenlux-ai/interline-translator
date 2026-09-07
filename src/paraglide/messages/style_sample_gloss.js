@@ -14,49 +14,49 @@ const zh_tw2_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) 
 };
 
 const en_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preview translation style`)
+	return /** @type {LocalizedString} */ (`Preview of translation appearance`)
 };
 
 const ja_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ここで訳文スタイルをプレビュー`)
+	return /** @type {LocalizedString} */ (`訳文の表示プレビュー`)
 };
 
 const ko_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`여기서 번역 스타일 미리보기`)
+	return /** @type {LocalizedString} */ (`번역문 표시 미리보기`)
 };
 
 const fr_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Aperçu du style de traduction`)
+	return /** @type {LocalizedString} */ (`Aperçu de l’apparence du texte traduit`)
 };
 
 const de_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Übersetzungsstil-Vorschau`)
+	return /** @type {LocalizedString} */ (`Vorschau der Darstellung`)
 };
 
 const es_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vista previa del estilo de traducción`)
+	return /** @type {LocalizedString} */ (`Vista previa de la apariencia`)
 };
 
 const ru_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Предпросмотр стиля перевода`)
+	return /** @type {LocalizedString} */ (`Предпросмотр оформления перевода`)
 };
 
 const pt_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Pré-visualização do estilo de tradução`)
+	return /** @type {LocalizedString} */ (`Prévia da aparência da tradução`)
 };
 
 const it_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Anteprima stile traduzione`)
+	return /** @type {LocalizedString} */ (`Anteprima dell’aspetto della traduzione`)
 };
 
 const ar_style_sample_gloss = /** @type {(inputs: Style_Sample_GlossInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`معاينة نمط الترجمة`)
+	return /** @type {LocalizedString} */ (`معاينة مظهر الترجمة`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Preview translation style" |
+* | "Preview of translation appearance" |
 *
 * @param {Style_Sample_GlossInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

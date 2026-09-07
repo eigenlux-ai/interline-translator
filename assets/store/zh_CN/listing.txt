@@ -10,7 +10,7 @@ Interline（行间）是一款代码完全开源的双语阅读与翻译扩展�
 写好草稿后，连按三次空格即可原地翻译。写作目标语言可单独设置，也可用 /en 或 en: 为单次翻译指定语言。
 
 【免费开始，按需连接 AI】
-内置无需 API Key 的免费翻译引擎。也可使用自己的 API Key 连接 OpenAI、Anthropic、Google Gemini、OpenRouter，以及兼容 OpenAI / Anthropic 协议的服务。第三方 AI 服务可能收费，其价格、配额和可用性由服务商决定。
+内置无需 API 密钥 的免费翻译引擎。也可使用自己的 API 密钥 连接 OpenAI、Anthropic、Google Gemini、OpenRouter，以及兼容 OpenAI / Anthropic 协议的服务。第三方 AI 服务可能收费，其价格、配额和可用性由服务商决定。
 
 【按你的习惯阅读】
 自定义翻译风格、提示词和术语表；按站点设置自动翻译或不翻译。支持浅色与深色外观，提供 12 种界面语言。
@@ -24,9 +24,9 @@ https://github.com/eigenlux-ai/interline-translator/issues
 https://github.com/eigenlux-ai/interline-translator/pulls
 
 【数据如何处理】
-Interline 无需注册账号，没有行为埋点或遥测，也不运营翻译中转服务器。设置与 API Key 保存在本地浏览器；需要翻译的文本直接发送给你选择的服务商，适用该服务商的数据政策。开启“通读全文”时，会额外发送页面前 8,000 个字符用于生成上下文。
+Interline 无需注册账号，没有行为埋点或遥测，也不运营翻译中转服务器。设置与 API 密钥 保存在本地浏览器；需要翻译的文本直接发送给你选择的服务商，适用该服务商的数据政策。开启“参考页面上下文”时，会额外发送页面前 8,000 个字符用于生成上下文。
 
 Chrome 内部页面等浏览器限制页面无法注入翻译。部分网站或编辑器可能存在兼容性差异；欢迎通过 Issues 反馈。
 
-AI 请求可能包含相关页面标题、相邻文本及匹配的术语表条目；自动翻译规则可能在无需再次点击时触发翻译。配置导出文件包含 API Key，请妥善保管。
+AI 请求可能包含相关页面标题、相邻文本及匹配的术语表条目；自动翻译规则可能在无需再次点击时触发翻译。配置导出文件包含 API 密钥，请妥善保管。
 隐私详情：https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md

@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Leave a field empty to use the model's own default. Reasoning models (OpenAI o-series, gpt-5) usually accept only the default temperature." |
+* | "Leave fields blank to use the model defaults. Supported parameters depend on the model; some reasoning models use a fixed temperature." |
 *
 * @param {Provider_Params_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

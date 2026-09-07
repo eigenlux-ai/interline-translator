@@ -42,7 +42,7 @@ const ru_popup_open_settings = /** @type {(inputs: Popup_Open_SettingsInputs) =>
 };
 
 const pt_popup_open_settings = /** @type {(inputs: Popup_Open_SettingsInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Abrir as definições`)
+	return /** @type {LocalizedString} */ (`Abrir configurações`)
 };
 
 const it_popup_open_settings = /** @type {(inputs: Popup_Open_SettingsInputs) => LocalizedString} */ () => {

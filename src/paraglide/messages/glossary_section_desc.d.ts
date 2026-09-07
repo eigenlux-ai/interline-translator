@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Pin exact translations for terms. Injected on demand: an entry only enters the prompt when its term occurs in the text — a large glossary costs nothing extra..." |
+* | "Specify preferred translations for terms. Only entries matching the source text are added to AI prompts; unused entries add no tokens. You can limit each set..." |
 *
 * @param {Glossary_Section_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

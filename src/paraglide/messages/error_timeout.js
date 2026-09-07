@@ -30,7 +30,7 @@ const fr_error_timeout = /** @type {(inputs: Error_TimeoutInputs) => LocalizedSt
 };
 
 const de_error_timeout = /** @type {(inputs: Error_TimeoutInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Die Engine hat zu lange nicht geantwortet. Bitte versuche es später erneut.`)
+	return /** @type {LocalizedString} */ (`Die Engine hat nicht rechtzeitig geantwortet. Bitte versuchen Sie es später erneut.`)
 };
 
 const es_error_timeout = /** @type {(inputs: Error_TimeoutInputs) => LocalizedString} */ () => {

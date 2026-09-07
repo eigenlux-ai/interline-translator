@@ -34,15 +34,15 @@ const de_options_nav_backup = /** @type {(inputs: Options_Nav_BackupInputs) => L
 };
 
 const es_options_nav_backup = /** @type {(inputs: Options_Nav_BackupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Copia`)
+	return /** @type {LocalizedString} */ (`Copia de seguridad`)
 };
 
 const ru_options_nav_backup = /** @type {(inputs: Options_Nav_BackupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Копия`)
+	return /** @type {LocalizedString} */ (`Резервная копия`)
 };
 
 const pt_options_nav_backup = /** @type {(inputs: Options_Nav_BackupInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cópia`)
+	return /** @type {LocalizedString} */ (`Backup`)
 };
 
 const it_options_nav_backup = /** @type {(inputs: Options_Nav_BackupInputs) => LocalizedString} */ () => {

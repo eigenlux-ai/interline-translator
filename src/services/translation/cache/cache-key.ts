@@ -48,7 +48,7 @@ export function stableStringify(v: unknown): string {
 }
 
 /** Project the provider down to only the fields that influence the output. */
-function stableProviderFingerprint(p: ProviderConfig): string {
+export function stableProviderFingerprint(p: ProviderConfig): string {
   // NB: apiKeys deliberately excluded (secret + output-irrelevant).
   // params (temperature/maxOutputTokens/reasoning) change the generated text, so
   // they belong in the key exactly like providerOptions — without them, lowering

@@ -591,6 +591,13 @@ export class PageTranslator {
         this.scan(el);
       }
       for (const node of Array.from(m.removedNodes)) {
+        if (
+          targetEl &&
+          !skippedContext &&
+          (node.nodeType === 3 || (node.nodeType === 1 && !(node as Element).hasAttribute(DATA_OMNI.translated)))
+        ) {
+          this.onTextChanged(targetEl);
+        }
         if (node.nodeType !== 1) continue;
         this.collectGlossEvictions(node as Element, evictedIds);
         this.collectOrphans(node as Element, orphanIds);

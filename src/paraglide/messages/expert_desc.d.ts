@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Take over the whole prompt template (e.g. to add few-shot examples). When set, that pipeline no longer injects the translation style." |
+* | "Customize the full prompt templates, for example by adding translation examples. Custom templates replace the style instructions for the corresponding transl..." |
 *
 * @param {Expert_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

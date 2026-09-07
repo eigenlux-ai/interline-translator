@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Vendors spell extended thinking differently, and Gemini has no off switch at all — there, Off buys its lowest level instead. A model that refuses its family ..." |
+* | "Behavior depends on the model and service. For Gemini and some models that require reasoning, Off reduces reasoning or leaves it enabled. Validate the connec..." |
 *
 * @param {Provider_Param_Reasoning_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

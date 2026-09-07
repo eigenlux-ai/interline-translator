@@ -25,17 +25,17 @@ import {
   type TranslateResult,
 } from '@/data/models';
 import { getConfig } from '@/services/config/storage';
-import { stableStringify } from './cache/cache-key';
+import { stableProviderFingerprint, stableStringify } from './cache/cache-key';
 import { dexieCache } from './cache/db';
 import { TRANSLATION_SERVICE_KEY, type ProviderValidation, type TranslationService } from './contract';
 import { executeTranslate } from './execute';
 import { llmCallOptions, requireApiKey, resolveProvider } from './preflight';
-import { isParameterRejectionError } from './model-capabilities';
 import { buildSummaryPrompt } from './prompts';
 import { createLlmModel } from './provider/llm';
 import { googleFreeTranslate } from './provider/mt';
 import { RequestQueue } from './queue/request-queue';
 import { stripThink } from './reasoning';
+
 /** Shared across every request (page/selection/input) so the API is never blasted. */
 const queue = new RequestQueue({ maxConcurrent: 6, maxRetries: 2, baseBackoffMs: 800 });
 
@@ -50,11 +50,11 @@ const queue = new RequestQueue({ maxConcurrent: 6, maxRetries: 2, baseBackoffMs:
  * NOT collapse onto one job and inherit the other site's register.
  */
 export function jobKey(config: Config, req: TranslateRequest): string {
-  const provider = resolveProvider(config, req.providerId).id;
+  const provider = stableProviderFingerprint(resolveProvider(config, req.providerId));
   const target = req.target || config.translate.target;
   const source = req.source ?? config.translate.source;
   const context = stableStringify(req.context ?? {});
-  return `${provider}|${source}|${req.mode ?? 'llm'}|${target}|${context}|${req.text}`;
+  return `${provider}|${source}|${req.mode ?? 'llm'}|${target}|${context}|${stableStringify(config.prompt)}|${stableStringify(config.glossary)}|${req.text}`;
 }
 
 class TranslationServiceImpl implements TranslationService {
@@ -105,27 +105,12 @@ class TranslationServiceImpl implements TranslationService {
       // Engine settings ride along on purpose: the OpenAI reasoning line rejects
       // a temperature other than 1, so a knob the model refuses must fail HERE,
       // at the button the user just pressed — not later, on every translation.
-      let gen;
-      try {
-        gen = await generateText({
-          model,
-          prompt: 'Reply with the single word: ok',
-          abortSignal: AbortSignal.timeout(15_000),
-          ...llmCallOptions(provider),
-        });
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        if (isParameterRejectionError(errMsg)) {
-          // Self-heal: retry once with plain vanilla parameters if upstream rejected custom knob
-          gen = await generateText({
-            model,
-            prompt: 'Reply with the single word: ok',
-            abortSignal: AbortSignal.timeout(15_000),
-          });
-        } else {
-          throw err;
-        }
-      }
+      const gen = await generateText({
+        model,
+        prompt: 'Reply with the single word: ok',
+        abortSignal: AbortSignal.timeout(15_000),
+        ...llmCallOptions(provider),
+      });
       return { ok: true, sample: gen.text.trim().slice(0, 40) };
     } catch (e) {
       if (e instanceof DOMException && e.name === 'TimeoutError') {

@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Fill_Key_FirstInputs */
 
 const zh_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`先填入 API key`)
+	return /** @type {LocalizedString} */ (`请先输入 API 密钥`)
 };
 
 const zh_tw2_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`先填入 API key`)
+	return /** @type {LocalizedString} */ (`請先輸入 API 金鑰`)
 };
 
 const en_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
@@ -18,11 +18,11 @@ const en_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstIn
 };
 
 const ja_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`先に API key を入力してください`)
+	return /** @type {LocalizedString} */ (`先に API キー を入力してください`)
 };
 
 const ko_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`먼저 API key를 입력하세요`)
+	return /** @type {LocalizedString} */ (`먼저 API 키를 입력하세요`)
 };
 
 const fr_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
@@ -30,7 +30,7 @@ const fr_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstIn
 };
 
 const de_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Zuerst einen API key eingeben`)
+	return /** @type {LocalizedString} */ (`Zuerst einen API-Schlüssel eingeben`)
 };
 
 const es_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
@@ -38,15 +38,15 @@ const es_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstIn
 };
 
 const ru_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Сначала введите API key`)
+	return /** @type {LocalizedString} */ (`Сначала введите API-ключ`)
 };
 
 const pt_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Introduza primeiro uma API key`)
+	return /** @type {LocalizedString} */ (`Insira uma chave de API primeiro`)
 };
 
 const it_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Inserisci prima una API key`)
+	return /** @type {LocalizedString} */ (`Inserisci prima una chiave API`)
 };
 
 const ar_provider_fill_key_first = /** @type {(inputs: Provider_Fill_Key_FirstInputs) => LocalizedString} */ () => {

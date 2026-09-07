@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_HeadersInputs */
 
 const zh_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`额外 header(可选)`)
+	return /** @type {LocalizedString} */ (`附加请求头（可选）`)
 };
 
 const zh_tw2_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`額外 header(選填)`)
+	return /** @type {LocalizedString} */ (`額外請求標頭（選填）`)
 };
 
 const en_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => Local
 };
 
 const fr_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`En-têtes supplémentaires (facultatif)`)
+	return /** @type {LocalizedString} */ (`En-têtes supplémentaires (facultatifs)`)
 };
 
 const de_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
@@ -34,7 +34,7 @@ const de_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => Local
 };
 
 const es_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cabeceras adicionales (opcional)`)
+	return /** @type {LocalizedString} */ (`Cabeceras adicionales (opcionales)`)
 };
 
 const ru_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => Local
 };
 
 const pt_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cabeçalhos adicionais (opcional)`)
+	return /** @type {LocalizedString} */ (`Cabeçalhos adicionais (opcionais)`)
 };
 
 const it_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Header aggiuntivi (facoltativo)`)
+	return /** @type {LocalizedString} */ (`Header aggiuntivi (facoltativi)`)
 };
 
 const ar_provider_headers = /** @type {(inputs: Provider_HeadersInputs) => LocalizedString} */ () => {

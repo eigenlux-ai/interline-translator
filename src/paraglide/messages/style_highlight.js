@@ -10,7 +10,7 @@ const zh_style_highlight = /** @type {(inputs: Style_HighlightInputs) => Localiz
 };
 
 const zh_tw2_style_highlight = /** @type {(inputs: Style_HighlightInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`標明`)
+	return /** @type {LocalizedString} */ (`螢光標示`)
 };
 
 const en_style_highlight = /** @type {(inputs: Style_HighlightInputs) => LocalizedString} */ () => {

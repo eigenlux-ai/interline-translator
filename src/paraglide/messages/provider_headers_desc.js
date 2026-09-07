@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Headers_DescInputs */
 
 const zh_provider_headers_desc = /** @type {(inputs: Provider_Headers_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`每行一条,格式 Header-Name: value`)
+	return /** @type {LocalizedString} */ (`每行一项，格式为 Header-Name: value。`)
 };
 
 const zh_tw2_provider_headers_desc = /** @type {(inputs: Provider_Headers_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`每行一條,格式 Header-Name: value`)
+	return /** @type {LocalizedString} */ (`每行一項，格式為 Header-Name: value。`)
 };
 
 const en_provider_headers_desc = /** @type {(inputs: Provider_Headers_DescInputs) => LocalizedString} */ () => {

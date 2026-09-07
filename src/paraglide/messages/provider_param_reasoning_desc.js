@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Provider_Param_Reasoning_DescInputs */
 
 const zh_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`各家的写法不同,而 Gemini 根本没有关闭档 —— 选「关闭」只会降到它的最低档。模型不认自家参数时会在验证这一步报错。`)
+	return /** @type {LocalizedString} */ (`实际效果取决于模型和服务商。对于 Gemini 及部分强制推理模型，选择“关闭”会降低推理强度或仍保留推理。修改后请验证连接。`)
 };
 
 const zh_tw2_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`深度思考的參數名稱各家不同,而 Gemini 根本沒有關閉這一檔——選「關閉」只會降到它最低的思考強度。模型不接受自家的寫法時,按驗證連線就會失敗。`)
+	return /** @type {LocalizedString} */ (`實際效果取決於模型與服務商。對 Gemini 及部分強制推理模型而言，選擇「關閉」會降低推理強度或仍保留推理。修改後請驗證連線。`)
 };
 
 const en_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Vendors spell extended thinking differently, and Gemini has no off switch at all — there, Off buys its lowest level instead. A model that refuses its family parameter fails at Validate.`)
+	return /** @type {LocalizedString} */ (`Behavior depends on the model and service. For Gemini and some models that require reasoning, Off reduces reasoning or leaves it enabled. Validate the connection after changing this setting.`)
 };
 
 const ja_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`拡張思考のパラメーター名はプロバイダーごとに異なり、Gemini にはオフ自体がありません。オフを選んでも思考が最小レベルに下がるだけです。同系列のパラメーターを受け付けないモデルは、接続を検証した時点でエラーになります。`)
+	return /** @type {LocalizedString} */ (`動作はモデルとサービスによって異なります。Gemini や推論が必須の一部モデルでは、オフにしても推論が弱まるだけか、有効なままになります。変更後は接続を検証してください。`)
 };
 
 const ko_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`확장 사고 파라미터 이름은 제공자마다 다르고, Gemini에는 끄기 자체가 없어서 끄기를 골라도 가장 낮은 수준으로 내려갈 뿐입니다. 같은 계열의 파라미터를 받지 않는 모델은 연결 검증 단계에서 오류가 납니다.`)
+	return /** @type {LocalizedString} */ (`동작은 모델과 서비스에 따라 다릅니다. Gemini와 일부 추론 필수 모델은 끄기를 선택해도 추론 강도만 낮아지거나 추론이 유지됩니다. 변경 후 연결을 검증해 주세요.`)
 };
 
 const fr_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Chaque fournisseur nomme la réflexion étendue à sa manière, et Gemini n'a aucun réglage pour la désactiver : « Désactivé » y descend seulement au niveau le plus bas. Un modèle qui n'accepte pas le paramètre de sa famille échoue au moment de valider la connexion.`)
+	return /** @type {LocalizedString} */ (`Le comportement dépend du modèle et du service. Pour Gemini et certains modèles à raisonnement obligatoire, « Désactivé » réduit le raisonnement ou le laisse actif. Validez la connexion après toute modification.`)
 };
 
 const de_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Jeder Anbieter benennt erweitertes Denken anders, und Gemini hat gar keinen Aus-Schalter — dort senkt „Aus“ nur auf die niedrigste Stufe. Ein Modell, das den Parameter seiner Familie nicht akzeptiert, scheitert beim Prüfen der Verbindung.`)
+	return /** @type {LocalizedString} */ (`Das Verhalten hängt von Modell und Dienst ab. Bei Gemini und einigen Modellen mit verpflichtendem Reasoning reduziert „Aus“ die Denkleistung oder lässt sie aktiv. Prüfen Sie die Verbindung nach Änderungen.`)
 };
 
 const es_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cada proveedor nombra el pensamiento extendido a su manera y Gemini ni siquiera tiene un interruptor para apagarlo: allí «Desactivado» solo baja al nivel más bajo. Un modelo que no acepta el parámetro de su familia falla al validar la conexión.`)
+	return /** @type {LocalizedString} */ (`El comportamiento depende del modelo y del servicio. En Gemini y algunos modelos con razonamiento obligatorio, «Desactivado» reduce el razonamiento o lo mantiene activo. Valida la conexión después de cambiar esta opción.`)
 };
 
 const ru_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Расширенное мышление у каждого провайдера называется по-своему, а у Gemini его вообще нельзя отключить: «Выключено» лишь опускает его на минимальный уровень. Модель, которая не принимает параметр своего семейства, не пройдёт проверку соединения.`)
+	return /** @type {LocalizedString} */ (`Поведение зависит от модели и сервиса. Для Gemini и некоторых моделей с обязательным рассуждением «Выключено» снижает его интенсивность или оставляет его включённым. После изменения проверьте соединение.`)
 };
 
 const pt_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cada fornecedor dá um nome diferente ao pensamento estendido e o Gemini nem sequer tem forma de o desativar: aí, «Desativado» apenas baixa para o nível mínimo. Um modelo que não aceita o parâmetro da sua família falha ao validar a ligação.`)
+	return /** @type {LocalizedString} */ (`O comportamento depende do modelo e do serviço. No Gemini e em alguns modelos com raciocínio obrigatório, “Desativado” reduz o raciocínio ou o mantém ativo. Valide a conexão após alterar esta opção.`)
 };
 
 const it_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ogni provider chiama il pensiero esteso in modo diverso e Gemini non ha proprio un interruttore per spegnerlo: lì «Disattivo» scende soltanto al livello minimo. Un modello che non accetta il parametro della sua famiglia fallisce al momento di verificare la connessione.`)
+	return /** @type {LocalizedString} */ (`Il comportamento dipende dal modello e dal servizio. Per Gemini e alcuni modelli con ragionamento obbligatorio, «Disattivo» riduce il ragionamento o lo lascia attivo. Verifica la connessione dopo ogni modifica.`)
 };
 
 const ar_provider_param_reasoning_desc = /** @type {(inputs: Provider_Param_Reasoning_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`يسمّي كل مزوّد التفكير الموسّع باسم مختلف، ولا يملك Gemini خيار الإيقاف أصلًا — اختيار «إيقاف» فيه ينزل بالتفكير إلى أدنى مستوى فقط. والنموذج الذي لا يقبل معامل عائلته يفشل عند التحقق من الاتصال.`)
+	return /** @type {LocalizedString} */ (`يعتمد السلوك على النموذج والخدمة. في Gemini وبعض النماذج التي تتطلب الاستدلال، يقلّل خيار «إيقاف» الاستدلال أو يبقيه مفعّلًا. تحقّق من الاتصال بعد تغيير هذا الإعداد.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Vendors spell extended thinking differently, and Gemini has no off switch at all — there, Off buys its lowest level instead. A model that refuses its family ..." |
+* | "Behavior depends on the model and service. For Gemini and some models that require reasoning, Off reduces reasoning or leaves it enabled. Validate the connec..." |
 *
 * @param {Provider_Param_Reasoning_DescInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

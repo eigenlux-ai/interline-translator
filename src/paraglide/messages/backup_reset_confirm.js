@@ -42,7 +42,7 @@ const ru_backup_reset_confirm = /** @type {(inputs: Backup_Reset_ConfirmInputs) 
 };
 
 const pt_backup_reset_confirm = /** @type {(inputs: Backup_Reset_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sim, repor as predefinições`)
+	return /** @type {LocalizedString} */ (`Restaurar padrões`)
 };
 
 const it_backup_reset_confirm = /** @type {(inputs: Backup_Reset_ConfirmInputs) => LocalizedString} */ () => {

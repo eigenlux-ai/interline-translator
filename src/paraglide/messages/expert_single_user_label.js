@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{ text: NonNullable<unknown> }} Expert_Single_User_LabelInputs */
 
 const zh_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`单条翻译 · 正文模板（必须包含 ${i?.text}）`)
+	return /** @type {LocalizedString} */ (`单条翻译 · 用户模板（必须包含 ${i?.text}）`)
 };
 
 const zh_tw2_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`單條翻譯 · 內文模板（必須包含 ${i?.text}）`)
+	return /** @type {LocalizedString} */ (`單筆翻譯 · 使用者範本（必須包含 ${i?.text}）`)
 };
 
 const en_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
@@ -18,11 +18,11 @@ const en_expert_single_user_label = /** @type {(inputs: Expert_Single_User_Label
 };
 
 const ja_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`単発翻訳 · 本文テンプレート（${i?.text} 必須）`)
+	return /** @type {LocalizedString} */ (`単発翻訳 · ユーザーテンプレート（${i?.text} 必須）`)
 };
 
 const ko_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`단건 번역 · 본문 템플릿(${i?.text} 필수)`)
+	return /** @type {LocalizedString} */ (`단건 번역 · 사용자 템플릿(${i?.text} 필수)`)
 };
 
 const fr_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
@@ -42,7 +42,7 @@ const ru_expert_single_user_label = /** @type {(inputs: Expert_Single_User_Label
 };
 
 const pt_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`Tradução única · modelo de utilizador (tem de conter ${i?.text})`)
+	return /** @type {LocalizedString} */ (`Tradução individual · template do usuário (deve conter ${i?.text})`)
 };
 
 const it_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
@@ -50,7 +50,7 @@ const it_expert_single_user_label = /** @type {(inputs: Expert_Single_User_Label
 };
 
 const ar_expert_single_user_label = /** @type {(inputs: Expert_Single_User_LabelInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`ترجمة مفردة · قالب النص (يجب أن يتضمن ${i?.text})`)
+	return /** @type {LocalizedString} */ (`ترجمة فردية · قالب المستخدم (يجب أن يتضمن ${i?.text})`)
 };
 
 /**

@@ -26,15 +26,15 @@ const ko_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_Ar
 };
 
 const fr_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activer ce jeu`)
+	return /** @type {LocalizedString} */ (`Activer ce glossaire`)
 };
 
 const de_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Dieses Set aktivieren`)
+	return /** @type {LocalizedString} */ (`Dieses Glossar aktivieren`)
 };
 
 const es_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Activar este conjunto`)
+	return /** @type {LocalizedString} */ (`Activar este glosario`)
 };
 
 const ru_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
@@ -42,11 +42,11 @@ const ru_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_Ar
 };
 
 const pt_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ativar este conjunto`)
+	return /** @type {LocalizedString} */ (`Ativar este glossário`)
 };
 
 const it_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Attiva questo set`)
+	return /** @type {LocalizedString} */ (`Attiva questo glossario`)
 };
 
 const ar_glossary_set_enabled_aria = /** @type {(inputs: Glossary_Set_Enabled_AriaInputs) => LocalizedString} */ () => {

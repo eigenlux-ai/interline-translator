@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Translation style" |
+* | "Translation appearance" |
 *
 * @param {Settings_Style_TitleInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options
