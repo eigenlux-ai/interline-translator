@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "Mantieni la formattazione",
 	"settings_rich_text_desc": "Le traduzioni conservano link, grassetto e codice inline dell'originale. Se i marcatori di formato disturbano un motore e la traduzione risulta rigida, disattivalo per un testo semplice più naturale.",
 	"interleave_label": "Allineamento per paragrafo",
-	"interleave_desc": "Inserire ogni paragrafo tradotto subito dopo il paragrafo originale nei blocchi multi-paragrafo"
+	"interleave_desc": "Inserire ogni paragrafo tradotto subito dopo il paragrafo originale nei blocchi multi-paragrafo",
+	"provider_quick_add": "Aggiunta rapida",
+	"provider_quick_add_desc": "Collega fornitori IA o servizi locali e cloud compatibili con OpenAI o Anthropic."
 }

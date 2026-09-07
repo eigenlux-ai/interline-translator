@@ -1,0 +1,32 @@
+Interline is a fully open-source extension for bilingual reading and translation. Keep the original and its translation on the same page, whether you are reading an article, exploring documentation or joining a discussion.
+
+READ TWO LANGUAGES TOGETHER
+See translations alongside the original, paragraph by paragraph. Switch between bilingual, translation-only and original-only views. Choose from 10 display styles, including highlights, quotation bars and cards. Start with the floating control, the context menu or Alt+T.
+
+TRANSLATE SELECTED TEXT
+Select text and click the translation icon to read, copy or listen to the result without leaving the page. With a supported AI engine, expand vocabulary notes for help with terms and context.
+
+WRITE IN ANOTHER LANGUAGE
+Draft your reply, then press Space three times to translate it in place. Set a separate writing language, or use /en or en: to choose a language for one translation.
+
+START FREE. BRING YOUR OWN AI.
+A built-in free translation engine works without an API key. You can also connect your own API key for OpenAI, Anthropic, Google Gemini, OpenRouter, or an OpenAI-compatible or Anthropic-compatible service. Third-party AI services may charge fees; pricing, quotas and availability are set by each provider.
+
+MAKE IT YOURS
+Customize translation styles, prompts and glossaries. Choose which sites translate automatically and which stay in their original language. Light and dark appearance, with 12 interface languages.
+
+FULLY OPEN SOURCE — MIT LICENSE
+All source code is public. Inspect how it works, build it yourself or adapt it to your needs.
+GitHub: https://github.com/eigenlux-ai/interline-translator
+Have a feature request or found a bug? Open an issue:
+https://github.com/eigenlux-ai/interline-translator/issues
+Code, fixes, translations and documentation contributions are welcome. PRs welcome!
+https://github.com/eigenlux-ai/interline-translator/pulls
+
+HOW YOUR DATA IS HANDLED
+Interline requires no account, includes no behavioral tracking or telemetry, and runs no translation relay server. Settings and API keys stay in local browser storage. Text for translation goes directly to your selected provider and is subject to that provider's data policy. Enabling whole-page context also sends the first 8,000 characters of page text to generate context.
+
+Browser-restricted pages such as Chrome's internal pages cannot be translated in place. Compatibility may vary across sites and editors. Please report problems through Issues.
+
+AI requests may include relevant page titles, neighboring text and matching glossary entries. Automatic site rules can start translation without another click. Configuration exports contain API keys; keep them private.
+Privacy details: https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md

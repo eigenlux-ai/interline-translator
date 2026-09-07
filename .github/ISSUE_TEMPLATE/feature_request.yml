@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Interline aims to stay a quiet reading tool: the translation sits between the lines and the host page is never disturbed. Proposals that keep the surface small and the reading undisturbed are the most likely to land.
+        Have an idea for Interline? Tell us what you want to read, understand or write, and what gets in the way. You do not need an implementation plan. Requests in English, Chinese, Japanese or Korean are welcome.
   - type: textarea
     id: problem
     attributes:
@@ -17,18 +17,14 @@ body:
     id: proposal
     attributes:
       label: Proposed solution
-      description: What would you like Interline to do?
-    validations:
-      required: true
+      description: 'Optional: what would you like Interline to do?'
   - type: textarea
     id: alternatives
     attributes:
       label: Alternatives considered
       description: Other approaches you weighed, and why they fall short.
-  - type: checkboxes
-    id: scope
+  - type: textarea
+    id: context
     attributes:
-      label: Scope check
-      options:
-        - label: This does not require new browser permissions beyond `storage`, `contextMenus`, and `alarms`.
-        - label: This does not send page text anywhere other than the engine the user configured.
+      label: Examples or additional context
+      description: Optional public examples, sketches or related issues. Please omit API keys and private content.

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Interline viewport and clipped-container regression</title>
+    <style>
+      body { margin: 24px; font: 16px/1.5 system-ui; }
+      .instructions { max-width: 760px; margin-bottom: 24px; }
+      #panel { height: 72px; overflow: auto; border: 2px solid #777; width: 600px; }
+      #panel p { margin: 0; min-height: 32px; }
+      #distant { margin-top: 2200px; }
+    </style>
+  </head>
+  <body>
+    <header class="instructions" translate="no">
+      <h1>Viewport / clipped container regression</h1>
+      <p>Enable page translation without scrolling. Only the visible lines inside the small panel should start translating. Panel lines hidden by its scrollport must wait even when their window-relative rectangles lie inside the browser viewport. Scroll the panel to reveal more lines; then scroll the page to the distant paragraph. Repeat with a slow engine and fast scrolling: the latest viewport should not wait behind an unbounded offscreen backlog.</p>
+    </header>
+    <main>
+      <div id="panel"></div>
+      <p id="distant">Distant article content should wait until the reader approaches this part of the page.</p>
+    </main>
+    <script>
+      const panel = document.querySelector('#panel');
+      for (let i = 0; i < 100; i++) {
+        const paragraph = document.createElement('p');
+        paragraph.textContent = `Panel row ${i}: this line should translate only when revealed.`;
+        paragraph.dataset.row = String(i);
+        panel.append(paragraph);
+      }
+    </script>
+  </body>
+</html>

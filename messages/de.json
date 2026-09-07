@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "Formatierung beibehalten",
 	"settings_rich_text_desc": "Übersetzungen übernehmen Links, Fettdruck und Inline-Code des Originals. Falls Formatmarker eine Engine stören und die Übersetzung hölzern wirkt, schalten Sie dies für natürlicheren reinen Text aus.",
 	"interleave_label": "Absatzweise Gegenüberstellung",
-	"interleave_desc": "Jeden übersetzten Absatz direkt nach seinem Ausgangsabsatz einfügen"
+	"interleave_desc": "Jeden übersetzten Absatz direkt nach seinem Ausgangsabsatz einfügen",
+	"provider_quick_add": "Schnell hinzufügen",
+	"provider_quick_add_desc": "KI-Anbieter oder lokale und Cloud-Dienste verbinden, die mit OpenAI oder Anthropic kompatibel sind."
 }

@@ -2,173 +2,94 @@
   <a href="./README.md">English</a> · <a href="./README.zh-CN.md">简体中文</a> · <strong>日本語</strong> · <a href="./README.ko.md">한국어</a>
 </p>
 
-<p align="center">
-  <img src="./assets/readme/ja/hero.svg" width="100%" alt="Interline · 行間 —— オープンソースの Chrome 対訳リーディング拡張機能">
-</p>
+# Interline · 行间
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT ライセンス"></a>
-  <img src="https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white" alt="Manifest V3">
-  <img src="https://img.shields.io/badge/Chrome-116%2B-4285F4?logo=googlechrome&logoColor=white" alt="Chrome 116 以降が必要">
-  <img src="https://img.shields.io/badge/WXT-0.20-67D55E" alt="WXT 0.20 を採用">
-  <img src="https://img.shields.io/badge/Mantine-9-339AF0?logo=mantine&logoColor=white" alt="Mantine 9">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19">
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5">
-</p>
+**原文のそばで、世界を読む。**
 
-**Interline（行間）** は、Chrome 向けのオープンソース対訳リーディング拡張機能です。元の段落のすぐ下に訳文を直接挿入し、元のレイアウト・リンク・操作感を完全に維持したまま 2 つの言語を並読できます。ページを丸ごと置き換えたり、サイドバーに移動したりする必要はありません。
+Interline は、コードをすべて公開している Chrome 向けの対訳・翻訳拡張機能です。記事を段落ごとに対訳で読み、気になる文を選択して意味を確かめ、返信の下書きを入力欄でそのまま翻訳できます。
 
-- **インストール直後から使える** —— API キー不要の無料翻訳エンジンを内蔵しており、初期設定なしですぐに翻訳できます。
-- **自分の API キーを使用可能（BYOK）** —— より高品質な翻訳のために、OpenAI、Anthropic、Google Gemini、OpenRouter、および各種 OpenAI / Anthropic 互換エンドポイント（Ollama、Kimi、GLM、LiteLLM など）を自由に接続できます。
-- **プライバシー最優先** —— アカウント登録不要、テレメトリやユーザー追跡は一切行わず、自社の中継サーバーもありません。リクエストはブラウザから直接指定のサービスへ送信されます。
+**[ソースコード](https://github.com/eigenlux-ai/interline-translator) · [機能をリクエスト](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [不具合を報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [開発に参加](./CONTRIBUTING.md)**
 
----
+[MIT ライセンス](./LICENSE) · Chrome 116+ · キー不要の翻訳エンジン内蔵 · 自分の AI キーにも対応
 
-## ページ全体の対訳リーディング
+![英語の記事と日本語の訳文を段落ごとに表示する Interline の実際の画面](./assets/store/ja/screenshot-1-bilingual.png)
 
-訳文は原文の**兄弟ノード**として DOM に挿入されるため、リンク、`<strong>`、インラインコード、リスト構造はそのまま保たれます。10 種類の表示スタイルから好みに合わせて選択できます：
+## 読む、理解する、伝える
 
-<p align="center">
-  <img src="./assets/readme/ja/display-styles.svg" width="100%" alt="訳文の10種類の表示スタイル（ブレンド、薄く表示、下線、破線、点線、波線、ハイライト、引用バー、カード、ぼかし）の見本ボード">
-</p>
+| やりたいこと | Interline でできること |
+| --- | --- |
+| 外国語のページを読む | フローティングコントロール、右クリックメニュー、**Alt+T** から翻訳。原文と訳文を同じページで確認できます。 |
+| 一文の意味を知る | テキストを選択して翻訳アイコンをクリック。訳文の確認、コピー、読み上げができます。対応 AI エンジンでは語句の解説も利用できます。 |
+| 別の言語で返信する | 下書きを入力し、**スペースを3回**押すとその場で翻訳。書き込み先の言語は読む言語と別に設定できます。 |
+| 読みやすく整える | 対訳・訳文のみ・原文のみを切り替え、10種類の表示スタイルやライト・ダーク表示を選べます。 |
+| 語調や用語をそろえる | AI エンジンで翻訳スタイル、プロンプト、用語集を設定し、サイトごとに適用できます。 |
 
-- **3 つの表示モード** —— 対訳（既定）、訳文のみ、原文のみ。切り替えは CSS のみで瞬時に行われ、再翻訳のトークン消費はありません。
-- **段落ごとの対訳** —— 原文と訳文を段落単位で並べ、文章の上下分断を防ぎます。
-- **フォントのカスタマイズ** —— 訳文に楷書系フォント（LXGW WenKai / 霞鹜文楷、Kaiti など）を適用するか、ホストページの書体に合わせるかを選択できます。
+実際の[選択翻訳カード](./assets/store/ja/screenshot-2-selection.png)、[エンジン設定](./assets/store/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/ja/screenshot-4-input-translation.png)、[ダーク設定](./assets/store/ja/screenshot-5-dark-mode.png)もご覧ください。画像にはオリジナルのサンプル文章と実際の拡張機能を使用し、外枠に機能説明を添えています。
 
-## 選択テキストの翻訳
+## 使い始める
 
-ページ上のテキストを選択すると翻訳アイコンが浮き上がります。クリックすると訳文がカード内にストリーミング表示され、応答待ちの間はスケルトンアニメーションで待機時間を自然に埋めます。
+Git、Node.js 22+、pnpm 10.7.1（`package.json` の指定バージョン）を用意してください。
 
-LLM エンジン接続時は、慣用句・専門用語・固有名詞に関する**語句解説**をカード内で展開できます。
-
-## 入力中のテキストをその場で翻訳
-
-任意の入力欄で <kbd>Space</kbd> を 3 回押すと、入力中のテキストがその場で翻訳されます。文頭に `/en` や `en:` を付けることで、一時的に翻訳先言語を指定することも可能です。
-
-ネイティブの `<input>` / `<textarea>`、`contenteditable` 領域、および各種リッチテキスト・コードエディタ（CKEditor、Slate、TipTap、Monaco、CodeMirror、wangEditor）に完全対応。書き込み時は読み戻し検証を行い、失敗時は安全にロールバックして下書きの破損を防ぎます。取り消し期間内であれば <kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd> で元のテキストに復元できます。
-
-## フローティングボタンと操作パネル
-
-ドラッグ可能な軽量フローティングボタンがウィンドウの端に自動吸着し、閲覧を邪魔しません。ワンクリックでページ全体を翻訳できるほか、操作パネルを開いて翻訳先言語、表示モード、表示スタイル、サイトごとのルールを即座に変更できます。
-
----
-
-## インストール
-
-動作要件：Chrome 116 以降（または同バージョンの Chromium 系ブラウザ）。リポジトリには Firefox 向けビルド設定も含まれています。
-
-### ソースからビルド
-
-```bash
-pnpm install
-pnpm build          # ビルド成果物は .output/chrome-mv3/ に生成されます
+```sh
+git clone https://github.com/eigenlux-ai/interline-translator.git
+cd interline-translator
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-1. Chrome で `chrome://extensions` を開きます。
-2. 右上の「デベロッパーモード」を有効にします。
-3. 「パッケージ化されていない拡張機能を読み込む」をクリックし、`.output/chrome-mv3/` ディレクトリを選択します。
+1. Chrome で `chrome://extensions` を開き、**デベロッパーモード**を有効にします。
+2. **パッケージ化されていない拡張機能を読み込む**を選び、リポジトリ内の `.output/chrome-mv3/` を指定します。
+3. 記事を開き、フローティングコントロールか **Alt+T** で翻訳します。
+4. ツールバーの Interline アイコンから設定を開き、読む言語を選びます。AI エンジンは必要に応じて追加できます。
 
-**初回起動時：** ツールバーのアイコンをクリックして設定を開きます。内蔵の無料エンジンがすぐに利用可能です。より高品質な翻訳を行いたい場合は、「AI エンジン」で独自の API キーを設定してください。
+内蔵の Google Translate エンジンに API キーは不要です。ただしオンラインサービスのため、利用可否はネットワークと提供元の状況に左右されます。
 
-## プライバシーとセキュリティ
+`chrome://` などブラウザが制限するページでは翻訳を挿入できません。サイトの構成やエディターによって動作は異なり、すべてのページとの互換性を保証するものではありません。Firefox 用の開発・ビルドコマンドも含まれていますが、掲載画像は Chromium 環境で撮影しています。
 
-- **直接通信のみ** —— 翻訳テキストは設定されたエンジンにのみ送信され、サードパーティへの送信やテレメトリ収集は一切行いません。本プロジェクトは中継サーバーを運営していません。
-- **API キーのローカル保存** —— API キーはブラウザのローカルストレージ（`chrome.storage.local`）にのみ保存され、ログ出力されることもなく、リクエスト時の `Authorization` ヘッダー以外で外部に送信されることはありません。
-- **HTTPS の強制** —— API キーの平文漏洩を防ぐため、カスタムエンドポイントには HTTPS を強制します（ローカルホスト `127.0.0.1` / `localhost` および `.local` ドメインを除く）。
-- **最小限の権限** —— 要求する権限は `storage`、`contextMenus`、`alarms` のみです。`tabs` や `scripting` などの広範な権限は要求しません。
+## 翻訳エンジンを選ぶ
 
----
+内蔵の無料エンジンから始められます。自分の API キーで **OpenAI、Anthropic、Google Gemini、OpenRouter** や OpenAI / Anthropic 互換サービスにも接続できます。適切に設定すれば、Ollama などのローカルサービスも利用できます。
 
-## カスタマイズと高度な機能
+Interline のコードは MIT ライセンスで無料公開しています。外部 AI サービスには API 利用料金や独自の利用枠・提供条件がある場合があります。AI エンジンではプロンプトスタイル、用語集の指示、文脈に応じた解説を利用でき、翻訳品質はモデル・文章・設定によって変わります。
 
-- **プロンプトスタイル** —— 学術的・平易・文学的などのプリセットを選択するか、カスタム指示を作成できます。実際のビルダーによるリアルタイムプレビューに対応し、特定ドメインへのスタイル紐付けも可能です。
-- **用語集管理** —— 専門用語の訳語を固定し、一貫した翻訳を実現します。glob パターンによるドメイン制限、CSV / TSV / JSON のインポート・エクスポート、内蔵プリセットに対応しています。
-- **サイトルール** —— ドメインごとに「常に翻訳」「手動翻訳」「翻訳しない」を設定可能（ワイルドカード対応）。
-- **12 言語のインターフェース** —— `zh`、`zh-TW`、`en`、`ja`、`ko`、`fr`、`de`、`es`、`ru`、`pt`、`it`、`ar`（RTL 完全対応）。UI 言語はデフォルトで翻訳先言語に自動追従します。
+入力欄の下書きに `/en` または `en:` を付けると、その回だけ英語に翻訳できます。翻訳後に一時表示される操作ボタンで原文に戻せます。通常の入力欄、テキストエリア、編集可能な領域と複数のリッチテキスト・コードエディターに対応していますが、動作はサイト側の実装によって異なります。
 
-## モデルごとのパラメータ自動調整
+## 自分に合った読み方に
 
-翻訳に必要な 3 つの設定項目（**温度（Temperature）**、**最大出力トークン**、**推論思考（Reasoning / Thinking）**）のみを提供し、モデル間のプロトコル差異を自動吸収します：
+- **表示：** 3つの表示モード、10種類の訳文スタイル、訳文フォントを選べます。翻訳済みページの表示切り替えで再翻訳は行いません。
+- **サイトルール：** 自動翻訳するサイトや翻訳しないサイトを指定できます。ワイルドカードにも対応しています。
+- **表示言語：** アラビア語の RTL 表示を含む12言語に対応。既定では読む言語に合わせますが、個別にも設定できます。
+- **バックアップ：** 設定の書き出し・読み込みに対応。**書き出した JSON には API キーが含まれます。** 非公開で保管してください。
 
-| モデル系列 | 自動適応処理 |
-| --- | --- |
-| OpenAI `o1` / `o3` / `o4` | カスタム温度を自動除外（API 拒否を回避）、推論オフ時はモデルが許容する最低エフォートにマッピング |
-| Claude 3.7 / 4.x / 5.x | 予算付きの `thinking` パラメータを自動付与し、`max_tokens` を思考予算より大きく維持 |
-| Claude 3.0 / 3.5 | `thinking` パラメータを自動除外（旧バージョンのエラー回避） |
-| Gemini 2.x / 3.x | Gemini 公式仕様に合わせて `thinkingLevel` に自動マッピング |
-| 推論ネイティブ（`r1`、`qwq`、`:thinking` など） | 明示的な無効化フラグ送信を回避（OpenRouter 等の HTTP 400 エラー防止） |
+## データの取り扱い
 
-エンドポイントが特定のパラメータを拒否した場合、リクエストは異常フィールドを自動除外して 1 回再試行し、未知の新モデルでもエラーにならず正常にフォールバックします。
+Interline のアカウント登録は不要です。行動分析やテレメトリーはなく、翻訳中継サーバーも運営していません。翻訳リクエストはブラウザから選択した提供元へ直接送信します。内蔵エンジンの場合、送信先は Google です。
 
----
+送信内容は翻訳対象の文章と、AI 機能に必要なページタイトル、周辺の文章、該当する用語集の項目などです。**ページ全体のコンテキスト**を有効にすると、まだスクロールしていない部分を含むページ先頭の最大 8,000 文字も送信します。サイトの自動翻訳ルールにより、ページごとのクリックなしに翻訳を開始する場合があります。
+
+設定と API キーはブラウザに保存し、必要な認証情報を選択したサービスへ送信します。訳文はローカルにキャッシュします。提供元にはそれぞれのデータポリシーがあります。権限、キャッシュの保存期間、バックアップについては[プライバシー説明（英語・中国語）](./PRIVACY.md)をご覧ください。
+
+## すべてのコードを公開。改善への参加を歓迎します。
+
+全ソースコードを [MIT ライセンス](./LICENSE)で公開しています。実装の確認、自分でのビルド、改変、改善の提案が可能です。
+
+- **欲しい機能がある場合：** [Issue を作成](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml)し、利用場面や解決したい問題を教えてください。
+- **不具合を見つけた場合：** 再現手順とブラウザのバージョンを添えて[報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml)してください。
+- **開発に参加したい場合：** コード、修正、翻訳、文書、再現用の例を歓迎します。**PRs welcome!** [貢献ガイド（英語）](./CONTRIBUTING.md)と [Pull Requests](https://github.com/eigenlux-ai/interline-translator/pulls)をご覧ください。
+
+公開の報告に API キー、非公開ページの内容、設定バックアップを添付しないでください。
 
 ## 開発
 
-```bash
-pnpm dev                 # Chrome 開発環境（HMR 対応）
-pnpm dev:firefox         # Firefox 開発環境
-
-pnpm compile             # TypeScript 型チェック（tsc --noEmit）
-pnpm lint                # ESLint コードチェック
-pnpm test                # Vitest テストスイート（happy-dom + fake-browser）
-pnpm i18n                # 文言コンパイル messages/*.json → src/paraglide
-
-pnpm build && pnpm zip   # Chrome ウェブストア提出用の .output/*.zip を生成
+```sh
+pnpm dev          # Chrome 開発環境と HMR
+pnpm compile      # TypeScript チェック
+pnpm lint         # ESLint
+pnpm test         # テスト
+pnpm build        # Chrome 本番ビルド
+pnpm zip          # 拡張機能のパッケージ化
 ```
 
-`pnpm dev` は `test-pages/` も提供します（62.5% rem ルート、プレフィックスなし Tailwind v3、Shadow Root、仮想スクロールエディタなど、過酷な環境でのスタイル分離性を検証）。
+構成、テストページ、多言語対応、ビルド検査は[貢献ガイド（英語）](./CONTRIBUTING.md)へ。ストア紹介文、実際のスクリーンショット、再生成手順は[ストア素材ガイド（中国語）](./assets/store/README.md)にまとめています。
 
-### 品質ゲート
-
-CI により 3 つの自動監査が実行されます：
-
-```bash
-pnpm audit:css       # すべてのルート級 CSS 変数が .aie-omt-surface-root 内にカプセル化されていることを検証
-pnpm audit:ascii     # ビルド成果物が純 ASCII であることを保証（Chrome の非 ASCII 読み込み不具合回避 —— wxt#353）
-pnpm audit:bundle    # コンテンツスクリプトの Gzip 予算制約: page-translate ≤ 100 KB、float-ui ≤ 260 KB
-```
-
-## アーキテクチャ
-
-本プロジェクトは [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) テンプレートをベースに開発されています。このテンプレートは、WXT、React 19、Mantine 9、および Shadow Root によるマルチサーフェス分離アーキテクチャの標準を定義しています。詳細な設計背景やスタイル分離パターンについては、テンプレートリポジトリをご参照ください。
-
-```text
-src/
-├── entrypoints/           # WXT エントリポイント（薄いマウント層）
-│   ├── background.ts      # 翻訳エンジン、ストリーミング、設定管理、メニュー、キャッシュ掃除
-│   ├── options/           # フルスクリーンの設定ページ
-│   ├── page-translate.content/   # ページ全体翻訳の状態管理
-│   ├── float-ui.content/         # フローティングボタン + 選択カード（Shadow Surface 共有）
-│   ├── editor-injector.content/  # メインワールド（MAIN world）エディタ通信ブリッジ
-│   └── injector-port.content.ts  # 隔離ワールド ⇄ メインワールドのポートハンドシェイク
-├── react-app/             # UI システム：アプリ、コンポーネント、Hooks、VisualManager
-├── services/              # 翻訳エンジン、プロンプト構築、用語集、キャッシュ、設定、ストリーミング
-├── dom/                   # DOM 走査、ノード挿入、ラッパー、入力欄のその場翻訳
-├── surface/               # Shadow Surface 抽象（Document + Satellite）
-└── data/models/           # 設定スキーマおよびコアデータ型
-```
-
-### 3 つのエンジニアリング原則
-
-1. **ホストページの不可侵性** —— すべての拡張 UI は Shadow Root 内に完全に分離されます。挿入された訳文は加算的かつ完全に取り消し可能であり、翻訳解除後の DOM 構造は元のページとバイト単位で一致します。CSS 分離境界は `pnpm audit:css` で検証されます。
-2. **エンジンとページの完全疎結合** —— コンテンツスクリプトは型付きメッセージポートを介してのみ Background Service Worker と通信します。API キーや AI SDK はすべて Service Worker に集約され、注入スクリプトのファイルサイズを最小限に保ちます。
-3. **統一されたプロンプトパイプライン** —— 単発翻訳、ストリーミング翻訳、バッチ翻訳が同一の Preflight 検証、キャッシュキー生成、プロンプトビルダーを共有し、UI サーフェス間の挙動のズレを防ぎます。
-
-`PROJECT_PREFIX`（`prefix.cjs`）がクラス名、カスタム要素、ストレージキー、CSS 変数の単一の名前空間ソースとして機能します。`check-prefix-sync` Vite プラグインがビルド時に同期状態を検証します。
-
-## コントリビュート
-
-Issue および Pull Request を歓迎します。PR を提出する前に、すべての品質チェックを実行してください：
-
-```bash
-pnpm compile && pnpm lint && pnpm test && pnpm build && pnpm audit:css && pnpm audit:ascii && pnpm audit:bundle
-```
-
-UI 文言は `messages/*.json` で一元管理されています。文言を変更した後は `pnpm i18n` を実行し、再生成された `src/paraglide/` ディレクトリも一緒にコミットしてください。
-
-## ライセンス
-
-[MIT](./LICENSE)
-
-フォントは CSS フォントスタック経由で参照され、配布成果物には含まれません：LXGW WenKai（霞鹜文楷）、Hanken Grotesk、Spline Sans Mono、EB Garamond は SIL OFL 1.1 ライセンスに基づいており、未インストール時はローカルのシステムフォントに自動フォールバックします。
+WXT、React、Mantine、TypeScript を使用し、[aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) を基盤としています。

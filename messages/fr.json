@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "Conserver la mise en forme",
 	"settings_rich_text_desc": "Les traductions conservent les liens, le gras et le code en ligne de l'original. Si les marqueurs de format perturbent un moteur et rendent la traduction maladroite, désactivez cette option pour un texte brut plus naturel.",
 	"interleave_label": "Alignement par paragraphe",
-	"interleave_desc": "Insérer chaque paragraphe traduit juste après son paragraphe source dans les blocs multi-paragraphes"
+	"interleave_desc": "Insérer chaque paragraphe traduit juste après son paragraphe source dans les blocs multi-paragraphes",
+	"provider_quick_add": "Ajout rapide",
+	"provider_quick_add_desc": "Connectez des fournisseurs IA ou des services locaux et cloud compatibles avec OpenAI ou Anthropic."
 }

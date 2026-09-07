@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "帶樣式翻譯",
 	"settings_rich_text_desc": "譯文保留原文的連結、粗體、行內程式碼等樣式。個別引擎會被樣式標記干擾、譯文生硬時，可關閉此項換取更自然的純文字譯文。",
 	"interleave_label": "逐段對照",
-	"interleave_desc": "多段落內容逐段插入譯文，原文與譯文相鄰對照"
+	"interleave_desc": "多段落內容逐段插入譯文，原文與譯文相鄰對照",
+	"provider_quick_add": "快速新增",
+	"provider_quick_add_desc": "支援主流 AI 服務商，以及相容 OpenAI 或 Anthropic 協定的本機與雲端服務。"
 }

@@ -2,7 +2,7 @@
   "name": "interline",
   "description": "Interline · 行间 — an open-source in-place bilingual reading extension for Chrome",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "type": "module",
   "scripts": {
@@ -22,7 +22,9 @@
     "prettier:check": "prettier --check \"**/*.{js,ts,jsx,tsx}\"",
     "prettier:write": "prettier --write \"**/*.{js,ts,jsx,tsx}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "store:assets": "node scripts/store/generate.mjs",
+    "store:check": "node scripts/store/check.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.85",

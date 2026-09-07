@@ -2,6 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DATA_OMNI } from '@/constants';
 import { PageTranslator } from './page-translation';
+import * as skipPolicyModule from './skip-policy';
 
 // Page translation now streams over the batch Port. We mock the client and keep
 // `translateBatch` as the configurable backing fn (its `{ items }` arg + return
@@ -43,6 +44,27 @@ class IOStub {
   }
   unobserve() {}
   disconnect() {}
+}
+
+// Manual observer for viewport/clipping and scroll-backlog regressions.
+class ControlledIO {
+  static instance: ControlledIO;
+  readonly observed = new Set<Element>();
+  constructor(private cb: (entries: Array<{ isIntersecting: boolean; target: Element }>) => void) {
+    ControlledIO.instance = this;
+  }
+  observe(el: Element) {
+    this.observed.add(el);
+  }
+  unobserve(el: Element) {
+    this.observed.delete(el);
+  }
+  disconnect() {
+    this.observed.clear();
+  }
+  emit(elements: Element[], isIntersecting: boolean) {
+    this.cb(elements.filter((el) => this.observed.has(el)).map((target) => ({ target, isIntersecting })));
+  }
 }
 
 // Default headroom covers the fill path's requestAnimationFrame hop (~16ms in
@@ -91,6 +113,178 @@ describe('PageTranslator', () => {
     expect(gloss[1].textContent).toContain('[t]Second para');
     expect(translateBatch).toHaveBeenCalledOnce(); // both units packed into one batch
     pt.stop();
+  });
+
+  it.each(['scroll away', 'remove source', 'restart'])('rechecks async detection after %s', async (action) => {
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    document.body.innerHTML = '<p>Content awaiting language detection</p>';
+    const el = document.querySelector('p')!;
+    let release!: (skip: boolean) => void;
+    const detect = vi
+      .spyOn(skipPolicyModule, 'detectSaysSkip')
+      .mockImplementationOnce(
+        () =>
+          new Promise<boolean>((resolve) => {
+            release = resolve;
+          })
+      )
+      .mockResolvedValue(false);
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+    try {
+      pt.start();
+      ControlledIO.instance.emit([el], true);
+      await waitFor(() => !!release);
+      expect(release).toBeTypeOf('function');
+      if (action === 'scroll away') ControlledIO.instance.emit([el], false);
+      else if (action === 'remove source') el.remove();
+      else {
+        pt.stop();
+        pt.start();
+      }
+      release(false);
+      await tick();
+      expect(translateBatch).not.toHaveBeenCalled();
+      expect(document.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
+      if (action !== 'remove source') {
+        ControlledIO.instance.emit([el], true);
+        await waitFor(() => translateBatch.mock.calls.length === 1);
+        expect(translateBatch).toHaveBeenCalledOnce();
+      }
+    } finally {
+      pt.stop();
+      detect.mockRestore();
+    }
+  });
+
+  it('waits for intersection instead of translating window-aligned but clipped content', async () => {
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    document.body.innerHTML = '<div style="overflow:hidden;height:20px"><p>Clipped panel content</p></div>';
+    const el = document.querySelector('p')!;
+    el.getBoundingClientRect = () => ({ top: 100, bottom: 140, left: 0, right: 200 }) as DOMRect;
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+    try {
+      pt.start();
+      ControlledIO.instance.emit([el], false);
+      await tick();
+      expect(translateBatch).not.toHaveBeenCalled();
+      expect(document.querySelector('[data-omni-translated]')).toBeNull();
+      ControlledIO.instance.emit([el], true);
+      await waitFor(() => translateBatch.mock.calls.length === 1);
+      expect(translateBatch).toHaveBeenCalledOnce();
+    } finally {
+      pt.stop();
+    }
+  });
+
+  it('defers a queued unit that exits before dispatch, then translates it on re-entry once', async () => {
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    document.body.innerHTML = '<p>Paragraph scrolled past</p>';
+    const el = document.querySelector('p')!;
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 20 });
+    try {
+      pt.start();
+      ControlledIO.instance.emit([el], true);
+      ControlledIO.instance.emit([el], false);
+      await tick(60);
+      expect(translateBatch).not.toHaveBeenCalled();
+      expect(document.querySelector('[data-omni-translated]')).toBeNull();
+      ControlledIO.instance.emit([el], true);
+      ControlledIO.instance.emit([el], true);
+      await waitFor(() => translateBatch.mock.calls.length === 1);
+      expect(translateBatch).toHaveBeenCalledOnce();
+      expect(translateBatch.mock.calls[0][0].items).toEqual(['Paragraph scrolled past']);
+    } finally {
+      pt.stop();
+    }
+  });
+
+  it('bounds active batches and drops scrolled-past backlog before a slot opens', async () => {
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    document.body.innerHTML = Array.from({ length: 30 }, (_, i) => `<p>Reading paragraph number ${i}</p>`).join('');
+    const elements = [...document.querySelectorAll('p')];
+    const releases: Array<() => void> = [];
+    translateBatch.mockImplementation(
+      ({ items }: { items: string[] }) =>
+        new Promise((resolve) => {
+          releases.push(() => resolve({ items: items.map((s) => `[t]${s}`) }));
+        })
+    );
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      maxBatchItems: 1,
+    });
+    try {
+      pt.start();
+      ControlledIO.instance.emit(elements, true);
+      await tick();
+      expect(translateBatch).toHaveBeenCalledTimes(2);
+      expect(document.querySelectorAll('[data-omni-translated]')).toHaveLength(2);
+      ControlledIO.instance.emit(elements.slice(0, -1), false);
+      releases[0]();
+      await waitFor(() => translateBatch.mock.calls.length === 3);
+      expect(translateBatch).toHaveBeenCalledTimes(3);
+      expect(translateBatch.mock.calls[2][0].items).toEqual(['Reading paragraph number 29']);
+      releases[1]();
+      releases[2]();
+      await tick();
+      expect(translateBatch).toHaveBeenCalledTimes(3);
+      ControlledIO.instance.emit([elements[10]], true);
+      await waitFor(() => translateBatch.mock.calls.length === 4);
+      expect(translateBatch.mock.calls[3][0].items).toEqual(['Reading paragraph number 10']);
+      releases[3]();
+    } finally {
+      pt.stop();
+      releases.forEach((release) => release());
+    }
+  });
+
+  it('releases a failed batch slot so queued visible content can finish', async () => {
+    document.body.innerHTML = '<p>First paragraph fails</p><p>Second paragraph works</p><p>Third paragraph works</p>';
+    translateBatch.mockRejectedValueOnce(new Error('rate limited'));
+    const pt = new PageTranslator(document.body, { source: 'en', target: 'zh-CN', maxBatchItems: 1, flushDelayMs: 0 });
+    try {
+      pt.start();
+      await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.state}="done"]`).length === 2);
+      expect(translateBatch).toHaveBeenCalledTimes(3);
+      expect(document.querySelectorAll(`[${DATA_OMNI.state}="done"]`)).toHaveLength(2);
+      expect(document.querySelector(`[${DATA_OMNI.state}="error"]`)?.textContent).toContain('rate limited');
+    } finally {
+      pt.stop();
+    }
+  });
+
+  it('old streams cannot fill or release slots belonging to a restarted session', async () => {
+    document.body.innerHTML = '<p>First paragraph</p><p>Second paragraph</p><p>Third paragraph</p>';
+    const releases: Array<() => void> = [];
+    translateBatch.mockImplementation(
+      ({ items }: { items: string[] }) =>
+        new Promise((resolve) => {
+          releases.push(() => resolve({ items: items.map((s) => `[t]${s}`) }));
+        })
+    );
+    const pt = new PageTranslator(document.body, { source: 'en', target: 'zh-CN', maxBatchItems: 1, flushDelayMs: 0 });
+    try {
+      pt.start();
+      await waitFor(() => releases.length === 2);
+      pt.stop();
+      pt.start();
+      await waitFor(() => releases.length === 4);
+      releases[0]();
+      releases[1]();
+      segStreams[0](1, 'stale stream');
+      await tick();
+      expect(translateBatch).toHaveBeenCalledTimes(4);
+      expect(document.querySelectorAll(`[${DATA_OMNI.state}="done"]`)).toHaveLength(0);
+      expect(document.body.textContent).not.toContain('stale stream');
+      releases[2]();
+      await waitFor(() => releases.length === 5);
+      expect(translateBatch).toHaveBeenCalledTimes(5);
+    } finally {
+      pt.stop();
+      releases.forEach((release) => release());
+    }
   });
 
   it('orders a batch closest-to-viewport first at flush time (scroll-past backlog)', async () => {
@@ -148,7 +342,12 @@ describe('PageTranslator', () => {
     summarizePage.mockResolvedValue('K8s 运维指南概览');
     // enough prose to clear the 600-char floor
     document.body.innerHTML = `<p>${'K8s operations '.repeat(50)}</p>`;
-    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0, pageContext: true });
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      pageContext: true,
+    });
     pt.start();
     await tick();
     expect(summarizePage).toHaveBeenCalledOnce();
@@ -706,7 +905,6 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
 });
 
 describe('PageTranslator — shadow DOM (open roots)', () => {
-
   function mountShadowHost(initialHtml = '<p>Shadow paragraph text</p>') {
     const host = document.createElement('div');
     host.id = 'sd-host';
@@ -795,7 +993,6 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
 });
 
 describe('PageTranslator — dynamic entries respect skip-context ancestors (final-review H1/H2)', () => {
-
   it('typing inside a contenteditable editor NEVER injects 译文 (walk prunes at the ancestor; mutations start inside)', async () => {
     document.body.innerHTML =
       '<p>Normal page text</p><div id="editor" contenteditable="true"><div id="line">draft line</div></div>';
@@ -920,8 +1117,7 @@ describe('three-state view lifecycle', () => {
 describe('SPA re-injection protection', () => {
   // A DONE gloss means the final fill ran and the HTML cache holds its payload —
   // deleting a still-streaming gloss exercises the (separate) pending path.
-  const doneGloss = () =>
-    document.querySelector<HTMLElement>(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
+  const doneGloss = () => document.querySelector<HTMLElement>(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
 
   it('a host-deleted gloss is re-injected from the cached HTML — zero extra translate calls', async () => {
     document.body.innerHTML = '<p>Hello world</p>';
@@ -1509,9 +1705,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
     expect(div.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(1);
     pt.stop();
     // Byte-exact restore including the trailing newline.
-    expect(document.body.innerHTML).toBe(
-      `<div ${PRE}>First paragraph text here\n\nSecond paragraph text here\n</div>`
-    );
+    expect(document.body.innerHTML).toBe(`<div ${PRE}>First paragraph text here\n\nSecond paragraph text here\n</div>`);
   });
 
   it('does NOT interleave when white-space does not preserve newlines', async () => {
@@ -1598,7 +1792,6 @@ describe('逐段对照 — paragraph interleave edge cases (evidence gate, nl re
     pt.stop();
     expect(document.body.innerHTML).toContain('Beta paragraph text here');
   });
-
 
   it('B-2: partial eviction of a NEWLINE-interleaved unit heals from cache', async () => {
     document.body.innerHTML = `<div ${PRE}>First newline paragraph here\n\nSecond newline paragraph here</div>`;

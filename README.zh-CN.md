@@ -2,173 +2,94 @@
   <a href="./README.md">English</a> · <strong>简体中文</strong> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-<p align="center">
-  <img src="./assets/readme/zh-CN/hero.svg" width="100%" alt="Interline · 行间 —— 开源 Chrome 双语阅读扩展，就地对照翻译，排版完整保留">
-</p>
+# Interline · 行间
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT 许可"></a>
-  <img src="https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white" alt="Manifest V3">
-  <img src="https://img.shields.io/badge/Chrome-116%2B-4285F4?logo=googlechrome&logoColor=white" alt="需要 Chrome 116 及以上">
-  <img src="https://img.shields.io/badge/WXT-0.20-67D55E" alt="基于 WXT 0.20 构建">
-  <img src="https://img.shields.io/badge/Mantine-9-339AF0?logo=mantine&logoColor=white" alt="Mantine 9">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19">
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5">
-</p>
+**读懂世界，留在原文里。**
 
-**Interline（行间）** 是专为 Chrome 设计的开源双语阅读扩展。译文直接插入对应段落下方就地对照，无需跳转侧边栏或替换原网页，原网页排版、链接与交互完整保留。
+Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译扩展。读文章时逐段对照原文与译文，遇到不懂的句子随手划词，参与讨论时就在输入框里翻译草稿。
 
-- **开箱即用** —— 内置免 Key 免费翻译引擎，安装后无需任何配置即可直接翻译。
-- **自带密钥（BYOK）** —— 支持接入 OpenAI、Anthropic、Google Gemini、OpenRouter，以及各类兼容 OpenAI / Anthropic 协议的本地与第三方端点（Ollama、Kimi、GLM、LiteLLM 等）获取更高翻译质量。
-- **隐私优先** —— 零注册账号、零行为埋点与遥测，无自建中转服务器，请求直连目标服务商。
+**[完整源代码](https://github.com/eigenlux-ai/interline-translator) · [提出功能需求](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [参与贡献](./CONTRIBUTING.md)**
 
----
+[MIT 许可](./LICENSE) · Chrome 116+ · 内置免 Key 翻译 · 支持自备 AI 密钥
 
-## 整页双语对照阅读
+![行间实际运行界面：英文文章与中文译文逐段相邻对照](./assets/store/zh_CN/screenshot-1-bilingual.png)
 
-译文作为**兄弟节点**注入 DOM，网页原有的超链接、粗体、行内代码及列表层级均完整保留。提供 10 种显示样式，自由搭配阅读偏好：
+## 阅读、理解，再表达
 
-<p align="center">
-  <img src="./assets/readme/zh-CN/display-styles.svg" width="100%" alt="实物样张：同一句译文分别排成融入、弱化、下划线、虚线、点线、波浪、高亮、引用条、卡片、模糊十种样式，并验证深色页面下的对比度表现">
-</p>
+| 你想做什么 | 行间如何帮助你 |
+| --- | --- |
+| 阅读外语网页 | 通过悬浮控件、右键菜单或 **Alt+T** 开始翻译，原文和译文留在同一页。 |
+| 理解一句话 | 选中文本，点击翻译图标，查看、复制或朗读译文。支持的 AI 引擎还能提供词汇释义。 |
+| 用另一种语言回复 | 写好草稿后，连按 **三次空格** 原地翻译。写作目标语言与阅读目标语言可以分别设置。 |
+| 调整阅读体验 | 切换双语、仅译文或仅原文视图，选择 10 种译文样式，以及浅色或深色外观。 |
+| 统一语气和专业术语 | 使用 AI 引擎时，自定义翻译风格、提示词和术语表，并按站点应用。 |
 
-- **三种视图模式** —— 支持双语对照（默认）、仅看译文、仅看原文。视图切换基于纯 CSS 实现，瞬时生效且不重复消耗 Token。
-- **段落级对齐** —— 原文与译文逐段紧邻排版，避免传统翻译工具上下脱节的双块堆叠。
-- **字体定制** —— 译文支持独立选用楷体（如霞鹜文楷、Kaiti）或直接继承宿主网页字体。
+查看实际的[划词卡片](./assets/store/zh_CN/screenshot-2-selection.png)、[引擎设置](./assets/store/zh_CN/screenshot-3-settings.png)、[输入框翻译](./assets/store/zh_CN/screenshot-4-input-translation.png)和[深色设置](./assets/store/zh_CN/screenshot-5-dark-mode.png)。截图使用原创示例内容和真实插件界面，外围标题是功能说明。
 
-## 划词翻译
+## 开始使用
 
-选中文本后点击浮现的翻译图标，译文即以流式卡片呈现；网络响应期间展示骨架屏占位，消除空白等待感。
+准备 Git、Node.js 22+ 和 pnpm 10.7.1（与 `package.json` 固定版本一致）。
 
-连接大模型引擎时，卡片支持展开**词汇释义**，针对成语、技术术语和专有名词提供上下文说明。
-
-## 输入框原地翻译
-
-在任意输入框中连按三次 <kbd>Space</kbd>，草稿即原地转换为目标语言。在文本开头添加 `/en` 或 `en:` 可临时指定单次翻译的目标语种。
-
-全面支持原生 `<input>` / `<textarea>`、`contenteditable` 区域，以及富文本与代码编辑器（CKEditor、Slate、TipTap、Monaco、CodeMirror、wangEditor）。每次写入均执行回读校验，写入失败时安全回滚，避免损坏草稿内容；撤销窗口内支持使用 <kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd> 快捷还原原文。
-
-## 悬浮控制面板
-
-轻量悬浮球支持自由拖拽并自动贴边停靠，不遮挡阅读内容。点击即可触发整页翻译；展开控制面板可实时调整目标语言、视图模式、显示样式与当前站点规则，配置即时生效。
-
----
-
-## 安装指南
-
-运行环境：Chrome 116 及以上版本（或其他基于 Chromium 内核的同版本浏览器）。代码库内置 Firefox 构建目标。
-
-### 从源码构建
-
-```bash
-pnpm install
-pnpm build          # 构建产物位于 .output/chrome-mv3/
+```sh
+git clone https://github.com/eigenlux-ai/interline-translator.git
+cd interline-translator
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-1. 在 Chrome 中打开 `chrome://extensions`。
-2. 开启右上角「开发者模式」。
-3. 点击「加载已解压的扩展程序」，选择 `.output/chrome-mv3/` 目录。
+1. 在 Chrome 中打开 `chrome://extensions`，启用**开发者模式**。
+2. 点击**加载已解压的扩展程序**，选择仓库里的 `.output/chrome-mv3/` 目录。
+3. 打开一篇文章，通过悬浮翻译控件或 **Alt+T** 开始翻译。
+4. 点击浏览器工具栏中的行间图标打开设置，选择阅读目标语言；需要时再添加 AI 引擎。
 
-**首次使用：** 点击浏览器工具栏图标打开设置。内置免 Key 引擎已就绪；如需更高翻译质量，可在「AI 引擎」中配置自定义 API Key。
+内置 Google Translate 引擎无需 API Key，但它是在线翻译服务，可用性取决于网络和服务商。
 
-## 隐私与安全
+`chrome://` 等浏览器限制页面无法使用网页内翻译。网站排版和编辑器实现各不相同，不能保证兼容所有页面。仓库提供 Firefox 开发与构建命令；这里的截图来自 Chromium 环境。
 
-- **直连请求** —— 文本仅发送至用户配置的翻译引擎，无任何第三方收集，不包含遥测或行为分析代码，本项目不运营任何中心化服务。
-- **本地凭据存储** —— API Key 仅保存在本地浏览器存储（`chrome.storage.local`），不记录运行日志，仅在发起翻译请求时作为 `Authorization` 请求头传递给指定端点。
-- **HTTPS 强制** —— 自定义接口强制要求 HTTPS 协议（回环地址 `127.0.0.1` / `localhost` 与 `.local` 局域网主机除外），防止 API Key 在明文网络中泄露。
-- **最小权限原则** —— 仅申请 `storage`、`contextMenus` 与 `alarms` 权限，不申请 `tabs` 与 `scripting` 广谱权限。
+## 选择适合你的翻译引擎
 
----
+可以直接使用内置免费引擎，也可以自备 API Key 接入 **OpenAI、Anthropic、Google Gemini、OpenRouter**，或兼容 OpenAI / Anthropic 协议的服务。正确配置后，也可连接 Ollama 等本地服务。
 
-## 个性化配置
+行间的代码以 MIT 许可免费开放。第三方 AI 服务可能收取 API 使用费用，并有各自的配额和可用范围。AI 引擎可使用提示词风格、术语表指令和上下文释义；翻译质量取决于模型、文本与配置。
 
-- **提示词风格（Prompt Style）** —— 支持选用学术严谨、通俗易懂、文学润色等预设语气，或编写自定义 Prompt；提供真实构建器支持实时效果预览，并支持将特定风格绑定到指定域名。
-- **术语表管理（Glossary）** —— 自定义专业术语对照映射，确保关键名词翻译准确一致；支持通配符限定生效域名，提供 CSV、TSV、JSON 导入导出及内置常用预设。
-- **站点规则** —— 按域名配置「总是翻译」、「手动翻译」或「从不翻译」，支持通配符匹配。
-- **12 种界面语言** —— 提供 12 种界面语言（`zh`、`zh-TW`、`en`、`ja`、`ko`、`fr`、`de`、`es`、`ru`、`pt`、`it`、`ar`，完整支持 RTL 布局）。界面语言默认跟随目标翻译语言自适应切换。
+输入框翻译支持在草稿开头加 `/en` 或 `en:`，为这一次指定译入英语。翻译后会短暂显示撤销入口，可还原原文。支持原生输入框、文本域、可编辑内容及多种富文本 / 代码编辑器适配，具体表现取决于网站使用的编辑器。
 
-## 智能模型参数适配
+## 按你的习惯阅读
 
-核心参数仅保留**温度（Temperature）**、**最大输出 Token** 与**推理思考（Reasoning / Thinking）**，扩展针对不同模型族的协议差异提供自动兼容与降级策略：
+- **显示方式：** 三种视图、10 种译文样式，可选择译文字体。对已翻译的页面切换视图不会重新请求翻译。
+- **站点规则：** 指定哪些网站自动翻译、哪些不翻译，支持通配符匹配。
+- **界面语言：** 提供 12 种语言，包含阿拉伯语 RTL 布局。默认跟随阅读目标语言，也可单独指定。
+- **配置备份：** 支持导出和导入设置。**导出的 JSON 包含 API Key**，请妥善保管。
 
-| 模型族 | 自动处理逻辑 |
-| --- | --- |
-| OpenAI `o1` / `o3` / `o4` | 自动移除自定义温度参数（端点不支持），关闭推理时映射为端点允许的最低推理级别 |
-| Claude 3.7 / 4.x / 5.x | 自动传递带预算的 `thinking` 参数，并确保 `max_tokens` 高于思考预算 |
-| Claude 3.0 / 3.5 | 自动剔除 `thinking` 字段，避免早期模型接口报错 |
-| Gemini 2.x / 3.x | 自动映射为 `thinkingLevel` 参数适配官方协议 |
-| 原生推理模型（`r1`、`qwq`、`:thinking` 等） | 避免下发禁用推理标志，防止 OpenRouter 等网关返回 HTTP 400 |
+## 数据会去哪里
 
-若端点仍拒绝特定参数，请求会自动剔除异常字段并原地重试一次，确保接入未知新模型时优雅降级而非直接报错。
+行间无需注册账号，没有行为分析埋点或遥测，也不运营翻译中转服务器。翻译请求由浏览器直接发送到你选择的服务商；使用内置引擎时，接收方是 Google。
 
----
+请求包含需要翻译的文本；AI 功能还会按需使用页面标题、相邻文本、匹配的术语表条目等上下文。开启**通读全文**后，会额外发送页面前 8,000 个字符，包括尚未滚动到的部分。配置自动翻译规则后，匹配的页面可能无需再次点击就发起翻译。
+
+设置与 API Key 保存在本地浏览器，调用服务时按其认证方式发送所需凭据。译文会在本地缓存。服务商有各自的数据政策；有关权限、缓存期限和备份的细节，请阅读[隐私说明](./PRIVACY.md)。
+
+## 完全开源，欢迎一起改进
+
+全部源代码以 [MIT 许可](./LICENSE)公开。你可以查看实现、自行构建、修改，也可以把改进贡献回来。
+
+- **有新的功能需求？** 欢迎[提交 Issue](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml)，说说你的使用场景和想解决的问题。
+- **发现 Bug？** 请[反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml)，附上复现步骤和浏览器版本。
+- **想参与开发？** 代码、修复、翻译、文档和可复现的示例都欢迎。**PRs welcome！** 查看[贡献指南](./CONTRIBUTING.md)和 [Pull Requests](https://github.com/eigenlux-ai/interline-translator/pulls)。
+
+公开反馈中请勿附带 API Key、私密网页内容或配置备份文件。
 
 ## 本地开发
 
-```bash
-pnpm dev                 # Chrome 开发环境，支持 HMR
-pnpm dev:firefox         # Firefox 开发环境
-
-pnpm compile             # TypeScript 类型检查（tsc --noEmit）
-pnpm lint                # ESLint 代码检查
-pnpm test                # Vitest 测试套件（happy-dom + fake-browser）
-pnpm i18n                # 编译文案 messages/*.json → src/paraglide
-
-pnpm build && pnpm zip   # 构建并打包 .output/*.zip 供发布使用
+```sh
+pnpm dev          # Chrome 开发环境与热更新
+pnpm compile      # TypeScript 检查
+pnpm lint         # ESLint
+pnpm test         # 测试
+pnpm build        # Chrome 生产构建
+pnpm zip          # 扩展打包
 ```
 
-`pnpm dev` 同时提供 `test-pages/` 测试页面 —— 包含一系列刻意设计的极端宿主环境（62.5% rem 根字号、无前缀 Tailwind v3、Shadow Root 宿主、虚拟滚动编辑器），用于严格验证隔离性。
+架构、测试页面、多语言维护与构建审计见[贡献指南](./CONTRIBUTING.md)。商店文案、真实截图及重新生成方式见[商店素材说明](./assets/store/README.md)。
 
-### 质量门禁
-
-CI 自动化执行三项独立审计：
-
-```bash
-pnpm audit:css       # 校验所有根级 CSS 变量均严格封装在 .aie-omt-surface-root 命名空间内
-pnpm audit:ascii     # 确保构建产物为纯 ASCII 字符（规避 Chrome 针对非 ASCII Chunk 的加载缺陷 —— wxt#353）
-pnpm audit:bundle    # 内容脚本体积预算约束：page-translate ≤ 100 KB，float-ui ≤ 260 KB（Gzip）
-```
-
-## 核心架构设计
-
-本项目基于 [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) 模板脚手架开发。该模板定义了现代浏览器扩展中基于 WXT、React 19、Mantine 9 与 Shadow Root 跨表面隔离的基础架构规范。更深入的脚手架设计背景、多表面通信与样式隔离细节可参考该模板仓库。
-
-```text
-src/
-├── entrypoints/           # WXT 入口层（轻量挂载）
-│   ├── background.ts      # 翻译引擎、流式服务端、配置网关、右键菜单、缓存清理
-│   ├── options/           # 全屏设置页
-│   ├── page-translate.content/   # 整页翻译状态管理
-│   ├── float-ui.content/         # 悬浮球 + 划词卡片（共用 Shadow Surface）
-│   ├── editor-injector.content/  # 主世界（MAIN world）编辑器通信桥
-│   └── injector-port.content.ts  # 隔离世界 ⇄ 主世界端口握手
-├── react-app/             # UI 体系：应用、组件、Hooks、VisualManager
-├── services/              # 翻译引擎、提示词构建、术语表、缓存、配置、流式调度
-├── dom/                   # DOM 遍历、节点插入、包装器、输入框原地翻译
-├── surface/               # Shadow Surface 抽象（Document + Satellite）
-└── data/models/           # 配置 Schema 与核心数据类型
-```
-
-### 三项工程原则
-
-1. **宿主页面不可侵犯**：所有扩展 UI 均隔离在 Shadow Root 内部；注入的译文为增量插入且支持完整逆向清理；关闭翻译后 DOM 结构与原网页保持字节级一致。CSS 隔离边界通过 `pnpm audit:css` 门禁自动化校验。
-2. **引擎逻辑与页面完全解耦**：内容脚本（Content Scripts）仅通过强类型消息通道与 Background Service Worker 通信；API Key、AI SDK 及网络请求逻辑全部收敛于 Service Worker，使注入页面的脚本体积保持在极致预算内。
-3. **统一提示词与多流水线复用**：单次翻译、流式翻译与批量翻译共享同一套 Preflight 校验、缓存键生成与 Prompt 构建逻辑，杜绝各交互表面的行为漂移。
-
-`PROJECT_PREFIX`（`prefix.cjs`）为所有类名、自定义元素、存储键和 CSS 变量的唯一命名空间源头。`check-prefix-sync` Vite 插件在构建阶段执行同步校验。
-
-## 参与贡献
-
-欢迎提交 Issue 和 Pull Request。在发起 PR 前，请确保通过全套质量检查：
-
-```bash
-pnpm compile && pnpm lint && pnpm test && pnpm build && pnpm audit:css && pnpm audit:ascii && pnpm audit:bundle
-```
-
-界面文案集中维护于 `messages/*.json`。修改文案后请执行 `pnpm i18n`，并将重新生成的 `src/paraglide/` 目录一同提交。
-
-## 软件许可
-
-[MIT](./LICENSE)
-
-字体通过系统标准 CSS 字体栈声明引用，不打包进扩展分发产物：霞鹜文楷、Hanken Grotesk、Spline Sans Mono、EB Garamond 均遵循 SIL OFL 1.1 许可，系统未安装时自动平滑回退至本机系统字体。
+项目使用 WXT、React、Mantine 和 TypeScript，基于 [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) 构建。

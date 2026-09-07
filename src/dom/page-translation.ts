@@ -23,7 +23,6 @@ import type { BilingualStyle, DisplayMode, LangCode, SourceLang } from '@/data/m
 import { streamBatchTranslate, type BatchStreamHandle } from '@/services/stream/batch-client';
 import { sweepNewlineTokensForDisplay } from '@/services/translation/batch/nl-token';
 import { getTranslationService } from '@/services/translation/contract';
-import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './skip-policy';
 import { inSkippedAncestry, isSkippedElement } from './filter';
 import { restoreInline, splitHtmlByBreaks } from './inject/placeholder';
 import { applyDisplayMode, ensurePresetStyles, removePresetStyles } from './inject/styles';
@@ -31,8 +30,8 @@ import { withViewportAnchor } from './inject/viewport-anchor';
 import {
   ensureGlossNode,
   findGloss,
-  removeAllGloss,
   glossNewlineRuns,
+  removeAllGloss,
   segGlosses,
   setError,
   setTranslatedHtml,
@@ -45,6 +44,7 @@ import {
 } from './inject/wrapper';
 import { onUrlChange } from './listen';
 import { TABLE_INTERNAL_DISPLAYS, TABLE_PARENT_TAGS } from './policy';
+import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './skip-policy';
 import { walkAndLabel, type TranslationUnit } from './traversal';
 import { visibleText } from './visibility';
 
@@ -53,6 +53,8 @@ const INLINE_MAX_CHARS = 40;
 
 /** SPA re-injection attempts per source element before conceding to a hostile host. */
 const MAX_REINJECT = 3;
+/** Keep scroll backlog on the page, where intersection changes can still remove it. */
+const MAX_PAGE_BATCHES = 2;
 /** Attempts older than this don't count — benign periodic re-renders never starve. */
 const REINJECT_DECAY_MS = 5_000;
 
@@ -111,7 +113,11 @@ export class PageTranslator {
   private active = false;
   private readonly unitsById = new Map<string, TranslationUnit>();
   private readonly modeById = new Map<string, InjectMode>();
-  private pending: TranslationUnit[] = [];
+  private readonly pending = new Map<string, TranslationUnit>();
+  private readonly nearby = new Set<string>();
+  private readonly dispatching = new Set<string>();
+  private processingBatches = 0;
+  private epoch = 0;
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
   /** In-flight batch streams, cancelled on stop(). */
   private readonly inflight = new Set<BatchStreamHandle>();
@@ -164,10 +170,8 @@ export class PageTranslator {
   private readonly maxBatchItems: number;
   /** Char budget per batch — flush early so long paragraphs don't form a huge prompt. */
   private readonly maxBatchChars = 3000;
-  private pendingChars = 0;
   private readonly flushDelayMs: number;
   private readonly rootMargin: string;
-  private readonly preloadMargin: number;
   private readonly policy: SkipPolicy;
   private readonly richText: boolean;
 
@@ -178,7 +182,6 @@ export class PageTranslator {
     this.maxBatchItems = opts.maxBatchItems ?? 16;
     this.flushDelayMs = opts.flushDelayMs ?? 60;
     this.rootMargin = opts.rootMargin ?? '300px';
-    this.preloadMargin = parseInt(this.rootMargin, 10) || 300;
     this.policy = skipPolicy(opts.target, opts.skipLanguages ?? []);
     this.richText = opts.richText ?? true;
   }
@@ -199,15 +202,23 @@ export class PageTranslator {
   start(): void {
     if (this.active) return;
     this.active = true;
+    const epoch = ++this.epoch;
     ensurePresetStyles(this.root.ownerDocument);
     // The three-state view is a property of the TRANSLATED page — stamped on
     // start, live-switchable while active (setDisplayMode), cleared on stop.
     applyDisplayMode(this.root.ownerDocument, this.opts.displayMode ?? 'bilingual');
 
-    this.io = new IntersectionObserver((entries) => this.onIntersect(entries), { rootMargin: this.rootMargin });
+    this.io = new IntersectionObserver(
+      (entries) => {
+        if (epoch === this.epoch) this.onIntersect(entries);
+      },
+      { rootMargin: this.rootMargin }
+    );
     // The observer exists BEFORE the first scan: a shadow root discovered
     // mid-walk is attached to this same instance immediately (adoptShadowRoot).
-    this.mo = new MutationObserver((muts) => this.onMutations(muts));
+    this.mo = new MutationObserver((muts) => {
+      if (epoch === this.epoch) this.onMutations(muts);
+    });
     this.mo.observe(this.root, MO_OPTIONS);
     this.scan(this.root);
     this.fetchPageSummary();
@@ -216,7 +227,7 @@ export class PageTranslator {
       // Let the new view settle, then drop units the old view left detached and
       // pick up the new content (walk is idempotent).
       setTimeout(() => {
-        if (!this.active) return;
+        if (!this.active || epoch !== this.epoch) return;
         this.pruneDetached();
         // A new view is a new page: the old overview no longer describes it.
         this.pageSummary = null;
@@ -282,6 +293,7 @@ export class PageTranslator {
 
   stop(): void {
     this.active = false;
+    this.epoch++;
     applyDisplayMode(this.root.ownerDocument, 'bilingual');
     this.io?.disconnect();
     this.mo?.disconnect();
@@ -315,8 +327,11 @@ export class PageTranslator {
     this.modeById.clear();
     this.splitNodesById.clear();
     this.lastHtmlById.clear();
-    this.pending = [];
-    this.pendingChars = 0;
+    this.pending.clear();
+    this.nearby.clear();
+    this.dispatching.clear();
+    this.processingBatches = 0;
+    this.flushTimer = null;
     this.io = this.mo = this.stopUrl = null;
   }
 
@@ -358,17 +373,15 @@ export class PageTranslator {
   }
 
   /**
-   * Walk a subtree, register new units, and either translate them right away
-   * (already in/near the viewport — faster first screen, and resilient to
-   * environments where IntersectionObserver is throttled) or observe them for
-   * lazy translation when they scroll into view.
+   * Walk a subtree and register units with the browser's intersection test.
+   * A window-relative bounding box alone ignores clipping by nested scroll
+   * containers and can eagerly translate entire offscreen panels.
    */
   private scan(root: Element): void {
     if (!this.io) return;
     for (const unit of walkAndLabel(root, undefined, (shadow) => this.adoptShadowRoot(shadow))) {
       this.unitsById.set(unit.id, unit);
-      if (this.isNearViewport(unit.element)) this.enqueue(unit);
-      else this.io.observe(unit.element);
+      this.io.observe(unit.element);
     }
     this.repairMissingGlosses(root);
   }
@@ -419,9 +432,7 @@ export class PageTranslator {
     // placeTranslatedHtml sweeps survivors first, bumpReinject caps hostile
     // loops exactly like every other heal.
     const existing = findGloss(unit, mode);
-    const multiPara =
-      this.opts.paragraphInterleave &&
-      (splitHtmlByBreaks(html).length > 1 || html.includes('\n'));
+    const multiPara = this.opts.paragraphInterleave && (splitHtmlByBreaks(html).length > 1 || html.includes('\n'));
     if (existing && !multiPara) return false;
     if (existing && multiPara) {
       // Interleave intact? The placement fingerprint says how many glosses
@@ -503,24 +514,20 @@ export class PageTranslator {
     }
   }
 
-  /** True if the element is within the preload margin of the viewport. */
-  private isNearViewport(el: Element): boolean {
-    const win = el.ownerDocument.defaultView;
-    if (!win) return true;
-    const m = this.preloadMargin;
-    const r = el.getBoundingClientRect();
-    return r.bottom >= -m && r.top <= win.innerHeight + m && r.right >= -m && r.left <= win.innerWidth + m;
-  }
-
   private onIntersect(entries: IntersectionObserverEntry[]): void {
-    if (!this.active) return; // a callback can still fire after stop() — ignore it
+    if (!this.active) return;
     for (const entry of entries) {
-      if (!entry.isIntersecting) continue;
       const el = entry.target as Element;
-      this.io?.unobserve(el);
       const id = el.getAttribute(DATA_OMNI.walkId);
       const unit = id ? this.unitsById.get(id) : undefined;
-      if (unit) this.enqueue(unit);
+      if (!unit || unit.element !== el) continue;
+      if (entry.isIntersecting) {
+        this.nearby.add(unit.id);
+        this.enqueue(unit);
+      } else {
+        this.nearby.delete(unit.id);
+        this.pending.delete(unit.id);
+      }
     }
   }
 
@@ -655,6 +662,8 @@ export class PageTranslator {
     const unit = this.unitsById.get(id);
     if (unit) this.io?.unobserve(unit.element);
     this.unitsById.delete(id);
+    this.pending.delete(id);
+    this.nearby.delete(id);
     this.modeById.delete(id);
     this.splitNodesById.delete(id);
     this.streamAcc.delete(id);
@@ -845,17 +854,17 @@ export class PageTranslator {
   }
 
   private enqueue(unit: TranslationUnit): void {
-    // Layer 1 — synchronous SCRIPT skip (CJK is decisive): drop already-target /
-    // skip-language text before it's even queued. No RPC, no spinner.
-    if (scriptSaysSkip(unit.text, this.policy)) return;
-    this.pending.push(unit);
-    this.pendingChars += this.payload(unit).text.length;
-    if (this.pending.length >= this.maxBatchItems || this.pendingChars >= this.maxBatchChars) {
-      this.flush();
-    } else {
-      if (this.flushTimer) clearTimeout(this.flushTimer);
-      this.flushTimer = setTimeout(() => this.flush(), this.flushDelayMs);
+    if (this.dispatching.has(unit.id) || this.pending.has(unit.id)) return;
+    // Script skips need neither a request nor further intersection updates.
+    if (scriptSaysSkip(unit.text, this.policy)) {
+      this.io?.unobserve(unit.element);
+      this.nearby.delete(unit.id);
+      return;
     }
+    this.pending.set(unit.id, unit);
+    // Gather a whole observer delivery before sorting. Do not reset the timer
+    // on each arrival: a busy page must not postpone visible text indefinitely.
+    if (!this.flushTimer) this.flushTimer = setTimeout(() => this.flush(), this.flushDelayMs);
   }
 
   private flush(): void {
@@ -863,11 +872,37 @@ export class PageTranslator {
       clearTimeout(this.flushTimer);
       this.flushTimer = null;
     }
-    if (this.pending.length === 0) return;
-    const batch = this.pending;
-    this.pending = [];
-    this.pendingChars = 0;
-    void this.processBatch(this.orderByViewport(batch));
+    if (!this.active) return;
+    const epoch = this.epoch;
+    while (this.processingBatches < MAX_PAGE_BATCHES && this.pending.size > 0) {
+      const candidates = this.orderByViewport([...this.pending.values()]);
+      const batch: TranslationUnit[] = [];
+      let chars = 0;
+      for (const unit of candidates) {
+        if (!unit.element.isConnected || this.unitsById.get(unit.id) !== unit || !this.nearby.has(unit.id)) {
+          this.pending.delete(unit.id);
+          continue;
+        }
+        const length = this.payload(unit).text.length;
+        if (batch.length && (batch.length >= this.maxBatchItems || chars + length > this.maxBatchChars)) break;
+        this.pending.delete(unit.id);
+        this.dispatching.add(unit.id);
+        batch.push(unit);
+        chars += length;
+      }
+      if (!batch.length) break;
+      this.processingBatches++;
+      void this.processBatch(batch, epoch).finally(() => {
+        // A stopped/restarted session owns a fresh counter and fresh units.
+        if (epoch !== this.epoch) return;
+        this.processingBatches--;
+        for (const unit of batch) {
+          this.dispatching.delete(unit.id);
+          if (this.unitsById.get(unit.id) === unit && this.nearby.has(unit.id)) this.enqueue(unit);
+        }
+        this.flush();
+      });
+    }
   }
 
   /**
@@ -901,13 +936,27 @@ export class PageTranslator {
    * check can't), then translate the survivors. The pending spinner is created
    * HERE (after detection), not at enqueue, so a skipped unit never flashes one.
    */
-  private async processBatch(batch: TranslationUnit[]): Promise<void> {
+  private async processBatch(batch: TranslationUnit[], epoch: number): Promise<void> {
     const win = this.root.ownerDocument.defaultView as (Window & typeof globalThis) | null;
     // Detect in parallel: the detector is shared/cached, and up to 16 serial
     // awaits added ~20-80ms of pure latency to every batch's first token.
     const skips = await Promise.all(batch.map((unit) => detectSaysSkip(unit.text, this.policy, win)));
-    const survivors = batch.filter((_, i) => !skips[i]);
-    if (!this.active || survivors.length === 0) return;
+    if (!this.active || epoch !== this.epoch) return;
+    const survivors = batch.filter((unit, i) => {
+      if (this.unitsById.get(unit.id) !== unit || !unit.element.isConnected) return false;
+      if (skips[i]) {
+        this.io?.unobserve(unit.element);
+        this.nearby.delete(unit.id);
+        return false;
+      }
+      // Detection is asynchronous: the source may have scrolled out, been
+      // replaced, or disappeared since this batch reserved a page slot.
+      if (!this.nearby.has(unit.id)) return false;
+      this.io?.unobserve(unit.element);
+      this.nearby.delete(unit.id);
+      return true;
+    });
+    if (survivors.length === 0) return;
     // One display-mode neutralize around the whole batch: each gloss creation
     // measures its inherited metrics, and under an active 仅译文 collapse the
     // per-node <html> attribute toggle would force a full-document style
@@ -919,10 +968,10 @@ export class PageTranslator {
         ensureGlossNode(unit, mode, this.opts.target, this.opts.bilingualStyle, this.opts.translationFont); // pending spinner now that it's confirmed
       }
     });
-    await this.translateBatch(survivors);
+    await this.translateBatch(survivors, epoch);
   }
 
-  private async translateBatch(batch: TranslationUnit[]): Promise<void> {
+  private async translateBatch(batch: TranslationUnit[], epoch: number): Promise<void> {
     const win = this.root.ownerDocument.defaultView;
     const filled = new Set<string>(); // unit ids that received a final segDone
     const handle = streamBatchTranslate(
@@ -946,7 +995,7 @@ export class PageTranslator {
         // Progressive: append the raw stream to the node (RAF-buffered). Inline
         // {{n}} placeholders briefly show literally; segDone renders for real.
         onSeg: (index, delta) => {
-          if (!this.active) return;
+          if (!this.active || epoch !== this.epoch) return;
           const unit = batch[index - 1];
           if (!unit) return;
           const acc = (this.streamAcc.get(unit.id) ?? '') + delta;
@@ -956,7 +1005,7 @@ export class PageTranslator {
         },
         // Final, trimmed text → the real render (restoreInline + unchanged drop).
         onSegDone: (index, text) => {
-          if (!this.active) return;
+          if (!this.active || epoch !== this.epoch) return;
           const unit = batch[index - 1];
           if (!unit) return;
           filled.add(unit.id);
@@ -983,7 +1032,7 @@ export class PageTranslator {
     } finally {
       this.inflight.delete(handle);
     }
-    if (!this.active) return;
+    if (!this.active || epoch !== this.epoch) return;
     // Whether the batch failed outright (no API key, SW recycled) or "finished"
     // with per-item casualties (one MT fetch failed), a unit that never got its
     // segDone must not keep its spinner forever: mark it and drop its partial
@@ -1172,7 +1221,11 @@ export class PageTranslator {
     const probe = unit.element.ownerDocument.createElement('div');
     probe.innerHTML = parts[0] ?? '';
     if (parts.length === groups.length + 1 && (probe.textContent ?? '').trim()) {
-      this.interleaveParts(node, parts, groups.map((g) => g[0]));
+      this.interleaveParts(
+        node,
+        parts,
+        groups.map((g) => g[0])
+      );
       return;
     }
     setTranslatedHtml(node, html); // count mismatch / empty first — whole block wins

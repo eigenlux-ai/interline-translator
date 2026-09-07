@@ -684,11 +684,11 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
               <Group gap={6} align="center">
                 <SparklesIcon width={14} height={14} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
                 <Text size="xs" fw={600} c="cinnabar">
-                  {m.provider_add()} · 快捷添加
+                  {m.provider_add()} · {m.provider_quick_add()}
                 </Text>
               </Group>
               <Text size="xs" c="dimmed">
-                Interline 支持主流大模型服务商与任何 OpenAI 兼容的本地/云端端点：
+                {m.provider_quick_add_desc()}
               </Text>
               <Group gap="xs" wrap="wrap">
                 {ADDABLE.map((a) => (

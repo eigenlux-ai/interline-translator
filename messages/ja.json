@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "書式を保持して翻訳",
 	"settings_rich_text_desc": "リンク・太字・インラインコードなどの書式を訳文に引き継ぎます。書式マーカーが翻訳エンジンの妨げになり訳文が不自然な場合は、オフにするとプレーンテキストでより自然に翻訳されます。",
 	"interleave_label": "段落ごとに対訳",
-	"interleave_desc": "複数段落のブロックで、各段落の直後に訳文を挿入します"
+	"interleave_desc": "複数段落のブロックで、各段落の直後に訳文を挿入します",
+	"provider_quick_add": "クイック追加",
+	"provider_quick_add_desc": "主要 AI サービスや、OpenAI / Anthropic 互換のローカル・クラウドサービスに接続できます。"
 }

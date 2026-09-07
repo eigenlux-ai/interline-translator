@@ -2,173 +2,94 @@
   <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-<p align="center">
-  <img src="./assets/readme/en/hero.svg" width="100%" alt="Interline · 行间 — an open-source bilingual reading extension for Chrome that inserts translations directly between paragraphs in place">
-</p>
+# Interline · 行间
 
-<p align="center">
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/Manifest-V3-4285F4?logo=googlechrome&logoColor=white" alt="Manifest V3">
-  <img src="https://img.shields.io/badge/Chrome-116%2B-4285F4?logo=googlechrome&logoColor=white" alt="Requires Chrome 116 or newer">
-  <img src="https://img.shields.io/badge/WXT-0.20-67D55E" alt="Built with WXT 0.20">
-  <img src="https://img.shields.io/badge/Mantine-9-339AF0?logo=mantine&logoColor=white" alt="Mantine 9">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=white" alt="React 19">
-  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white" alt="TypeScript 5">
-</p>
+**Read beyond language. Keep the original in sight.**
 
-**Interline** is an open-source bilingual reading extension for Chrome. It inserts translations directly beneath original paragraphs in place — keeping layout, formatting, links, and interactions completely intact without replacing the page or pulling you into a sidebar.
+Interline is a fully open-source Chrome extension for bilingual reading and translation. Read an article with translations beside each paragraph, look up a selected sentence, or translate a draft where you are already writing.
 
-- **Ready out of the box** — Includes a built-in free translation engine that works immediately on install with zero configuration.
-- **Bring your own key (BYOK)** — Connect OpenAI, Anthropic, Google Gemini, OpenRouter, or any OpenAI-/Anthropic-compatible endpoint (Ollama, Kimi, GLM, LiteLLM…) for higher quality.
-- **Privacy-first** — Zero user accounts, zero telemetry, zero trackers, and zero intermediary proxy servers. Requests go directly from your browser to the configured provider.
+**[Source code](https://github.com/eigenlux-ai/interline-translator) · [Request a feature](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [Report a bug](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [Contribute](./CONTRIBUTING.md)**
 
----
+[MIT licensed](./LICENSE) · Chrome 116+ · Built-in key-free translation · Bring your own AI key
 
-## Whole-Page Bilingual Reading
+![Interline translating a French article into English, with original and translation paired by paragraph](./assets/store/global/screenshot-1-bilingual.png)
 
-Translations are injected as **sibling nodes** of the original text. Links, `<strong>`, inline code spans, and list structures remain intact. Ten display styles let you choose how translations appear alongside the original content:
+## Read, understand, reply
 
-<p align="center">
-  <img src="./assets/readme/en/display-styles.svg" width="100%" alt="Specimen board comparing ten translation display styles (blend, dim, underline, dashed, dotted, wavy, highlight, blockquote, card, blur) on both light and dark backgrounds">
-</p>
+| What you want to do | How Interline helps |
+| --- | --- |
+| Read a page in another language | Translate from the floating control, right-click menu or **Alt+T**. Keep the original and translation together. |
+| Understand a sentence | Select text and click the translation icon to read, copy or listen to the result. Supported AI engines can also provide vocabulary notes. |
+| Write in another language | Type a draft, then press **Space three times** to translate it in place. The writing language is separate from your reading language. |
+| Make reading comfortable | Switch between bilingual, translation-only and original-only views; choose from 10 display styles and light or dark appearance. |
+| Keep wording consistent | With an AI engine, customize translation styles, prompts and glossaries. Apply preferences to specific sites. |
 
-- **Three view modes** — Switch instantly between Bilingual (default), Translation-only, and Original-only. Mode switching is handled purely via CSS transitions over already injected text, requiring no re-translation.
-- **Paragraph pairing** — Keeps each paragraph paired with its translation rather than stacking two disjointed text blocks.
-- **Custom typography** — Set translations in clean brush/serif fonts (e.g. LXGW WenKai, Kaiti) or let them inherit the host page's typeface.
+See the actual [selection card](./assets/store/global/screenshot-2-selection.png), [engine settings](./assets/store/global/screenshot-3-settings.png), [input translation](./assets/store/global/screenshot-4-input-translation.png) and [dark settings](./assets/store/global/screenshot-5-dark-mode.png). Screenshots use original sample content and the real extension; captions around the captures describe the features.
 
-## Selection Translation
+## Get started
 
-Select any text on the page to reveal a floating action button. Clicking it streams the translation into a popup card, with a subtle shimmer placeholder until the first token arrives.
+You need Git, Node.js 22+ and pnpm 10.7.1 (the version pinned in `package.json`).
 
-When connected to an LLM provider, the card can expand **word notes** to provide contextual explanations for idioms, technical terms, and proper nouns.
-
-## In-Input Quick Translation
-
-Press <kbd>Space</kbd> three times in any input field to translate draft text in place. Prefix your text with `/en` or `en:` to temporarily switch target languages on the fly.
-
-Supports native `<input>` / `<textarea>` elements, `contenteditable` areas, and modern editors (CKEditor, Slate, TipTap, Monaco, CodeMirror, wangEditor). Every write operation performs a read-back verification to fail safely without corrupting drafts. Restoring original text is supported via <kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd> within the undo window.
-
-## Floating Action Button & Quick Controls
-
-A draggable floating button docks to the window edge without obstructing page content. Click once to translate the whole page, or expand the control panel to adjust target language, view mode, display style, and per-site rules in real time.
-
----
-
-## Install
-
-Requires Chrome 116+ (or any Chromium-based browser at or above that version). A Firefox target is included in source.
-
-### Build from source
-
-```bash
-pnpm install
-pnpm build          # Output generated in .output/chrome-mv3/
+```sh
+git clone https://github.com/eigenlux-ai/interline-translator.git
+cd interline-translator
+pnpm install --frozen-lockfile
+pnpm build
 ```
 
-1. Open `chrome://extensions` in Chrome.
-2. Enable **Developer mode** in the top right corner.
-3. Click **Load unpacked** and select the `.output/chrome-mv3/` directory.
+1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
+2. Choose **Load unpacked** and select `.output/chrome-mv3/` inside the repository.
+3. Open an article, then use the floating translation control or **Alt+T**.
+4. Click Interline's toolbar icon to open settings. Choose your reading language; add an AI engine only if you want one.
 
-**First run:** Click the toolbar icon to open Settings. The built-in free engine is ready immediately; configure custom API keys under **AI Engines** whenever needed.
+The built-in Google Translate engine does not need an API key. It uses an online service, so availability depends on your network and the provider.
 
-## Privacy & Security
+Chrome's restricted pages, including `chrome://` pages, do not allow in-page translation. Site layouts and editor implementations vary; compatibility with every page is not guaranteed. Firefox build commands are included for development, but the screenshots here were captured in Chromium.
 
-- **Direct requests only** — Text is sent solely to the engine you configure. The project does not collect metrics, telemetry, or user analytics, and operates no central backend server.
-- **Local credential storage** — API keys are stored exclusively in local extension storage (`chrome.storage.local`). Keys are never logged and leave your browser only inside the `Authorization` header sent to your chosen endpoint.
-- **HTTPS enforcement** — Custom endpoints enforce HTTPS by default (loopback addresses `127.0.0.1` / `localhost` and `.local` hosts excluded) to prevent API key exposure over plain text connections.
-- **Minimal permissions** — Requests only `storage`, `contextMenus`, and `alarms`. Broad permissions like `tabs` and `scripting` are not requested.
+## Choose your translation engine
 
----
+Start with the built-in free engine, or connect your own API key for **OpenAI, Anthropic, Google Gemini, OpenRouter**, or a service compatible with the OpenAI or Anthropic protocol. Compatible endpoints can include local services such as Ollama when configured appropriately.
 
-## Customization & Power Features
+Interline's code is free under MIT. Third-party AI providers may charge for API usage and set their own quotas and availability. An AI engine enables prompt styles, glossary instructions and contextual notes; translation quality depends on the model, text and settings.
 
-- **Prompt Styles** — Select preconfigured tones (academic, plain, literary, etc.) or write custom instructions. Includes a live preview rendered via the actual prompt builder, with domain-level binding support.
-- **Glossaries** — Pin preferred translations for technical terms and jargon with glob-based domain matching. Supports CSV, TSV, and JSON import/export alongside built-in presets.
-- **Site Rules** — Configure domain-level execution policies (`Always`, `Manual`, `Never`) with wildcard support.
-- **12 Interface Languages** — Full localization for `zh`, `zh-TW`, `en`, `ja`, `ko`, `fr`, `de`, `es`, `ru`, `pt`, `it`, and `ar` (with complete RTL support). The UI language automatically follows the translation target language by default.
+For input translation, prefix a draft with `/en` or `en:` to choose English for that one translation. A temporary undo control lets you restore the original. Native inputs, textareas, editable content and several rich-text/code editor integrations are supported; behavior depends on the host editor.
 
-## Automatic Model Adaptation
+## Your settings, your reading habits
 
-The extension exposes only the three settings that matter for translation: **Temperature**, **Max Output Tokens**, and **Reasoning / Thinking**. Protocol quirks across model families are adapted automatically:
+- **Display:** three views, 10 translation styles, and a choice of translation font. Switching views of an already translated page does not make a new translation request.
+- **Site rules:** choose sites to translate automatically or leave untranslated, with wildcard matching.
+- **Language:** 12 interface languages, including Arabic with RTL layout. By default the interface follows your reading target; you can choose it separately.
+- **Backup:** export and import your settings. **The exported JSON includes API keys**; keep it private.
 
-| Model Family | Automatic Adaptation |
-| --- | --- |
-| OpenAI `o1` / `o3` / `o4` | Strips custom temperature (rejected by endpoint) and maps disabled reasoning to the lowest supported effort level |
-| Claude 3.7 / 4.x / 5.x | Automatically sends `thinking` with budget, ensuring `max_tokens` exceeds the reasoning budget |
-| Claude 3.0 / 3.5 | Omits `thinking` parameters to avoid endpoint errors on older model versions |
-| Gemini 2.x / 3.x | Maps parameters to `thinkingLevel` per Gemini protocol specifications |
-| Reasoning-native (`r1`, `qwq`, `:thinking`) | Avoids sending explicit disable flags that cause gateways like OpenRouter to return HTTP 400 |
+## How your data is handled
 
-If an endpoint rejects a parameter, the request automatically strips the offending field and retries once in place to ensure graceful degradation.
+Interline requires no account, includes no behavioral analytics or telemetry, and operates no translation relay server. Translation requests go directly from your browser to the selected provider, including Google when using the built-in engine.
 
----
+Requests contain the text needed for translation and, for AI features, relevant context such as the page title, nearby text and matching glossary entries. If you enable **whole-page context**, the first 8,000 characters of page text is also sent, including text you have not scrolled to. Automatic site rules can trigger translation without a new click on each page.
+
+Settings and API keys are stored locally in the browser; credentials are sent to the selected service when needed to authenticate requests. Translations are cached locally. Providers have their own data policies. Read the [privacy policy](./PRIVACY.md) for details on data, permissions, cache retention and backups.
+
+## Fully open source. Help shape what comes next.
+
+All source code is available under the [MIT license](./LICENSE). Inspect it, build it yourself, adapt it or contribute improvements.
+
+- **Have a new feature in mind?** [Open an issue](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) and tell us what you are trying to do.
+- **Found a problem?** [Report it](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) with reproduction steps and your browser version.
+- **Want to help?** Code, fixes, translations, documentation and reproducible examples are welcome. **PRs welcome!** See the [contribution guide](./CONTRIBUTING.md) and [pull requests](https://github.com/eigenlux-ai/interline-translator/pulls).
+
+Please leave API keys, private page content and configuration backups out of public reports.
 
 ## Development
 
-```bash
-pnpm dev                 # Chrome development with HMR
-pnpm dev:firefox         # Firefox development
-
-pnpm compile             # TypeScript type check (tsc --noEmit)
-pnpm lint                # ESLint check
-pnpm test                # Vitest test suite (happy-dom + fake-browser)
-pnpm i18n                # Compile messages/*.json → src/paraglide
-
-pnpm build && pnpm zip   # Build and package .output/*.zip for Chrome Web Store
+```sh
+pnpm dev          # Chrome development with HMR
+pnpm compile      # TypeScript checks
+pnpm lint         # ESLint
+pnpm test         # Tests
+pnpm build        # Production Chrome extension
+pnpm zip          # Packaged extension
 ```
 
-`pnpm dev` also serves `test-pages/` — a suite of hostile host pages used to verify boundary isolation (62.5% rem root, unprefixed Tailwind v3, shadow hosts, virtualized editors).
+The [contribution guide](./CONTRIBUTING.md) covers architecture, test pages, i18n and build audits. The [store asset guide](./assets/store/README.md) contains localized listing copy, real screenshots and regeneration instructions.
 
-### Quality Gates
-
-CI enforces three automated audits:
-
-```bash
-pnpm audit:css       # Verifies all root-level CSS variables are strictly scoped to .aie-omt-surface-root
-pnpm audit:ascii     # Ensures build chunks contain only ASCII characters (avoids Chrome non-ASCII loading bug — wxt#353)
-pnpm audit:bundle    # Content script gzip budgets: page-translate ≤ 100 KB, float-ui ≤ 260 KB
-```
-
-## Architecture
-
-This project is built on top of [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template), which establishes the foundational multi-surface architecture combining WXT, React 19, Mantine 9, and Shadow Root DOM isolation. For in-depth design rationale, satellite surface lifecycles, and styling isolation patterns, refer to the template repository.
-
-```text
-src/
-├── entrypoints/           # WXT entry points (thin mount layers)
-│   ├── background.ts      # Engines, streaming server, config gateway, menus, cache management
-│   ├── options/           # Full-page settings interface
-│   ├── page-translate.content/   # Whole-page translation state owner
-│   ├── float-ui.content/         # Floating button + selection card (shared shadow surface)
-│   ├── editor-injector.content/  # MAIN-world editor bridge
-│   └── injector-port.content.ts  # Isolated ⇄ main world port handshake
-├── react-app/             # UI: apps, components, hooks, VisualManager
-├── services/              # Translation engines, prompt builder, glossary, cache, config, streaming
-├── dom/                   # Traversal, insertion, wrappers, in-page input translation
-├── surface/               # Shadow surface abstraction (document + satellite)
-└── data/models/           # Configuration schemas and shared types
-```
-
-### Core Engineering Invariants
-
-1. **Host Page Inviolability** — All extension UI elements are isolated inside Shadow Roots. Inserted translations are purely additive and fully reversible; clearing translations restores the host DOM byte-for-byte. CSS boundaries are verified by `pnpm audit:css`.
-2. **Engine & Page Decoupling** — Content scripts communicate with the background service worker exclusively through typed message ports. API keys and AI SDK dependencies exist only in the service worker, keeping injected script footprints within strict budgets.
-3. **Unified Prompt Pipeline** — Single, streaming, and batch translation pipelines share the exact same preflight checks, cache key generation, and prompt builder logic to prevent behavioral drift across surfaces.
-
-`PROJECT_PREFIX` (`prefix.cjs`) serves as the single source of truth for generated class names, custom elements, storage keys, and CSS variables. The `check-prefix-sync` Vite plugin verifies synchronization at build time.
-
-## Contributing
-
-Issues and pull requests are welcome. Before submitting a pull request, ensure all checks pass:
-
-```bash
-pnpm compile && pnpm lint && pnpm test && pnpm build && pnpm audit:css && pnpm audit:ascii && pnpm audit:bundle
-```
-
-UI copy is maintained in `messages/*.json`. After modifying copy, run `pnpm i18n` and include the generated `src/paraglide/` updates in your commit.
-
-## License
-
-[MIT](./LICENSE)
-
-Fonts are referenced via standard CSS font stacks and are not bundled in build artifacts: LXGW WenKai, Hanken Grotesk, Spline Sans Mono, and EB Garamond are licensed under SIL OFL 1.1, falling back to local system fonts when absent.
+Built with WXT, React, Mantine and TypeScript, using the [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) as its foundation.

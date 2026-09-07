@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "서식 유지 번역",
 	"settings_rich_text_desc": "링크, 굵게, 인라인 코드 등 원문 서식을 번역문에 유지합니다. 서식 마커 때문에 번역이 어색해지는 엔진이 있다면 끄고 일반 텍스트로 더 자연스럽게 번역하세요.",
 	"interleave_label": "문단별 대역",
-	"interleave_desc": "여러 문단 블록에서 각 원문 문단 바로 아래에 번역을 배치합니다"
+	"interleave_desc": "여러 문단 블록에서 각 원문 문단 바로 아래에 번역을 배치합니다",
+	"provider_quick_add": "빠른 추가",
+	"provider_quick_add_desc": "주요 AI 제공업체와 OpenAI 또는 Anthropic 호환 로컬·클라우드 서비스를 연결하세요."
 }

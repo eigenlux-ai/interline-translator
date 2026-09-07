@@ -237,4 +237,6 @@ export * from "./settings_rich_text_label.js";
 export * from "./settings_rich_text_desc.js";
 export * from "./interleave_label.js";
 export * from "./interleave_desc.js";
+export * from "./provider_quick_add.js";
+export * from "./provider_quick_add_desc.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

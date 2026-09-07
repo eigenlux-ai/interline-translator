@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "Conservar el formato",
 	"settings_rich_text_desc": "Las traducciones conservan los enlaces, negritas y código en línea del original. Si los marcadores de formato confunden a un motor y la traducción resulta forzada, desactívalo para obtener texto plano más natural.",
 	"interleave_label": "Alineación por párrafo",
-	"interleave_desc": "Colocar cada párrafo traducido justo después de su párrafo original en bloques de varios párrafos"
+	"interleave_desc": "Colocar cada párrafo traducido justo después de su párrafo original en bloques de varios párrafos",
+	"provider_quick_add": "Añadir rápidamente",
+	"provider_quick_add_desc": "Conecta proveedores de IA o servicios locales y en la nube compatibles con OpenAI o Anthropic."
 }

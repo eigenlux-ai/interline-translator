@@ -238,5 +238,7 @@
 	"settings_rich_text_label": "Keep inline formatting",
 	"settings_rich_text_desc": "Translations keep the original's links, bold and inline code. If format markers confuse an engine and the translation reads stilted, turn this off for cleaner plain-text output.",
 	"interleave_label": "Per-paragraph pairing",
-	"interleave_desc": "Place each translated paragraph right after its source paragraph in multi-paragraph blocks"
+	"interleave_desc": "Place each translated paragraph right after its source paragraph in multi-paragraph blocks",
+	"provider_quick_add": "Quick add",
+	"provider_quick_add_desc": "Connect AI providers or local and cloud services compatible with OpenAI or Anthropic."
 }

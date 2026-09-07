@@ -5,9 +5,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for taking the time to file a report. Please fill in the sections below so the issue can be reproduced quickly.
+        Tell us what went wrong and how to reproduce it. Reports in English, Chinese, Japanese or Korean are welcome.
 
-        **Never paste an API key.** Redact it from any log or screenshot you attach.
+        **Keep credentials and private content out of public reports.** Remove API keys, authorization headers and private page text from logs and screenshots. Do not attach configuration exports; they contain API keys.
   - type: textarea
     id: what-happened
     attributes:
@@ -34,7 +34,7 @@ body:
       multiple: true
       options:
         - Whole-page translation
-        - Selection translation (slip card)
+        - Selection translation
         - Input-field translation (3-space trigger)
         - Floating seal / control panel
         - Settings page
@@ -47,12 +47,12 @@ body:
     attributes:
       label: Engine and model
       description: Which provider and model? Leave blank if you use the bundled keyless engine.
-      placeholder: OpenRouter · google/gemini-3.7-flash
+      placeholder: Provider name · model ID (or built-in Google Translate)
   - type: textarea
     id: environment
     attributes:
       label: Environment
-      description: Your browser + OS, and the extension version (shown at the bottom of the settings page).
+      description: Your browser + OS, and the extension version shown in chrome://extensions.
       placeholder: |
         - OS: macOS 15.5
         - Browser: Chrome 126
@@ -64,7 +64,7 @@ body:
     id: logs
     attributes:
       label: Relevant logs / output
-      description: Console errors from the page or the extension's service worker. Redact API keys.
+      description: Relevant errors from the page or extension service worker. Share only what is needed; remove credentials and private content.
       render: shell
   - type: checkboxes
     id: checks
@@ -73,5 +73,5 @@ body:
       options:
         - label: I searched existing issues and this is not a duplicate.
           required: true
-        - label: I removed any API key from the logs and screenshots above.
+        - label: I removed credentials and private content, and did not attach a configuration export.
           required: true
