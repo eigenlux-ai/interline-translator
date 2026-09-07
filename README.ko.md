@@ -10,6 +10,8 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 
 **[전체 소스 코드](https://github.com/eigenlux-ai/interline-translator) · [기능 제안](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [버그 신고](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [기여하기](./CONTRIBUTING.md)**
 
+**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
 [MIT 라이선스](./LICENSE) · Chrome 116+ · 키 없는 기본 번역 엔진 · 내 AI 키 연결
 
 ![영어 기사와 한국어 번역을 문단별로 함께 표시하는 Interline의 실제 화면](./assets/store/ko/screenshot-1-bilingual.png)
@@ -27,6 +29,12 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 실제 [선택 번역 카드](./assets/store/ko/screenshot-2-selection.png), [엔진 설정](./assets/store/ko/screenshot-3-settings.png), [입력창 번역](./assets/store/ko/screenshot-4-input-translation.png), [다크 설정](./assets/store/ko/screenshot-5-dark-mode.png)도 확인하세요. 직접 작성한 예문과 실제 확장 프로그램으로 촬영했으며, 화면 바깥의 문구는 기능 설명입니다.
 
 ## 시작하기
+
+**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
+스토어 페이지에서 **Chrome에 추가**를 클릭하세요. 설치 후 기사를 열고 플로팅 번역 컨트롤이나 **Alt+T**로 번역을 시작할 수 있습니다. 도구 모음의 Interline 아이콘에서 읽기 대상 언어와 번역 엔진을 설정하세요.
+
+### 소스에서 빌드
 
 Git, Node.js 22+, pnpm 10.7.1(`package.json`에 지정된 버전)이 필요합니다.
 

@@ -10,6 +10,8 @@ Interline is a fully open-source Chrome extension for bilingual reading and tran
 
 **[Source code](https://github.com/eigenlux-ai/interline-translator) · [Request a feature](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [Report a bug](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [Contribute](./CONTRIBUTING.md)**
 
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
 [MIT licensed](./LICENSE) · Chrome 116+ · Built-in key-free translation · Bring your own AI key
 
 ![Interline translating a French article into English, with original and translation paired by paragraph](./assets/store/global/screenshot-1-bilingual.png)
@@ -27,6 +29,12 @@ Interline is a fully open-source Chrome extension for bilingual reading and tran
 See the actual [selection card](./assets/store/global/screenshot-2-selection.png), [engine settings](./assets/store/global/screenshot-3-settings.png), [input translation](./assets/store/global/screenshot-4-input-translation.png) and [dark settings](./assets/store/global/screenshot-5-dark-mode.png). Screenshots use original sample content and the real extension; captions around the captures describe the features.
 
 ## Get started
+
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
+Open the store page and click **Add to Chrome**. After installing, open an article and use the floating translation control or **Alt+T**. Click Interline’s toolbar icon to choose your reading language and translation engine.
+
+### Build from source
 
 You need Git, Node.js 22+ and pnpm 10.7.1 (the version pinned in `package.json`).
 

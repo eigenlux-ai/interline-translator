@@ -10,6 +10,8 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 
 **[ソースコード](https://github.com/eigenlux-ai/interline-translator) · [機能をリクエスト](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [不具合を報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [開発に参加](./CONTRIBUTING.md)**
 
+**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
 [MIT ライセンス](./LICENSE) · Chrome 116+ · キー不要の翻訳エンジン内蔵 · 自分の AI キーにも対応
 
 ![英語の記事と日本語の訳文を段落ごとに表示する Interline の実際の画面](./assets/store/ja/screenshot-1-bilingual.png)
@@ -27,6 +29,12 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 実際の[選択翻訳カード](./assets/store/ja/screenshot-2-selection.png)、[エンジン設定](./assets/store/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/ja/screenshot-4-input-translation.png)、[ダーク設定](./assets/store/ja/screenshot-5-dark-mode.png)もご覧ください。画像にはオリジナルのサンプル文章と実際の拡張機能を使用し、外枠に機能説明を添えています。
 
 ## 使い始める
+
+**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
+ストアのページで **Chrome に追加**をクリックします。インストール後、記事を開き、フローティングコントロールか **Alt+T** で翻訳を開始できます。ツールバーの Interline アイコンから、読む言語と翻訳エンジンを設定してください。
+
+### ソースからビルド
 
 Git、Node.js 22+、pnpm 10.7.1（`package.json` の指定バージョン）を用意してください。
 

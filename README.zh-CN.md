@@ -10,6 +10,8 @@ Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译
 
 **[完整源代码](https://github.com/eigenlux-ai/interline-translator) · [提出功能需求](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [参与贡献](./CONTRIBUTING.md)**
 
+**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
 [MIT 许可](./LICENSE) · Chrome 116+ · 内置免 Key 翻译 · 支持自备 AI 密钥
 
 ![行间实际运行界面：英文文章与中文译文逐段相邻对照](./assets/store/zh_CN/screenshot-1-bilingual.png)
@@ -27,6 +29,12 @@ Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译
 查看实际的[划词卡片](./assets/store/zh_CN/screenshot-2-selection.png)、[引擎设置](./assets/store/zh_CN/screenshot-3-settings.png)、[输入框翻译](./assets/store/zh_CN/screenshot-4-input-translation.png)和[深色设置](./assets/store/zh_CN/screenshot-5-dark-mode.png)。截图使用原创示例内容和真实插件界面，外围标题是功能说明。
 
 ## 开始使用
+
+**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+
+打开商店页面，点击**添加至 Chrome**。安装后打开一篇文章，通过悬浮翻译控件或 **Alt+T** 开始翻译；点击工具栏中的行间图标，设置阅读目标语言和翻译引擎。
+
+### 从源码构建
 
 准备 Git、Node.js 22+ 和 pnpm 10.7.1（与 `package.json` 固定版本一致）。
 
