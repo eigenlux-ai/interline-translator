@@ -2,13 +2,13 @@
   <a href="./README.md">English</a> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.ja.md">日本語</a> · <strong>한국어</strong>
 </p>
 
-# Interline · 行间
+# Interline · 行间 — Chrome용 오픈 소스 이중 언어 번역 확장 프로그램
 
 **원문 곁에서, 더 넓은 세상을.**
 
 Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 확장 프로그램입니다. 기사를 문단별로 대조해서 읽고, 궁금한 문장을 선택해 뜻을 확인하고, 답글 초안을 입력한 자리에서 번역하세요.
 
-**[전체 소스 코드](https://github.com/eigenlux-ai/interline-translator) · [기능 제안](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [버그 신고](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [기여하기](./CONTRIBUTING.md)**
+**[공식 웹사이트](https://eigenlux-ai.github.io/interline-translator/) · [전체 소스 코드](https://github.com/eigenlux-ai/interline-translator) · [기능 제안](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [버그 신고](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [기여하기](./CONTRIBUTING.md)**
 
 **[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
 
