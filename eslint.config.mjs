@@ -52,6 +52,7 @@ export default defineConfig(
     ignores: [
       '**/node_modules/**',
       '.output/**',
+      'website/dist/**',
       '.wxt/**',
       '.cache/**',
       'public/**',
