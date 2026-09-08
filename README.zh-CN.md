@@ -2,13 +2,13 @@
   <a href="./README.md">English</a> · <strong>简体中文</strong> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间
+# Interline · 行间 — 开源 Chrome 双语网页翻译扩展
 
 **读懂世界，留在原文里。**
 
 Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译扩展。读文章时逐段对照原文与译文，遇到不懂的句子随手划词，参与讨论时就在输入框里翻译草稿。
 
-**[完整源代码](https://github.com/eigenlux-ai/interline-translator) · [提出功能需求](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [参与贡献](./CONTRIBUTING.md)**
+**[官方网站](https://eigenlux-ai.github.io/interline-translator/?lang=zh) · [完整源代码](https://github.com/eigenlux-ai/interline-translator) · [提出功能需求](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [参与贡献](./CONTRIBUTING.md)**
 
 **[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
 

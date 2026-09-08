@@ -2,13 +2,13 @@
   <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间
+# Interline · 行间 — Open-source bilingual translation for Chrome
 
 **Read beyond language. Keep the original in sight.**
 
 Interline is a fully open-source Chrome extension for bilingual reading and translation. Read an article with translations beside each paragraph, look up a selected sentence, or translate a draft where you are already writing.
 
-**[Source code](https://github.com/eigenlux-ai/interline-translator) · [Request a feature](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [Report a bug](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [Contribute](./CONTRIBUTING.md)**
+**[Website](https://eigenlux-ai.github.io/interline-translator/en/?lang=en) · [Source code](https://github.com/eigenlux-ai/interline-translator) · [Request a feature](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [Report a bug](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [Contribute](./CONTRIBUTING.md)**
 
 **[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
 

@@ -2,13 +2,13 @@
   <a href="./README.md">English</a> · <a href="./README.zh-CN.md">简体中文</a> · <strong>日本語</strong> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间
+# Interline · 行间 — Chrome 向けオープンソース対訳・翻訳拡張機能
 
 **原文のそばで、世界を読む。**
 
 Interline は、コードをすべて公開している Chrome 向けの対訳・翻訳拡張機能です。記事を段落ごとに対訳で読み、気になる文を選択して意味を確かめ、返信の下書きを入力欄でそのまま翻訳できます。
 
-**[ソースコード](https://github.com/eigenlux-ai/interline-translator) · [機能をリクエスト](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [不具合を報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [開発に参加](./CONTRIBUTING.md)**
+**[公式サイト](https://eigenlux-ai.github.io/interline-translator/) · [ソースコード](https://github.com/eigenlux-ai/interline-translator) · [機能をリクエスト](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [不具合を報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [開発に参加](./CONTRIBUTING.md)**
 
 **[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
 
