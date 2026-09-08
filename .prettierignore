@@ -3,6 +3,7 @@ build
 coverage
 .wxt
 .output
+website/dist/
 .cache
 public
 test-pages/tw3-play.js

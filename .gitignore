@@ -3,6 +3,7 @@ node_modules
 
 # ── Build output & bundler artifacts ─────────────────────────────────────────
 .output
+website/dist/
 .wxt
 zip/
 *.zip
