@@ -153,3 +153,15 @@ describe('singleTranslationKey (the cross-path shared derivation)', () => {
     expect(styled.built.system).toContain('Style directives');
   });
 });
+
+it('separates prompt fields containing the old key delimiter', async () => {
+  const a = { ...base, systemPrompt: 'a|b', userPrompt: 'c' };
+  const b = { ...base, systemPrompt: 'a', userPrompt: 'b|c' };
+  expect(await computeCacheKey(a)).not.toBe(await computeCacheKey(b));
+});
+
+it('separates provider model and endpoint containing the old delimiter', async () => {
+  const a = { ...base, provider: { ...provider, model: 'a~b', baseURL: 'c' } };
+  const b = { ...base, provider: { ...provider, model: 'a', baseURL: 'b~c' } };
+  expect(await computeCacheKey(a)).not.toBe(await computeCacheKey(b));
+});

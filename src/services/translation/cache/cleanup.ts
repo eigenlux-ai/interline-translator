@@ -7,12 +7,10 @@
  */
 
 import { PROJECT_PREFIX } from '@/constants';
-import { capEntryCount, sweepOlderThan } from './db';
+import { CACHE_TTL_MS, capEntryCount, sweepOlderThan } from './db';
 
 const SWEEP_ALARM = `${PROJECT_PREFIX}-cache-sweep`;
 const SWEEP_PERIOD_MINUTES = 24 * 60; // daily
-/** Entries older than this are evicted. Translations are stable, so keep them a while. */
-const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 /** Count ceiling: ~150k entries ≈ 75 MB — age alone lets a heavy reader far past that. */
 const CACHE_MAX_ENTRIES = 150_000;
 
@@ -21,9 +19,14 @@ export function registerCacheCleanup(): void {
   // restarts its countdown, and this runs on every SW start — which on a
   // normally-used browser is far more often than daily, so an unconditional
   // create would defer the sweep forever.
-  void browser.alarms.get(SWEEP_ALARM).then((existing) => {
-    if (!existing) void browser.alarms.create(SWEEP_ALARM, { periodInMinutes: SWEEP_PERIOD_MINUTES });
-  });
+  void browser.alarms
+    .get(SWEEP_ALARM)
+    .then(async (existing) => {
+      if (!existing) {
+        await browser.alarms.create(SWEEP_ALARM, { delayInMinutes: 1, periodInMinutes: SWEEP_PERIOD_MINUTES });
+      }
+    })
+    .catch((e) => console.warn('[cache] alarm setup failed', e));
   browser.alarms.onAlarm.addListener((alarm) => {
     if (alarm.name !== SWEEP_ALARM) return;
     void sweepOlderThan(Date.now() - CACHE_TTL_MS)

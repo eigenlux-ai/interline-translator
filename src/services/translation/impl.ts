@@ -54,7 +54,16 @@ export function jobKey(config: Config, req: TranslateRequest): string {
   const target = req.target || config.translate.target;
   const source = req.source ?? config.translate.source;
   const context = stableStringify(req.context ?? {});
-  return `${provider}|${source}|${req.mode ?? 'llm'}|${target}|${context}|${stableStringify(config.prompt)}|${stableStringify(config.glossary)}|${req.text}`;
+  return stableStringify([
+    provider,
+    source,
+    req.mode ?? 'llm',
+    target,
+    context,
+    config.prompt,
+    config.glossary,
+    req.text,
+  ]);
 }
 
 class TranslationServiceImpl implements TranslationService {

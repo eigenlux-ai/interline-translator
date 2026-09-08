@@ -41,39 +41,62 @@ export interface ReactiveStorageItem<T> {
   fallback: T;
 }
 
-// Last-known synchronous value per item, shared across all hook consumers.
-// Keyed by the item object identity, so it lives exactly as long as the item.
-const snapshots = new WeakMap<object, unknown>();
+interface SnapshotStore<T> {
+  value: T;
+  subscribe: (listener: () => void) => () => void;
+}
+
+const stores = new WeakMap<object, SnapshotStore<unknown>>();
+
+function getStore<T>(item: ReactiveStorageItem<T>): SnapshotStore<T> {
+  const existing = stores.get(item);
+  if (existing) return existing as SnapshotStore<T>;
+  const listeners = new Set<() => void>();
+  let revision = 0;
+  let unwatch: (() => void) | undefined;
+  const publish = (value: T) => {
+    store.value = value;
+    for (const listener of listeners) listener();
+  };
+  const store: SnapshotStore<T> = {
+    value: item.fallback,
+    subscribe(listener) {
+      listeners.add(listener);
+      if (listeners.size === 1) {
+        const readRevision = ++revision;
+        // Subscribe before reading; one watcher/read per item, shared by all
+        // consumers. A watch event or final unsubscribe invalidates the read.
+        unwatch = item.watch((value) => {
+          revision++;
+          publish(value);
+        });
+        void item
+          .getValue()
+          .then((value) => {
+            if (revision === readRevision) publish(value);
+          })
+          .catch((error) => {
+            if (revision === readRevision) console.warn('[useExtStorage] failed to read value', error);
+          });
+      }
+      return () => {
+        listeners.delete(listener);
+        if (listeners.size === 0) {
+          revision++;
+          unwatch?.();
+          unwatch = undefined;
+        }
+      };
+    },
+  };
+  stores.set(item, store as SnapshotStore<unknown>);
+  return store;
+}
 
 export function useExtStorage<T>(item: ReactiveStorageItem<T>): readonly [T, (value: T) => void] {
-  const subscribe = useCallback(
-    (onStoreChange: () => void) => {
-      // Seed the cache from storage; the first resolve re-renders with the
-      // persisted value (the synchronous snapshot is `fallback` until then).
-      // `superseded` guards a race: this read is issued at subscribe time and
-      // may resolve AFTER a watch update (e.g. a setValue between subscribe and
-      // resolution), in which case the now-stale read must NOT clobber the
-      // newer value. Scoped per-subscribe so a remount always re-seeds fresh.
-      let superseded = false;
-      void item.getValue().then((value) => {
-        if (superseded) return;
-        snapshots.set(item, value);
-        onStoreChange();
-      });
-      // onChanged fires in every context including this one, so a write here
-      // flows back through watch — no optimistic local mutation needed.
-      return item.watch((value) => {
-        superseded = true;
-        snapshots.set(item, value);
-        onStoreChange();
-      });
-    },
-    [item]
-  );
-
-  const getSnapshot = useCallback((): T => (snapshots.has(item) ? (snapshots.get(item) as T) : item.fallback), [item]);
-
-  const value = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+  const store = getStore(item);
+  const getSnapshot = useCallback(() => store.value, [store]);
+  const value = useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 
   const setValue = useCallback(
     (next: T) => {

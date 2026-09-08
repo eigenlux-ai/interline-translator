@@ -1,8 +1,8 @@
 import type { generateText, LanguageModel } from 'ai';
 import { describe, expect, it, vi } from 'vitest';
 import type { Config, ProviderConfig } from '@/data/models';
-import { executeTranslate, resolveProvider } from './execute';
 import { makeTestConfig } from '@/test-utils/config';
+import { executeTranslate, resolveProvider } from './execute';
 
 /** A generateText stub that returns fixed text and records its call args. */
 function stubGenerate(text: string) {
@@ -11,7 +11,10 @@ function stubGenerate(text: string) {
 const SENTINEL_MODEL = { __mock: true } as unknown as LanguageModel;
 
 function makeConfig(providers: ProviderConfig[], defaultProviderId?: string): Config {
-  return makeTestConfig({ providers, translate: { defaultProviderId, source: 'auto', target: 'zh-CN', skipLanguages: [] } });
+  return makeTestConfig({
+    providers,
+    translate: { defaultProviderId, source: 'auto', target: 'zh-CN', skipLanguages: [] },
+  });
 }
 
 const mtProvider: ProviderConfig = {
@@ -147,7 +150,7 @@ describe('executeTranslate — empty input', () => {
 describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
   const config = makeConfig([llmProvider], 'oai');
 
-  it("treats a cached EMPTY string as a MISS (legacy poisoned entry), then heals it", async () => {
+  it('treats a cached EMPTY string as a MISS (legacy poisoned entry), then heals it', async () => {
     const store = new Map<string, string>();
     // Poison whatever key the engine derives by running once, blanking, re-running.
     const cache = {
@@ -171,11 +174,11 @@ describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
       get: async (k: string) => store.get(k),
       set: async (k: string, v: string) => void store.set(k, v),
     };
-    await executeTranslate(
-      { text: 'hi', source: 'auto', target: 'zh-CN' },
-      config,
-      { resolveModel: () => SENTINEL_MODEL, generate: stubGenerate(''), cache }
-    );
+    await executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
+      resolveModel: () => SENTINEL_MODEL,
+      generate: stubGenerate(''),
+      cache,
+    });
     expect(store.size).toBe(0);
   });
 
@@ -185,7 +188,10 @@ describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
       get: async (k: string) => store.get(k),
       set: async (k: string, v: string) => void store.set(k, v),
     };
-    const generate = vi.fn(async () => ({ text: '这句话只翻到一', finishReason: 'length' })) as unknown as typeof generateText;
+    const generate = vi.fn(async () => ({
+      text: '这句话只翻到一',
+      finishReason: 'length',
+    })) as unknown as typeof generateText;
     await expect(
       executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
         resolveModel: () => SENTINEL_MODEL,
@@ -201,11 +207,10 @@ describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
       expect(opts.abortSignal).toBeInstanceOf(AbortSignal);
       return { text: 'ok' };
     }) as unknown as typeof generateText;
-    await executeTranslate(
-      { text: 'hi', source: 'auto', target: 'zh-CN' },
-      config,
-      { resolveModel: () => SENTINEL_MODEL, generate }
-    );
+    await executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
+      resolveModel: () => SENTINEL_MODEL,
+      generate,
+    });
     expect(generate).toHaveBeenCalledTimes(1);
 
     const ac = new AbortController();
@@ -214,11 +219,28 @@ describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
       expect(opts.abortSignal?.aborted).toBe(true); // caller's cancel is visible downstream
       return { text: 'ok' };
     }) as unknown as typeof generateText;
-    await executeTranslate(
-      { text: 'hi', source: 'auto', target: 'zh-CN' },
-      config,
-      { resolveModel: () => SENTINEL_MODEL, generate: generate2, signal: ac.signal }
-    );
+    await executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
+      resolveModel: () => SENTINEL_MODEL,
+      generate: generate2,
+      signal: ac.signal,
+    });
     expect(generate2).toHaveBeenCalledTimes(1);
   });
+});
+
+it('preserves detected source language on a metadata cache hit', async () => {
+  const mtFetch = vi.fn();
+  const cache = {
+    get: vi.fn(async () => 'cached'),
+    getResult: vi.fn(async () => ({ text: 'cached', detectedSource: 'en' })),
+    set: vi.fn(async () => {}),
+  };
+  const out = await executeTranslate(
+    { text: 'hello', source: 'auto', target: 'zh-CN' },
+    makeConfig([mtProvider], 'google-free'),
+    { mtFetch, cache }
+  );
+  expect(out).toMatchObject({ text: 'cached', detectedSource: 'en', fromCache: true });
+  expect(mtFetch).not.toHaveBeenCalled();
+  expect(cache.get).not.toHaveBeenCalled();
 });

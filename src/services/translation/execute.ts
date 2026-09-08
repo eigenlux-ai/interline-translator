@@ -78,8 +78,12 @@ export async function executeTranslate(
   if (deps.cache && cacheKey) {
     // Cache read is best-effort: storage issues degrade to cache-miss rather than failure.
     // An empty hit is also treated as a miss — empty strings are never served as valid translations.
-    const hit = await deps.cache.get(cacheKey).catch(() => undefined);
-    if (hit) return { text: hit, providerId: provider.id, fromCache: true };
+    const hit = await (
+      deps.cache.getResult
+        ? deps.cache.getResult(cacheKey)
+        : deps.cache.get(cacheKey).then((text) => (text === undefined ? undefined : { text }))
+    ).catch(() => undefined);
+    if (hit?.text) return { ...hit, providerId: provider.id, fromCache: true };
   }
 
   // Translate.

@@ -1971,3 +1971,43 @@ it('yields discovery between slices and cancels unfinished scanning on stop', as
     vi.useRealTimers();
   }
 });
+
+it('reopening with page context preserves both pre-summary and post-summary batches', async () => {
+  let resolveSummary!: (summary: string) => void;
+  summarizePage.mockImplementation(
+    () => new Promise<string>((resolve) => {
+      resolveSummary = resolve;
+    })
+  );
+  const original = 'Repository installation instructions and configuration options. '.repeat(12);
+  document.body.innerHTML = `<p>${original}</p>`;
+  const options = { source: 'en', target: 'zh-CN', flushDelayMs: 0, pageContext: true } as const;
+  const first = new PageTranslator(document.body, options);
+  first.start();
+  await waitFor(() => translateBatch.mock.calls.length > 0);
+  expect(translateBatch.mock.calls[0][0].context.summary).toBeUndefined();
+  resolveSummary('Repository overview');
+  await tick();
+  document.body.insertAdjacentHTML('beforeend', '<p>Additional usage examples below the fold.</p>');
+  await waitFor(() => translateBatch.mock.calls.length === 2);
+  expect(translateBatch.mock.calls[1][0].context.summary).toBe('Repository overview');
+  await tick();
+  const firstContexts = new Map<string, string | undefined>();
+  for (const [request] of translateBatch.mock.calls) {
+    for (const item of request.items) firstContexts.set(item, request.context.summary);
+  }
+  expect(firstContexts.size).toBe(2);
+  first.stop();
+  translateBatch.mockClear();
+  const second = new PageTranslator(document.body, options);
+  second.start();
+  await waitFor(() => translateBatch.mock.calls.length === 2);
+  const contexts = new Map<string, string | undefined>();
+  for (const [request] of translateBatch.mock.calls) {
+    for (const item of request.items) contexts.set(item, request.context.summary);
+  }
+  expect(contexts).toEqual(firstContexts);
+  expect(contexts.get('Additional usage examples below the fold.')).toBe('Repository overview');
+  expect(summarizePage).toHaveBeenCalledOnce();
+  second.stop();
+});

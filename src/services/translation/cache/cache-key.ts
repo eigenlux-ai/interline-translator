@@ -8,7 +8,7 @@
  *     (id/kind/model/baseURL + selected providerOptions);
  *   - NEVER include API keys (plaintext secret) or volatile fields (enabled,
  *     label, apiKeys array) — those don't change the translation;
- *   - `|`-join the parts then SHA-256 → hex.
+ *   - serialize the parts as a JSON tuple, then SHA-256 → hex.
  *
  * Pure function over its inputs (uses Web Crypto, available in SW/content/window).
  */
@@ -53,14 +53,14 @@ export function stableProviderFingerprint(p: ProviderConfig): string {
   // params (temperature/maxOutputTokens/reasoning) change the generated text, so
   // they belong in the key exactly like providerOptions — without them, lowering
   // the temperature and re-translating would just replay the old cached text.
-  return [
+  return JSON.stringify([
     p.id,
     p.kind,
     p.model,
     p.baseURL ?? '',
     stableStringify(p.providerOptions ?? {}),
     stableStringify(p.params ?? {}),
-  ].join('~');
+  ]);
 }
 
 async function sha256Hex(input: string): Promise<string> {
@@ -84,7 +84,7 @@ export async function computeCacheKey(input: CacheKeyInput): Promise<string> {
     input.systemPrompt,
     input.userPrompt,
   ];
-  return sha256Hex(parts.join('|'));
+  return sha256Hex(JSON.stringify(parts));
 }
 
 /**

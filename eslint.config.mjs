@@ -53,6 +53,7 @@ export default defineConfig(
       '**/node_modules/**',
       '.output/**',
       '.wxt/**',
+      '.cache/**',
       'public/**',
       // vendored third-party test fixtures (tw3-play.js)
       'test-pages/**',

@@ -43,6 +43,7 @@ import {
   type NewlineRun,
 } from './inject/wrapper';
 import { onUrlChange } from './listen';
+import { getPageContext, type PageContext } from './page-context';
 import { TABLE_INTERNAL_DISPLAYS, TABLE_PARENT_TAGS } from './policy';
 import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './skip-policy';
 import { walkTranslationUnits, type TranslationUnit } from './traversal';
@@ -150,14 +151,9 @@ export class PageTranslator {
     Array<{ retained: Text; snapshot: string; minted: Array<{ node: Text; snapshot: string }> }>
   >();
   private fillRafQueued = false;
-  /**
-   * 通读全文 state. `null` = not fetched yet (or invalidated by an SPA nav);
-   * '' = fetched-and-useless (page too short / MT engine / failure) — batches
-   * proceed WITHOUT it either way, and only batches issued after it lands
-   * carry it (keys stay self-consistent per batch, never blocking首屏).
-   */
-  private pageSummary: string | null = null;
-  private summaryEpoch = 0;
+  /** Stable overview and per-text choices shared across off/on for this view. */
+  private pageContext: PageContext | null = null;
+  private contextTitle = '';
 
   /**
    * Every adopted host-page shadow root, OPEN and CLOSED alike (the walk
@@ -230,45 +226,30 @@ export class PageTranslator {
         if (!this.active || epoch !== this.epoch) return;
         this.pruneDetached();
         // A new view is a new page: the old overview no longer describes it.
-        this.pageSummary = null;
         this.fetchPageSummary();
         this.scan(this.root);
       }, 300);
     });
   }
 
-  /**
-   * 通读全文: fetch the page overview once per view (start + each SPA nav).
-   * Best-effort and non-blocking — translation never waits for it. The epoch
-   * guard drops a slow response that lands after the view changed (it would
-   * describe the WRONG page).
-   */
+  /** Reuse the current view's overview without delaying viewport translation. */
   private fetchPageSummary(): void {
+    this.contextTitle = this.root.ownerDocument.title.trim().slice(0, 200);
     if (!this.opts.pageContext) return;
-    const epoch = ++this.summaryEpoch;
-    // textContent decides whether there is enough prose to summarize AT ALL.
-    // innerText is the better sample (it drops hidden text and honours layout),
-    // but reading it forces a full-page layout — and this runs on start and
-    // again after every SPA navigation, usually only to discard the result.
-    // textContent is a superset of innerText, so a page that fails this gate
-    // could never have passed it.
-    if ((this.root.textContent ?? '').replace(/\s+/g, ' ').trim().length < 600) {
-      this.pageSummary = '';
-      return;
-    }
-    const text = ((this.root as HTMLElement).innerText ?? this.root.textContent ?? '').replace(/\s+/g, ' ').trim();
-    if (text.length < 600) {
-      this.pageSummary = ''; // too little VISIBLE prose for an overview to help
-      return;
-    }
-    getTranslationService()
-      .summarizePage(text.slice(0, 8000), this.opts.target)
-      .then((summary) => {
-        if (this.active && epoch === this.summaryEpoch) this.pageSummary = summary || '';
-      })
-      .catch(() => {
-        if (epoch === this.summaryEpoch) this.pageSummary = '';
-      });
+    const scope = JSON.stringify([
+      this.root.ownerDocument.location?.href,
+      this.contextTitle,
+      this.opts.source,
+      this.opts.target,
+    ]);
+    this.pageContext = getPageContext(this.root, scope, async () => {
+      // Sample only when this view first needs an overview. Toggling
+      // translation must not generate a new paraphrase.
+      if ((this.root.textContent ?? '').replace(/\s+/g, ' ').trim().length < 600) return '';
+      const text = ((this.root as HTMLElement).innerText ?? this.root.textContent ?? '').replace(/\s+/g, ' ').trim();
+      if (text.length < 600) return '';
+      return getTranslationService().summarizePage(text.slice(0, 8000), this.opts.target);
+    });
   }
 
   /**
@@ -1040,6 +1021,23 @@ export class PageTranslator {
   }
 
   private async translateBatch(batch: TranslationUnit[], epoch: number): Promise<void> {
+    // A restarted viewport can mix texts originally translated before and
+    // after the overview arrived. Keep each text's original context and split
+    // by that context so every cache key still describes its actual prompt.
+    const groups = new Map<string, TranslationUnit[]>();
+    for (const unit of batch) {
+      const summary = this.pageContext?.forText(this.payload(unit).text) ?? '';
+      const group = groups.get(summary);
+      if (group) group.push(unit);
+      else groups.set(summary, [unit]);
+    }
+    for (const [summary, units] of groups) {
+      if (!this.active || epoch !== this.epoch) return;
+      await this.translateBatchWithContext(units, epoch, summary);
+    }
+  }
+
+  private async translateBatchWithContext(batch: TranslationUnit[], epoch: number, summary: string): Promise<void> {
     const win = this.root.ownerDocument.defaultView;
     const filled = new Set<string>(); // unit ids that received a final segDone
     const handle = streamBatchTranslate(
@@ -1054,8 +1052,8 @@ export class PageTranslator {
         // title's disambiguation. Capped to bound token cost.
         context: {
           domain: win?.location.hostname || undefined,
-          title: this.root.ownerDocument.title.trim().slice(0, 200) || undefined,
-          summary: this.pageSummary || undefined,
+          title: this.contextTitle || undefined,
+          summary: summary || undefined,
         },
       },
       batch.map((u) => this.payload(u).text),
