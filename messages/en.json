@@ -263,5 +263,6 @@
 	"sel_pin": "Pin card",
 	"sel_unpin": "Unpin card",
 	"common_close": "Close",
-	"provider_api_key": "API key"
+	"provider_api_key": "API key",
+	"backup_save_failed": "Couldn't save settings: {error}"
 }

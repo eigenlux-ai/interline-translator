@@ -15,6 +15,7 @@ const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 const requests = [];
 let holdNotes = false;
 const heldNotes = [];
+const heldResponses = [];
 let responseDelay = 500;
 const server = http.createServer(async (req, res) => {
   if (req.method === 'POST') {
@@ -33,7 +34,10 @@ const server = http.createServer(async (req, res) => {
     }
     const text = b.messages?.at(-1)?.content || '';
     if (holdNotes && /annotator|lexicographer/.test(b.messages?.[0]?.content || ''))
-      await new Promise((r) => heldNotes.push(r));
+      await new Promise((r) => {
+        heldNotes.push(r);
+        heldResponses.push(res);
+      });
     await delay(responseDelay);
     const content = /\[\[[a-f0-9]+#\d+\]\]/.test(text)
       ? text.replace(/(\[\[[a-f0-9]+#\d+\]\])/g, '$1译文：')
@@ -271,6 +275,11 @@ try {
   await select('second');
   await clickPill();
   await delay(1000);
+  results.push({
+    test: 'switching selection cancels silent notes',
+    reached: hadHeld > 0,
+    pass: heldResponses[0]?.destroyed === true,
+  });
   holdNotes = false;
   heldNotes.forEach((r) => r());
   await delay(800);
@@ -299,12 +308,34 @@ try {
     reached: glossBefore > 0,
     pass: requests.length > priorPage,
   });
+  await tab.evaluate(
+    "document.querySelector('#source').insertAdjacentHTML('beforeend','<em>New important inline clause.</em>')"
+  );
+  await delay(1500);
+  results.push({
+    test: 'added inline content retranslates the whole paragraph',
+    pass: await tab.evaluate(`(()=>{
+    const p=document.querySelector('#source');const glosses=p.querySelectorAll('[data-omni-translated]');
+    return glosses.length===1 && !p.querySelector('em [data-omni-translated]') && glosses[0].textContent.includes('New important inline clause.') && glosses[0].textContent.includes('This passage contains');
+  })()`),
+  });
   config.siteControl.defaultMode = 'never';
   await save();
   await select('source');
   results.push({
     test: 'never selection',
     pass: !(await tab.evaluate('!!' + shadow + "?.querySelector('[data-testid=omni-selection-pill]')")),
+  });
+  const beforeDisabledPage = requests.length;
+  await tab.evaluate(
+    "document.body.insertAdjacentHTML('beforeend','<p id=late>New content after this site was disabled must stay untranslated.</p>')"
+  );
+  await delay(1700);
+  results.push({
+    test: 'never stops an already active page translator',
+    pass:
+      requests.length === beforeDisabledPage &&
+      (await tab.evaluate("document.querySelectorAll('[data-omni-translated]').length===0")),
   });
   const rpc = (method, arg) =>
     options.evaluate(

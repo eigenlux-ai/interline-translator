@@ -263,5 +263,6 @@
 	"sel_pin": "Épingler la carte",
 	"sel_unpin": "Détacher la carte",
 	"common_close": "Fermer",
-	"provider_api_key": "Clé API"
+	"provider_api_key": "Clé API",
+	"backup_save_failed": "Impossible d’enregistrer les paramètres : {error}"
 }

@@ -263,5 +263,6 @@
 	"sel_pin": "Fixar cartão",
 	"sel_unpin": "Desafixar cartão",
 	"common_close": "Fechar",
-	"provider_api_key": "Chave de API"
+	"provider_api_key": "Chave de API",
+	"backup_save_failed": "Não foi possível salvar as configurações: {error}"
 }

@@ -14,11 +14,11 @@
 
 import { generateText, type LanguageModel } from 'ai';
 import type { Config, ProviderConfig, TranslateRequest, TranslateResult } from '@/data/models';
+import { shortStopError } from '@/services/stream/limiter';
 import { computeCacheKey, singleTranslationKey } from './cache/cache-key';
 import type { TranslationCache } from './cache/db';
-import type { BuiltPrompt } from './prompts';
-import { shortStopError } from '@/services/stream/limiter';
 import { llmCallOptions, requireApiKey, resolveCallEnv, resolveProvider } from './preflight';
+import type { BuiltPrompt } from './prompts';
 import { createLlmModel } from './provider/llm';
 import { googleFreeTranslate } from './provider/mt';
 import { stripThink } from './reasoning';
@@ -43,9 +43,7 @@ export interface ExecuteDeps {
   generate?: typeof generateText;
   /** Translation cache. When omitted, caching is skipped entirely. */
   cache?: TranslationCache;
-  /** Caller's cancellation (batch fallback passes its batch signal). Reaches
-   *  the LLM call only — the MT fetch is bounded by its own 10s timeout, and
-   *  batch callers pre-check the signal per item. */
+  /** Caller's cancellation, propagated to both LLM and free MT requests. */
   signal?: AbortSignal;
 }
 
@@ -65,7 +63,14 @@ export async function executeTranslate(
   let cacheKey: string | undefined;
   let built: BuiltPrompt = { system: '', prompt: '' };
   if (useMt) {
-    cacheKey = await computeCacheKey({ preparedText: text, provider, source, target, systemPrompt: '', userPrompt: '' });
+    cacheKey = await computeCacheKey({
+      preparedText: text,
+      provider,
+      source,
+      target,
+      systemPrompt: '',
+      userPrompt: '',
+    });
   } else {
     ({ key: cacheKey, built } = await singleTranslationKey(text, provider, source, target, config, req.context));
   }
@@ -81,7 +86,7 @@ export async function executeTranslate(
   let result: TranslateResult;
   if (useMt) {
     const mt = deps.mtFetch ?? googleFreeTranslate;
-    const out = await mt(text, source, target);
+    const out = deps.signal ? await mt(text, source, target, undefined, deps.signal) : await mt(text, source, target);
     result = { text: out.text, detectedSource: out.detectedSource, providerId: provider.id };
   } else {
     const apiKey = requireApiKey(provider);

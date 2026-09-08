@@ -45,7 +45,7 @@ import {
 import { onUrlChange } from './listen';
 import { TABLE_INTERNAL_DISPLAYS, TABLE_PARENT_TAGS } from './policy';
 import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './skip-policy';
-import { walkAndLabel, type TranslationUnit } from './traversal';
+import { walkTranslationUnits, type TranslationUnit } from './traversal';
 import { visibleText } from './visibility';
 
 /** Source-text length at/below which the 译文 goes inline (same line) vs block (own line). */
@@ -294,6 +294,10 @@ export class PageTranslator {
   stop(): void {
     this.active = false;
     this.epoch++;
+    if (this.scanTimer !== null) clearTimeout(this.scanTimer);
+    this.scanTimer = null;
+    this.scanCursor = null;
+    this.scanQueue.clear();
     applyDisplayMode(this.root.ownerDocument, 'bilingual');
     this.io?.disconnect();
     this.mo?.disconnect();
@@ -377,13 +381,54 @@ export class PageTranslator {
    * A window-relative bounding box alone ignores clipping by nested scroll
    * containers and can eagerly translate entire offscreen panels.
    */
+  private readonly scanQueue = new Set<Element>();
+  private scanCursor: { root: Element; repair: boolean; iterator: Generator<TranslationUnit | null> } | null = null;
+  private scanTimer: ReturnType<typeof setTimeout> | null = null;
+
   private scan(root: Element): void {
-    if (!this.io) return;
-    for (const unit of walkAndLabel(root, undefined, (shadow) => this.adoptShadowRoot(shadow))) {
+    if (!this.active || !this.io) return;
+    this.scanQueue.add(root);
+    if (this.scanTimer === null) this.scanTimer = setTimeout(() => this.flushScans(), 0);
+  }
+
+  /** Bound discovery work per task; batch layout reads before marker writes. */
+  private flushScans(): void {
+    this.scanTimer = null;
+    if (!this.active || !this.io) return;
+    const deadline = performance.now() + 6;
+    const found: TranslationUnit[] = [];
+    do {
+      if (!this.scanCursor) {
+        const root = this.scanQueue.values().next().value as Element | undefined;
+        if (!root) break;
+        this.scanQueue.delete(root);
+        if (!root.isConnected) continue;
+        this.scanCursor = {
+          root,
+          repair: this.lastHtmlById.size > 0,
+          iterator: walkTranslationUnits(root, undefined, (shadow) => this.adoptShadowRoot(shadow)),
+        };
+      }
+      const { root, iterator, repair } = this.scanCursor;
+      if (!root.isConnected) {
+        this.scanCursor = null;
+        continue;
+      }
+      const next = iterator.next();
+      if (next.done) {
+        this.scanCursor = null;
+        // Initial discovery has no cached glosses to repair.
+        if (repair) this.repairMissingGlosses(root);
+      } else if (next.value) found.push(next.value);
+    } while (performance.now() < deadline);
+    for (const unit of found) {
+      if (!unit.element.isConnected || unit.element.hasAttribute(DATA_OMNI.walked)) continue;
+      unit.element.setAttribute(DATA_OMNI.walked, '');
+      unit.element.setAttribute(DATA_OMNI.walkId, unit.id);
       this.unitsById.set(unit.id, unit);
       this.io.observe(unit.element);
     }
-    this.repairMissingGlosses(root);
+    if (this.scanCursor || this.scanQueue.size) this.scanTimer = setTimeout(() => this.flushScans(), 0);
   }
 
   /**
@@ -419,9 +464,6 @@ export class PageTranslator {
   private refillFromCache(id: string, unit: TranslationUnit): boolean {
     const html = this.lastHtmlById.get(id);
     if (!html) return false;
-    // The source may have changed since this HTML was rendered (e.g. virtual-list
-    // recycling, in-place text update) — verify text equality before refilling.
-    if (visibleText(unit.element).replace(/\s+/g, ' ').trim() !== unit.text) return false;
     const mode = this.modeById.get(id) ?? 'block';
     // A surviving gloss usually means "already there (paths raced)" — no
     // attempt burned. EXCEPT an interleaved multi-paragraph unit: the host
@@ -443,6 +485,9 @@ export class PageTranslator {
       const expected = Number(existing.getAttribute(DATA_OMNI.parts) ?? '0');
       if (expected > 0 && 1 + segGlosses(unit).length === expected) return false;
     }
+    // The source may have changed since this HTML was rendered (e.g. virtual-list
+    // recycling, in-place text update) — verify text equality before refilling.
+    if (visibleText(unit.element).replace(/\s+/g, ' ').trim() !== unit.text) return false;
     if (!this.bumpReinject(unit.element)) return false;
     if (existing) {
       // OUR removal — without the marker the observer reads it as a host
@@ -588,7 +633,10 @@ export class PageTranslator {
         // PREVIOUS attachment would make isSkippedElement drop it forever.
         this.clearStaleMarks(el);
         if (isSkippedElement(el) || skippedContext) continue;
-        this.scan(el);
+        const holder = targetEl?.closest(`[${DATA_OMNI.walked}]`);
+        const holderId = holder?.getAttribute(DATA_OMNI.walkId);
+        if (holder && holderId && this.unitsById.has(holderId)) this.scheduleRetranslate(holder);
+        else this.scan(el);
       }
       for (const node of Array.from(m.removedNodes)) {
         if (
@@ -756,8 +804,28 @@ export class PageTranslator {
       const retranslate = [...this.retranslateQueue];
       this.rescanQueue.clear();
       this.retranslateQueue.clear();
-      for (const el of retranslate) {
-        if (el.isConnected) this.retranslateUnit(el);
+      // Compare source text for the entire batch before changing any markers
+      // or glosses. Interleaving computed-style reads with retire/rewalk writes
+      // forces repeated style recalculation during bulk framework updates.
+      const changed = retranslate.filter((el) => {
+        if (!el.isConnected) return false;
+        const id = el.getAttribute(DATA_OMNI.walkId);
+        if (!id) return false;
+        const tracked = this.unitsById.get(id);
+        return !tracked || visibleText(el).replace(/\s+/g, ' ').trim() !== tracked.text;
+      });
+      const staleIds = new Set<string>();
+      for (const el of changed) {
+        if (el.isConnected) this.retranslateUnit(el, staleIds);
+      }
+      // A framework may update hundreds of paragraphs in one commit. Sweep
+      // all their old glosses once, rather than scanning every root per unit.
+      // Rewalks are queued, so removal finishes before discovery can resume.
+      if (staleIds.size) {
+        this.forEachGloss((gloss) => {
+          const id = gloss.getAttribute(DATA_OMNI.walkId);
+          if (id && staleIds.has(id)) gloss.remove();
+        });
       }
       // Keep only the OUTERMOST queued roots: a nested rescan is work the
       // ancestor's walk already does. Pairwise `contains` was O(n²), and this
@@ -781,15 +849,10 @@ export class PageTranslator {
    * text that no longer exists. Drop gloss + tracking + marks, then re-walk the
    * element so it re-enters the normal pipeline as fresh content.
    */
-  private retranslateUnit(el: Element): void {
+  private retranslateUnit(el: Element, staleIds: Set<string>): void {
     const id = el.getAttribute(DATA_OMNI.walkId);
     if (!id) return;
-    // No-op text events are common (React re-committing identical text, a
-    // relative-time label re-rendering unchanged): if the visible text still
-    // matches the tracked unit, keep the gloss — tearing it down would flash a
-    // spinner and burn a request every debounce window.
-    const tracked = this.unitsById.get(id);
-    if (tracked && visibleText(el).replace(/\s+/g, ' ').trim() === tracked.text) return;
+    // The caller has already excluded no-op text commits in its read phase.
     // Handle text rewrites for newline-interleaved units: when the host framework
     // rewrites text, it updates the retained text node. Check whether a whole-run rewrite
     // occurred before removing minted continuation nodes, then re-walk the clean content.
@@ -806,11 +869,9 @@ export class PageTranslator {
       el.normalize();
       el.removeAttribute(DATA_OMNI.split);
     }
-    // Sweep the stale gloss BEFORE the rewalk retires the id (retireUnit also
-    // drops the fillQueue entry — a queued fill would resurrect a dead gloss).
-    this.forEachGloss((gloss) => {
-      if (gloss.getAttribute(DATA_OMNI.walkId) === id) gloss.remove();
-    });
+    // Retire pending fills immediately; the caller removes this batch's stale
+    // glosses together before the queued scans can run.
+    staleIds.add(id);
     this.rewalk(el, id);
   }
 

@@ -30,10 +30,15 @@ export default defineContentScript({
   matchAboutBlank: true,
   cssInjectionMode: 'manual',
   async main(ctx) {
+    let invalidated = false;
+    ctx.onInvalidated(() => {
+      invalidated = true;
+    });
     // Keep input policy and gesture settings live in every frame.
     let inputTranslator: InputTranslator | null = null;
     let inputSignature = '';
     const applyInputConfig = (config: Awaited<ReturnType<typeof getPublicConfig>>) => {
+      if (invalidated) return;
       syncUiLocaleFrom(config);
       const enabled = config.inputTranslation.enabled && isSiteEnabled(config.siteControl, effectiveHostname());
       const signature = JSON.stringify([
@@ -73,10 +78,11 @@ export default defineContentScript({
 
     /** Begin whole-page translation. Returns whether it is now active. */
     const start = async (): Promise<boolean> => {
+      if (invalidated) return false;
       if (translator) return true;
       const gen = ++generation;
       const config = await getPublicConfig();
-      if (gen !== generation) return translator !== null; // superseded mid-await
+      if (invalidated || gen !== generation) return !invalidated && translator !== null; // superseded mid-await
       // `never` blocks even MANUAL triggers (the documented site-control
       // contract). Gating here — the single start() chokepoint — covers every
       // path into translation: popup, command, and the floating ball alike.
@@ -140,7 +146,12 @@ export default defineContentScript({
     // translation — one attribute write via setDisplayMode, never a
     // re-translate. (The ball/options edit appearance.displayMode; the
     // gateway's mirror echoes it here.)
-    ctx.onInvalidated(watchPublicConfig((c) => translator?.setDisplayMode(c.appearance.displayMode ?? 'bilingual')));
+    ctx.onInvalidated(
+      watchPublicConfig((c) => {
+        if (!isSiteEnabled(c.siteControl, location.hostname)) stop();
+        else translator?.setDisplayMode(c.appearance.displayMode ?? 'bilingual');
+      })
+    );
 
     // MAIN-world attachShadow signal (editor-injector.content/shadow-registry):
     // a root attached after its host was walked is invisible to the observers —
@@ -154,7 +165,14 @@ export default defineContentScript({
     window.addEventListener('message', onShadowSignal);
     ctx.onInvalidated(() => window.removeEventListener('message', onShadowSignal));
 
+    ctx.onInvalidated(() => {
+      offSet();
+      offQuery();
+      stop();
+    });
+
     const config = await getPublicConfig();
+    if (invalidated) return;
 
     if (!inputSignature) applyInputConfig(config);
 
@@ -167,13 +185,7 @@ export default defineContentScript({
     // isSiteEnabled, so a `never` site won't be restored.
     if (!translator) {
       const remembered = await sendMessage('getTabPageTranslation', undefined).catch(() => null);
-      if (remembered?.enabled && remembered.origin === location.origin) void start();
+      if (!invalidated && remembered?.enabled && remembered.origin === location.origin) void start();
     }
-
-    ctx.onInvalidated(() => {
-      offSet();
-      offQuery();
-      stop();
-    });
   },
 });

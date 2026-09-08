@@ -37,7 +37,8 @@ export async function googleFreeTranslate(
   text: string,
   source: SourceLang,
   target: LangCode,
-  timeoutMs = 10_000
+  timeoutMs = 10_000,
+  signal?: AbortSignal
 ): Promise<MtResult> {
   const params = new URLSearchParams({
     client: 'gtx',
@@ -58,10 +59,14 @@ export async function googleFreeTranslate(
         };
   const url = init.method ? base : `${base}&${new URLSearchParams({ q: text }).toString()}`;
 
+  signal?.throwIfAborted();
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { ...init, signal: controller.signal });
+    const res = await fetch(url, {
+      ...init,
+      signal: signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
+    });
     // statusCode on the error object: the RequestQueue's retry classifier keys
     // on it (a 400/403 must fail fast, not walk the backoff ladder).
     if (!res.ok) throw Object.assign(new Error(`[mt] ${res.status} ${res.statusText}`), { statusCode: res.status });

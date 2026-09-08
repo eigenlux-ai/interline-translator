@@ -165,17 +165,24 @@ export default function SelectionApp() {
   // The card speaks the language its user reads; synced before any m.*() below.
   syncUiLocaleFrom(config);
   const reqId = useRef(0);
+  const pending = useRef<AbortController | null>(null);
+  const invalidate = useCallback(() => {
+    reqId.current++;
+    pending.current?.abort();
+    pending.current = null;
+  }, []);
+  useEffect(() => () => invalidate(), [invalidate]);
   const pillRef = useRef<HTMLButtonElement>(null);
   /** The showing pill was summoned by the keyboard, and no Tab has claimed it yet. */
   const pillAwaitsTab = useRef(false);
 
   const dismiss = useCallback(() => {
-    reqId.current++; // invalidate any in-flight stream (its next delta exits the loop → upstream cancel)
+    invalidate();
     setSel(null);
     setOpen(false);
     setPinned(false);
     pillAwaitsTab.current = false;
-  }, []);
+  }, [invalidate]);
 
   useEffect(() => {
     let timer: number | undefined;
@@ -196,7 +203,7 @@ export default function SelectionApp() {
       const caret = caretRectAtFocus(s!);
       const ax = caret ? caret.left : point?.x || rect.left;
       const ay = caret ? caret.bottom : point?.y || rect.bottom;
-      reqId.current++;
+      invalidate();
       pillAwaitsTab.current = point === null;
       setSel({ text, x: ax, y: ay, neighbors: selectionNeighbors(s!) });
       setOpen(false);
@@ -242,7 +249,7 @@ export default function SelectionApp() {
       document.removeEventListener('keydown', onKey);
       document.removeEventListener('scroll', onScroll, { capture: true });
     };
-  }, [dismiss, pinned]);
+  }, [dismiss, pinned, invalidate]);
 
   useEffect(() => {
     // A storage policy change must invalidate the active stream and its transient UI.
@@ -251,13 +258,20 @@ export default function SelectionApp() {
   }, [config, siteEnabled, dismiss]);
 
   const annotate = useCallback(async (source: string, translation: string) => {
+    pending.current?.abort();
+    const controller = new AbortController();
+    pending.current = controller;
     const id = reqId.current;
     setNotesLoading(true);
     setNotesFailed(false);
     setNotes('');
     let got = '';
     try {
-      for await (const delta of streamAnnotate({ text: source, translation, target: '' })) {
+      for await (const delta of streamAnnotate(
+        { text: source, translation, target: '' },
+        undefined,
+        controller.signal
+      )) {
         if (id !== reqId.current) return;
         got += delta;
         setNotes(got);
@@ -272,7 +286,10 @@ export default function SelectionApp() {
 
   const translate = useCallback(async () => {
     if (!sel || !siteEnabled) return;
-    const id = ++reqId.current;
+    invalidate();
+    const id = reqId.current;
+    const controller = new AbortController();
+    pending.current = controller;
     setOpen(true);
     setLoading(true);
     setResult('');
@@ -283,16 +300,20 @@ export default function SelectionApp() {
     setNotesFailed(false);
     let got = '';
     try {
-      for await (const delta of streamTranslate({
-        text: sel.text,
-        source: 'auto',
-        target: '',
-        context: {
-          domain: location.hostname || undefined,
-          title: document.title.trim().slice(0, 200) || undefined,
-          neighbors: sel.neighbors.length ? sel.neighbors : undefined,
+      for await (const delta of streamTranslate(
+        {
+          text: sel.text,
+          source: 'auto',
+          target: '',
+          context: {
+            domain: location.hostname || undefined,
+            title: document.title.trim().slice(0, 200) || undefined,
+            neighbors: sel.neighbors.length ? sel.neighbors : undefined,
+          },
         },
-      })) {
+        undefined,
+        controller.signal
+      )) {
         if (id !== reqId.current) return;
         got += delta;
         setResult(got);
@@ -303,7 +324,7 @@ export default function SelectionApp() {
     } finally {
       if (id === reqId.current) setLoading(false);
     }
-  }, [sel, siteEnabled]);
+  }, [sel, siteEnabled, invalidate]);
 
   const speak = (txt: string) => {
     if (typeof window !== 'undefined' && 'speechSynthesis' in window && txt) {

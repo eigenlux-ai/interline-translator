@@ -6,6 +6,8 @@ const state = vi.hoisted(() => ({
   watchers: [] as Array<(config: unknown) => void>,
   started: vi.fn(),
   stopped: vi.fn(),
+  pageStarted: vi.fn(),
+  pageStopped: vi.fn(),
   config: {
     inputTranslation: { enabled: true, target: 'en', triggerCount: 3 },
     translate: { source: 'auto', target: 'zh-CN' },
@@ -34,8 +36,12 @@ vi.mock('@/dom/input', () => ({
 }));
 vi.mock('@/dom/page-translation', () => ({
   PageTranslator: class {
-    start() {}
-    stop() {}
+    start() {
+      state.pageStarted();
+    }
+    stop() {
+      state.pageStopped();
+    }
     setDisplayMode() {}
   },
 }));
@@ -54,5 +60,24 @@ it('disabling input translation updates an already-open page', async () => {
     expect(state.stopped).toHaveBeenCalledOnce();
   } finally {
     cleanup.forEach((cb) => cb());
+  }
+});
+
+it('stops an active page translator when site policy changes to never', async () => {
+  state.watchers.length = 0;
+  state.pageStarted.mockClear();
+  state.pageStopped.mockClear();
+  state.config.siteControl.defaultMode = 'always';
+  const cleanup: Array<() => void> = [];
+  try {
+    await (definition as unknown as { main: (ctx: unknown) => Promise<void> }).main({
+      onInvalidated: (cb: () => void) => cleanup.push(cb),
+    });
+    expect(state.pageStarted).toHaveBeenCalledOnce();
+    state.watchers.forEach((cb) => cb({ ...state.config, siteControl: { defaultMode: 'never', rules: [] } }));
+    expect(state.pageStopped).toHaveBeenCalledOnce();
+  } finally {
+    cleanup.forEach((cb) => cb());
+    state.config.siteControl.defaultMode = 'auto';
   }
 });

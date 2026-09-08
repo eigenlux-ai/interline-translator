@@ -132,6 +132,7 @@ describe('PageTranslator', () => {
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     try {
       pt.start();
+      await waitFor(() => ControlledIO.instance.observed.has(el));
       ControlledIO.instance.emit([el], true);
       await waitFor(() => !!release);
       expect(release).toBeTypeOf('function');
@@ -164,6 +165,7 @@ describe('PageTranslator', () => {
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     try {
       pt.start();
+      await waitFor(() => ControlledIO.instance.observed.has(el));
       ControlledIO.instance.emit([el], false);
       await tick();
       expect(translateBatch).not.toHaveBeenCalled();
@@ -183,6 +185,7 @@ describe('PageTranslator', () => {
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 20 });
     try {
       pt.start();
+      await waitFor(() => ControlledIO.instance.observed.has(el));
       ControlledIO.instance.emit([el], true);
       ControlledIO.instance.emit([el], false);
       await tick(60);
@@ -217,6 +220,7 @@ describe('PageTranslator', () => {
     });
     try {
       pt.start();
+      await waitFor(() => ControlledIO.instance.observed.size === elements.length);
       ControlledIO.instance.emit(elements, true);
       await tick();
       expect(translateBatch).toHaveBeenCalledTimes(2);
@@ -734,6 +738,46 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
   // The debounced dynamic flush waits 150ms, but under worker load a timer can
   // For NEGATIVE assertions (nothing should happen) a fixed wait is the point.
   const dynamicTick = () => tick(300);
+
+  it('sweeps glosses once per root for a batch rewrite, preserving unchanged translations', async () => {
+    document.body.innerHTML = '<p id="stable">Stable sentence</p><div id="host"></div>';
+    const shadow = document.getElementById('host')!.attachShadow({ mode: 'open' });
+    const sources: Element[] = [];
+    for (const root of [document.body, shadow]) {
+      for (let i = 0; i < 8; i++) {
+        const p = document.createElement('p');
+        p.textContent = `Original sentence ${sources.length}`;
+        root.append(p);
+        sources.push(p);
+      }
+    }
+    const selector = `[${DATA_OMNI.translated}]`;
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+    pt.start();
+    const finished = (prefix: string) => sources.every((p) => p.querySelector(selector)?.textContent?.includes(prefix));
+    await waitFor(() => finished('[t]Original'));
+    expect(finished('[t]Original')).toBe(true);
+    const stable = document.getElementById('stable')!;
+    const stableGloss = stable.querySelector(selector);
+    const lightQueries = vi.spyOn(document.body, 'querySelectorAll');
+    const shadowQueries = vi.spyOn(shadow, 'querySelectorAll');
+    try {
+      sources.forEach((p, i) => {
+        (p.firstChild as Text).data = `Updated sentence ${i}`;
+      });
+      (stable.firstChild as Text).data = 'Stable sentence';
+      await waitFor(() => finished('[t]Updated'));
+      expect(finished('[t]Updated')).toBe(true);
+      expect(sources.every((p) => p.querySelectorAll(selector).length === 1)).toBe(true);
+      expect(stable.querySelector(selector)).toBe(stableGloss);
+      expect(lightQueries.mock.calls.filter(([s]) => s === selector)).toHaveLength(1);
+      expect(shadowQueries.mock.calls.filter(([s]) => s === selector)).toHaveLength(1);
+    } finally {
+      lightQueries.mockRestore();
+      shadowQueries.mockRestore();
+      pt.stop();
+    }
+  });
 
   it('translates a hidden panel when it is REVEALED (tabs/accordion pattern)', async () => {
     document.body.innerHTML = '<div id="panel" hidden><p>Hidden tab content</p></div><p>Visible text</p>';
@@ -1877,5 +1921,53 @@ it('refreshes the translation when an inline source element is removed', async (
     expect(translateBatch.mock.calls.length).toBeGreaterThan(before);
   } finally {
     pt.stop();
+  }
+});
+
+it('retranslates the enclosing paragraph when inline content is added without creating nested units', async () => {
+  document.body.innerHTML = '<p>This sentence has its original context.</p>';
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  try {
+    pt.start();
+    await waitFor(() => !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
+    const p = document.querySelector('p')!;
+    p.insertAdjacentHTML('beforeend', '<em> Additional context matters.</em>');
+    await waitFor(
+      () => p.querySelector(`[${DATA_OMNI.translated}]`)?.textContent?.includes('Additional context matters') === true
+    );
+    expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+    expect(p.querySelector('em')!.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
+    expect(p.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain(
+      'This sentence has its original context. Additional context matters.'
+    );
+  } finally {
+    pt.stop();
+  }
+});
+
+it('yields discovery between slices and cancels unfinished scanning on stop', async () => {
+  vi.useFakeTimers();
+  let time = 0;
+  const clock = vi.spyOn(performance, 'now').mockImplementation(() => time++);
+  document.body.innerHTML = Array.from(
+    { length: 200 },
+    (_, i) => `<p>Paragraph number ${i} for incremental scanning.</p>`
+  ).join('');
+  const pt = new PageTranslator(document.body, { source: 'en', target: 'zh-CN', flushDelayMs: 100 });
+  try {
+    pt.start();
+    expect(document.querySelectorAll(`[${DATA_OMNI.walked}]`)).toHaveLength(0);
+    await vi.advanceTimersToNextTimerAsync();
+    const discovered = document.querySelectorAll(`[${DATA_OMNI.walked}]`).length;
+    expect(discovered).toBeGreaterThan(0);
+    expect(discovered).toBeLessThan(200);
+    pt.stop();
+    await vi.runAllTimersAsync();
+    expect(document.querySelectorAll(`[${DATA_OMNI.walked}]`)).toHaveLength(0);
+    expect(translateBatch).not.toHaveBeenCalled();
+  } finally {
+    pt.stop();
+    clock.mockRestore();
+    vi.useRealTimers();
   }
 });

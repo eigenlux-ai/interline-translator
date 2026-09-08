@@ -18,7 +18,7 @@ import SettingsSection from './SettingsSection';
 
 export interface BackupSettingsProps {
   config: Config;
-  onSave: (next: Config) => void;
+  onSave: (next: Config) => void | Promise<void>;
 }
 
 /**
@@ -46,6 +46,9 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
     config: Config;
   } | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const inspection = useRef(0);
 
   const exportConfig = () => {
     const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
@@ -58,8 +61,14 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
   };
 
   const inspectConfig = async (file: File) => {
+    if (savingRef.current) return;
+    const id = ++inspection.current;
+    setParsedPreview(null);
+    setStatus(null);
     try {
-      const raw = JSON.parse(await file.text());
+      const text = await file.text();
+      if (id !== inspection.current || savingRef.current) return;
+      const raw = JSON.parse(text);
       const migrated = migrate(raw as Record<string, unknown>);
       const parsed = configSchema.parse(migrated);
       setParsedPreview({
@@ -70,23 +79,36 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
       });
       setStatus(null);
     } catch (e) {
+      if (id !== inspection.current) return;
       setParsedPreview(null);
       setStatus({ ok: false, msg: m.backup_import_failed({ error: e instanceof Error ? e.message : String(e) }) });
     }
   };
 
-  const applyImport = () => {
-    if (!parsedPreview) return;
-    onSave(parsedPreview.config);
-    setParsedPreview(null);
-    setStatus({ ok: true, msg: m.backup_imported() });
-  };
-
   const [confirmingReset, setConfirmingReset] = useState(false);
+  const persist = async (next: Config, importing: boolean) => {
+    if (savingRef.current) return;
+    savingRef.current = true;
+    inspection.current++; // reset/import invalidates any older file read
+    setSaving(true);
+    setStatus(null);
+    try {
+      await onSave(next);
+      setParsedPreview(null);
+      setConfirmingReset(false);
+      setStatus({ ok: true, msg: importing ? m.backup_imported() : m.backup_reset_done() });
+    } catch (e) {
+      setStatus({ ok: false, msg: m.backup_save_failed({ error: e instanceof Error ? e.message : String(e) }) });
+    } finally {
+      savingRef.current = false;
+      setSaving(false);
+    }
+  };
+  const applyImport = () => {
+    if (parsedPreview) void persist(parsedPreview.config, true);
+  };
   const reset = () => {
-    onSave(defaultConfig());
-    setConfirmingReset(false);
-    setStatus({ ok: true, msg: m.backup_reset_done() });
+    void persist(defaultConfig(), false);
   };
 
   return (
@@ -98,7 +120,7 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
             <Button variant="light" onClick={exportConfig}>
               {m.backup_export()}
             </Button>
-            <Button variant="default" onClick={() => fileRef.current?.click()}>
+            <Button variant="default" disabled={saving} onClick={() => fileRef.current?.click()}>
               {m.backup_import()}
             </Button>
           </Group>
@@ -116,7 +138,7 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
                   <Button size="compact-sm" variant="default" onClick={() => setConfirmingReset(false)}>
                     {m.common_cancel()}
                   </Button>
-                  <Button size="compact-sm" color="danger" onClick={reset}>
+                  <Button size="compact-sm" color="danger" loading={saving} onClick={reset}>
                     {m.backup_reset_confirm()}
                   </Button>
                 </Group>
@@ -192,7 +214,7 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
                     {m.backup_preview_ready()}
                   </Text>
                 </Group>
-                <Button size="xs" color="cinnabar" onClick={applyImport}>
+                <Button size="xs" color="cinnabar" loading={saving} onClick={applyImport}>
                   {m.backup_apply_import()}
                 </Button>
               </Group>

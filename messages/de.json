@@ -263,5 +263,6 @@
 	"sel_pin": "Karte anheften",
 	"sel_unpin": "Karte lösen",
 	"common_close": "Schließen",
-	"provider_api_key": "API-Schlüssel"
+	"provider_api_key": "API-Schlüssel",
+	"backup_save_failed": "Einstellungen konnten nicht gespeichert werden: {error}"
 }

@@ -262,4 +262,5 @@ export * from "./sel_pin.js";
 export * from "./sel_unpin.js";
 export * from "./common_close.js";
 export * from "./provider_api_key.js";
+export * from "./backup_save_failed.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

@@ -263,5 +263,6 @@
 	"sel_pin": "固定卡片",
 	"sel_unpin": "取消固定",
 	"common_close": "關閉",
-	"provider_api_key": "API 金鑰"
+	"provider_api_key": "API 金鑰",
+	"backup_save_failed": "設定儲存失敗：{error}"
 }

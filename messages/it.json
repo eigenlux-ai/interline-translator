@@ -263,5 +263,6 @@
 	"sel_pin": "Fissa scheda",
 	"sel_unpin": "Sgancia scheda",
 	"common_close": "Chiudi",
-	"provider_api_key": "Chiave API"
+	"provider_api_key": "Chiave API",
+	"backup_save_failed": "Impossibile salvare le impostazioni: {error}"
 }

@@ -43,6 +43,8 @@ export function useConfig(): UseConfig {
   const [config, setConfigState] = useState<Config | null>(null);
   /** Latest local truth (state mirror readable outside render). */
   const local = useRef<Config | null>(null);
+  const revision = useRef(0);
+  const mounted = useRef(false);
   /** Local writes in flight — watch events during this window are echoes. */
   const pending = useRef(0);
   /** Serializes storage writes so they land in submission order. */
@@ -50,8 +52,10 @@ export function useConfig(): UseConfig {
 
   useEffect(() => {
     let alive = true;
+    mounted.current = true;
     const unwatch = watchConfig((c) => {
       if (!alive || pending.current > 0) return;
+      revision.current++;
       local.current = c;
       setConfigState(c);
     });
@@ -65,11 +69,16 @@ export function useConfig(): UseConfig {
     });
     return () => {
       alive = false;
+      mounted.current = false;
+      // This is a version counter, deliberately invalidating reads at cleanup time.
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+      revision.current++;
       unwatch();
     };
   }, []);
 
   const persist = useCallback((next: Config): Promise<void> => {
+    revision.current++;
     local.current = next;
     setConfigState(next); // optimistic
     pending.current++;
@@ -79,12 +88,15 @@ export function useConfig(): UseConfig {
       pending.current--;
       if (pending.current === 0) {
         // Chain settled — reconcile with storage truth (see module docstring).
-        void getConfig().then((c) => {
-          if (pending.current === 0) {
-            local.current = c;
-            setConfigState(c);
-          }
-        });
+        const readRevision = revision.current;
+        void getConfig()
+          .then((c) => {
+            if (mounted.current && pending.current === 0 && revision.current === readRevision) {
+              local.current = c;
+              setConfigState(c);
+            }
+          })
+          .catch(() => {});
       }
     });
   }, []);

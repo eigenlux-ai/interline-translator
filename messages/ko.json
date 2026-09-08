@@ -263,5 +263,6 @@
 	"sel_pin": "카드 고정",
 	"sel_unpin": "고정 해제",
 	"common_close": "닫기",
-	"provider_api_key": "API 키"
+	"provider_api_key": "API 키",
+	"backup_save_failed": "설정을 저장하지 못했습니다: {error}"
 }

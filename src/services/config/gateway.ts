@@ -39,6 +39,25 @@ export function registerConfigGateway(): void {
   // balls) would otherwise interleave getConfig/setConfig and one would
   // silently roll the other back.
   let patchChain: Promise<void> = Promise.resolve();
+  let revision = 0;
+  let mirrorChain: Promise<void> = Promise.resolve();
+  const enqueueMirror = (config: Config) => {
+    const run = mirrorChain.then(() => mirror(config));
+    mirrorChain = run.catch(() => {});
+    return run;
+  };
+  const refreshMirror = async () => {
+    const readRevision = revision;
+    const config = await getConfig();
+    // A newer watch event owns the projection, even if this read returns late.
+    if (revision !== readRevision) return mirrorChain;
+    return enqueueMirror(config);
+  };
+  const reportMirrorError = () => console.warn('[config] public projection could not be saved');
+  watchConfig((config) => {
+    revision++;
+    void enqueueMirror(config).catch(reportMirrorError);
+  });
 
   registerService(CONFIG_SERVICE_KEY, {
     patch(patch: PublicConfigPatch): Promise<void> {
@@ -53,7 +72,7 @@ export function registerConfigGateway(): void {
         // Mirror BEFORE resolving (the watch below also mirrors, idempotently):
         // callers sequence "patch → re-apply translation", and the re-apply
         // reads the projection — it must already hold this patch.
-        await getConfig().then(mirror);
+        await refreshMirror();
       });
       patchChain = run.catch(() => {}); // a failed patch must not jam the chain
       return run;
@@ -63,6 +82,5 @@ export function registerConfigGateway(): void {
   // Mirror now (covers install/update/migrations while the SW was down) and on
   // every subsequent change. storage.onChanged wakes the SW, so the projection
   // can't go stale while it sleeps.
-  void getConfig().then(mirror);
-  watchConfig((config) => void mirror(config));
+  void refreshMirror().catch(reportMirrorError);
 }

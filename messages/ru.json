@@ -263,5 +263,6 @@
 	"sel_pin": "Закрепить карточку",
 	"sel_unpin": "Открепить карточку",
 	"common_close": "Закрыть",
-	"provider_api_key": "API-ключ"
+	"provider_api_key": "API-ключ",
+	"backup_save_failed": "Не удалось сохранить настройки: {error}"
 }

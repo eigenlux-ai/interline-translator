@@ -263,5 +263,6 @@
 	"sel_pin": "カードを固定",
 	"sel_unpin": "固定を解除",
 	"common_close": "閉じる",
-	"provider_api_key": "API キー"
+	"provider_api_key": "API キー",
+	"backup_save_failed": "設定を保存できませんでした：{error}"
 }

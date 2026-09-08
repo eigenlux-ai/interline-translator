@@ -15,8 +15,8 @@
  * wraps such text inside block elements.
  */
 
-import { DATA_OMNI } from '@/constants';
 import { randomId } from '@/core/uid';
+import { DATA_OMNI } from '@/constants';
 import {
   hasTranslatableText,
   isInlineChip,
@@ -27,9 +27,9 @@ import {
   isSkippableTag,
   isSkippedElement,
 } from './filter';
+import { serializeInline, type SerializedInline } from './inject/placeholder';
 import { anyShadowRoot } from './shadow';
 import { isHidden, visibleText } from './visibility';
-import { serializeInline, type SerializedInline } from './inject/placeholder';
 
 export interface TranslationUnit {
   id: string;
@@ -161,8 +161,10 @@ function unwrapSoleWrapper(el: Element): Element {
 }
 
 /**
- * Collect translation units under `root`, labelling each unit element. Pass a
- * deterministic `idGen` in tests.
+ * Discover translation units under `root` without writing source markers.
+ * Null yields let a caller pause between container visits; unit yields can be
+ * collected into a read batch before marking/observing them. The synchronous
+ * walkAndLabel wrapper below retains the original labelling API.
  *
  * Shadow roots are walked too — open AND closed, via the content-script probe
  * (`anyShadowRoot`: Firefox's element property / Chromium's chrome.dom — a
@@ -174,13 +176,11 @@ function unwrapSoleWrapper(el: Element): Element {
  * styles (dedup is the caller's job). Our own prefix-tagged hosts (surfaces,
  * gloss nodes) are never descended into.
  */
-export function walkAndLabel(
+export function* walkTranslationUnits(
   root: Element,
   idGen: () => string = makeId,
   onShadowRoot?: (shadow: ShadowRoot) => void
-): TranslationUnit[] {
-  const units: TranslationUnit[] = [];
-
+): Generator<TranslationUnit | null> {
   // Per-WALK probe memo: every child is probed once in its parent's leafness
   // check and again by its own walk() — memoizing halves the native
   // chrome.dom.openOrClosedShadowRoot calls. Scoped to one walk on purpose:
@@ -195,13 +195,14 @@ export function walkAndLabel(
     return r;
   };
 
-  const walk = (el: Element): void => {
+  const walk = function* (el: Element): Generator<TranslationUnit | null> {
+    yield null; // allow the caller to yield even through textless container trees
     if (isSkippedElement(el) || isHidden(el)) return;
 
     const shadow = probeShadow(el);
     if (shadow && !isOwnShadowHost(el)) {
       onShadowRoot?.(shadow);
-      for (const child of Array.from(shadow.children)) walk(child);
+      for (const child of Array.from(shadow.children)) yield* walk(child);
       // fall through — slotted light children below are rendered content too
     }
 
@@ -210,13 +211,11 @@ export function walkAndLabel(
       // skipped (no invisible 译文, no brand-name mangling).
       if (hasTranslatableText(visibleText(el))) {
         const id = idGen();
-        el.setAttribute(DATA_OMNI.walked, '');
-        el.setAttribute(DATA_OMNI.walkId, id);
         // Serialize the link's inner content (not the wrapping <a>) so a nav/TOC
         // item's 译文 doesn't reproduce a duplicate <a href>. The unit element
         // stays the leaf block — markers + inlineHost placement are unchanged.
         const content = unwrapSoleWrapper(el);
-        units.push({
+        yield {
           id,
           element: el,
           serialized: serializeInline(content),
@@ -224,14 +223,27 @@ export function walkAndLabel(
           // the cache key and length routing reflect real content length — not
           // the runs of inter-element whitespace in a deeply-nested unit.
           text: visibleText(content).replace(/\s+/g, ' ').trim(),
-        });
+        };
       }
       return;
     }
 
-    for (const child of Array.from(el.children)) walk(child);
+    for (const child of Array.from(el.children)) yield* walk(child);
   };
 
-  walk(root);
+  yield* walk(root);
+}
+
+/** Synchronous convenience API; collect reads before applying source markers. */
+export function walkAndLabel(
+  root: Element,
+  idGen: () => string = makeId,
+  onShadowRoot?: (shadow: ShadowRoot) => void
+): TranslationUnit[] {
+  const units = [...walkTranslationUnits(root, idGen, onShadowRoot)].filter((u): u is TranslationUnit => u !== null);
+  for (const unit of units) {
+    unit.element.setAttribute(DATA_OMNI.walked, '');
+    unit.element.setAttribute(DATA_OMNI.walkId, unit.id);
+  }
   return units;
 }

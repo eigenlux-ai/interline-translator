@@ -263,5 +263,6 @@
 	"sel_pin": "تثبيت البطاقة",
 	"sel_unpin": "إلغاء تثبيت البطاقة",
 	"common_close": "إغلاق",
-	"provider_api_key": "مفتاح API"
+	"provider_api_key": "مفتاح API",
+	"backup_save_failed": "تعذّر حفظ الإعدادات: {error}"
 }
