@@ -102,10 +102,21 @@ afterEach(() => {
 
 describe('PageTranslator', () => {
   it('injects 译文 nodes with translated text for visible units', async () => {
+    // ControlledIO, not IOStub: packing is a property of ONE observer delivery
+    // (see enqueue — the flush timer is not reset per arrival), and discovery
+    // is chunked across 0ms tasks under a 6ms budget. With an auto-visible
+    // observer a busy machine splits the two <p>s across two scan chunks, the
+    // first one's flush fires between them, and the packing assertion fails on
+    // timing rather than on behaviour. Emitting both in one delivery tests the
+    // contract the assertion is actually about.
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
     document.body.innerHTML = '<p>Hello world</p><p>Second para</p>';
+    const [first, second] = Array.from(document.querySelectorAll('p'));
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => ControlledIO.instance.observed.has(first) && ControlledIO.instance.observed.has(second));
+    ControlledIO.instance.emit([first, second], true);
+    await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.translated}]`).length === 2);
 
     const gloss = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(gloss.length).toBe(2);
@@ -302,9 +313,17 @@ describe('PageTranslator', () => {
     document.getElementById('far')!.getBoundingClientRect = rect(h + 2000);
     document.getElementById('mid')!.getBoundingClientRect = rect(h + 600);
     document.getElementById('near')!.getBoundingClientRect = rect(100);
+    // One observer delivery, like the test above: with an auto-visible observer
+    // the three units can land in separate scan chunks, each starting its own
+    // batch, and the single-batch premise this ordering assertion rests on
+    // fails on machine load rather than on the sort.
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    const paragraphs = Array.from(document.querySelectorAll('p'));
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => paragraphs.every((el) => ControlledIO.instance.observed.has(el)));
+    ControlledIO.instance.emit(paragraphs, true);
+    await waitFor(() => translateBatch.mock.calls.length > 0);
 
     expect(translateBatch).toHaveBeenCalledOnce();
     const sent = (translateBatch.mock.calls[0][0] as { items: string[] }).items;
