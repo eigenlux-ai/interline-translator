@@ -320,3 +320,105 @@ describe('walkAndLabel — ruby / edit-mark phrasing families', () => {
     expect(units[0].serialized.text).toBe('text with {{0}}added{{1}} and {{2}}removed{{3}} words');
   });
 });
+
+describe('walkAndLabel — custom/unknown phrasing tags amid running text', () => {
+  it("keeps an inline <ink> in-unit so the heading's own text is not orphaned (elyx.design h1)", () => {
+    // elyx.design wraps a phrase in <ink> (an UNKNOWN tag — no hyphen) to paint a
+    // hand-drawn underline. Recursing at it left the h1's direct text uncollected
+    // and wedged the 译文 into the middle of the English sentence.
+    const r = root('<h1>Are design tools still <ink style="display:inline">relevant</ink> in the age of AI?</h1>');
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units).toHaveLength(1);
+      expect(units[0].text).toBe('Are design tools still relevant in the age of AI?');
+      expect(units[0].element.tagName).toBe('H1');
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('replays the custom tag around the 译文 instead of riding it through opaque', () => {
+    // Transparent, unlike a chip: the tag reopens as a placeholder PAIR with the
+    // phrase's text between them, so the phrase translates and keeps its styling.
+    const r = root('<p>More than ever, <my-ink style="display:inline">design drifts</my-ink> away.</p>');
+    document.body.appendChild(r);
+    try {
+      const [unit] = walkAndLabel(r, seqId);
+      expect(unit.serialized.text).toBe('More than ever, {{0}}design drifts{{1}} away.');
+      expect(unit.serialized.tags[0]).toContain('<my-ink');
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('a hyphenated custom element amid text stays in-unit too', () => {
+    const r = root('<p>Ship it <x-badge style="display:inline">today</x-badge> or never.</p>');
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units).toHaveLength(1);
+      expect(units[0].text).toBe('Ship it today or never.');
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('a custom tag wrapping a control still recurses (no cloned-button disease)', () => {
+    // The control guard wins over sentence flow: the wrapper is NOT kept in-unit,
+    // so the button stays its own unit and is never cloned into a 译文. The cost
+    // is the known one — the paragraph's own text is orphaned by the recurse —
+    // which is the safe failure direction (lost text, never a second fake control).
+    const r = root('<p>Then <x-wrap style="display:inline"><button>Go now</button></x-wrap> to continue.</p>');
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units.map((u) => u.text)).toEqual(['Go now']);
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('a BLOCK-displayed custom tag is its own unit, as before', () => {
+    const r = root('<div><x-quote style="display:block">We can build faster than ever.</x-quote></div>');
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units.map((u) => u.text)).toEqual(['We can build faster than ever.']);
+      expect(units[0].element.tagName).toBe('X-QUOTE');
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('a component host full of blocks still recurses, even amid text', () => {
+    // A custom element is display:inline by DEFAULT, so the phrasing test alone
+    // would swallow any component host that never styled itself (an Angular
+    // <app-card> beside loose text) and flatten the card into one word-mashed
+    // unit. Leaf shape is what keeps it structure.
+    const r = root(
+      '<div>Intro text <x-card style="display:inline"><h3>Title</h3><div>Body copy</div></x-card> ends.</div>'
+    );
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units.map((u) => u.text)).toEqual(['Title', 'Body copy']);
+    } finally {
+      r.remove();
+    }
+  });
+
+  it('a row of inline custom elements with no prose around them still recurses', () => {
+    // No sentence flow → these are independent items (structure), not phrases.
+    const r = root(
+      '<div><x-card style="display:inline">First product</x-card><x-card style="display:inline">Second product</x-card></div>'
+    );
+    document.body.appendChild(r);
+    try {
+      const units = walkAndLabel(r, seqId);
+      expect(units.map((u) => u.text)).toEqual(['First product', 'Second product']);
+    } finally {
+      r.remove();
+    }
+  });
+});

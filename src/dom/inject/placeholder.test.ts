@@ -140,6 +140,25 @@ describe('serialize → restore round-trip', () => {
     }
   });
 
+  it('strips a brace run whose index the engine swallowed entirely', () => {
+    // Google Translate returned `更重要的是，}}他们贬低了设计的作用…` for an
+    // elyx.design paragraph: the digit is gone, so the index-bearing passes
+    // can't see the debris and it rendered as visible junk.
+    const tags = ['<ink>', '</ink>'];
+    const { html, ok } = restoreInline('更重要的是，}}他们贬低了设计的作用。', tags);
+    expect(ok).toBe(false);
+    expect(html).toBe('更重要的是，他们贬低了设计的作用。');
+  });
+
+  it("keeps a BALANCED brace pair — that is the page's own content, not debris", () => {
+    // A docs page explaining a template engine. The fallback knows OUR markers
+    // were mangled; it must not eat the user's braces on the way out.
+    const tags = ['<b>', '</b>'];
+    const { html, ok } = restoreInline('在模板里写 {{ name }} 即可。', tags);
+    expect(ok).toBe(false);
+    expect(html).toBe('在模板里写 {{ name }} 即可。');
+  });
+
   it('drops a debrided placeholder index but keeps real bracketed / out-of-range text', () => {
     // `Java{{0}}[6]{{1}}` mangled by MT to `Java0}}[6]`: the `0}}` debris (a valid
     // index 0..1, with a surviving brace) must go, while the `[6]` footnote

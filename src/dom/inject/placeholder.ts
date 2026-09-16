@@ -180,7 +180,7 @@ export function restoreInline(translated: string, tags: string[]): RestoreResult
 function stripPlaceholders(text: string, count: number): string {
   if (count <= 0) return text;
   const drop = (full: string, n: string) => (Number(n) < count ? '' : full);
-  return (
+  return stripOrphanBraceRuns(
     text
       // Spaced / split double braces: `{{ 0 }}`, `{ {0} }`.
       .replace(/\{\s*\{\s*(\d+)\s*\}\s*\}/g, (full, n) => drop(full, n))
@@ -189,6 +189,43 @@ function stripPlaceholders(text: string, count: number): string {
       // brace, the other a trailing one — so a bare number never matches.)
       .replace(/\{+\s*(\d+)\s*\}*|(\d+)\s*\}+/g, (full, lead, trail) => drop(full, lead ?? trail))
   );
+}
+
+/**
+ * Last-resort debris sweep: a `{{`/`}}` RUN whose index the engine swallowed
+ * ENTIRELY, which the digit-bearing passes above cannot see. Google Translate
+ * returned `更重要的是，}}他们贬低了设计的作用…` for an elyx.design paragraph —
+ * the bare `}}` rendered as visible junk in the 译文.
+ *
+ * Only UNMATCHED runs go: a balanced `{{ … }}` is real content (a docs page
+ * explaining a Handlebars/Jinja template), and this fallback — which already
+ * knows the engine mangled our markers — must not eat the user's own braces.
+ * Runs only, never a lone `{`/`}`: two braces is OUR marker's signature.
+ */
+function stripOrphanBraceRuns(text: string): string {
+  const runs: Array<{ start: number; end: number; open: boolean }> = [];
+  const re = /\{{2,}|\}{2,}/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(text)) !== null) {
+    runs.push({ start: m.index, end: m.index + m[0].length, open: m[0].startsWith('{') });
+  }
+  const orphans = new Set<number>();
+  const open: number[] = [];
+  runs.forEach((run, i) => {
+    if (run.open) open.push(i);
+    else if (open.length) open.pop();
+    else orphans.add(i); // a closer with nothing to close
+  });
+  for (const i of open) orphans.add(i); // openers never closed
+  if (orphans.size === 0) return text;
+  let out = '';
+  let last = 0;
+  runs.forEach((run, i) => {
+    if (!orphans.has(i)) return;
+    out += text.slice(last, run.start);
+    last = run.end;
+  });
+  return out + text.slice(last);
 }
 
 function escapeText(v: string): string {

@@ -19,6 +19,7 @@ import { randomId } from '@/core/uid';
 import { DATA_OMNI } from '@/constants';
 import {
   hasTranslatableText,
+  isCustomPhrasing,
   isInlineChip,
   isInlineElement,
   isInlineTag,
@@ -57,13 +58,15 @@ const makeId = (): string => randomId(); // not randomUUID — that throws on pl
  *     us</span></h1>` — the Tailwind line-break idiom) stays in-unit when the
  *     parent HAS direct text (recursing would orphan that text forever — the
  *     known non-leaf direct-text limitation) and the child is leaf-shaped.
- *   - A NON-phrasing tag NEVER becomes in-unit content via layout: a
- *     `<button>` is inline-block by UA DEFAULT (not a restyle), a custom
- *     element defaults to inline, an old nav `li{display:inline}` is still an
- *     independent item. Keeping any of them in-unit would clone the control
- *     into the 译文 (a second fake button — the exact disease the shell work
- *     eliminated) or merge independent items into one word-mashed unit. They
- *     always recurse, exactly as the pre-computed-display walk did.
+ *   - A NON-phrasing tag does not become in-unit content on layout ALONE: a
+ *     `<button>` is inline-block by UA DEFAULT (not a restyle), an old nav
+ *     `li{display:inline}` is still an independent item. Keeping either
+ *     in-unit would clone the control into the 译文 (a second fake button —
+ *     the exact disease the shell work eliminated) or merge independent items
+ *     into one word-mashed unit. Only inside the parent's OWN sentence flow do
+ *     two narrow shapes stay in-unit — `isInlineChip` and `isCustomPhrasing`,
+ *     both barred from holding a control. Everything else recurses, exactly as
+ *     the pre-computed-display walk did.
  */
 function isLeafBlock(el: Element, probeShadow: (el: Element) => ShadowRoot | null): boolean {
   let ownText: boolean | null = null;
@@ -92,13 +95,29 @@ function isLeafBlock(el: Element, probeShadow: (el: Element) => ShadowRoot | nul
     // a non-leaf, which would orphan the title's own text. Only a child that
     // actually holds text can force a recurse.
     if (!hasTranslatableText(child.textContent ?? '')) continue;
-    // Non-phrasing tags recurse unconditionally (see doc above) — except a
-    // sentence CHIP amid this parent's own running text (X's inline-flex
-    // @mention DIV mid-tweet): recursing there shatters one sentence into
-    // per-span fragment units, each translated out of context. The chip stays
-    // in-unit and serializeInline rides it through as ONE opaque placeholder.
+    // Non-phrasing tags recurse unconditionally (see doc above) — except two
+    // shapes that only ever appear INSIDE this parent's own running text, where
+    // recursing shatters one sentence into fragment units (or orphans the
+    // parent's loose text entirely). Both require sentence flow: outside prose,
+    // the same tag is structure (a grid of cards) and must still recurse.
+    //   - a sentence CHIP (X's inline-flex @mention DIV mid-tweet) stays in-unit
+    //     OPAQUE — serializeInline rides it through as one placeholder;
+    //   - a custom/unknown PHRASING tag (elyx.design's `<ink>` hand-drawn
+    //     underline wrapping a few words of a headline) stays in-unit
+    //     TRANSPARENT — its text translates with the sentence and the tag is
+    //     replayed around the 译文.
+    // The phrasing case also demands LEAF SHAPE, like the restyled-phrasing
+    // exception below it. A custom element is `display:inline` by DEFAULT, so
+    // the predicate alone would swallow any component host that never styled
+    // itself — an Angular `<app-card><h3>…</h3><div>…</div></app-card>` beside
+    // loose text — flattening a card into one word-mashed unit whose block
+    // children the 译文 then reproduces as a phantom row. Requiring leaf shape
+    // keeps that recursing; `<ink>relevant</ink>` has no element children at
+    // all, so it passes trivially.
     if (!isInlineTag(child)) {
-      if (hasSentenceFlow() && isInlineChip(child)) continue;
+      if (hasSentenceFlow() && (isInlineChip(child) || (isCustomPhrasing(child) && isLeafBlock(child, probeShadow)))) {
+        continue;
+      }
       return false;
     }
     // Phrasing tag in inline flow — normal in-unit content.

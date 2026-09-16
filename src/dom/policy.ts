@@ -12,8 +12,9 @@
  * | # | question             | algorithm home                            | policy data                                |
  * |---|----------------------|-------------------------------------------|--------------------------------------------|
  * | 1 | element class?       | filter.ts — isInlineElement, isInlineTag, | SKIP_TAGS, INLINE_TAGS, NON_CONTENT_TAGS,  |
- * |   |                      | isSkippableTag, isSkippedElement,         | CODE_PRE_CLASS, CHIP_MAX_CHARS             |
- * |   |                      | isShellElement, isInlineChip, isCodePre   |                                            |
+ * |   |                      | isSkippableTag, isSkippedElement,         | CODE_PRE_CLASS, CHIP_MAX_CHARS,            |
+ * |   |                      | isShellElement, isInlineChip, isCodePre,  | CONTROL_SELECTOR                           |
+ * |   |                      | isCustomPhrasing                          |                                            |
  * | 2 | unit boundary?       | traversal.ts — isLeafBlock, isLinkGroup,  | (stage-1 predicates only)                  |
  * |   |                      | unwrapSoleWrapper                         |                                            |
  * | 3 | serialization        | inject/placeholder.ts — serializeInline,  | DROP_FROM_GLOSS, OPAQUE_SCRUB_SELECTOR     |
@@ -115,6 +116,13 @@ export const CODE_PRE_CLASS =
 /** A sentence chip (isInlineChip) must be an atomic token, not a card — cap
  *  its text so an inline-block content card never rides through opaque. */
 export const CHIP_MAX_CHARS = 40;
+
+/** Interactive descendants that disqualify an element from staying IN-unit
+ *  (stage 1, isInlineChip + isCustomPhrasing). Both exceptions let a
+ *  non-phrasing tag ride inside a sentence; a control among them would be
+ *  reproduced into the 译文 as a second, fake one — the shell disease. Keeping
+ *  the list here means the two predicates can never drift apart. */
+export const CONTROL_SELECTOR = 'button, input, select, textarea';
 
 /** Controls + media that must be dropped from the 译文 (never duplicated —
  *  a cloned radio/avatar beside the real one is the shell disease), plus the

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.3 — 2026-09-16
+
+- Translate the whole sentence when a site wraps part of it in a custom element. Previously only the wrapped phrase was translated: the rest of the heading or paragraph stayed in its original language and the translation appeared in the middle of the sentence.
+- Remove leftover placeholder braces from a translation when the engine mangles the formatting markers, so no stray `{{`/`}}` characters remain in the text.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.2 — 2026-09-08
 
 - Revise localized interface and store copy, and translate previously hardcoded interface text.

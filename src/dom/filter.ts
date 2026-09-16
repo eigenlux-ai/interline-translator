@@ -11,7 +11,7 @@
  */
 
 import { DATA_OMNI, PROJECT_PREFIX } from '@/constants';
-import { CHIP_MAX_CHARS, CODE_PRE_CLASS, INLINE_TAGS, NON_CONTENT_TAGS, SKIP_TAGS } from './policy';
+import { CHIP_MAX_CHARS, CODE_PRE_CLASS, CONTROL_SELECTOR, INLINE_TAGS, NON_CONTENT_TAGS, SKIP_TAGS } from './policy';
 
 /** Uppercase tag name — SVG/MathML elements report a lowercase tagName (svg, math). */
 function tag(el: Element): string {
@@ -92,7 +92,53 @@ export function isInlineChip(el: Element): boolean {
   const d = el.ownerDocument.defaultView?.getComputedStyle?.(el).display;
   if (!d || !d.startsWith('inline')) return false;
   if ((el.textContent ?? '').trim().length > CHIP_MAX_CHARS) return false;
-  return !el.querySelector('button, input, select, textarea');
+  return !el.querySelector(CONTROL_SELECTOR);
+}
+
+/** A tag the HTML spec doesn't define: a hyphenated custom element
+ *  (`<my-badge>`, defined or not) or an unknown one (`<ink>` — no hyphen, so it
+ *  parses as HTMLUnknownElement). Both branches are needed: only the hyphen test
+ *  misses `<ink>`, only the constructor test misses `<my-badge>` (which the DOM
+ *  upgrades to HTMLElement). Layout-engine independent. */
+function isUndefinedTag(el: Element): boolean {
+  if (tag(el).includes('-')) return true;
+  const win = el.ownerDocument.defaultView as unknown as { HTMLUnknownElement?: new () => Element } | null;
+  const Unknown = win?.HTMLUnknownElement;
+  return typeof Unknown === 'function' && el instanceof Unknown;
+}
+
+/**
+ * A PHRASING custom/unknown element: a tag the spec doesn't know, which the
+ * host styles INLINE and uses mid-sentence to decorate a phrase —
+ * elyx.design's `<ink data-kind="title">` (a hand-drawn underline) sits inside
+ * its `<h1>` and `<p>`s, wrapping a few words of running prose.
+ *
+ * `isInlineTag`'s whitelist cannot see such a tag, so without this exception
+ * `isLeafBlock` treats it as a hard recurse boundary and the enclosing block's
+ * own direct text is ORPHANED — the module's known non-leaf direct-text
+ * limitation. On elyx.design that shipped as a half-translated headline:
+ * `Are design tools still relevant息息相关 in the age of AI?` — the 译文 wedged
+ * into the middle of an otherwise untouched English sentence.
+ *
+ * Unlike `isInlineChip` this is TRANSPARENT, not opaque: the element stays
+ * in-unit as ordinary phrasing, so its own text is translated with the
+ * sentence and `serializeInline` replays the tag around the 译文 (the 带样式
+ * promise — the host's decoration follows). That is why there is no length cap
+ * here: a chip is an atomic token to ride through untranslated, this is prose.
+ *
+ * Guarded by "no interactive descendant" — the same line the always-recurse
+ * rule for custom elements was defending: a cloned control is a second fake
+ * one. Two further guards live on the TRAVERSAL side, where the parent's shape
+ * is known: the walk applies this only inside the parent's own sentence flow
+ * (a grid of `<product-card>`s, with no prose around them, still recurses as
+ * structure) and only when the element is itself LEAF-SHAPED (a component host
+ * that never styled itself — `<app-card>` full of divs — is inline by DEFAULT
+ * and must not be flattened into the sentence).
+ */
+export function isCustomPhrasing(el: Element): boolean {
+  if (!isUndefinedTag(el)) return false;
+  if (!isInlineElement(el)) return false;
+  return !el.querySelector(CONTROL_SELECTOR);
 }
 
 /**
