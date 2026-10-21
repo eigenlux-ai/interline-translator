@@ -52,7 +52,7 @@ import { BALL, clamp, MARGIN, placeToPos, snapPlacement, tuckOffset, type BallPl
 import { useTuck } from './use-tuck';
 
 const PANEL_W = 288;
-const DRAG_THRESHOLD = 4; // px of movement that cancels a pending click/long-press
+const DRAG_THRESHOLD = 4; // px of movement that turns a pending click into a drag
 const LONG_PRESS_MS = 350; // hold this long (without moving) to enter drag mode
 const GLASS_BLUR = 'blur(20px) saturate(180%)'; // frosted vibrancy
 
@@ -199,9 +199,8 @@ export default function FloatingBallApp() {
   const [config, setConfigState] = usePublicConfig();
 
   /** Press state machine: 'pressed' (click pending, long-press timer armed) →
-   *  'drag' (timer fired: ball follows pointer) | 'cancelled' (moved too far
-   *  before the timer — neither click nor drag). */
-  const press = useRef<{ dx: number; dy: number; startX: number; startY: number; mode: 'pressed' | 'drag' | 'cancelled' } | null>(null);
+   *  'drag' (movement threshold crossed or long-press timer fired). */
+  const press = useRef<{ dx: number; dy: number; startX: number; startY: number; mode: 'pressed' | 'drag' } | null>(null);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load the persisted placement once.
@@ -310,7 +309,7 @@ export default function FloatingBallApp() {
   }, [placement]);
 
   // ── Drag: pointer-capture so it survives leaving the disc; a small threshold
-  //    distinguishes a drag from a click (which toggles the panel). ──
+  //    distinguishes a drag from a click (which toggles translation). ──
   const onPointerDown = (e: React.PointerEvent) => {
     if (e.button !== 0) return;
     // Tucked = the press only REVEALS: no drag, no click action. This one rule
@@ -337,12 +336,12 @@ export default function FloatingBallApp() {
     const d = press.current;
     if (!d) return;
     if (d.mode === 'pressed') {
-      // Wandering before the long-press fires is neither a click nor a drag.
-      if (Math.hypot(e.clientX - d.startX, e.clientY - d.startY) > DRAG_THRESHOLD) {
-        d.mode = 'cancelled';
-        if (pressTimer.current) clearTimeout(pressTimer.current);
-      }
-      return;
+      if (Math.hypot(e.clientX - d.startX, e.clientY - d.startY) <= DRAG_THRESHOLD) return;
+      // Moving while held starts a drag immediately; no stationary hold required.
+      if (pressTimer.current) clearTimeout(pressTimer.current);
+      d.mode = 'drag';
+      setDragging(true);
+      setOpen(false);
     }
     if (d.mode !== 'drag') return;
     setPos({
@@ -791,6 +790,7 @@ export default function FloatingBallApp() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
+        onLostPointerCapture={onPointerCancel}
         onFocus={onSealFocus}
         onBlur={() => setFocusHold(false)}
         onAnimationEnd={() => setStamping(false)}

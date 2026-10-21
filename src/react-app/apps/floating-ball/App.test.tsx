@@ -107,6 +107,34 @@ describe('main seal — the direct translate toggle', () => {
   });
 });
 
+describe('main seal — dragging', () => {
+  it('moves immediately while held, snaps on release, and never toggles translation', async () => {
+    await withRequests(async (requests) => {
+      const { baseElement } = mountBall();
+      await act(() => tick());
+      reveal(baseElement);
+      const seal = mainSeal(baseElement);
+      const root = baseElement.querySelector<HTMLElement>('[data-omni-selection-ui]')!;
+      const x = parseFloat(root.style.left) + 10;
+      const y = parseFloat(root.style.top) + 10;
+      const send = (type: string, clientX: number, clientY: number) =>
+        act(() => {
+          seal.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerId: 1, clientX, clientY }));
+        });
+      send('pointerdown', x, y);
+      send('pointermove', 110, 210); // before the 350ms long-press timer
+      expect(root.style.left).toBe('100px');
+      expect(root.style.top).toBe('200px');
+      expect(seal.style.cursor).toBe('grabbing');
+      send('pointerup', 110, 210);
+      expect(root.style.left).toBe('8px'); // nearer left edge
+      expect(root.style.top).toBe('200px');
+      expect(seal.style.cursor).toBe('pointer');
+      expect(requests).toEqual([]);
+    });
+  });
+});
+
 describe('main seal — keyboard activation', () => {
   it('Enter/Space (synthetic click, detail 0) works: first press reveals, second toggles', async () => {
     await withRequests(async (requests) => {

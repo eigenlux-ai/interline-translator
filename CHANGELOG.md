@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.5 — 2026-10-21
+
+- Restore immediate floating-ball dragging when the pointer moves while held, while retaining long-press dragging, edge snapping and saved placement.
+- Clear the drag state when pointer capture is lost.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.3 — 2026-09-16
 
 - Translate the whole sentence when a site wraps part of it in a custom element. Previously only the wrapped phrase was translated: the rest of the heading or paragraph stayed in its original language and the translation appeared in the middle of the sentence.
