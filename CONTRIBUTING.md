@@ -102,3 +102,7 @@ In a PR, state which checks ran and what remains unverified. Explain changes to 
 ## License
 
 Interline is [MIT licensed](./LICENSE). Contributions are made under the project's MIT license. Preserve applicable notices for any third-party code or assets you include.
+
+## Build a store upload
+
+Run `pnpm zip` to build the Chrome extension and create a versioned ZIP in `.output/`. The build and ZIP commands refresh `src/data/third-party-notices.json` from installed runtime dependencies and the WXT foundation. Commit any updated notices when dependencies change. Keep the vendored template and WXT licenses under `src/data/licenses/`.

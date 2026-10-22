@@ -67,6 +67,8 @@ For input translation, prefix a draft with `/en` or `en:` to choose English for 
 - **Display:** three views, 10 translation styles, and a choice of translation font. Switching views of an already translated page does not make a new translation request.
 - **Site rules:** choose sites to translate automatically or leave untranslated, with wildcard matching.
 - **Language:** 12 interface languages, including Arabic with RTL layout. By default the interface follows your reading target; you can choose it separately.
+- **Floating control:** drag it to either edge; its animated panel stays within the viewport and scrolls internally when space is limited. Reduced-motion preferences are respected.
+- **About:** find the version, project links, data/model source explanations and open-source license notices in settings.
 - **Backup:** export and import your settings. **The exported JSON includes API keys**; keep it private.
 
 ## How your data is handled

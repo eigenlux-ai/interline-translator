@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.6 — 2026-10-22
+
+- Snap the floating ball to the nearest edge when dragging is cancelled or pointer capture is lost, and use the latest pointer position when settling a drag.
+- Widen the floating panel to 328px. Open beside the ball when neither above nor below has enough room, keep it within the viewport, and scroll internally when needed.
+- Add panel expand/collapse animations that follow the ball position and respect reduced-motion preferences. Fix display-mode indicator alignment during and after these animations.
+- Expand the settings layout to 1280px and remove the narrower inner section limit.
+- Add a localized About section with version and project links, data/model source explanations, and open-source license notices, including the foundation template and WXT. Update the project copyright holder to Eigenlux.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.5 — 2026-10-21
 
 - Restore immediate floating-ball dragging when the pointer moves while held, while retaining long-press dragging, edge snapping and saved placement.
