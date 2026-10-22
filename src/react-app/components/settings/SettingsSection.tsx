@@ -21,7 +21,7 @@ export interface SettingsSectionProps {
 
 export default function SettingsSection({ title, description, action, children }: SettingsSectionProps) {
   return (
-    <Box maw={580}>
+    <Box>
       <Group justify="space-between" align="flex-end" gap="sm" wrap="nowrap">
         <Box>
           <Title order={3} fz="h4" fw={600}>

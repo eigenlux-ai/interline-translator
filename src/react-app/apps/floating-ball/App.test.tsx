@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { MantineProvider } from '@mantine/core';
-import { act, cleanup, render } from '@testing-library/react';
+import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { emitPageTranslationState, onSetPageTranslation } from '@/core/page-translation-bridge';
 import { interlineTheme } from '@/react-app/managers/VisualManager/theme';
@@ -204,7 +204,7 @@ describe('押脚 sub seal — the panel entry', () => {
       // eslint-disable-next-line no-restricted-syntax -- body IS the host page here (the outside being clicked), not a mount point
       document.body.dispatchEvent(pointer('pointerdown'));
     });
-    expect(baseElement.textContent).not.toContain(m.ball_style());
+    await waitFor(() => expect(baseElement.textContent).not.toContain(m.ball_style()));
 
     // Escape: closes too.
     act(() => subSeal(baseElement)!.click());
@@ -213,7 +213,7 @@ describe('押脚 sub seal — the panel entry', () => {
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
     });
-    expect(baseElement.textContent).not.toContain(m.ball_style());
+    await waitFor(() => expect(baseElement.textContent).not.toContain(m.ball_style()));
   });
 });
 

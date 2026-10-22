@@ -1,0 +1,38 @@
+/* Three equal segments: use layout coordinates instead of FloatingIndicator's
+   getBoundingClientRect measurements, which include the panel's genie transform. */
+.root {
+  --ball-display-index: 0;
+}
+
+.root:has(input[value='translation']:checked) {
+  --ball-display-index: 1;
+}
+
+.root:has(input[value='original']:checked) {
+  --ball-display-index: 2;
+}
+
+.control {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.indicator {
+  top: 4px;
+  inset-inline-start: 4px;
+  inset-inline-end: auto;
+  /* Override only the geometry Mantine writes imperatively during measurement. */
+  width: calc((100% - 8px) / 3) !important;
+  height: calc(100% - 8px) !important;
+  transform: translateX(calc(var(--ball-display-index) * 100%)) !important;
+}
+
+:global([dir='rtl']) .indicator {
+  transform: translateX(calc(var(--ball-display-index) * -100%)) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition-duration: 0ms !important;
+  }
+}

@@ -27,6 +27,7 @@ import {
   Stack,
   Switch,
   Text,
+  Transition,
   UnstyledButton,
   useComputedColorScheme,
   useMantineTheme,
@@ -48,6 +49,7 @@ import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import { getConfigService, type PublicConfig, type PublicConfigPatch } from '@/services/config/public';
 import { isSiteEnabled, resolveSiteMode, setSiteMode } from '@/services/config/site-control';
+import displayModeClasses from './DisplayMode.module.css';
 import {
   BALL,
   clamp,
@@ -493,9 +495,35 @@ export default function FloatingBallApp() {
   // The sub seal sits BELOW by default; it flips above only when the space
   // under the ball can't fit it (gap 7 + seal 22 + a little breathing room).
   const subAbove = vp.h - pos.y - BALL < 33;
-  const panelStyle: React.CSSProperties = {
-    position: 'absolute',
-    ...panelPlacement(pos, placement.side, vp, panelHeight, PANEL_W),
+  const panelGeometry = panelPlacement(pos, placement.side, vp, panelHeight, PANEL_W);
+  const panelStyle: React.CSSProperties = { position: 'absolute', ...panelGeometry };
+  // The origin may sit outside the panel: the small end stays anchored to
+  // the seal, including when the panel opens beside it or is viewport-clamped.
+  const originX = BALL / 2 - panelGeometry.left;
+  const originY = BALL / 2 - panelGeometry.top;
+  const sideways = panelGeometry.left + panelGeometry.width <= 0 || panelGeometry.left >= BALL;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const panelTransition = {
+    transitionProperty: 'transform, opacity, clip-path',
+    common: { transformOrigin: `${originX}px ${originY}px` },
+    in: {
+      opacity: 1,
+      transform: 'scale(1, 1) skew(0deg, 0deg)',
+      clipPath: 'polygon(-15% -15%, 115% -15%, 115% 115%, -15% 115%)',
+    },
+    out: {
+      opacity: 0,
+      transform: sideways
+        ? `scale(0.04, 0.16) skew(0deg, ${placement.side === 'right' ? -12 : 12}deg)`
+        : `scale(0.16, 0.04) skew(${originY > 0 ? -10 : 10}deg, 0deg)`,
+      clipPath: sideways
+        ? placement.side === 'right'
+          ? 'polygon(0% 35%, 100% 0%, 100% 100%, 0% 65%)'
+          : 'polygon(0% 0%, 100% 35%, 100% 65%, 0% 100%)'
+        : originY > 0
+          ? 'polygon(35% 0%, 65% 0%, 100% 100%, 0% 100%)'
+          : 'polygon(0% 0%, 100% 0%, 65% 100%, 35% 100%)',
+    },
   };
 
   // Ball = 印蜕: state picks the material (蘸墨 / 染朱).
@@ -550,251 +578,266 @@ export default function FloatingBallApp() {
           }}
         />
       )}
-      {open && config && (
-        <Paper
-          ref={measurePanel}
-          data-omni-ball-panel=""
-          onPointerDown={(e) => e.stopPropagation()}
-          style={{
-            ...panelStyle,
-            background: g.panelBg,
-            backdropFilter: GLASS_BLUR,
-            WebkitBackdropFilter: GLASS_BLUR,
-            border: `1px solid ${g.ring}`,
-            borderRadius: 16,
-            boxShadow: g.shadow,
-            overflowX: 'hidden',
-            overflowY: 'auto',
-            overscrollBehavior: 'contain',
-          }}
+      {config && (
+        <Transition
+          mounted={open}
+          transition={panelTransition}
+          duration={reducedMotion ? 0 : 340}
+          exitDuration={reducedMotion ? 0 : 220}
+          timingFunction="cubic-bezier(.18,.8,.22,1)"
         >
-          {/* Header */}
-          <Group justify="space-between" align="center" px="md" pt="sm" pb={6}>
-            <Text style={{ fontSize: 15, fontWeight: 600, color: g.ink, letterSpacing: '-0.01em' }}>
-              {m.ball_panel_title()}
-            </Text>
-            <CloseButton onClick={() => setOpen(false)} size="sm" aria-label={m.ball_close_panel()} c={g.inkDim} />
-          </Group>
-          <Stack gap="xs" px="md" pb="md">
-            {/* Card 1: 阅读视图 (Reading View) */}
-            <Box
-              p={10}
+          {(motionStyle) => (
+            <Paper
+              ref={measurePanel}
+              data-omni-ball-panel=""
+              inert={!open}
+              onPointerDown={(e) => e.stopPropagation()}
               style={{
-                borderRadius: 10,
-                backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
+                ...panelStyle,
+                ...motionStyle,
+                pointerEvents: open ? 'auto' : 'none',
+                willChange: motionStyle.transitionDuration === '0ms' ? undefined : 'transform, opacity',
+                background: g.panelBg,
+                backdropFilter: GLASS_BLUR,
+                WebkitBackdropFilter: GLASS_BLUR,
                 border: `1px solid ${g.ring}`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
+                borderRadius: 16,
+                boxShadow: g.shadow,
+                overflowX: 'hidden',
+                overflowY: 'auto',
+                overscrollBehavior: 'contain',
               }}
             >
-              {/* Target language */}
-              <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                <Text size="xs" fw={600} style={{ color: g.inkDim }}>
-                  {m.ball_target()}
+              {/* Header */}
+              <Group justify="space-between" align="center" px="md" pt="sm" pb={6}>
+                <Text style={{ fontSize: 15, fontWeight: 600, color: g.ink, letterSpacing: '-0.01em' }}>
+                  {m.ball_panel_title()}
                 </Text>
-                <Select
-                  variant="unstyled"
-                  data={TARGET_OPTIONS}
-                  value={target}
-                  onChange={(v) => v && patchAndReapply((c) => ({ translate: { ...c.translate, target: v } }))}
-                  allowDeselect={false}
-                  size="xs"
-                  w={140}
-                  comboboxProps={{ withinPortal: true }}
-                  styles={{
-                    input: { textAlign: 'right', color: g.ink, fontWeight: 500, paddingRight: 24, fontSize: 12 },
-                    section: { color: g.inkFaint, width: 18, justifyContent: 'flex-end' },
-                  }}
-                />
-              </Box>
-
-              {/* Three-state view (双语/仅译文/仅原文) */}
-              <Box style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Text size="xs" fw={600} style={{ color: g.inkDim }}>
-                  {m.display_label()}
-                </Text>
-                <SegmentedControl
-                  size="xs"
-                  fullWidth
-                  data={[
-                    { value: 'bilingual', label: m.display_bilingual() },
-                    { value: 'translation', label: m.display_translation() },
-                    { value: 'original', label: m.display_original() },
-                  ]}
-                  value={config.appearance.displayMode ?? 'bilingual'}
-                  onChange={(v) =>
-                    patchConfig((c) => ({ appearance: { ...c.appearance, displayMode: v as DisplayMode } }))
-                  }
-                  styles={{
-                    root: { background: scheme === 'dark' ? 'rgba(0,0,0,0.28)' : 'rgba(33,28,21,0.07)' },
-                  }}
-                />
-              </Box>
-
-              {/* 逐段对照 */}
-              {(config.appearance.displayMode ?? 'bilingual') === 'bilingual' && (
+                <CloseButton onClick={() => setOpen(false)} size="sm" aria-label={m.ball_close_panel()} c={g.inkDim} />
+              </Group>
+              <Stack gap="xs" px="md" pb="md">
+                {/* Card 1: 阅读视图 (Reading View) */}
                 <Box
+                  p={10}
                   style={{
+                    borderRadius: 10,
+                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
+                    border: `1px solid ${g.ring}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
+                >
+                  {/* Target language */}
+                  <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                      {m.ball_target()}
+                    </Text>
+                    <Select
+                      variant="unstyled"
+                      data={TARGET_OPTIONS}
+                      value={target}
+                      onChange={(v) => v && patchAndReapply((c) => ({ translate: { ...c.translate, target: v } }))}
+                      allowDeselect={false}
+                      size="xs"
+                      w={140}
+                      comboboxProps={{ withinPortal: true }}
+                      styles={{
+                        input: { textAlign: 'right', color: g.ink, fontWeight: 500, paddingRight: 24, fontSize: 12 },
+                        section: { color: g.inkFaint, width: 18, justifyContent: 'flex-end' },
+                      }}
+                    />
+                  </Box>
+
+                  {/* Three-state view (双语/仅译文/仅原文) */}
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                      {m.display_label()}
+                    </Text>
+                    <SegmentedControl
+                      classNames={displayModeClasses}
+                      size="xs"
+                      fullWidth
+                      data={[
+                        { value: 'bilingual', label: m.display_bilingual() },
+                        { value: 'translation', label: m.display_translation() },
+                        { value: 'original', label: m.display_original() },
+                      ]}
+                      value={config.appearance.displayMode ?? 'bilingual'}
+                      onChange={(v) =>
+                        patchConfig((c) => ({ appearance: { ...c.appearance, displayMode: v as DisplayMode } }))
+                      }
+                      styles={{
+                        root: { background: scheme === 'dark' ? 'rgba(0,0,0,0.28)' : 'rgba(33,28,21,0.07)' },
+                      }}
+                    />
+                  </Box>
+
+                  {/* 逐段对照 */}
+                  {(config.appearance.displayMode ?? 'bilingual') === 'bilingual' && (
+                    <Box
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 8,
+                        paddingTop: 2,
+                      }}
+                    >
+                      <Text size="xs" style={{ color: g.inkDim }}>
+                        {m.interleave_label()}
+                      </Text>
+                      <Switch
+                        size="xs"
+                        color="cinnabar"
+                        checked={config.appearance.paragraphInterleave ?? true}
+                        onChange={(e) => {
+                          const on = e.currentTarget.checked;
+                          patchAndReapply((c) => ({ appearance: { ...c.appearance, paragraphInterleave: on } }));
+                        }}
+                      />
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Card 2: 译文样式 (Translation Style) */}
+                <Box
+                  p={10}
+                  style={{
+                    borderRadius: 10,
+                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
+                    border: `1px solid ${g.ring}`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 8,
+                  }}
+                >
+                  <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                    {m.ball_style()}
+                  </Text>
+                  <StylePreview
+                    value={style}
+                    onChange={(v) => patchAndReapply((c) => ({ appearance: { ...c.appearance, bilingualStyle: v } }))}
+                    font={config.appearance.translationFont}
+                    compact
+                    palette={{
+                      gloss: g.ink,
+                      inkFaint: g.inkFaint,
+                      hair: g.ring,
+                      paper: scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)',
+                      accent: PRESET_ACCENT,
+                    }}
+                  />
+                </Box>
+
+                {/* Card 3: 站点规则 (Site Rules) */}
+                <Box
+                  p={10}
+                  style={{
+                    borderRadius: 10,
+                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
+                    border: `1px solid ${g.ring}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
                     gap: 8,
-                    paddingTop: 2,
                   }}
                 >
-                  <Text size="xs" style={{ color: g.inkDim }}>
-                    {m.interleave_label()}
-                  </Text>
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                      {m.ball_always_site()}
+                    </Text>
+                    <Text
+                      size="10px"
+                      c="dimmed"
+                      style={{
+                        fontFamily: theme.fontFamilyMonospace,
+                        maxWidth: 150,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {location.hostname}
+                    </Text>
+                  </Box>
                   <Switch
                     size="xs"
                     color="cinnabar"
-                    checked={config.appearance.paragraphInterleave ?? true}
-                    onChange={(e) => {
-                      const on = e.currentTarget.checked;
-                      patchAndReapply((c) => ({ appearance: { ...c.appearance, paragraphInterleave: on } }));
-                    }}
+                    checked={alwaysOn}
+                    onChange={(e) =>
+                      patchConfig((c) => ({
+                        siteControl: setSiteMode(
+                          c.siteControl,
+                          location.hostname,
+                          e.currentTarget.checked ? 'always' : null
+                        ),
+                      }))
+                    }
                   />
                 </Box>
-              )}
-            </Box>
 
-            {/* Card 2: 译文样式 (Translation Style) */}
-            <Box
-              p={10}
-              style={{
-                borderRadius: 10,
-                backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
-                border: `1px solid ${g.ring}`,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 8,
-              }}
-            >
-              <Text size="xs" fw={600} style={{ color: g.inkDim }}>
-                {m.ball_style()}
-              </Text>
-              <StylePreview
-                value={style}
-                onChange={(v) => patchAndReapply((c) => ({ appearance: { ...c.appearance, bilingualStyle: v } }))}
-                font={config.appearance.translationFont}
-                compact
-                palette={{
-                  gloss: g.ink,
-                  inkFaint: g.inkFaint,
-                  hair: g.ring,
-                  paper: scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)',
-                  accent: PRESET_ACCENT,
-                }}
-              />
-            </Box>
+                {/* Bottom Action button */}
+                <Box pt={4}>
+                  <Button
+                    fullWidth
+                    radius="md"
+                    variant={active ? 'light' : 'filled'}
+                    color="cinnabar"
+                    size="sm"
+                    onClick={() => requestSetPageTranslation(!active)}
+                    style={{
+                      fontWeight: 600,
+                      boxShadow: active ? 'none' : '0 2px 8px rgba(194, 64, 42, 0.35)',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {active ? m.ball_action_restore() : m.ball_action_translate()}
+                  </Button>
+                </Box>
+              </Stack>
 
-            {/* Card 3: 站点规则 (Site Rules) */}
-            <Box
-              p={10}
-              style={{
-                borderRadius: 10,
-                backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
-                border: `1px solid ${g.ring}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                gap: 8,
-              }}
-            >
-              <Box style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <Text size="xs" fw={600} style={{ color: g.inkDim }}>
-                  {m.ball_always_site()}
-                </Text>
-                <Text
-                  size="10px"
-                  c="dimmed"
-                  style={{
-                    fontFamily: theme.fontFamilyMonospace,
-                    maxWidth: 150,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                  }}
-                >
-                  {location.hostname}
-                </Text>
-              </Box>
-              <Switch
-                size="xs"
-                color="cinnabar"
-                checked={alwaysOn}
-                onChange={(e) =>
-                  patchConfig((c) => ({
-                    siteControl: setSiteMode(
-                      c.siteControl,
-                      location.hostname,
-                      e.currentTarget.checked ? 'always' : null
-                    ),
-                  }))
-                }
-              />
-            </Box>
-
-            {/* Bottom Action button */}
-            <Box pt={4}>
-              <Button
-                fullWidth
-                radius="md"
-                variant={active ? 'light' : 'filled'}
-                color="cinnabar"
-                size="sm"
-                onClick={() => requestSetPageTranslation(!active)}
+              {/* Footer */}
+              <Box
                 style={{
-                  fontWeight: 600,
-                  boxShadow: active ? 'none' : '0 2px 8px rgba(194, 64, 42, 0.35)',
-                  transition: 'all 0.2s ease',
+                  padding: '8px 14px',
+                  borderTop: `1px solid ${g.ring}`,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
                 }}
               >
-                {active ? m.ball_action_restore() : m.ball_action_translate()}
-              </Button>
-            </Box>
-          </Stack>
-
-          {/* Footer */}
-          <Box
-            style={{
-              padding: '8px 14px',
-              borderTop: `1px solid ${g.ring}`,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Text
-              style={{
-                fontFamily: theme.fontFamilyMonospace,
-                fontSize: 11,
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: g.inkDim,
-              }}
-            >
-              {providerLabel}
-            </Text>
-            <UnstyledButton
-              onClick={() => void sendMessage('openOptionsPage', undefined)}
-              aria-label={m.popup_open_settings()}
-              style={{
-                fontSize: 11,
-                color: 'var(--mantine-color-cinnabar-6)',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 4,
-                fontWeight: 500,
-                cursor: 'pointer',
-              }}
-            >
-              <GearIcon width={11} height={11} />
-              {m.popup_settings()}
-            </UnstyledButton>
-          </Box>
-        </Paper>
+                <Text
+                  style={{
+                    fontFamily: theme.fontFamilyMonospace,
+                    fontSize: 11,
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    color: g.inkDim,
+                  }}
+                >
+                  {providerLabel}
+                </Text>
+                <UnstyledButton
+                  onClick={() => void sendMessage('openOptionsPage', undefined)}
+                  aria-label={m.popup_open_settings()}
+                  style={{
+                    fontSize: 11,
+                    color: 'var(--mantine-color-cinnabar-6)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <GearIcon width={11} height={11} />
+                  {m.popup_settings()}
+                </UnstyledButton>
+              </Box>
+            </Paper>
+          )}
+        </Transition>
       )}
 
       {/* Static defs for the seal, INSIDE the shadow surface (tree-scoped
