@@ -264,5 +264,15 @@
 	"sel_unpin": "Unpin card",
 	"common_close": "Close",
 	"provider_api_key": "API key",
-	"backup_save_failed": "Couldn't save settings: {error}"
+	"backup_save_failed": "Couldn't save settings: {error}",
+	"options_nav_about": "About",
+	"options_nav_about_hint": "Project & licenses",
+	"about_description": "Version, project links and third-party notices.",
+	"about_version": "Version",
+	"about_source": "Source code",
+	"about_feedback": "Feedback & issues",
+	"about_data_title": "Data & models",
+	"about_data_description": "No third-party dictionaries or corpora are bundled. Language detection uses Chrome’s built-in LanguageDetector model, managed by the browser. Translation results come from your selected provider and are subject to that provider’s terms. Imported glossaries are supplied by you.",
+	"about_licenses_title": "Open-source licenses",
+	"about_licenses_description": "Project framework and runtime dependencies (including transitive dependencies); some may be removed by bundling. Expand an entry to read its bundled license and notices."
 }

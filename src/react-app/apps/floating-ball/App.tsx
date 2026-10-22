@@ -48,10 +48,20 @@ import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import { getConfigService, type PublicConfig, type PublicConfigPatch } from '@/services/config/public';
 import { isSiteEnabled, resolveSiteMode, setSiteMode } from '@/services/config/site-control';
-import { BALL, clamp, MARGIN, placeToPos, snapPlacement, tuckOffset, type BallPlacement, type HoldReason } from './geometry';
+import {
+  BALL,
+  clamp,
+  MARGIN,
+  panelPlacement,
+  placeToPos,
+  snapPlacement,
+  tuckOffset,
+  type BallPlacement,
+  type HoldReason,
+} from './geometry';
 import { useTuck } from './use-tuck';
 
-const PANEL_W = 288;
+const PANEL_W = 328;
 const DRAG_THRESHOLD = 4; // px of movement that turns a pending click into a drag
 const LONG_PRESS_MS = 350; // hold this long (without moving) to enter drag mode
 const GLASS_BLUR = 'blur(20px) saturate(180%)'; // frosted vibrancy
@@ -118,8 +128,7 @@ const GLOBE_PATH =
  *  that have it, the seal would drift from the approved look.) Latin letters
  *  are cut in a serif; other scripts fall through the stack's tail cleanly. */
 const SEAL_KAI = '"Kaiti SC", "STKaiti", "Kaiti", "LXGW WenKai", serif';
-const glyphFont = (ch: string) =>
-  /^[A-Za-z]/.test(ch) ? 'Georgia, "Times New Roman", serif' : SEAL_KAI;
+const glyphFont = (ch: string) => (/^[A-Za-z]/.test(ch) ? 'Georgia, "Times New Roman", serif' : SEAL_KAI);
 
 /** The sub seal's settings mark — mosaic blocks on the 512 grid, filled,
  *  currentColor (rides the same carve filter as the seal body). */
@@ -155,9 +164,22 @@ export default function FloatingBallApp() {
     const { w, h } = vpSize();
     return { x: w - BALL - MARGIN, y: h * 0.82 };
   });
+  const dragPos = useRef(pos);
   const [dragging, setDragging] = useState(false);
   const [hover, setHover] = useState(false);
   const [open, setOpen] = useState(false);
+  const [panelHeight, setPanelHeight] = useState(0);
+  const measurePanel = useCallback((node: HTMLDivElement | null) => {
+    if (!node) return;
+    const measure = () => setPanelHeight(node.scrollHeight + 2);
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    for (const child of node.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, []);
+
   const [active, setActive] = useState(false);
   // 半隐:印静置时滑进页缘半个身位。focusHold 让键盘焦点等同 hover。
   // `entered` gates a one-shot entrance: first paint sits fully beyond the
@@ -200,7 +222,9 @@ export default function FloatingBallApp() {
 
   /** Press state machine: 'pressed' (click pending, long-press timer armed) →
    *  'drag' (movement threshold crossed or long-press timer fired). */
-  const press = useRef<{ dx: number; dy: number; startX: number; startY: number; mode: 'pressed' | 'drag' } | null>(null);
+  const press = useRef<{ dx: number; dy: number; startX: number; startY: number; mode: 'pressed' | 'drag' } | null>(
+    null
+  );
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Load the persisted placement once.
@@ -319,8 +343,16 @@ export default function FloatingBallApp() {
       linger(); // touch has no hover to hold it out
       return;
     }
+    if (press.current) return;
+    dragPos.current = pos;
     e.currentTarget.setPointerCapture(e.pointerId);
-    press.current = { dx: e.clientX - pos.x, dy: e.clientY - pos.y, startX: e.clientX, startY: e.clientY, mode: 'pressed' };
+    press.current = {
+      dx: e.clientX - pos.x,
+      dy: e.clientY - pos.y,
+      startX: e.clientX,
+      startY: e.clientY,
+      mode: 'pressed',
+    };
     // LONG-PRESS enters drag mode (the seal is a BUTTON — cursor stays a
     // pointer until then). Held still past the timer → the ball is picked up.
     if (pressTimer.current) clearTimeout(pressTimer.current);
@@ -344,10 +376,11 @@ export default function FloatingBallApp() {
       setOpen(false);
     }
     if (d.mode !== 'drag') return;
-    setPos({
+    dragPos.current = {
       x: clamp(e.clientX - d.dx, MARGIN, vp.w - BALL - MARGIN),
       y: clamp(e.clientY - d.dy, MARGIN, vp.h - BALL - MARGIN),
-    });
+    };
+    setPos(dragPos.current);
   };
 
   const onPointerUp = () => {
@@ -365,21 +398,26 @@ export default function FloatingBallApp() {
     if (d.mode !== 'drag') return;
     setDragging(false);
     // Snap to the nearer vertical edge; persist edge + fraction.
-    const next = snapPlacement(pos.x, pos.y, vp.w, vp.h);
+    const next = snapPlacement(dragPos.current.x, dragPos.current.y, vp.w, vp.h);
     setPlacement(next);
     setPos(placeToPos(next, vp.w, vp.h));
     void placementStore.setValue(next);
   };
 
-  // A drag interrupted by `pointercancel` / lost capture (touch gesture, OS
-  // takeover, context menu) never fires `pointerup` — clear the drag state so
-  // the ball doesn't stick in its grabbing pose. Snapping is skipped: the ball
-  // simply stays where it is, re-anchoring on the next resize/reload.
+  // Cancellation and lost capture must settle a drag just like release,
+  // without treating an interrupted press as a translation click.
   const onPointerCancel = () => {
     if (pressTimer.current) clearTimeout(pressTimer.current);
-    if (!press.current) return;
+    const d = press.current;
+    if (!d) return;
     press.current = null;
     setDragging(false);
+    if (d.mode !== 'drag') return;
+    const { w, h } = vpSize();
+    const next = snapPlacement(dragPos.current.x, dragPos.current.y, w, h);
+    setPlacement(next);
+    setPos(placeToPos(next, w, h));
+    void placementStore.setValue(next);
   };
 
   // The newest config, readable imperatively — the patch below is diffed and
@@ -452,16 +490,12 @@ export default function FloatingBallApp() {
   const providerLabel = config?.defaultProviderLabel || '\u2014'; // em dash — no dev placeholder in user-facing UI
 
   // Panel opens toward viewport centre so it never spills off-screen.
-  const onRight = placement.side === 'right';
-  const openUp = pos.y + BALL / 2 > vp.h / 2;
   // The sub seal sits BELOW by default; it flips above only when the space
   // under the ball can't fit it (gap 7 + seal 22 + a little breathing room).
   const subAbove = vp.h - pos.y - BALL < 33;
   const panelStyle: React.CSSProperties = {
     position: 'absolute',
-    width: PANEL_W,
-    ...(openUp ? { bottom: BALL + 12 } : { top: BALL + 12 }),
-    ...(onRight ? { right: 0 } : { left: 0 }),
+    ...panelPlacement(pos, placement.side, vp, panelHeight, PANEL_W),
   };
 
   // Ball = 印蜕: state picks the material (蘸墨 / 染朱).
@@ -487,7 +521,7 @@ export default function FloatingBallApp() {
         height: BALL,
         zIndex: Z_INDEX.mainUi,
         userSelect: 'none',
-        touchAction: 'none',
+        touchAction: 'auto',
         fontFamily: theme.fontFamily,
       }}
     >
@@ -518,6 +552,8 @@ export default function FloatingBallApp() {
       )}
       {open && config && (
         <Paper
+          ref={measurePanel}
+          data-omni-ball-panel=""
           onPointerDown={(e) => e.stopPropagation()}
           style={{
             ...panelStyle,
@@ -527,7 +563,9 @@ export default function FloatingBallApp() {
             border: `1px solid ${g.ring}`,
             borderRadius: 16,
             boxShadow: g.shadow,
-            overflow: 'hidden',
+            overflowX: 'hidden',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
           }}
         >
           {/* Header */}
@@ -596,7 +634,15 @@ export default function FloatingBallApp() {
 
               {/* 逐段对照 */}
               {(config.appearance.displayMode ?? 'bilingual') === 'bilingual' && (
-                <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, paddingTop: 2 }}>
+                <Box
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    paddingTop: 2,
+                  }}
+                >
                   <Text size="xs" style={{ color: g.inkDim }}>
                     {m.interleave_label()}
                   </Text>
@@ -813,16 +859,14 @@ export default function FloatingBallApp() {
           height: BALL,
           display: 'block',
           cursor: dragging ? 'grabbing' : 'pointer',
+          touchAction: 'none',
           filter: 'drop-shadow(0 1.5px 3px rgba(33, 28, 21, 0.25))',
           transform: dragging
             ? 'scale(0.95)'
             : tucked
               ? `translateX(${
                   entered
-                    ? tuckOffset(
-                        placement.side,
-                        placement.side === 'right' ? Math.max(0, window.innerWidth - vp.w) : 0
-                      )
+                    ? tuckOffset(placement.side, placement.side === 'right' ? Math.max(0, window.innerWidth - vp.w) : 0)
                     : (placement.side === 'right' ? 1 : -1) * (MARGIN + BALL)
                 }px)`
               : hover || focusHold
@@ -904,22 +948,52 @@ export default function FloatingBallApp() {
           ) : (
             <Text
               span
-              style={{ position: 'absolute', top: 3.5, left: 4.5, fontSize: 10.5, lineHeight: 1, fontFamily: glyphFont(pair.src) }}
+              style={{
+                position: 'absolute',
+                top: 3.5,
+                left: 4.5,
+                fontSize: 10.5,
+                lineHeight: 1,
+                fontFamily: glyphFont(pair.src),
+              }}
             >
               {pair.src}
             </Text>
           )}
           <Text
             span
-            style={{ position: 'absolute', right: 3.5, bottom: 3, fontSize: 13.5, lineHeight: 1, fontFamily: glyphFont(pair.dst) }}
+            style={{
+              position: 'absolute',
+              right: 3.5,
+              bottom: 3,
+              fontSize: 13.5,
+              lineHeight: 1,
+              fontFamily: glyphFont(pair.dst),
+            }}
           >
             {pair.dst}
           </Text>
           <Box
-            style={{ position: 'absolute', top: 4.5, right: 4.5, width: 4.5, height: 4.5, borderTop: '1.6px solid currentColor', borderRight: '1.6px solid currentColor' }}
+            style={{
+              position: 'absolute',
+              top: 4.5,
+              right: 4.5,
+              width: 4.5,
+              height: 4.5,
+              borderTop: '1.6px solid currentColor',
+              borderRight: '1.6px solid currentColor',
+            }}
           />
           <Box
-            style={{ position: 'absolute', bottom: 4.5, left: 4.5, width: 4.5, height: 4.5, borderBottom: '1.6px solid currentColor', borderLeft: '1.6px solid currentColor' }}
+            style={{
+              position: 'absolute',
+              bottom: 4.5,
+              left: 4.5,
+              width: 4.5,
+              height: 4.5,
+              borderBottom: '1.6px solid currentColor',
+              borderLeft: '1.6px solid currentColor',
+            }}
           />
         </Box>
       </UnstyledButton>
@@ -985,7 +1059,14 @@ export default function FloatingBallApp() {
             transition: tucked ? 'opacity 140ms ease' : 'background 160ms ease, transform 160ms ease',
           }}
         >
-          <svg viewBox="0 0 512 512" width={12} height={12} fill="currentColor" style={{ display: 'block' }} aria-hidden="true">
+          <svg
+            viewBox="0 0 512 512"
+            width={12}
+            height={12}
+            fill="currentColor"
+            style={{ display: 'block' }}
+            aria-hidden="true"
+          >
             <path d={SETTINGS_PATH} />
           </svg>
         </UnstyledButton>

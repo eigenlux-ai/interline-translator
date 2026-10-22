@@ -11,6 +11,7 @@
 import { useState } from 'react';
 import { Badge, Center, Group, Loader, Text } from '@mantine/core';
 import { ArchiveIcon, BookIcon, BrushIcon, EngineIcon, GearIcon, GlobeIcon } from '@/react-app/components/icons';
+import AboutSettings from '@/react-app/components/settings/AboutSettings';
 import BackupSettings from '@/react-app/components/settings/BackupSettings';
 import GeneralSettings from '@/react-app/components/settings/GeneralSettings';
 import GlossarySettings from '@/react-app/components/settings/GlossarySettings';
@@ -22,7 +23,7 @@ import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import cls from './Options.module.css';
 
-type SectionId = 'general' | 'styles' | 'glossary' | 'providers' | 'sites' | 'backup';
+type SectionId = 'general' | 'styles' | 'glossary' | 'providers' | 'sites' | 'backup' | 'about';
 
 // label/hint are message FUNCTIONS (called in render, so they follow the
 // interface language) — a plain string here would freeze the compile-time locale.
@@ -33,6 +34,7 @@ const NAV: Array<{ id: SectionId; label: () => string; hint: () => string; Icon:
   { id: 'providers', label: m.options_nav_providers, hint: m.options_nav_providers_hint, Icon: EngineIcon },
   { id: 'sites', label: m.options_nav_sites, hint: m.options_nav_sites_hint, Icon: GlobeIcon },
   { id: 'backup', label: m.options_nav_backup, hint: m.options_nav_backup_hint, Icon: ArchiveIcon },
+  { id: 'about', label: m.options_nav_about, hint: m.options_nav_about_hint, Icon: BookIcon },
 ];
 
 export default function OptionsApp() {
@@ -113,6 +115,7 @@ export default function OptionsApp() {
             {active === 'glossary' && <GlossarySettings config={config} onSave={save} />}
             {active === 'providers' && <ProviderSettings config={config} onSave={save} />}
             {active === 'sites' && <SiteSettings config={config} onSave={save} />}
+            {active === 'about' && <AboutSettings />}
             {active === 'backup' && <BackupSettings config={config} onSave={save} />}
           </main>
         </div>

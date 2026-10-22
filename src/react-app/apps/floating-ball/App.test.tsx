@@ -2,9 +2,9 @@
 import { MantineProvider } from '@mantine/core';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { m } from '@/paraglide/messages.js';
 import { emitPageTranslationState, onSetPageTranslation } from '@/core/page-translation-bridge';
 import { interlineTheme } from '@/react-app/managers/VisualManager/theme';
+import { m } from '@/paraglide/messages.js';
 import FloatingBallApp from './App';
 
 /**
@@ -48,7 +48,9 @@ const pointer = (type: string) => new PointerEvent(type, { bubbles: true, compos
 const tick = (ms = 20) => new Promise((r) => setTimeout(r, ms));
 
 const mainSeal = (c: HTMLElement) =>
-  c.querySelector<HTMLElement>(`[aria-label="${m.ball_action_translate()}"], [aria-label="${m.ball_action_restore()}"]`)!;
+  c.querySelector<HTMLElement>(
+    `[aria-label="${m.ball_action_translate()}"], [aria-label="${m.ball_action_restore()}"]`
+  )!;
 const subSeal = (c: HTMLElement) => c.querySelector<HTMLElement>(`[aria-label="${m.ball_open_panel()}"]`);
 const interleaveToggle = (c: HTMLElement) => {
   const label = [...c.querySelectorAll('*')].find((el) => el.textContent === m.interleave_label())!;
@@ -108,6 +110,31 @@ describe('main seal — the direct translate toggle', () => {
 });
 
 describe('main seal — dragging', () => {
+  for (const ending of ['pointercancel', 'lostpointercapture']) {
+    it(`snaps an interrupted drag on ${ending} without toggling translation`, async () => {
+      await withRequests(async (requests) => {
+        const { baseElement } = mountBall();
+        await act(() => tick());
+        reveal(baseElement);
+        const seal = mainSeal(baseElement);
+        const root = baseElement.querySelector<HTMLElement>('[data-omni-selection-ui]')!;
+        const send = (type: string, clientX: number, clientY: number) =>
+          act(() => {
+            seal.dispatchEvent(new PointerEvent(type, { bubbles: true, button: 0, pointerId: 1, clientX, clientY }));
+          });
+        send('pointerdown', parseFloat(root.style.left) + 10, parseFloat(root.style.top) + 10);
+        send('pointermove', 110, 210);
+        expect(root.style.left).toBe('100px');
+        send(ending, 110, 210);
+        expect(root.style.left).toBe('8px');
+        expect(root.style.top).toBe('200px');
+        expect(seal.style.cursor).toBe('pointer');
+        send('pointerup', 110, 210);
+        expect(requests).toEqual([]);
+      });
+    });
+  }
+
   it('moves immediately while held, snaps on release, and never toggles translation', async () => {
     await withRequests(async (requests) => {
       const { baseElement } = mountBall();

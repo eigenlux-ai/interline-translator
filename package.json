@@ -1,6 +1,6 @@
 {
   "name": "interline",
-  "description": "Interline · 行间 — an open-source in-place bilingual reading extension for Chrome",
+  "description": "Interline \u00b7 \u884c\u95f4 \u2014 an open-source in-place bilingual reading extension for Chrome",
   "private": true,
   "version": "1.0.5",
   "license": "MIT",
@@ -10,8 +10,8 @@
     "site:preview": "node website/preview.mjs",
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
-    "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
+    "build": "pnpm notices && wxt build",
+    "build:firefox": "pnpm notices && wxt build -b firefox",
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "tsc --noEmit",
@@ -26,7 +26,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "store:assets": "node scripts/store/generate.mjs",
-    "store:check": "node scripts/store/check.mjs"
+    "store:check": "node scripts/store/check.mjs",
+    "notices": "node scripts/generate-notices.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.85",

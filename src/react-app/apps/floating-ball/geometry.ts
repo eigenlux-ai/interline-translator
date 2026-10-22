@@ -89,3 +89,36 @@ export interface TuckInputs {
 export function shouldTuck(i: TuckInputs): boolean {
   return i.holds.length === 0 && i.now >= i.lingerUntil;
 }
+
+/** Fit the panel above/below the ball, or beside it when neither can fit. */
+export function panelPlacement(
+  ball: { x: number; y: number },
+  side: BallPlacement['side'],
+  viewport: { w: number; h: number },
+  naturalHeight: number,
+  preferredWidth = 328
+) {
+  const gap = 12;
+  const width = Math.min(preferredWidth, Math.max(0, viewport.w - MARGIN * 2));
+  const maxHeight = Math.max(0, viewport.h - MARGIN * 2);
+  const height = Math.min(naturalHeight, maxHeight);
+  const above = ball.y - gap - MARGIN;
+  const below = viewport.h - MARGIN - ball.y - BALL - gap;
+  const fitsAbove = naturalHeight <= above;
+  const fitsBelow = naturalHeight <= below;
+  let x = side === 'right' ? ball.x + BALL - width : ball.x;
+  let y: number;
+  if (fitsAbove || fitsBelow) {
+    const up = fitsAbove && (!fitsBelow || above > below);
+    y = up ? ball.y - gap - height : ball.y + BALL + gap;
+  } else {
+    x = side === 'right' ? ball.x - gap - width : ball.x + BALL + gap;
+    y = ball.y + BALL / 2 - height / 2;
+  }
+  return {
+    left: clamp(x, MARGIN, Math.max(MARGIN, viewport.w - width - MARGIN)) - ball.x,
+    top: clamp(y, MARGIN, Math.max(MARGIN, viewport.h - height - MARGIN)) - ball.y,
+    width,
+    maxHeight,
+  };
+}

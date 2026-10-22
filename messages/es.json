@@ -264,5 +264,15 @@
 	"sel_unpin": "Desfijar tarjeta",
 	"common_close": "Cerrar",
 	"provider_api_key": "Clave API",
-	"backup_save_failed": "No se pudo guardar la configuración: {error}"
+	"backup_save_failed": "No se pudo guardar la configuración: {error}",
+	"options_nav_about": "Acerca de",
+	"options_nav_about_hint": "Proyecto y licencias",
+	"about_description": "Versión, enlaces del proyecto y avisos de terceros.",
+	"about_version": "Versión",
+	"about_source": "Código fuente",
+	"about_feedback": "Comentarios y problemas",
+	"about_data_title": "Datos y modelos",
+	"about_data_description": "No se incluyen diccionarios ni corpus de terceros. La detección de idiomas utiliza el modelo LanguageDetector integrado en Chrome, administrado por el navegador. Las traducciones proceden del proveedor seleccionado y están sujetas a sus condiciones. Los glosarios importados los proporciona usted.",
+	"about_licenses_title": "Licencias de código abierto",
+	"about_licenses_description": "Framework del proyecto y dependencias de ejecución, incluidas las indirectas; algunas pueden eliminarse durante la compilación. Despliegue una entrada para leer su licencia y los avisos incluidos."
 }

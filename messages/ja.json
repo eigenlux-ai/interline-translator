@@ -264,5 +264,15 @@
 	"sel_unpin": "固定を解除",
 	"common_close": "閉じる",
 	"provider_api_key": "API キー",
-	"backup_save_failed": "設定を保存できませんでした：{error}"
+	"backup_save_failed": "設定を保存できませんでした：{error}",
+	"options_nav_about": "この拡張機能について",
+	"options_nav_about_hint": "プロジェクトとライセンス",
+	"about_description": "バージョン、プロジェクトへのリンク、第三者のライセンス表記。",
+	"about_version": "バージョン",
+	"about_source": "ソースコード",
+	"about_feedback": "フィードバック・不具合報告",
+	"about_data_title": "データとモデル",
+	"about_data_description": "第三者の辞書やコーパスは同梱していません。言語検出には、ブラウザーが管理する Chrome 組み込みの LanguageDetector モデルを使用します。翻訳結果は選択したサービスから提供され、そのサービスの利用規約が適用されます。インポートした用語集はユーザーが提供するものです。",
+	"about_licenses_title": "オープンソースライセンス",
+	"about_licenses_description": "プロジェクトの基盤フレームワークと実行時の依存パッケージ（間接依存を含む。一部はビルド時に除外される場合があります）。各項目を展開すると、同梱のライセンスと通知を確認できます。"
 }

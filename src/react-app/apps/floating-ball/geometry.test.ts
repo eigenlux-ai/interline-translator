@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { BALL, EDGE_BREATH, MARGIN, clamp, placeToPos, shouldTuck, snapPlacement, tuckOffset } from './geometry';
+import {
+  BALL,
+  clamp,
+  EDGE_BREATH,
+  MARGIN,
+  panelPlacement,
+  placeToPos,
+  shouldTuck,
+  snapPlacement,
+  tuckOffset,
+} from './geometry';
 
 describe('clamp', () => {
   it('returns the value when inside the range', () => {
@@ -94,5 +104,33 @@ describe('shouldTuck — every stay-out reason in one place', () => {
   it('a linger window holds it out until the timestamp passes', () => {
     expect(shouldTuck({ ...rest, lingerUntil: 1500 })).toBe(false);
     expect(shouldTuck({ ...rest, lingerUntil: 1500, now: 1500 })).toBe(true);
+  });
+});
+
+describe('panelPlacement', () => {
+  it('opens left of a right ball when neither vertical space fits', () => {
+    const p = panelPlacement({ x: 758, y: 300 }, 'right', { w: 800, h: 600 }, 500);
+    expect(p.left).toBe(-340);
+    expect(p.top + 300).toBe(67);
+  });
+  it('opens right of a left ball when neither vertical space fits', () => {
+    const p = panelPlacement({ x: 8, y: 300 }, 'left', { w: 800, h: 600 }, 500);
+    expect(p.left).toBe(46);
+    expect(p.top + 300).toBe(67);
+  });
+  it('keeps a tall panel inside the viewport for internal scrolling', () => {
+    const p = panelPlacement({ x: 758, y: 150 }, 'right', { w: 800, h: 320 }, 700);
+    expect(p.maxHeight).toBe(304);
+    expect(p.top + 150).toBe(8);
+  });
+  it('opens vertically when the complete panel fits', () => {
+    const p = panelPlacement({ x: 758, y: 700 }, 'right', { w: 800, h: 900 }, 500);
+    expect(p.top).toBe(-512);
+    expect(p.left).toBe(34 - 328);
+  });
+  it('shrinks and clamps horizontally on narrow viewports', () => {
+    const p = panelPlacement({ x: 208, y: 150 }, 'right', { w: 250, h: 320 }, 700);
+    expect(p.width).toBe(234);
+    expect(p.left + 208).toBe(8);
   });
 });

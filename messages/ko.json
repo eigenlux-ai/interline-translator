@@ -264,5 +264,15 @@
 	"sel_unpin": "고정 해제",
 	"common_close": "닫기",
 	"provider_api_key": "API 키",
-	"backup_save_failed": "설정을 저장하지 못했습니다: {error}"
+	"backup_save_failed": "설정을 저장하지 못했습니다: {error}",
+	"options_nav_about": "정보",
+	"options_nav_about_hint": "프로젝트 및 라이선스",
+	"about_description": "버전, 프로젝트 링크 및 타사 라이선스 고지.",
+	"about_version": "버전",
+	"about_source": "소스 코드",
+	"about_feedback": "피드백 및 문제 신고",
+	"about_data_title": "데이터 및 모델",
+	"about_data_description": "타사 사전이나 말뭉치는 포함되어 있지 않습니다. 언어 감지에는 브라우저가 관리하는 Chrome 내장 LanguageDetector 모델을 사용합니다. 번역 결과는 선택한 서비스에서 제공하며 해당 서비스의 약관이 적용됩니다. 가져온 용어집은 사용자가 제공한 것입니다.",
+	"about_licenses_title": "오픈 소스 라이선스",
+	"about_licenses_description": "프로젝트 기반 프레임워크 및 런타임 의존성 목록입니다(간접 의존성 포함, 일부는 빌드 시 제외될 수 있음). 항목을 펼치면 포함된 라이선스와 고지를 볼 수 있습니다."
 }

@@ -264,5 +264,15 @@
 	"sel_unpin": "Karte lösen",
 	"common_close": "Schließen",
 	"provider_api_key": "API-Schlüssel",
-	"backup_save_failed": "Einstellungen konnten nicht gespeichert werden: {error}"
+	"backup_save_failed": "Einstellungen konnten nicht gespeichert werden: {error}",
+	"options_nav_about": "Über",
+	"options_nav_about_hint": "Projekt und Lizenzen",
+	"about_description": "Version, Projektlinks und Hinweise zu Drittanbietern.",
+	"about_version": "Version",
+	"about_source": "Quellcode",
+	"about_feedback": "Feedback und Fehlerberichte",
+	"about_data_title": "Daten und Modelle",
+	"about_data_description": "Es werden keine Wörterbücher oder Korpora Dritter mitgeliefert. Die Spracherkennung nutzt das in Chrome integrierte LanguageDetector-Modell, das vom Browser verwaltet wird. Übersetzungen stammen vom gewählten Anbieter und unterliegen dessen Bedingungen. Importierte Glossare werden von Ihnen bereitgestellt.",
+	"about_licenses_title": "Open-Source-Lizenzen",
+	"about_licenses_description": "Projekt-Framework und Laufzeitabhängigkeiten einschließlich indirekter Abhängigkeiten; einige können beim Erstellen entfernt werden. Klappen Sie einen Eintrag auf, um die mitgelieferte Lizenz und Hinweise zu lesen."
 }

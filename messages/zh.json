@@ -264,5 +264,15 @@
 	"sel_unpin": "取消固定",
 	"common_close": "关闭",
 	"provider_api_key": "API 密钥",
-	"backup_save_failed": "设置保存失败：{error}"
+	"backup_save_failed": "设置保存失败：{error}",
+	"options_nav_about": "关于",
+	"options_nav_about_hint": "项目与许可证",
+	"about_description": "版本、项目链接与第三方许可声明。",
+	"about_version": "版本",
+	"about_source": "源代码",
+	"about_feedback": "反馈与问题",
+	"about_data_title": "数据与模型",
+	"about_data_description": "本扩展未内置第三方词典或语料库。语言检测使用 Chrome 内置的 LanguageDetector 模型，由浏览器管理。翻译结果由所选服务提供，适用该服务的条款。导入的术语表由用户自行提供。",
+	"about_licenses_title": "开源许可证",
+	"about_licenses_description": "项目基础框架与运行时依赖（含间接依赖，部分可能在打包时被移除）。展开条目可查看随包提供的许可证与声明。"
 }

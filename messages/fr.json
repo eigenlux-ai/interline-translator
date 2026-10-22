@@ -264,5 +264,15 @@
 	"sel_unpin": "Détacher la carte",
 	"common_close": "Fermer",
 	"provider_api_key": "Clé API",
-	"backup_save_failed": "Impossible d’enregistrer les paramètres : {error}"
+	"backup_save_failed": "Impossible d’enregistrer les paramètres : {error}",
+	"options_nav_about": "À propos",
+	"options_nav_about_hint": "Projet et licences",
+	"about_description": "Version, liens du projet et mentions de tiers.",
+	"about_version": "Version",
+	"about_source": "Code source",
+	"about_feedback": "Commentaires et problèmes",
+	"about_data_title": "Données et modèles",
+	"about_data_description": "Aucun dictionnaire ni corpus tiers n’est inclus. La détection de langue utilise le modèle LanguageDetector intégré à Chrome, géré par le navigateur. Les traductions proviennent du service choisi et sont soumises à ses conditions. Les glossaires importés sont fournis par vous.",
+	"about_licenses_title": "Licences open source",
+	"about_licenses_description": "Framework du projet et dépendances d’exécution, y compris les dépendances indirectes ; certaines peuvent être exclues lors de la compilation. Développez une entrée pour lire sa licence et ses mentions incluses."
 }
