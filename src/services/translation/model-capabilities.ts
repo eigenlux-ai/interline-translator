@@ -11,7 +11,7 @@
  *   `reasoningEffort: 'none'`.
  * - Anthropic: Claude 3.7+ supports `thinking`, but requires `max_tokens > budget_tokens`
  *   and forces `temperature: 1.0` when thinking is enabled. Claude 3.5 rejects thinking.
- * - Google Gemini: 2.0+/2.5/3.7 take `thinkingConfig.thinkingLevel`, but 1.5 rejects it.
+ * - Google Gemini: 2.5 uses thinkingBudget; 3+ uses thinkingLevel; older models reject both.
  * - OpenAI-compatible gateways: Third-party proxies reject unknown vendor parameters.
  */
 
@@ -19,7 +19,7 @@ import type { ProviderKind } from '@/data/models';
 
 export type ReasoningSupport =
   | 'mandatory' // Always reasons, cannot be disabled via API (e.g. DeepSeek-R1, o1, :thinking)
-  | 'optional' // Native toggle supported (Claude 3.7+, Gemini 2.0+, GPT-5)
+  | 'optional' // Native toggle supported (Claude 3.7+, Gemini 2.5 Flash, GPT-5)
   | 'none'; // Traditional non-reasoning model (gpt-4o, claude-3-5-haiku, gemini-1.5)
 export interface ModelCapabilities {
   reasoning: ReasoningSupport;
@@ -29,7 +29,10 @@ export interface ModelCapabilities {
 
 /** Normalize model id by stripping provider prefix (e.g. 'openai/o3' -> 'o3') and tag suffixes (e.g. ':batch', ':free'). */
 export function cleanModelName(model: string): string {
-  const withoutPrefix = model.toLowerCase().trim().replace(/^[^/]+\//, '');
+  const withoutPrefix = model
+    .toLowerCase()
+    .trim()
+    .replace(/^[^/]+\//, '');
   return withoutPrefix.replace(/:(batch|free|nitro|customtools|image|preview)$/i, '');
 }
 
@@ -58,19 +61,13 @@ export function isFixedTemperatureModel(model: string): boolean {
 /** Check if Anthropic model supports extended thinking (Claude 3.7+, 4.x, 5.x). */
 export function isAnthropicThinkingModel(model: string): boolean {
   const m = cleanModelName(model);
-  return (
-    /claude-(3[-.][7-9]|[4-9])/i.test(m) ||
-    /claude-(opus|sonnet|haiku|fable)-[4-9]/i.test(m)
-  );
+  return /claude-(3[-.][7-9]|[4-9])/i.test(m) || /claude-(opus|sonnet|haiku|fable)-[4-9]/i.test(m);
 }
 
-/** Check if Google model supports thinkingConfig (Gemini 2.0+, 2.5, 3.x). */
+/** Check if Google model supports thinkingConfig (Gemini 2.5 Flash, 2.5, 3.x). */
 export function isGoogleThinkingModel(model: string): boolean {
   const m = cleanModelName(model);
-  return (
-    /gemini-(2\.[0-9]|[3-9](\.[0-9]+)?)/i.test(m) ||
-    /gemini-[3-9](-|\b)/i.test(m)
-  );
+  return /^gemini-(2\.5|[3-9](?:\.[0-9]+)?)-/.test(m) && !/^gemini-2\.5-flash-image/.test(m);
 }
 /** Infer model capabilities from provider kind and model string. */
 export function inferModelCapabilities(kind: ProviderKind, model: string): ModelCapabilities {
@@ -84,7 +81,7 @@ export function inferModelCapabilities(kind: ProviderKind, model: string): Model
 
   const m = model.toLowerCase().trim();
   // Mandatory reasoning models
-  if (isMandatoryReasoningModel(m)) {
+  if (isMandatoryReasoningModel(m) || /^gemini-2\.5-pro(?:-|:|$)/.test(cleanModelName(m))) {
     return {
       reasoning: 'mandatory',
       fixedTemperature: isFixedTemperatureModel(m),
@@ -93,10 +90,7 @@ export function inferModelCapabilities(kind: ProviderKind, model: string): Model
   }
 
   // Optional thinking models
-  if (
-    (kind === 'anthropic' || kind === 'anthropic-compatible') &&
-    isAnthropicThinkingModel(m)
-  ) {
+  if ((kind === 'anthropic' || kind === 'anthropic-compatible') && isAnthropicThinkingModel(m)) {
     return {
       reasoning: 'optional',
       fixedTemperature: false,

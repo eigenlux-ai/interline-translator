@@ -40,6 +40,7 @@ import {
 } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 import { getModelsService } from '@/core/rpc/provider-models';
+import { randomId } from '@/core/uid';
 import {
   providerModelsNeedKey,
   type Config,
@@ -75,18 +76,6 @@ const BASE_URL_HINT: Record<string, string> = {
 export interface ProviderSettingsProps {
   config: Config;
   onSave: (next: Config) => void;
-}
-
-let counter = 0;
-function newId(kind: string): string {
-  // crypto.randomUUID isn't guaranteed in every surface; a prefix+counter+time is plenty unique here.
-  counter += 1;
-  return `${kind}-${counter}-${Math.abs(hash(kind + counter))}`;
-}
-function hash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
-  return h;
 }
 
 /** `{ "X-Foo": "bar" }` → "X-Foo: bar\n…" for the textarea. */
@@ -214,9 +203,16 @@ function ProviderCard({
   const baseURLError = baseURLText !== '' && !isSafeBaseURL(baseURLText);
   /** Latest props for async validate() to re-check against (its `p` goes stale). */
   const latestConn = useRef(p);
+  const mounted = useRef(false);
   useEffect(() => {
     latestConn.current = p;
   });
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
 
   // OpenRouter's /models is public and Ollama is local → no key needed to list.
   const fetchNeedsKey = providerModelsNeedKey(p.kind) && !p.apiKeys[0];
@@ -263,6 +259,7 @@ function ProviderCard({
     const start = performance.now();
     try {
       const res = await getTranslationService().validateProvider(p);
+      if (!mounted.current) return;
       const latency = Math.round(performance.now() - start);
       if (res.ok) {
         // The user edited the connection while we validated — the result
@@ -287,13 +284,14 @@ function ProviderCard({
         });
       }
     } catch (e) {
+      if (!mounted.current) return;
       notifications.show({
         color: 'danger',
         title: m.provider_validate_failed(),
         message: e instanceof Error ? e.message : String(e),
       });
     } finally {
-      setValidating(false);
+      if (mounted.current) setValidating(false);
     }
   }
 
@@ -633,21 +631,39 @@ function ProviderCard({
 }
 
 export default function ProviderSettings({ config, onSave }: ProviderSettingsProps) {
+  // Async card callbacks must apply their patch to the latest configuration,
+  // including changes made to other engines while validation was in flight.
+  const latest = useRef({ config, onSave });
+  useEffect(() => {
+    latest.current = { config, onSave };
+  });
+  const save = (change: (current: Config) => Config) => {
+    const next = change(latest.current.config);
+    if (next === latest.current.config) return;
+    latest.current.config = next;
+    latest.current.onSave(next);
+  };
   const update = (id: string, partial: Partial<ProviderConfig>) =>
-    onSave({ ...config, providers: config.providers.map((p) => (p.id === id ? { ...p, ...partial } : p)) });
+    save((current) =>
+      current.providers.some((p) => p.id === id)
+        ? { ...current, providers: current.providers.map((p) => (p.id === id ? { ...p, ...partial } : p)) }
+        : current
+    );
 
   const remove = (id: string) => {
-    const next = config.providers.filter((p) => p.id !== id);
-    const translate =
-      config.translate.defaultProviderId === id
-        ? { ...config.translate, defaultProviderId: next.find((p) => p.enabled)?.id }
-        : config.translate;
-    onSave({ ...config, providers: next, translate });
+    save((current) => {
+      const providers = current.providers.filter((p) => p.id !== id);
+      const translate =
+        current.translate.defaultProviderId === id
+          ? { ...current.translate, defaultProviderId: providers.find((p) => p.enabled)?.id }
+          : current.translate;
+      return { ...current, providers, translate };
+    });
   };
 
   const add = (kind: LlmProviderKind, label: string) => {
     const provider: ProviderConfig = {
-      id: newId(kind),
+      id: `${kind}-${randomId()}`,
       kind,
       label,
       apiKeys: [],
@@ -656,7 +672,7 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
       draft: true,
       ...(kind === 'openai-compatible' ? { baseURL: 'http://localhost:11434/v1' } : {}),
     };
-    onSave({ ...config, providers: [...config.providers, provider] });
+    save((current) => ({ ...current, providers: [...current.providers, provider] }));
   };
 
   const addMenu = (

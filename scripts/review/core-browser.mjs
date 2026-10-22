@@ -12,6 +12,14 @@ const chromeBin = process.env.CORE_CHROME_BIN;
 if (!chromeBin) throw new Error('Set CORE_CHROME_BIN to a Chrome for Testing executable.');
 
 const delay = (ms) => new Promise((r) => setTimeout(r, ms));
+const waitFor = async (check, timeout = 5000) => {
+  const deadline = Date.now() + timeout;
+  do {
+    if (await check()) return true;
+    await delay(50);
+  } while (Date.now() < deadline);
+  return false;
+};
 const requests = [];
 let holdNotes = false;
 const heldNotes = [];
@@ -218,12 +226,60 @@ try {
     if (selected) break;
     await delay(10);
   }
-  if (selected) await tab.call('Input.insertText', { text: 'USER LATEST DRAFT' });
+  if (selected) await tab.call('Input.insertText', { text: 'X' });
   await delay(500);
   results.push({
-    test: 'contenteditable write race',
+    test: 'typing during contenteditable replacement preserves the existing draft',
     reached: selected,
-    pass: await tab.evaluate("document.querySelector('#editor').innerText==='USER LATEST DRAFT'"),
+    value: await tab.evaluate("document.querySelector('#editor').innerText"),
+    pass: await tab.evaluate(
+      "document.querySelector('#editor').innerText.includes('Original editable draft') && document.querySelector('#editor').innerText.endsWith('X')"
+    ),
+  });
+  await tab.evaluate("document.querySelector('#editor').textContent='Editable baseline draft'");
+  await spaces('editor');
+  results.push({
+    test: 'contenteditable translation still replaces the draft when editing does not resume',
+    pass: await waitFor(() =>
+      tab.evaluate("document.querySelector('#editor').innerText.startsWith('Translated result')")
+    ),
+  });
+  await tab.evaluate(`(()=>{
+    const editor=document.querySelector('#editor');
+    editor.textContent='Async editable draft';
+    editor.addEventListener('paste', async (event)=>{
+      event.preventDefault();
+      const text=event.clipboardData.getData('text/plain');
+      await Promise.resolve();
+      editor.dispatchEvent(new InputEvent('beforeinput',{bubbles:true,inputType:'insertFromPaste'}));
+      const range=getSelection().getRangeAt(0);
+      range.deleteContents();range.insertNode(document.createTextNode(text));
+    }, {once:true});
+  })()`);
+  await spaces('editor');
+  results.push({
+    test: 'asynchronous paste replaces the source instead of appending',
+    pass: await waitFor(() =>
+      tab.evaluate("document.querySelector('#editor').innerText==='Translated result [review-v1] Async editable draft'")
+    ),
+    value: await tab.evaluate("document.querySelector('#editor').innerText"),
+  });
+  await tab.evaluate(`(()=>{
+    const editor=document.querySelector('#editor');
+    editor.textContent='Command editable draft';
+    editor.addEventListener('paste', (event)=>{
+      event.preventDefault();
+      document.execCommand('insertText',false,event.clipboardData.getData('text/plain'));
+    }, {once:true});
+  })()`);
+  await spaces('editor');
+  results.push({
+    test: 'paste handlers using native editing commands replace the source',
+    pass: await waitFor(() =>
+      tab.evaluate(
+        "document.querySelector('#editor').innerText==='Translated result [review-v1] Command editable draft'"
+      )
+    ),
   });
   // A stopped feature must leave its already-running translation unapplied.
   responseDelay = 1600;
@@ -318,6 +374,125 @@ try {
     const p=document.querySelector('#source');const glosses=p.querySelectorAll('[data-omni-translated]');
     return glosses.length===1 && !p.querySelector('em [data-omni-translated]') && glosses[0].textContent.includes('New important inline clause.') && glosses[0].textContent.includes('This passage contains');
   })()`),
+  });
+  await tab.evaluate(`(()=>{
+    const source=document.querySelector('#source');
+    const hidden=document.createElement('span');
+    hidden.id='reveal-source';hidden.hidden=true;hidden.textContent=' Revealed hidden clause.';
+    source.append(hidden);
+    const code=document.createElement('code');
+    code.id='opaque-source';code.textContent='safe_code';
+    code.setAttribute('onclick', "document.body.dataset.opaqueClicked='yes'");
+    source.append(' ',code);
+  })()`);
+  const opaqueReady = await waitFor(() =>
+    tab.evaluate("!!document.querySelector('#source [data-omni-translated][data-omni-state=done] code')")
+  );
+  results.push({
+    test: 'opaque inline formatting preserves text without cloning identity or handlers',
+    reached: opaqueReady,
+    pass: await tab.evaluate(`(()=>{
+      const code=document.querySelector('#source [data-omni-translated] code');
+      if(!code)return false;code.click();
+      return code.textContent==='safe_code' && !code.hasAttribute('id') && !code.hasAttribute('onclick') &&
+        document.querySelectorAll('#opaque-source').length===1 && !document.body.dataset.opaqueClicked;
+    })()`),
+  });
+  await tab.evaluate("document.querySelector('#reveal-source').hidden=false");
+  results.push({
+    test: 'revealing inline source updates its existing paragraph translation',
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const source=document.querySelector('#source');
+      const glosses=source.querySelectorAll('[data-omni-translated]');
+      return glosses.length===1 && glosses[0].dataset.omniState==='done' &&
+        glosses[0].textContent.includes('Revealed hidden clause.') &&
+        !source.querySelector('#reveal-source [data-omni-translated]');
+    })()`)
+    ),
+  });
+  await tab.evaluate("document.querySelector('#reveal-source').hidden=true");
+  results.push({
+    test: 'hiding inline source removes its stale translation',
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const gloss=document.querySelector('#source [data-omni-translated][data-omni-state=done]');
+      return !!gloss && !gloss.textContent.includes('Revealed hidden clause.') &&
+        gloss.textContent.includes('This passage contains');
+    })()`)
+    ),
+  });
+  await tab.evaluate(`(()=>{
+    const source=document.querySelector('#source');
+    const wrapper=document.createElement('section');
+    wrapper.id='visibility-wrapper';wrapper.className='compact';
+    source.before(wrapper);wrapper.append(source);
+    const style=document.createElement('style');
+    style.textContent='#visibility-wrapper.compact .ancestor-extra{display:none}';
+    document.head.append(style);
+    const extra=document.createElement('span');
+    extra.className='ancestor-extra';extra.textContent=' Ancestor-controlled detail.';
+    source.append(extra);
+  })()`);
+  await delay(300);
+  await tab.evaluate("document.querySelector('#visibility-wrapper').classList.remove('compact')");
+  results.push({
+    test: 'ancestor CSS reveal refreshes already translated descendant units',
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const glosses=document.querySelectorAll('#source [data-omni-translated]');
+      return glosses.length===1 && glosses[0].dataset.omniState==='done' &&
+        glosses[0].textContent.includes('Ancestor-controlled detail.');
+    })()`)
+    ),
+  });
+  await tab.evaluate("document.querySelector('#visibility-wrapper').classList.add('compact')");
+  results.push({
+    test: 'ancestor CSS hide removes stale descendant translation text',
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const gloss=document.querySelector('#source [data-omni-translated][data-omni-state=done]');
+      return !!gloss && !gloss.textContent.includes('Ancestor-controlled detail.') &&
+        gloss.textContent.includes('This passage contains');
+    })()`)
+    ),
+  });
+  await tab.evaluate(`(()=>{
+    const source=document.createElement('p');source.id='clipped-source';
+    source.style.cssText='overflow:hidden;max-height:100px';
+    source.textContent='This clipped paragraph has enough visible source text to require a separate translation sibling.';
+    document.body.prepend(source);
+  })()`);
+  const clippedReady = await waitFor(() =>
+    tab.evaluate(`(()=>{
+    const source=document.querySelector('#clipped-source');
+    return source.nextElementSibling?.matches('[data-omni-translated][data-omni-state=done]')===true;
+  })()`)
+  );
+  await tab.evaluate("document.querySelector('#clipped-source').hidden=true");
+  results.push({
+    test: 'hiding a clipped source removes its external translation sibling',
+    reached: clippedReady,
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const source=document.querySelector('#clipped-source');
+      return !source.hasAttribute('data-omni-walked') &&
+        !source.nextElementSibling?.matches('[data-omni-translated]');
+    })()`)
+    ),
+  });
+  await tab.evaluate("document.querySelector('#clipped-source').hidden=false");
+  results.push({
+    test: 'revealing a clipped source restores one translation sibling',
+    pass: await waitFor(() =>
+      tab.evaluate(`(()=>{
+      const source=document.querySelector('#clipped-source');
+      const gloss=source.nextElementSibling;
+      return gloss?.matches('[data-omni-translated][data-omni-state=done]')===true &&
+        gloss.textContent.includes('This clipped paragraph') &&
+        !gloss.nextElementSibling?.matches('[data-omni-translated]');
+    })()`)
+    ),
   });
   config.siteControl.defaultMode = 'never';
   await save();

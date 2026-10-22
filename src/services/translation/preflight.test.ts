@@ -81,7 +81,10 @@ describe('llmCallOptions', () => {
 
 describe('llmCallOptions — the reasoning toggle fans out per vendor & model capability', () => {
   const withReasoning = (kind: ProviderConfig['kind'], reasoning: boolean, model = 'gpt-x') =>
-    llmCallOptions({ ...llm, kind, model, params: { reasoning } }).providerOptions as unknown as Record<string, unknown>;
+    llmCallOptions({ ...llm, kind, model, params: { reasoning } }).providerOptions as unknown as Record<
+      string,
+      unknown
+    >;
 
   it('leaves providerOptions untouched while the toggle is unset', () => {
     expect(llmCallOptions({ ...llm, params: { temperature: 0.5 } }).providerOptions).toBeUndefined();
@@ -94,7 +97,12 @@ describe('llmCallOptions — the reasoning toggle fans out per vendor & model ca
   });
 
   it('openai o1/o3 models → omit custom temperature and map reasoning:false to low effort', () => {
-    const o3 = llmCallOptions({ ...llm, kind: 'openai', model: 'o3-mini', params: { temperature: 0.7, reasoning: false } });
+    const o3 = llmCallOptions({
+      ...llm,
+      kind: 'openai',
+      model: 'o3-mini',
+      params: { temperature: 0.7, reasoning: false },
+    });
     expect(o3.temperature).toBeUndefined();
     expect(o3.providerOptions).toEqual({ openai: { reasoningEffort: 'low' } });
   });
@@ -110,9 +118,30 @@ describe('llmCallOptions — the reasoning toggle fans out per vendor & model ca
     expect(withReasoning('anthropic', false, 'claude-3-5-sonnet-20241022')).toBeUndefined();
   });
 
-  it('google Gemini level thinking', () => {
-    expect(withReasoning('google', false, 'gemini-2.0-flash')).toEqual({ google: { thinkingConfig: { thinkingLevel: 'low' } } });
-    expect(withReasoning('google', true, 'gemini-2.5-pro')).toEqual({ google: { thinkingConfig: { thinkingLevel: 'high' } } });
+  it('uses model-specific Gemini budgets and levels', () => {
+    for (const model of ['gemini-1.5-pro', 'gemini-2.0-flash', 'gemini-2.5-flash-image']) {
+      expect(withReasoning('google', false, model)).toBeUndefined();
+      expect(withReasoning('google', true, model)).toBeUndefined();
+    }
+    for (const model of ['gemini-2.5-flash', 'gemini-2.5-flash-lite-preview', 'google/gemini-2.5-flash:batch']) {
+      expect(withReasoning('google', false, model)).toEqual({ google: { thinkingConfig: { thinkingBudget: 0 } } });
+      expect(withReasoning('google', true, model)).toEqual({ google: { thinkingConfig: { thinkingBudget: -1 } } });
+    }
+    expect(withReasoning('google', false, 'gemini-2.5-pro-preview-05-06')).toEqual({
+      google: { thinkingConfig: { thinkingBudget: 128 } },
+    });
+    expect(withReasoning('google', false, 'models/gemini-2.5-pro')).toEqual({
+      google: { thinkingConfig: { thinkingBudget: 128 } },
+    });
+    expect(withReasoning('google', true, 'gemini-2.5-pro')).toEqual({
+      google: { thinkingConfig: { thinkingBudget: -1 } },
+    });
+    expect(withReasoning('google', false, 'gemini-3-flash-preview')).toEqual({
+      google: { thinkingConfig: { thinkingLevel: 'low' } },
+    });
+    expect(withReasoning('google', true, 'gemini-3-pro-preview')).toEqual({
+      google: { thinkingConfig: { thinkingLevel: 'high' } },
+    });
   });
 
   it('openrouter takes vendor-aware reasoning: Gemini & R1 map to effort low/high, Claude to max_tokens', () => {

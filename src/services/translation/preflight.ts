@@ -18,6 +18,7 @@ import {
   type TranslateMode,
 } from '@/data/models';
 import {
+  cleanModelName,
   inferModelCapabilities,
   isAnthropicThinkingModel,
   isGoogleThinkingModel,
@@ -110,8 +111,9 @@ const ANTHROPIC_THINKING_BUDGET = 1024;
  * button the user just pressed, not on every later translation.
  *
  * "Off" is a true off for OpenAI (the whole gpt-5 line takes effort 'none' now
- * that the o-series is retired), Anthropic and OpenRouter. Gemini is the one
- * exception — it has no off at any level — so there it means "think least".
+ * that the o-series is retired), Anthropic and OpenRouter. Gemini Pro models cannot disable thinking, so off means the minimum
+ * budget
+ * or level; Gemini 2.5 Flash supports a zero thinking budget.
  */
 function reasoningProviderOptions(kind: ProviderKind, model: string, on: boolean): Record<string, unknown> {
   const caps = inferModelCapabilities(kind as never, model);
@@ -138,11 +140,13 @@ function reasoningProviderOptions(kind: ProviderKind, model: string, on: boolean
           },
         };
       }
-      return on
-        ? { anthropic: { thinking: { type: 'enabled', budgetTokens: ANTHROPIC_THINKING_BUDGET } } }
-        : {};
+      return on ? { anthropic: { thinking: { type: 'enabled', budgetTokens: ANTHROPIC_THINKING_BUDGET } } } : {};
 
     case 'google':
+      if (!isGoogleThinkingModel(model)) return {};
+      if (/^gemini-2\.5-/.test(cleanModelName(model))) {
+        return { google: { thinkingConfig: { thinkingBudget: on ? -1 : caps.reasoning === 'mandatory' ? 128 : 0 } } };
+      }
       return { google: { thinkingConfig: { thinkingLevel: on ? 'high' : 'low' } } };
 
     case 'openrouter':

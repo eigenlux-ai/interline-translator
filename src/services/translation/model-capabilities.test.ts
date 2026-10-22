@@ -254,9 +254,14 @@ describe('User Google model roster validation', () => {
   it('correctly classifies thinking capability for all Gemini 2.5/3.x models', () => {
     const geminiThinking = USER_GOOGLE_MODELS.filter((m) => m.startsWith('gemini-'));
     for (const model of geminiThinking) {
-      expect(isGoogleThinkingModel(model)).toBe(true);
+      const expected = model.startsWith('gemini-2.5-flash-image')
+        ? 'none'
+        : model.startsWith('gemini-2.5-pro')
+          ? 'mandatory'
+          : 'optional';
+      expect(isGoogleThinkingModel(model)).toBe(expected !== 'none');
       const caps = inferModelCapabilities('google', model);
-      expect(caps.reasoning).toBe('optional');
+      expect(caps.reasoning).toBe(expected);
     }
   });
 });
@@ -264,7 +269,9 @@ describe('User Google model roster validation', () => {
 describe('Parameter error detection', () => {
   it('identifies upstream parameter rejection error strings', () => {
     expect(isParameterRejectionError('Reasoning is mandatory for this endpoint and cannot be disabled.')).toBe(true);
-    expect(isParameterRejectionError("Unsupported value: 'temperature' does not support 0.7 with this model.")).toBe(true);
+    expect(isParameterRejectionError("Unsupported value: 'temperature' does not support 0.7 with this model.")).toBe(
+      true
+    );
     expect(isParameterRejectionError('temperature cannot be set when thinking is enabled')).toBe(true);
     expect(isParameterRejectionError('Extra inputs are not permitted: thinking')).toBe(true);
     expect(isParameterRejectionError('Invalid API key')).toBe(false);

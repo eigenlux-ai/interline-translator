@@ -42,7 +42,13 @@ export function isSafeBaseURL(raw: string): boolean {
   // `new URL` keeps the brackets on an IPv6 host, hence the literal '[::1]';
   // 127.0.0.0/8 is loopback in full, not just .0.1.
   const host = url.hostname.toLowerCase();
-  return host === 'localhost' || host === '[::1]' || host.startsWith('127.') || host.endsWith('.local');
+  return (
+    host === 'localhost' ||
+    host === '[::1]' ||
+    (/^127\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})\.(?:0|[1-9]\d{0,2})$/.test(host) &&
+      host.split('.').every((octet) => Number(octet) <= 255)) ||
+    host.endsWith('.local')
+  );
 }
 
 /** Exported so a corrupted `providers` array can be salvaged one entry at a time. */

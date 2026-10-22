@@ -79,10 +79,110 @@ function replaced(el: HTMLElement, value: string, before: string): boolean {
 }
 
 /** Dispatch a synthetic paste carrying `value` as text/plain. */
-function dispatchPaste(el: HTMLElement, value: string): void {
+function dispatchPaste(el: HTMLElement, value: string, own: (event: Event) => void): void {
   const dt = new DataTransfer();
   dt.setData('text/plain', value);
-  el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true, composed: true }));
+  const event = new ClipboardEvent('paste', { clipboardData: dt, bubbles: true, cancelable: true, composed: true });
+  own(event);
+  el.dispatchEvent(event);
+}
+
+/** Keep the editor's throttled selection sync, but yield the selection before
+ * a user's next editing event can replace the entire draft. */
+async function preparePasteSelection(el: HTMLElement, signal?: AbortSignal) {
+  const selection = el.ownerDocument.defaultView?.getSelection();
+  const original = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+  const backward =
+    !!original && selection?.anchorNode === original.endContainer && selection.anchorOffset === original.endOffset;
+  const snapshot = readEditableText(el);
+  let interrupted = false;
+  let owned: Range | null = null;
+  const ownsSelection = () => {
+    if (!owned || !selection?.rangeCount) return false;
+    const current = selection.getRangeAt(0);
+    return (
+      current.startContainer === owned.startContainer &&
+      current.startOffset === owned.startOffset &&
+      current.endContainer === owned.endContainer &&
+      current.endOffset === owned.endOffset
+    );
+  };
+  const restore = () => {
+    if (!ownsSelection() || !selection) return;
+    selection.removeAllRanges();
+    if (original && el.contains(original.commonAncestorContainer)) {
+      selection.setBaseAndExtent(
+        backward ? original.endContainer : original.startContainer,
+        backward ? original.endOffset : original.startOffset,
+        backward ? original.startContainer : original.endContainer,
+        backward ? original.startOffset : original.endOffset
+      );
+    } else {
+      const caret = el.ownerDocument.createRange();
+      caret.selectNodeContents(el);
+      caret.collapse(false);
+      selection.addRange(caret);
+    }
+  };
+  let ownPaste: Event | undefined;
+  let dispatchingPaste = false;
+  const interrupt = (event: Event) => {
+    if (event === ownPaste) return;
+    // Editors may announce their own paste insertion with synthetic beforeinput,
+    // synchronously or after awaiting model work. Real browser editing events
+    // remain guarded, as do synthetic typing events outside our paste dispatch.
+    if (
+      event.type === 'beforeinput' &&
+      !event.isTrusted &&
+      ownPaste &&
+      (dispatchingPaste || (event instanceof InputEvent && event.inputType === 'insertFromPaste'))
+    )
+      return;
+    interrupted = true;
+    restore();
+  };
+  const events = ['keydown', 'beforeinput', 'paste', 'cut', 'compositionstart', 'blur'] as const;
+  for (const event of events) el.addEventListener(event, interrupt, true);
+  signal?.addEventListener('abort', interrupt, { once: true });
+  const dispose = () => {
+    for (const event of events) el.removeEventListener(event, interrupt, true);
+    signal?.removeEventListener('abort', interrupt);
+    restore();
+  };
+  let retained = false;
+  try {
+    selectAllContent(el);
+    owned = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
+    await sleep(120);
+    const active = getDeepActiveElement();
+    if (
+      interrupted ||
+      signal?.aborted ||
+      readEditableText(el) !== snapshot ||
+      (active !== el && !(active && el.contains(active))) ||
+      !ownsSelection()
+    ) {
+      restore();
+      return null;
+    }
+    retained = true;
+    return {
+      dispose,
+      interrupted: () => interrupted,
+      paste: (value: string) => {
+        dispatchingPaste = true;
+        try {
+          dispatchPaste(el, value, (event) => {
+            ownPaste = event;
+          });
+        } finally {
+          dispatchingPaste = false;
+        }
+      },
+    };
+  } finally {
+    if (!retained) dispose();
+  }
 }
 
 async function replaceContentEditable(el: HTMLElement, value: string, signal?: AbortSignal): Promise<boolean> {
@@ -95,24 +195,28 @@ async function replaceContentEditable(el: HTMLElement, value: string, signal?: A
   //    and a synthetic paste has NO default DOM mutation, so a passing
   //    read-back here is trustworthy (model and DOM moved together).
   try {
-    selectAllContent(el);
-    // Slate-family editors mirror the DOM selection into their internal model
-    // via a THROTTLED selectionchange listener (~100ms in WangEditor). Pasting
-    // before that sync lands makes the editor paste at its OLD selection —
-    // appending after the original instead of replacing it.
-    const snapshot = readEditableText(el);
-    await sleep(120);
-    const active = getDeepActiveElement();
-    if (signal?.aborted || readEditableText(el) !== snapshot || (active !== el && !(active && el.contains(active))))
-      return false;
-    dispatchPaste(el, value);
-    const pastedSnapshot = readEditableText(el);
-    await sleep(15); // let the editor's async model update + re-render settle
-    if (signal?.aborted) return false;
-    const focused = getDeepActiveElement();
-    if (focused !== el && !(focused && el.contains(focused))) return false;
-    if (readEditableText(el) !== pastedSnapshot && !replaced(el, value, before)) return false;
-    if (replaced(el, value, before)) return true;
+    // Slate-family editors sync selection on a throttled listener (~100ms).
+    // The guard restores the user's caret synchronously if they resume editing.
+    const guard = await preparePasteSelection(el, signal);
+    if (!guard) return false;
+    try {
+      if (signal?.aborted) return false;
+      guard.paste(value);
+      const pastedSnapshot = readEditableText(el);
+      // Async paste handlers may read Selection after their first await. Keep
+      // our selection and editing guards alive until that work has settled.
+      await sleep(15);
+      if (guard.interrupted() || signal?.aborted) return false;
+      const focused = getDeepActiveElement();
+      if (focused !== el && !(focused && el.contains(focused))) return false;
+      if (readEditableText(el) !== pastedSnapshot && !replaced(el, value, before)) return false;
+      if (replaced(el, value, before)) return true;
+    } catch (error) {
+      if (guard.interrupted() || signal?.aborted) return false;
+      throw error;
+    } finally {
+      guard.dispose();
+    }
   } catch {
     /* ClipboardEvent/DataTransfer unavailable — fall through */
   }

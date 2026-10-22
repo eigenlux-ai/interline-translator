@@ -74,6 +74,22 @@ describe('provider baseURL safety', () => {
     expect(isSafeBaseURL('')).toBe(false);
   });
 
+  it('accepts only actual loopback IPv4 hosts, never domains beginning with 127', () => {
+    for (const host of ['127.0.0.0', '127.255.255.255', '127.42.10.3']) {
+      expect(isSafeBaseURL(`http://${host}/v1`)).toBe(true);
+    }
+    for (const host of [
+      '127.evil.example',
+      '127.0.0.1.evil.example',
+      '127.1.example',
+      '128.0.0.1',
+      '126.255.255.255',
+      '127.256.0.1',
+    ]) {
+      expect(isSafeBaseURL(`http://${host}/v1`)).toBe(false);
+    }
+  });
+
   it('drops an unsafe endpoint but keeps the engine — and its key', () => {
     const cfg = defaultConfig();
     cfg.providers.push({

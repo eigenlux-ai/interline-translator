@@ -14,7 +14,7 @@
  */
 
 import { isAriaHidden, isInlineChip, isNonContent, isSkippedElement } from '../filter';
-import { DROP_ATTRS_FROM_GLOSS, DROP_FROM_GLOSS, EVENT_HANDLER_ATTR, OPAQUE_SCRUB_SELECTOR } from '../policy';
+import { DROP_ATTRS_FROM_GLOSS, DROP_FROM_GLOSS, EVENT_HANDLER_ATTR } from '../policy';
 import { isHidden, isVisuallyHidden } from '../visibility';
 
 export interface SerializedInline {
@@ -36,9 +36,27 @@ const PLACEHOLDER = /\{\{(\d+)\}\}/g;
  * already dropped from unit.text — the very lockstep this module promises.
  */
 function opaqueFragment(el: Element): string {
-  if (!el.querySelector(OPAQUE_SCRUB_SELECTOR)) return el.outerHTML;
   const clone = el.cloneNode(true) as Element;
-  clone.querySelectorAll(OPAQUE_SCRUB_SELECTOR).forEach((n) => n.remove());
+  const scrub = (source: Element, node: Element) => {
+    for (const attr of Array.from(node.attributes)) {
+      const name = attr.name.toLowerCase();
+      if (DROP_ATTRS_FROM_GLOSS.has(name) || EVENT_HANDLER_ATTR.test(name)) node.removeAttribute(attr.name);
+    }
+    // Read visibility in the original CSS context, never on the detached clone.
+    for (const [index, child] of Array.from(node.children).entries()) {
+      const original = source.children[index];
+      if (
+        DROP_FROM_GLOSS.has(child.tagName.toUpperCase()) ||
+        isNonContent(original) ||
+        isAriaHidden(original) ||
+        isHidden(original) ||
+        isVisuallyHidden(original)
+      )
+        child.remove();
+      else scrub(original, child);
+    }
+  };
+  scrub(el, clone);
   return clone.outerHTML;
 }
 

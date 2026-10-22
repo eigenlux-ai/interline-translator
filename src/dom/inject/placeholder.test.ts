@@ -58,6 +58,44 @@ describe('serializeInline', () => {
     expect(tags[0]).toBe('<span translate="no">Next.js </span>');
   });
 
+  it('scrubs identity, handlers, and non-content from every opaque descendant', () => {
+    const source = el(
+      'See <span translate="no" id="brand" onclick="boom()" aria-labelledby="label" class="brand">' +
+        '<code id="code" onmouseover="boom()" aria-describedby="help" style="color:red">Brand</code>' +
+        '<script>boom()</script><style>.brand{display:none}</style><template>hidden</template>' +
+        '<noscript>fallback</noscript><img src="logo.png"></span> docs'
+    );
+    const { text, tags } = serializeInline(source);
+    const restored = el(restoreInline(text, tags).html);
+    expect(
+      restored.querySelectorAll('[id], [onclick], [onmouseover], [aria-labelledby], [aria-describedby]')
+    ).toHaveLength(0);
+    expect(restored.querySelectorAll('script, style, template, noscript, img')).toHaveLength(0);
+    expect(restored.querySelector('span')?.className).toBe('brand');
+    expect(restored.querySelector('code')?.getAttribute('style')).toBe('color:red');
+    expect(restored.textContent).toBe('See Brand docs');
+    expect(source.querySelector('#brand')).not.toBeNull();
+    expect(source.querySelector('script')).not.toBeNull();
+  });
+
+  it('reads opaque descendant visibility in the original ancestor CSS context', () => {
+    const sheet = document.createElement('style');
+    sheet.textContent = '.opaque-context .context-hidden { display:none }';
+    document.head.append(sheet);
+    const host = el('<span translate="no">Brand <b class="context-hidden">secret</b><i> visible</i></span>');
+    host.classList.add('opaque-context');
+    document.body.append(host);
+    try {
+      expect(getComputedStyle(host.querySelector('b')!).display).toBe('none');
+      const { text, tags } = serializeInline(host);
+      expect(restoreInline(text, tags).html).toBe('<span translate="no">Brand <i> visible</i></span>');
+      expect(host.querySelector('b')?.textContent).toBe('secret');
+    } finally {
+      host.remove();
+      sheet.remove();
+    }
+  });
+
   it('strips nested aria-hidden decoration out of opaque fragments too', () => {
     // aria-hidden one wrapper deep, inside an opaque translate=no span: the
     // per-child drop can't see it, so the opaque fragment must scrub it — else

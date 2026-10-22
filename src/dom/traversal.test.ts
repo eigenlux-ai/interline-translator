@@ -267,9 +267,7 @@ describe('walkAndLabel — UA-default inline-block controls are never swallowed'
   });
 
   it('an inline-restyled <li> nav keeps per-item units', () => {
-    const r = root(
-      '<ul><li style="display:inline">First item</li><li style="display:inline">Second item</li></ul>'
-    );
+    const r = root('<ul><li style="display:inline">First item</li><li style="display:inline">Second item</li></ul>');
     document.body.appendChild(r);
     try {
       const units = walkAndLabel(r, seqId);
@@ -421,4 +419,35 @@ describe('walkAndLabel — custom/unknown phrasing tags amid running text', () =
       r.remove();
     }
   });
+});
+
+describe('walkAndLabel — textless wrappers', () => {
+  it.each(['', '123...'])('reaches shadow content behind multiple wrappers with %j light text', (text) => {
+    const r = root(`<section>${text}<div><div id="host"></div></div></section>`);
+    const shadow = r.querySelector('#host')!.attachShadow({ mode: 'open' });
+    shadow.innerHTML = '<p>Nested shadow content</p>';
+    const roots: ShadowRoot[] = [];
+    const units = walkAndLabel(r, seqId, (s) => roots.push(s));
+    expect(units.map((unit) => unit.text)).toEqual(['Nested shadow content']);
+    expect(units[0].element).toBe(shadow.querySelector('p'));
+    expect(roots).toEqual([shadow]);
+    expect(walkAndLabel(r, seqId)).toHaveLength(0);
+  });
+
+  it('keeps empty marker children inside a real unit without labelling them', () => {
+    const r = root('<p>Readable title <span>with inline context</span><faceplate-perfmark></faceplate-perfmark></p>');
+    const units = walkAndLabel(r, seqId);
+    expect(units).toHaveLength(1);
+    expect(units[0].element).toBe(r.querySelector('p'));
+    expect(units[0].text).toBe('Readable title with inline context');
+    expect(r.querySelector('span')!.hasAttribute(DATA_OMNI.walked)).toBe(false);
+    expect(r.querySelector('faceplate-perfmark')!.hasAttribute(DATA_OMNI.walked)).toBe(false);
+  });
+});
+
+it('does not discover excluded inline text when a leaf has no visible source', () => {
+  const r = root(
+    '<p><span class="sr-only">Screen reader only</span></p><p><ruby><rt>Reading only</rt></ruby></p><p><span hidden>Hidden text</span></p>'
+  );
+  expect(walkAndLabel(r, seqId)).toHaveLength(0);
 });

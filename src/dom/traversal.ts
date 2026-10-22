@@ -29,8 +29,9 @@ import {
   isSkippedElement,
 } from './filter';
 import { serializeInline, type SerializedInline } from './inject/placeholder';
+import { DROP_FROM_GLOSS } from './policy';
 import { anyShadowRoot } from './shadow';
-import { isHidden, visibleText } from './visibility';
+import { isHidden, isVisuallyHidden, visibleText } from './visibility';
 
 export interface TranslationUnit {
   id: string;
@@ -216,7 +217,8 @@ export function* walkTranslationUnits(
 
   const walk = function* (el: Element): Generator<TranslationUnit | null> {
     yield null; // allow the caller to yield even through textless container trees
-    if (isSkippedElement(el) || isHidden(el)) return;
+    if (isSkippedElement(el) || isHidden(el) || isVisuallyHidden(el) || DROP_FROM_GLOSS.has(el.tagName.toUpperCase()))
+      return;
 
     const shadow = probeShadow(el);
     if (shadow && !isOwnShadowHost(el)) {
@@ -243,8 +245,11 @@ export function* walkTranslationUnits(
           // the runs of inter-element whitespace in a deeply-nested unit.
           text: visibleText(content).replace(/\s+/g, ' ').trim(),
         };
+        // A real unit owns its inline descendants; never mint nested units.
+        return;
       }
-      return;
+      // Light text can be empty (or punctuation-only) through several wrappers
+      // while a deeper host still contains translatable shadow content.
     }
 
     for (const child of Array.from(el.children)) yield* walk(child);

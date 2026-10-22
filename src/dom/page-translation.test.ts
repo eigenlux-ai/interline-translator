@@ -80,6 +80,12 @@ const waitFor = async (cond: () => boolean, timeoutMs = 5000) => {
   while (!cond() && Date.now() - t0 < timeoutMs) await tick(20);
 };
 
+const waitForDone = async (count = 1, root: ParentNode = document) => {
+  const done = () => root.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
+  await waitFor(() => done().length === count);
+  expect(done()).toHaveLength(count);
+};
+
 beforeEach(() => {
   summarizePage.mockReset();
   summarizePage.mockResolvedValue('');
@@ -116,13 +122,18 @@ describe('PageTranslator', () => {
     pt.start();
     await waitFor(() => ControlledIO.instance.observed.has(first) && ControlledIO.instance.observed.has(second));
     ControlledIO.instance.emit([first, second], true);
-    await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.translated}]`).length === 2);
+    await waitForDone(2);
 
     const gloss = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(gloss.length).toBe(2);
     expect(gloss[0].textContent).toContain('[t]Hello world');
     expect(gloss[1].textContent).toContain('[t]Second para');
-    expect(translateBatch).toHaveBeenCalledOnce(); // both units packed into one batch
+    // Discovery may yield between units under load; each source must still be
+    // requested exactly once, regardless of how the scheduler groups batches.
+    expect(translateBatch.mock.calls.flatMap(([request]) => (request as { items: string[] }).items)).toEqual([
+      'Hello world',
+      'Second para',
+    ]);
     pt.stop();
   });
 
@@ -335,7 +346,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello <a href="/x">world</a> and <b>friends</b> of the web</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0, richText: false });
     pt.start();
-    await tick();
+    await waitFor(() => !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     // Engine input is the visible text — no {{n}} placeholder protocol.
     const sent = (translateBatch.mock.calls.at(-1)![0] as { items: string[] }).items;
@@ -352,7 +363,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello <a href="/x">world</a> of links and other words</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const sent = (translateBatch.mock.calls.at(-1)![0] as { items: string[] }).items;
     expect(sent[0]).toContain('{{0}}');
@@ -372,11 +383,13 @@ describe('PageTranslator', () => {
       pageContext: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(summarizePage).toHaveBeenCalledOnce();
     // first batch raced the summary — it may or may not carry it; force a NEW batch after it landed
     document.body.insertAdjacentHTML('beforeend', '<p>Late paragraph after summary</p>');
-    await tick(80);
+    await waitFor(() =>
+      translateBatch.mock.calls.some(([request]) => request.items.includes('Late paragraph after summary'))
+    );
     const last = translateBatch.mock.calls.at(-1)![0] as { context?: { summary?: string } };
     expect(last.context?.summary).toBe('K8s 运维指南概览');
     pt.stop();
@@ -386,7 +399,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello plain</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(summarizePage).not.toHaveBeenCalled();
     const meta = translateBatch.mock.calls[0][0] as { context?: { summary?: string } };
     expect(meta.context?.summary).toBeUndefined();
@@ -398,7 +411,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello context</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const meta = translateBatch.mock.calls[0][0] as { context?: { title?: string; domain?: string } };
     expect(meta.context?.title).toBe('My Article — Example Site');
@@ -416,7 +429,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello <a href="/x">world</a></p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`).length === 1);
 
     const gloss = document.querySelector(`[${DATA_OMNI.translated}]`)!;
     const link = gloss.querySelector('a');
@@ -430,7 +443,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>Hello world</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1);
 
     pt.stop();
@@ -445,7 +458,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<div id="row" style="display:flex"><div>Item one</div><div>Item two</div></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(2);
 
     const row = document.getElementById('row')!;
     expect(row.children.length).toBe(2); // no extra flex items injected into the row
@@ -464,7 +477,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = `<table><tbody><tr><td>${long}</td></tr></tbody></table>`;
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const tr = document.querySelector('tr')!;
     expect(tr.querySelector('aie-omt-block')).toBeNull(); // no stray block node in the row
@@ -482,7 +495,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>see <a href="/x">this</a> now</p>'; // short → inline mode
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const a = document.querySelector('a')!;
     expect(a.querySelector('[data-omni-translated]')).toBeNull(); // never inside the content link
@@ -498,7 +511,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<li><a href="#prereq"><span>Prerequisites</span></a></li>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const gloss = document.querySelector(`aie-omt-inline[${DATA_OMNI.translated}]`)!;
     expect(gloss.querySelector('a')).toBeNull(); // no reproduced link inside the 译文
@@ -516,7 +529,7 @@ describe('PageTranslator', () => {
       '</div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`).length === 2);
 
     const pager = document.getElementById('pager')!;
     // No single block gloss reproducing BOTH cards as siblings of the container.
@@ -543,7 +556,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<p>see <a href="/x">this</a> now</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const gloss = document.querySelector(`[${DATA_OMNI.translated}]`)!;
     expect(gloss.querySelector('a')?.getAttribute('href')).toBe('/x'); // link preserved in 译文
@@ -557,7 +570,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<h2 id="ttl">A heading whose text must survive a trailing marker<x-mark></x-mark></h2>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const sent = translateBatch.mock.calls.flatMap((c) => c[0].items as string[]).join(' ');
     expect(sent).toContain('A heading whose text must survive a trailing marker');
@@ -572,7 +585,7 @@ describe('PageTranslator', () => {
       '<div style="display:none"><p>Collapsed template content</p></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const items = translateBatch.mock.calls.flatMap((c) => c[0].items as string[]);
     expect(items).toContain('Visible text here');
@@ -604,7 +617,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = '<button><span class="sr-only">extra context</span>Save</button>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const gloss = document.querySelector('[data-omni-translated]')!;
     expect(gloss).not.toBeNull();
@@ -621,7 +634,7 @@ describe('PageTranslator', () => {
       '<p>これは日本語の文です。</p>'; // Japanese (kana) → translate to zh
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(2);
 
     const sent = translateBatch.mock.calls.flatMap((c) => c[0].items as string[]).join(' ');
     expect(sent).toContain('This whole line is English'); // English sent
@@ -717,7 +730,7 @@ describe('PageTranslator', () => {
       '<div id="to"></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const p = document.querySelector('p')!;
     expect(p.querySelector('[data-omni-translated]')).not.toBeNull();
     expect(document.querySelectorAll('[data-omni-translated]').length).toBe(1);
@@ -737,7 +750,7 @@ describe('PageTranslator', () => {
     document.body.innerHTML = `<h2>Quick Start</h2><p>${longText}</p>`;
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(2);
 
     const heading = document.querySelector('h2')!;
     const para = document.querySelector('p')!;
@@ -802,13 +815,13 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<div id="panel" hidden><p>Hidden tab content</p></div><p>Visible text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const panel = document.getElementById('panel')!;
     // Walk-pruned while hidden: no marks, no gloss inside.
     expect(panel.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
 
     panel.removeAttribute('hidden'); // the host reveals the tab — attributes-only change
-    await waitFor(() => !!panel.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!panel.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     expect(panel.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Hidden tab content');
     pt.stop();
@@ -818,7 +831,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<p id="chat">First message</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const p = document.getElementById('chat')!;
     expect(p.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]First message');
 
@@ -846,14 +859,14 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<p id="skeleton"></p><p>Real text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const skeleton = document.getElementById('skeleton')!;
     expect(skeleton.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
 
     skeleton.appendChild(document.createTextNode('Streamed-in content')); // bare text node, no element added
     // happy-dom drops MO records under worker load (see the chat test's note):
     // re-poke via the rescan nudge — production's own second healing signal.
-    const filled = () => !!skeleton.querySelector(`[${DATA_OMNI.translated}]`);
+    const filled = () => !!skeleton.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
     for (let poke = 0; poke < 4 && !filled(); poke++) {
       pt.notifyShadowAttached();
       await waitFor(filled, 700);
@@ -871,7 +884,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<div id="list"><p id="row">Row content</p></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const row = document.getElementById('row')!;
     expect(row.hasAttribute(DATA_OMNI.walked)).toBe(true);
 
@@ -896,7 +909,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<p id="row">Original text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const row = document.getElementById('row')!;
     expect(row.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Original text');
 
@@ -904,7 +917,12 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     // marks + unit tracking survive — then a full rescan fires (shadow attach).
     row.textContent = 'Recycled different text';
     pt.notifyShadowAttached();
-    await dynamicTick();
+    await waitFor(
+      () =>
+        row
+          .querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)
+          ?.textContent?.includes('[t]Recycled different text') === true
+    );
 
     // The healer must NOT resurrect '[t]Original text' onto the changed node.
     const gloss = row.querySelector(`[${DATA_OMNI.translated}]`);
@@ -934,19 +952,19 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     translateBatch.mockImplementation(() => new Promise((r) => (release = r)));
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => segStreams.length > 0 && !!release);
 
     const emit = segStreams.at(-1)!;
     emit(1, '第一段[[ab12cd~n]]第二');
     emit(1, '段[[ab12cd~'); // a delta can cut a token anywhere
-    await tick(); // RAF-buffered stream flush
+    await waitFor(() => document.querySelector(`[${DATA_OMNI.translated}]`)?.textContent === '第一段\n第二段');
 
     const gloss = document.querySelector(`[${DATA_OMNI.translated}]`)!;
     expect(gloss.getAttribute(DATA_OMNI.state)).toBe('streaming');
     expect(gloss.textContent).toBe('第一段\n第二段'); // token → break, half-token hidden
 
     release({ items: ['[t]final text'] });
-    await tick();
+    await waitForDone();
     expect(document.querySelector(`[${DATA_OMNI.translated}]`)!.textContent).toContain('[t]final text');
     pt.stop();
   });
@@ -955,7 +973,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     document.body.innerHTML = '<p>Loop check text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(translateBatch).toHaveBeenCalledOnce();
 
     await dynamicTick(); // let any (wrong) scheduled rescan/retranslate fire
@@ -982,7 +1000,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     const { shadow } = mountShadowHost();
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     expect(shadow.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Shadow paragraph text');
     // Styles don't pierce shadow boundaries — the root needs its own copy
@@ -997,12 +1015,12 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     const { shadow } = mountShadowHost();
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     const late = document.createElement('p');
     late.textContent = 'Added inside the shadow later';
     shadow.appendChild(late);
-    await waitFor(() => !!late.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!late.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     expect(late.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Added inside the shadow later');
     pt.stop();
@@ -1012,7 +1030,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     document.body.innerHTML = '<p>Light DOM text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
 
     const { shadow } = mountShadowHost('<p>Late host shadow text</p>');
     // Production fires TWO discovery signals for a late host: the light-DOM MO
@@ -1020,7 +1038,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     // load occasionally drops the MO delivery — exercise the second signal
     // too, exactly as a real page would.
     pt.notifyShadowAttached();
-    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
     expect(shadow.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Late host shadow text');
     pt.stop();
   });
@@ -1031,7 +1049,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     const original = shadow.innerHTML;
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}]`));
+    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     pt.stop();
     expect(shadow.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(0);
@@ -1047,7 +1065,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
     ownShadow.innerHTML = '<p>Our own panel text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick(60);
+    await waitForDone(1);
 
     expect(ownShadow.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
     expect(ownShadow.querySelector(`[${DATA_OMNI.walked}]`)).toBeNull();
@@ -1103,7 +1121,9 @@ describe('PageTranslator — dynamic entries respect skip-context ancestors (fin
     document.body.innerHTML = '<p id="msg">Original text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick(60); // first batch in flight, spinner up
+    await waitFor(
+      () => !!releaseFirst && !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="pending"]`)
+    );
 
     const p = document.getElementById('msg')!;
     (p.firstChild as Text).data = 'Replaced text'; // retranslate retires the old unit
@@ -1148,7 +1168,7 @@ describe('three-state view lifecycle', () => {
       displayMode: 'translation',
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.documentElement.getAttribute(DATA_OMNI.display)).toBe('translation');
     const callsBefore = translateBatch.mock.calls.length;
 
@@ -1171,7 +1191,7 @@ describe('three-state view lifecycle', () => {
     pt.setDisplayMode('original'); // inactive: remembered, not applied
     expect(document.documentElement.hasAttribute(DATA_OMNI.display)).toBe(false);
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.documentElement.getAttribute(DATA_OMNI.display)).toBe('original');
     pt.stop();
   });
@@ -1252,14 +1272,18 @@ describe('SPA re-injection protection', () => {
     document.body.innerHTML = '<p>Hello world</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(
+      () =>
+        translateBatch.mock.calls.length === 1 &&
+        !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="pending"]`)
+    );
     const spinner = document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="pending"]`);
     expect(spinner).not.toBeNull();
 
     spinner!.remove(); // host eats the pending gloss
-    await tick();
+    await waitFor(() => translateBatch.mock.calls.length >= 2);
     release();
-    await tick();
+    await waitForDone();
 
     // The unit re-entered the pipeline: a second translate call filled a fresh gloss.
     expect(translateBatch.mock.calls.length).toBeGreaterThanOrEqual(2);
@@ -1275,7 +1299,7 @@ describe('<pre> translation (prose vs code)', () => {
     document.body.innerHTML = '<pre>First line of the letter\nSecond line follows here</pre>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const gloss = document.querySelector(`pre [${DATA_OMNI.translated}]`);
     expect(gloss).not.toBeNull();
     // The engine received the RAW text — line structure intact, not collapsed.
@@ -1288,7 +1312,7 @@ describe('<pre> translation (prose vs code)', () => {
     document.body.innerHTML = '<p>Prose here</p><pre><code>const x = compute()\nreturn x</code></pre>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelector(`p [${DATA_OMNI.translated}]`)).not.toBeNull();
     expect(document.querySelector(`pre [${DATA_OMNI.translated}]`)).toBeNull();
     pt.stop();
@@ -1328,7 +1352,7 @@ describe('closed shadow roots (chrome.dom probe + late-attach signal)', () => {
     const root = attachClosed(document.querySelector('x-closed')!, '<p>Closed shadow paragraph</p>');
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1, root);
     const gloss = root.querySelector(`[${DATA_OMNI.translated}]`);
     expect(gloss).not.toBeNull();
     expect(gloss!.textContent).toContain('[t]Closed shadow paragraph');
@@ -1341,13 +1365,13 @@ describe('closed shadow roots (chrome.dom probe + late-attach signal)', () => {
     document.body.innerHTML = '<p>Light text</p><x-late></x-late>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitFor(() => !!document.querySelector(`p [${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
     expect(document.querySelector(`p [${DATA_OMNI.translated}]`)).not.toBeNull();
 
     // attachShadow on the already-walked host — NO light-DOM mutation fires.
     const root = attachClosed(document.querySelector('x-late')!, '<p>Late closed content</p>');
     pt.notifyShadowAttached(); // what the MAIN-world hook's signal triggers
-    await waitFor(() => root.querySelector(`[${DATA_OMNI.translated}]`) !== null); // debounced rescan
+    await waitFor(() => !!root.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
     const gloss = root.querySelector(`[${DATA_OMNI.translated}]`);
     expect(gloss).not.toBeNull();
     expect(gloss!.textContent).toContain('[t]Late closed content');
@@ -1360,7 +1384,7 @@ describe('<pre> leaf semantics (loose text, wrappers, inline code)', () => {
     document.body.innerHTML = '<div id="mix">Intro prose here <pre><code>const x = 1</code></pre> closing prose.</div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const sent = translateBatch.mock.calls.flatMap((c) => c[0].items as string[]).join('|');
     expect(sent).toContain('Intro prose here');
     expect(sent).toContain('closing prose');
@@ -1374,7 +1398,7 @@ describe('<pre> leaf semantics (loose text, wrappers, inline code)', () => {
     document.body.innerHTML = '<p>Real prose</p><div class="highlight"><pre><span>def compute():</span></pre></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const sent = translateBatch.mock.calls.flatMap((c) => c[0].items as string[]).join('|');
     expect(sent).not.toContain('def compute'); // code text never reaches the engine
     expect(document.querySelector('.highlight [' + 'data-omni-translated' + ']')).toBeNull();
@@ -1385,7 +1409,7 @@ describe('<pre> leaf semantics (loose text, wrappers, inline code)', () => {
     document.body.innerHTML = '<pre>The changelog says <code>--flag</code> was removed.\nSecond line of prose.</pre>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelector(`pre [${DATA_OMNI.translated}]`)).not.toBeNull();
     pt.stop();
   });
@@ -1493,7 +1517,7 @@ describe('逐段对照 paragraphInterleave', () => {
     document.body.innerHTML = multiPara;
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const glosses = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(0);
@@ -1509,7 +1533,7 @@ describe('逐段对照 paragraphInterleave', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(3);
     const p = document.querySelector('p')!;
     const glosses = p.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(3); // one per paragraph
@@ -1534,7 +1558,7 @@ describe('逐段对照 paragraphInterleave', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(4);
     expect(document.querySelectorAll('p')[0].querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1);
     pt.stop();
     expect(document.body.innerHTML).toBe(before);
@@ -1549,7 +1573,7 @@ describe('逐段对照 paragraphInterleave', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(3);
     const p = document.querySelector('p')!;
     const before = [...p.querySelectorAll(`[${DATA_OMNI.translated}]`)];
     expect(before.length).toBe(3);
@@ -1564,7 +1588,7 @@ describe('逐段对照 paragraphInterleave', () => {
     after.forEach((node, i) => expect(node).toBe(before[i])); // node identity — never re-created
     // A REAL eviction still heals: chew one segment out, rescan, layout returns.
     p.querySelector(`[${DATA_OMNI.seg}]`)!.remove();
-    await tick(300); // let the eviction path settle first
+    await waitForDone(3);
     pt.notifyShadowAttached();
     await waitFor(() => p.querySelectorAll(`[${DATA_OMNI.translated}]`).length === 3);
     expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(3);
@@ -1585,7 +1609,7 @@ describe('逐段对照 paragraphInterleave', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const glosses = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(1); // fallback: single whole-block gloss
     expect(document.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(0);
@@ -1606,7 +1630,7 @@ describe('逐段对照 — structural safety (review fixes)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1); // whole block
     expect(document.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(0);
     expect(document.querySelector('a')!.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
@@ -1622,7 +1646,7 @@ describe('逐段对照 — structural safety (review fixes)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const p = document.querySelector('p')!;
     expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     expect(p.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(1);
@@ -1645,7 +1669,7 @@ describe('逐段对照 — structural safety (review fixes)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const glosses = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(1);
     expect(glosses[0].textContent!.trim().length).toBeGreaterThan(0);
@@ -1661,12 +1685,12 @@ describe('逐段对照 — structural safety (review fixes)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const p = document.querySelector('p')!;
     expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     // Host evicts the PRIMARY (non-seg) gloss only.
     p.querySelector(`[${DATA_OMNI.translated}]:not([${DATA_OMNI.seg}])`)!.remove();
-    await tick(80); // mutation observer → eviction heal
+    await waitForDone(2);
     const glosses = p.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(2); // fully re-placed
     expect(glosses[0].textContent).toContain('First paragraph here');
@@ -1682,10 +1706,10 @@ describe('逐段对照 — structural safety (review fixes)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitFor(() => document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`).length === 2);
     const p = document.querySelector('p')!;
     p.querySelector(`[${DATA_OMNI.seg}]`)!.remove();
-    await tick(80);
+    await waitFor(() => p.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`).length === 2);
     const glosses = p.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(2);
     expect(glosses[1].textContent).toContain('Second paragraph here');
@@ -1703,15 +1727,15 @@ describe('逐段对照 — self-eviction loop guard (oracle B-1)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const p = document.querySelector('p')!;
     p.querySelector(`[${DATA_OMNI.seg}]`)!.remove();
-    await tick(80);
+    await waitForDone(2);
     expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2); // healed once
     // Host strikes again within the decay window — an un-marked self-removal
     // would have saturated bumpReinject (3 attempts) during the first heal.
     p.querySelector(`[${DATA_OMNI.seg}]`)!.remove();
-    await tick(80);
+    await waitForDone(2);
     const glosses = p.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(2); // healed AGAIN
     expect(glosses[1].textContent).toContain('Second paragraph here');
@@ -1731,7 +1755,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(3);
     const div = document.querySelector('div')!;
     const glosses = [...div.querySelectorAll(`[${DATA_OMNI.translated}]`)];
     expect(glosses.length).toBe(3);
@@ -1762,7 +1786,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const div = document.querySelector('div')!;
     expect(div.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     expect(div.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(1);
@@ -1780,7 +1804,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.seg}]`).length).toBe(0);
     expect(document.querySelector(`[${DATA_OMNI.split}]`)).toBeNull();
@@ -1796,7 +1820,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     expect(document.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1);
     expect(document.querySelector(`[${DATA_OMNI.split}]`)).toBeNull();
     pt.stop();
@@ -1811,7 +1835,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const div = document.querySelector('div')!;
     expect(div.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     // React-style rewrite: the framework holds the FIRST text node and writes
@@ -1842,12 +1866,16 @@ describe('逐段对照 — paragraph interleave edge cases (evidence gate, nl re
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const div = document.querySelector('div')!;
     expect(div.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     // Host edits ONLY the span — the retained split halves are untouched.
     document.getElementById('tag')!.textContent = '#y';
-    await tick(300);
+    await waitFor(() =>
+      [...div.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)].some((g) =>
+        g.textContent?.includes('#y')
+      )
+    );
     const text = div.textContent ?? '';
     // The real host paragraph must survive.
     expect(text).toContain('Beta paragraph text here');
@@ -1865,11 +1893,11 @@ describe('逐段对照 — paragraph interleave edge cases (evidence gate, nl re
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(2);
     const div = document.querySelector('div')!;
     expect(div.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(2);
     div.querySelector(`[${DATA_OMNI.seg}]`)!.remove();
-    await tick(80);
+    await waitForDone(2);
     const glosses = div.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses.length).toBe(2); // re-placed, not permanently lost
     expect(glosses[1].textContent).toContain('Second newline paragraph');
@@ -1890,7 +1918,7 @@ describe('逐段对照 — X multi-span shape (v2.1 DOM carving)', () => {
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(3);
     const div = document.querySelector('div')!;
     const glosses = [...div.querySelectorAll(`[${DATA_OMNI.translated}]`)];
     expect(glosses.length).toBe(3); // 2 newline runs → 3 paragraphs
@@ -1919,7 +1947,7 @@ describe('逐段对照 — no carving into interactive elements (v2.1 self-revie
       paragraphInterleave: true,
     });
     pt.start();
-    await tick();
+    await waitForDone(1);
     const div = document.querySelector('div')!;
     expect(div.querySelectorAll(`[${DATA_OMNI.translated}]`).length).toBe(1); // whole block
     expect(document.querySelector('a')!.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
@@ -1936,7 +1964,7 @@ it('refreshes the translation when an inline source element is removed', async (
     await waitFor(() => !!document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
     const before = translateBatch.mock.calls.length;
     document.querySelector('p > strong')!.remove();
-    await tick(400);
+    await waitFor(() => translateBatch.mock.calls.length > before);
     expect(translateBatch.mock.calls.length).toBeGreaterThan(before);
   } finally {
     pt.stop();
@@ -1994,9 +2022,10 @@ it('yields discovery between slices and cancels unfinished scanning on stop', as
 it('reopening with page context preserves both pre-summary and post-summary batches', async () => {
   let resolveSummary!: (summary: string) => void;
   summarizePage.mockImplementation(
-    () => new Promise<string>((resolve) => {
-      resolveSummary = resolve;
-    })
+    () =>
+      new Promise<string>((resolve) => {
+        resolveSummary = resolve;
+      })
   );
   const original = 'Repository installation instructions and configuration options. '.repeat(12);
   document.body.innerHTML = `<p>${original}</p>`;
@@ -2029,4 +2058,275 @@ it('reopening with page context preserves both pre-summary and post-summary batc
   expect(contexts.get('Additional usage examples below the fold.')).toBe('Repository overview');
   expect(summarizePage).toHaveBeenCalledOnce();
   second.stop();
+});
+
+it.each(
+  (['bilingual', 'translation'] as const).flatMap((displayMode) =>
+    ['hidden', 'style', 'class', 'aria-hidden'].map((attribute) => ({ displayMode, attribute }))
+  )
+)(
+  'refreshes the owning unit when inline $attribute visibility changes in $displayMode mode without nested glosses',
+  async ({ attribute, displayMode }) => {
+    const sheet = document.createElement('style');
+    sheet.textContent = '.hidden-inline-content { display:none }';
+    document.head.append(sheet);
+    document.body.innerHTML = '<p>This sentence has <span>additional visible context</span> for readers.</p>';
+    const p = document.querySelector('p')!;
+    const span = p.querySelector('span')!;
+    const hide = () =>
+      span.setAttribute(
+        attribute,
+        {
+          hidden: '',
+          style: 'display:none',
+          class: 'hidden-inline-content',
+          'aria-hidden': 'true',
+        }[attribute]!
+      );
+    hide();
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0, displayMode });
+    const gloss = () => p.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
+    try {
+      pt.start();
+      await waitFor(() => !!gloss());
+      expect(gloss()?.textContent).not.toContain('additional visible context');
+      span.removeAttribute(attribute);
+      await waitFor(() => gloss()?.textContent?.includes('additional visible context') === true);
+      expect(gloss()?.textContent).toContain('additional visible context');
+      expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+      expect(span.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
+      hide();
+      await waitFor(() => !!gloss() && !gloss()?.textContent?.includes('additional visible context'));
+      expect(gloss()?.textContent).not.toContain('additional visible context');
+      expect(p.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+      const calls = translateBatch.mock.calls.length;
+      const originalGloss = gloss();
+      span.setAttribute('style', 'color:red');
+      // Preserve hidden state for the style case while changing only styling.
+      if (attribute === 'style') span.setAttribute('style', 'display:none;color:red');
+      p.classList.add('cosmetic-change');
+      await tick(350);
+      expect(translateBatch.mock.calls.length).toBe(calls);
+      expect(gloss()).toBe(originalGloss);
+    } finally {
+      pt.stop();
+      sheet.remove();
+    }
+  }
+);
+
+it.each(['class', 'style'])('refreshes tracked descendant units after ancestor %s changes', async (attribute) => {
+  const sheet = document.createElement('style');
+  sheet.textContent = '.compact .extra, [style*="--compact: 1"] .extra, [aria-hidden="true"] .extra { display:none }';
+  document.head.append(sheet);
+  document.body.innerHTML =
+    '<section><p>First sentence <span class="extra">extra first context</span>.</p><p>Second sentence <span class="extra">extra second context</span>.</p></section><p>Unrelated sentence for readers.</p>';
+  const section = document.querySelector('section')!;
+  const hide = () =>
+    section.setAttribute(
+      attribute,
+      attribute === 'class' ? 'compact' : attribute === 'style' ? '--compact: 1' : 'true'
+    );
+  hide();
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  const glosses = () => [...section.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)];
+  try {
+    pt.start();
+    await waitForDone(3);
+    expect(glosses().every((el) => !el.textContent?.includes('extra'))).toBe(true);
+    section.removeAttribute(attribute);
+    await waitFor(() => glosses().length === 2 && glosses().every((el) => el.textContent?.includes('extra')));
+    expect(glosses()).toHaveLength(2);
+    expect(glosses().every((el) => el.textContent?.includes('extra'))).toBe(true);
+    expect(section.querySelector('.extra')?.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
+    hide();
+    await waitFor(() => glosses().length === 2 && glosses().every((el) => !el.textContent?.includes('extra')));
+    expect(glosses().every((el) => !el.textContent?.includes('extra'))).toBe(true);
+    const previous = glosses();
+    const calls = translateBatch.mock.calls.length;
+    section.classList.add('cosmetic');
+    section.style.color = 'red';
+    await tick(400);
+    expect(glosses()).toEqual(previous);
+    expect(translateBatch.mock.calls).toHaveLength(calls);
+  } finally {
+    pt.stop();
+    sheet.remove();
+  }
+});
+
+it('checks shadow descendants when inherited host styling changes their visible source', async () => {
+  document.body.innerHTML = '<section><div id="shadow-host"></div></section>';
+  const section = document.querySelector('section')!;
+  const shadow = section.querySelector('#shadow-host')!.attachShadow({ mode: 'open' });
+  shadow.innerHTML = '<p>Shadow sentence <span class="extra">inherited extra context</span>.</p>';
+  const extra = shadow.querySelector('.extra')!;
+  const originalComputedStyle = window.getComputedStyle.bind(window);
+  // Model a host custom property used by shadow CSS. Happy-dom does not
+  // resolve inherited custom properties across shadow boundaries.
+  const styles = vi.spyOn(window, 'getComputedStyle').mockImplementation((el, pseudo) => {
+    const computed = originalComputedStyle(el, pseudo);
+    if (el !== extra) return computed;
+    return new Proxy(computed, {
+      get(target, key) {
+        if (key === 'display') return section.classList.contains('compact') ? 'none' : 'inline';
+        return Reflect.get(target, key, target);
+      },
+    });
+  });
+  section.className = 'compact';
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  try {
+    pt.start();
+    await waitForDone(1, shadow);
+    const gloss = () => shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
+    expect(gloss()?.textContent).not.toContain('inherited extra context');
+    section.removeAttribute('class');
+    await waitFor(() => !!gloss()?.textContent?.includes('inherited extra context'));
+    expect(gloss()?.textContent).toContain('inherited extra context');
+    expect(shadow.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+    const previous = gloss();
+    const calls = translateBatch.mock.calls.length;
+    section.className = 'cosmetic';
+    await tick(400);
+    expect(gloss()).toBe(previous);
+    expect(translateBatch.mock.calls).toHaveLength(calls);
+  } finally {
+    pt.stop();
+    styles.mockRestore();
+  }
+});
+
+it('retires changed tracked descendants under aria-hidden and rediscovers them on reveal', async () => {
+  const sheet = document.createElement('style');
+  sheet.textContent = '[aria-hidden="true"] .extra { display:none }';
+  document.head.append(sheet);
+  document.body.innerHTML =
+    '<section><p>Readable sentence <span class="extra">extra context for readers</span>.</p></section>';
+  const section = document.querySelector('section')!;
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  const gloss = () => section.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
+  try {
+    pt.start();
+    await waitForDone();
+    expect(gloss()?.textContent).toContain('extra context');
+    section.setAttribute('aria-hidden', 'true');
+    await waitFor(() => !gloss());
+    expect(gloss()).toBeNull();
+    section.removeAttribute('aria-hidden');
+    await waitFor(() => !!gloss());
+    expect(gloss()?.textContent).toContain('extra context');
+    expect(section.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+  } finally {
+    pt.stop();
+    sheet.remove();
+  }
+});
+
+// Drive discovery, the visibility debounce and render frames on the same clock.
+// Wait for marker retirement as well as gloss removal before revealing a source.
+it.each(
+  (['bilingual', 'translation'] as const).flatMap((displayMode) =>
+    ['hidden', 'display', 'aria-hidden', 'translate', 'contenteditable', 'sr-only', 'ancestor-hidden'].map(
+      (change) => ({ displayMode, change })
+    )
+  )
+)(
+  'retires clipped source glosses after $change and restores them once in $displayMode mode',
+  async ({ displayMode, change }) => {
+    vi.useFakeTimers();
+    document.body.innerHTML =
+      '<section><p style="overflow-y:hidden;max-height:100px">A long readable paragraph with enough source text to place the translation outside its clipped container.</p></section>';
+    const source = document.querySelector('p')!;
+    const ancestor = document.querySelector('section')!;
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0, displayMode });
+    const glosses = () => [...document.querySelectorAll(`[${DATA_OMNI.translated}]`)];
+    const hide = () => {
+      if (change === 'hidden') source.hidden = true;
+      else if (change === 'display') source.style.display = 'none';
+      else if (change === 'sr-only') source.className = 'sr-only';
+      else if (change === 'ancestor-hidden') ancestor.hidden = true;
+      else source.setAttribute(change, change === 'translate' ? 'no' : 'true');
+    };
+    const reveal = () => {
+      if (change === 'display') source.style.removeProperty('display');
+      else if (change === 'sr-only') source.removeAttribute('class');
+      else if (change === 'ancestor-hidden') ancestor.hidden = false;
+      else source.removeAttribute(change);
+    };
+    try {
+      pt.start();
+      await vi.waitFor(() =>
+        expect(document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)).toHaveLength(1)
+      );
+      expect(source.nextElementSibling).toBe(glosses()[0]);
+      hide();
+      await vi.waitFor(() => {
+        expect(source.hasAttribute(DATA_OMNI.walked)).toBe(false);
+        expect(glosses()).toHaveLength(0);
+      });
+      expect(glosses()).toHaveLength(0);
+      reveal();
+      await vi.waitFor(() =>
+        expect(document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)).toHaveLength(1)
+      );
+      expect(glosses()).toHaveLength(1);
+      expect(source.nextElementSibling).toBe(glosses()[0]);
+      const requests = translateBatch.mock.calls.length;
+      await vi.advanceTimersByTimeAsync(350);
+      expect(glosses()).toHaveLength(1);
+      expect(translateBatch.mock.calls).toHaveLength(requests);
+    } finally {
+      pt.stop();
+      vi.useRealTimers();
+    }
+  }
+);
+
+it.each(['hidden', 'revealed'])('ignores retired clipped source batch results while %s', async (state) => {
+  vi.useFakeTimers();
+  let release!: (result: { items: string[] }) => void;
+  translateBatch.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        release = resolve;
+      })
+  );
+  document.body.innerHTML =
+    '<p style="overflow-y:hidden;max-height:100px">A long readable paragraph with enough source text to place the translation outside its clipped container.</p>';
+  const source = document.querySelector('p')!;
+  const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+  const gloss = () => document.querySelector(`[${DATA_OMNI.translated}]`);
+  try {
+    pt.start();
+    await vi.waitFor(() => {
+      expect(release).toBeTypeOf('function');
+      expect(source.hasAttribute(DATA_OMNI.walked)).toBe(true);
+      expect(source.nextElementSibling).toBe(gloss());
+      expect(gloss()).not.toBeNull();
+    });
+    source.hidden = true;
+    await vi.waitFor(() => {
+      expect(source.hasAttribute(DATA_OMNI.walked)).toBe(false);
+      expect(gloss()).toBeNull();
+    });
+    if (state === 'hidden') {
+      release({ items: ['STALE RESULT MUST NOT RETURN'] });
+      await vi.advanceTimersByTimeAsync(250);
+      expect(gloss()).toBeNull();
+    }
+    source.hidden = false;
+    await vi.waitFor(() =>
+      expect(document.querySelectorAll(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`)).toHaveLength(1)
+    );
+    const fresh = gloss();
+    if (state === 'revealed') release({ items: ['STALE RESULT MUST NOT RETURN'] });
+    await vi.advanceTimersByTimeAsync(350);
+    expect(gloss()).toBe(fresh);
+    expect(document.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+    expect(gloss()?.textContent).not.toContain('STALE RESULT');
+  } finally {
+    pt.stop();
+    vi.useRealTimers();
+  }
 });

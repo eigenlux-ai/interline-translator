@@ -176,3 +176,151 @@ it('preserves edits made during the async paste delay', async () => {
     vi.useRealTimers();
   }
 });
+
+describe('pending paste selection safety', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function start(start = 14, end = start) {
+    const el = document.createElement('div');
+    el.contentEditable = 'true';
+    el.textContent = 'original draft';
+    document.body.append(el);
+    el.focus();
+    const selection = window.getSelection()!;
+    const range = document.createRange();
+    range.setStart(el.firstChild!, start);
+    range.setEnd(el.firstChild!, end);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    const controller = new AbortController();
+    const writing = replaceEditableText(el, 'contenteditable', 'translated draft', { signal: controller.signal });
+    return { el, selection, controller, writing };
+  }
+
+  it.each(['beforeinput', 'keydown', 'paste', 'cut', 'compositionstart'])(
+    'restores the original caret before %s default editing',
+    async (event) => {
+      const { el, selection, writing } = start();
+      expect(selection.toString()).toBe('original draft');
+      el.dispatchEvent(new Event(event, { bubbles: true }));
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode('X'));
+      await vi.runAllTimersAsync();
+      expect(await writing).toBe(false);
+      expect(el.textContent).toBe('original draftX');
+    }
+  );
+
+  it('keeps the full selection for a paste handler that awaits before reading it', async () => {
+    const { el, writing } = start();
+    let selected = '';
+    el.addEventListener('paste', async (event) => {
+      const text = (event as ClipboardEvent).clipboardData!.getData('text/plain');
+      await Promise.resolve();
+      const selection = window.getSelection()!;
+      selected = selection.toString();
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      const span = document.createElement('span');
+      span.textContent = text;
+      range.insertNode(span);
+    });
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(true);
+    expect(selected).toBe('original draft');
+    expect(el.textContent).toBe('translated draft');
+    expect(el.querySelector('span')?.textContent).toBe('translated draft');
+  });
+
+  it.each([false, true])('accepts the paste handler synthetic beforeinput (async=%s)', async (asyncHandler) => {
+    const { el, writing } = start();
+    let selected = '';
+    el.addEventListener('paste', async (event) => {
+      event.preventDefault();
+      if (asyncHandler) await Promise.resolve();
+      el.dispatchEvent(new InputEvent('beforeinput', { bubbles: true, inputType: 'insertFromPaste' }));
+      const selection = window.getSelection()!;
+      selected = selection.toString();
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      const span = document.createElement('span');
+      span.textContent = (event as ClipboardEvent).clipboardData!.getData('text/plain');
+      range.insertNode(span);
+    });
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(true);
+    expect(selected).toBe('original draft');
+    expect(el.textContent).toBe('translated draft');
+    expect(el.querySelector('span')?.textContent).toBe('translated draft');
+  });
+
+  it('guards insertFromPaste before our paste has started', async () => {
+    const { el, selection, writing } = start();
+    el.dispatchEvent(new InputEvent('beforeinput', { bubbles: true, inputType: 'insertFromPaste' }));
+    expect(selection.isCollapsed).toBe(true);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+    expect(el.textContent).toBe('original draft');
+  });
+
+  it.each(['beforeinput', 'keydown', 'paste', 'cut', 'compositionstart'])(
+    'preserves user editing during paste settle on %s',
+    async (event) => {
+      const { el, selection, writing } = start();
+      await vi.advanceTimersByTimeAsync(120);
+      expect(selection.toString()).toBe('original draft');
+      el.dispatchEvent(new Event(event, { bubbles: true }));
+      const range = selection.getRangeAt(0);
+      range.deleteContents();
+      range.insertNode(document.createTextNode('X'));
+      await vi.runAllTimersAsync();
+      expect(await writing).toBe(false);
+      expect(el.textContent).toBe('original draftX');
+    }
+  );
+
+  it.each(['abort', 'blur'])('releases selection during paste settle on %s', async (event) => {
+    const { el, selection, controller, writing } = start();
+    await vi.advanceTimersByTimeAsync(120);
+    if (event === 'abort') controller.abort();
+    else el.dispatchEvent(new Event('blur'));
+    expect(selection.isCollapsed).toBe(true);
+    expect(selection.anchorOffset).toBe(14);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+    expect(el.textContent).toBe('original draft');
+  });
+
+  it('restores a user selection and leaves subsequent user selection alone', async () => {
+    const { el, selection, writing } = start(0, 8);
+    el.dispatchEvent(new Event('beforeinput'));
+    expect(selection.toString()).toBe('original');
+    selection.collapse(el.firstChild!, 3);
+    el.dispatchEvent(new Event('beforeinput'));
+    expect(selection.anchorOffset).toBe(3);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+  });
+
+  it.each(['abort', 'blur'])('releases the whole-draft selection synchronously on %s', async (event) => {
+    const { el, selection, controller, writing } = start();
+    if (event === 'abort') controller.abort();
+    else el.dispatchEvent(new Event('blur'));
+    expect(selection.isCollapsed).toBe(true);
+    expect(selection.anchorOffset).toBe(14);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+    expect(el.textContent).toBe('original draft');
+  });
+
+  it('does not reclaim a selection the user moved during the wait', async () => {
+    const { selection, el, writing } = start();
+    selection.collapse(el.firstChild!, 3);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+    expect(selection.anchorOffset).toBe(3);
+    expect(el.textContent).toBe('original draft');
+  });
+});

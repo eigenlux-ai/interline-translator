@@ -47,7 +47,7 @@ import { getPageContext, type PageContext } from './page-context';
 import { TABLE_INTERNAL_DISPLAYS, TABLE_PARENT_TAGS } from './policy';
 import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './skip-policy';
 import { walkTranslationUnits, type TranslationUnit } from './traversal';
-import { visibleText } from './visibility';
+import { isHidden, isVisuallyHidden, visibleText } from './visibility';
 
 /** Source-text length at/below which the 译文 goes inline (same line) vs block (own line). */
 const INLINE_MAX_CHARS = 40;
@@ -103,7 +103,7 @@ const MO_OPTIONS: MutationObserverInit = {
   childList: true,
   subtree: true,
   attributes: true,
-  attributeFilter: ['hidden', 'style', 'class', 'open', 'aria-hidden'],
+  attributeFilter: ['hidden', 'style', 'class', 'open', 'aria-hidden', 'translate', 'contenteditable'],
   characterData: true,
 };
 
@@ -288,6 +288,7 @@ export class PageTranslator {
     this.dynamicTimer = null;
     this.rescanQueue.clear();
     this.retranslateQueue.clear();
+    this.visibilityQueue.clear();
     // Abort any streaming batches so the background cancels their LLM calls.
     this.inflight.forEach((h) => h.cancel());
     this.inflight.clear();
@@ -580,17 +581,19 @@ export class PageTranslator {
       const skippedContext = targetEl !== null && inSkippedAncestry(targetEl, this.root);
 
       if (m.type === 'attributes') {
-        // A reveal-class attribute changed (attributes always target an
-        // element). If this subtree was walk-pruned while hidden it carries no
-        // markers — a debounced re-walk picks it up now that it shows (and is
-        // a cheap marker-skip when nothing changed). INSIDE an already-walked
-        // unit, though, an attribute flip is styling, not new content: the
-        // walk only marks the unit ROOT, so an inner span looks virgin to a
-        // rescan and would be minted as a NESTED unit with a duplicate 译文
-        // ("Overview 概览 概览" on every tab-activation class toggle). The
-        // unit's gloss stands — skip.
-        if (targetEl && !skippedContext && !targetEl.closest?.(`[${DATA_OMNI.walked}]`)) {
-          this.scheduleRescan(targetEl);
+        // Visibility changes inside a unit can change its source text. Queue
+        // the owning unit, never an inner rescan that could mint nested glosses.
+        // The debounced visibleText comparison discards styling-only changes,
+        // including our own source styling. Check the holder before skipped
+        // ancestry: setting aria-hidden itself makes the changed span skipped.
+        const holder = targetEl?.closest(`[${DATA_OMNI.walked}]`);
+        if (holder) this.scheduleRetranslate(holder);
+        else if (targetEl && !skippedContext) this.scheduleRescan(targetEl);
+        // Ancestor selectors and inherited CSS variables can change text inside
+        // already walked descendants, which a reveal rescan deliberately skips.
+        if (targetEl) {
+          this.visibilityQueue.add(targetEl);
+          this.scheduleDynamicFlush();
         }
         continue;
       }
@@ -708,6 +711,19 @@ export class PageTranslator {
     this.lastHtmlById.delete(id);
   }
 
+  private sourceUnavailable(el: Element): boolean {
+    if (inSkippedAncestry(el)) return true;
+    // display:none does not inherit as a computed value. Check the source's
+    // ancestors too, including shadow hosts, before rescanning a retired unit.
+    for (let cur: Element | null = el; cur; ) {
+      if (isHidden(cur) || isVisuallyHidden(cur)) return true;
+      if (cur === this.root) break;
+      const tree = cur.getRootNode();
+      cur = cur.parentElement ?? (tree instanceof ShadowRoot ? tree.host : null);
+    }
+    return false;
+  }
+
   /**
    * Retire a unit, strip its walk marks, and re-enter the element into the
    * pipeline as fresh content — the ONE implementation of "rewalk from
@@ -721,7 +737,7 @@ export class PageTranslator {
     // The clipped stamp belongs to the RETIRED unit's sibling gloss — the
     // fresh walk re-stamps if (and only if) the new unit clips again.
     el.removeAttribute(DATA_OMNI.clipped);
-    this.scan(el);
+    if (!this.sourceUnavailable(el)) this.scan(el);
   }
 
   /**
@@ -764,6 +780,7 @@ export class PageTranslator {
   /** Debounce store for reveal/text-driven work (attribute storms coalesce). */
   private readonly rescanQueue = new Set<Element>();
   private readonly retranslateQueue = new Set<Element>();
+  private readonly visibilityQueue = new Set<Element>();
   private dynamicTimer: ReturnType<typeof setTimeout> | null = null;
 
   private scheduleRescan(el: Element): void {
@@ -782,6 +799,37 @@ export class PageTranslator {
       this.dynamicTimer = null;
       if (!this.active) return;
       const rescan = [...this.rescanQueue];
+      // Query only changed subtrees, once per debounce window. Shadow CSS is
+      // scoped separately, but host styles (including custom properties) inherit
+      // across the boundary, so include adopted roots below the changed host.
+      const visibility = [...this.visibilityQueue];
+      this.visibilityQueue.clear();
+      const visibilitySet = new Set(visibility);
+      const scopes = new Set<Element | ShadowRoot>();
+      for (const el of visibility) {
+        if (!el.isConnected) continue;
+        let ancestor = el.parentElement;
+        while (ancestor && !visibilitySet.has(ancestor)) ancestor = ancestor.parentElement;
+        if (ancestor) continue;
+        scopes.add(el);
+        for (const shadow of this.shadowRoots) {
+          let host: Element | null = shadow.host;
+          while (host) {
+            if (el.contains(host)) {
+              scopes.add(shadow);
+              break;
+            }
+            const root = host.getRootNode();
+            host = root instanceof ShadowRoot ? root.host : null;
+          }
+        }
+      }
+      for (const scope of scopes) {
+        scope.querySelectorAll(`[${DATA_OMNI.walked}]`).forEach((el) => {
+          const id = el.getAttribute(DATA_OMNI.walkId);
+          if (id && this.unitsById.get(id)?.element === el) this.retranslateQueue.add(el);
+        });
+      }
       const retranslate = [...this.retranslateQueue];
       this.rescanQueue.clear();
       this.retranslateQueue.clear();
@@ -793,7 +841,7 @@ export class PageTranslator {
         const id = el.getAttribute(DATA_OMNI.walkId);
         if (!id) return false;
         const tracked = this.unitsById.get(id);
-        return !tracked || visibleText(el).replace(/\s+/g, ' ').trim() !== tracked.text;
+        return !tracked || this.sourceUnavailable(el) || visibleText(el).replace(/\s+/g, ' ').trim() !== tracked.text;
       });
       const staleIds = new Set<string>();
       for (const el of changed) {
@@ -1063,7 +1111,7 @@ export class PageTranslator {
         onSeg: (index, delta) => {
           if (!this.active || epoch !== this.epoch) return;
           const unit = batch[index - 1];
-          if (!unit) return;
+          if (!unit || this.unitsById.get(unit.id) !== unit) return;
           const acc = (this.streamAcc.get(unit.id) ?? '') + delta;
           this.streamAcc.set(unit.id, acc);
           this.streamBuf.set(unit.id, acc);
@@ -1073,7 +1121,7 @@ export class PageTranslator {
         onSegDone: (index, text) => {
           if (!this.active || epoch !== this.epoch) return;
           const unit = batch[index - 1];
-          if (!unit) return;
+          if (!unit || this.unitsById.get(unit.id) !== unit) return;
           filled.add(unit.id);
           this.streamBuf.delete(unit.id);
           this.streamAcc.delete(unit.id);
