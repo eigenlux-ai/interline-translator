@@ -45,10 +45,10 @@ export class ModelsService {
     if (kind === 'google') {
       // Gemini: key in the query string; no Bearer header.
       const base = stripTrailingSlash(baseURL || 'https://generativelanguage.googleapis.com/v1beta');
-      const res = await fetchJson<GoogleModelsResponse>(
-        `${base}/models?key=${encodeURIComponent(key)}&pageSize=1000`,
-        { method: 'GET', headers: { ...extraHeaders } }
-      );
+      const res = await fetchJson<GoogleModelsResponse>(`${base}/models?key=${encodeURIComponent(key)}&pageSize=1000`, {
+        method: 'GET',
+        headers: { ...extraHeaders },
+      });
       const ids = (res.models ?? [])
         .filter((m) => !m.supportedGenerationMethods || m.supportedGenerationMethods.includes('generateContent'))
         .map((m) => (m.name ?? '').replace(/^models\//, ''));
@@ -72,8 +72,17 @@ export class ModelsService {
   }
 }
 
-/** Default `/models` base per kind (excluding google, handled above). */
-const DEFAULT_BASE: Record<Exclude<LlmProviderKind, 'google'>, string> = {
+/**
+ * Default `/models` base per kind (excluding google, handled above) — the
+ * endpoint a BLANK Base URL resolves to. Every entry is the vendor's OWN
+ * endpoint: a missing override must never send the user's API key to a third
+ * party. `anthropic-compatible` therefore stays on the official Anthropic API
+ * (same as the ai-sdk default in services/translation/provider/llm), while the
+ * UI's third-party example endpoint lives only as a placeholder hint
+ * (`BASE_URL_HINT` in react-app/components/settings/ProviderSettings, labeled
+ * 「第三方服务」). Exported for the endpoint-invariant test.
+ */
+export const DEFAULT_BASE: Record<Exclude<LlmProviderKind, 'google'>, string> = {
   openai: 'https://api.openai.com/v1',
   anthropic: 'https://api.anthropic.com/v1',
   openrouter: 'https://openrouter.ai/api/v1',
