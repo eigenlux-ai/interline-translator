@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { MantineProvider } from '@mantine/core';
-import { act, cleanup, render, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { storage } from '#imports';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { interlineTheme } from '@/react-app/managers/VisualManager/theme';
@@ -64,6 +64,36 @@ function pill(container: HTMLElement): HTMLElement | null {
   // A stable testid, NOT the aria-label: the label is localized copy that may
   // be reworded or follow a different locale than the test env resolves to.
   return container.querySelector('[data-testid="omni-selection-pill"]');
+}
+
+/** The card's drag handle (the header) — present only while the card is open. */
+function handle(container: HTMLElement): HTMLElement | null {
+  return container.querySelector('[data-testid="omni-selection-drag-handle"]');
+}
+
+function cardBox(container: HTMLElement): HTMLElement {
+  return container.querySelector('[data-omni-selection-ui]') as HTMLElement;
+}
+
+/**
+ * One pointer stream for the drag contract: a single pointer id throughout
+ * (one mouse, one finger) and client coordinates like a real gesture.
+ */
+function sendPointer(
+  target: HTMLElement,
+  type: 'pointerdown' | 'pointermove' | 'pointerup' | 'pointercancel' | 'lostpointercapture',
+  x: number,
+  y: number
+) {
+  fireEvent(target, new PointerEvent(type, { bubbles: true, composed: true, button: 0, pointerId: 1, clientX: x, clientY: y }));
+}
+
+/** Click 译 and wait for the streamed card — the handle only exists when open. */
+async function openCard(baseElement: HTMLElement) {
+  await act(async () => {
+    pill(baseElement)!.click();
+    await tick(40);
+  });
 }
 
 afterEach(() => {
@@ -425,4 +455,262 @@ it('never sites do not offer selection translation', async () => {
       await tick(40);
     });
   expect(streamTranslate).not.toHaveBeenCalled();
+});
+
+describe('dragging the card (manual position)', () => {
+  it('dragging the header moves the card and leaves it there, still open', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection(); // anchor (100, 100) → top +6
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    expect(box.style.left).toBe('100px');
+    expect(box.style.top).toBe('106px');
+
+    const grip = handle(baseElement)!;
+    expect(grip.style.cursor).toBe('grab');
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 210, 320);
+      await tick();
+    });
+    expect(grip.style.cursor).toBe('grabbing');
+    expect(box.style.left).toBe('200px'); // 210 − 10 grab offset
+    expect(box.style.top).toBe('306px'); // 320 − 14
+
+    await act(async () => {
+      sendPointer(grip, 'pointerup', 210, 320);
+      await tick();
+    });
+    expect(grip.style.cursor).toBe('grab');
+    expect(box.style.left).toBe('200px'); // dropped here, not re-anchored
+    expect(box.style.top).toBe('306px');
+    expect(handle(baseElement)).not.toBeNull(); // card still open
+    expect(baseElement.textContent).toContain('译文');
+  });
+
+  it('a press that travels inside the 5px threshold is a click, not a drag', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 113, 123); // ~4.2px — under the threshold
+      sendPointer(grip, 'pointerup', 113, 123);
+      await tick();
+    });
+    expect(box.style.left).toBe('100px');
+    expect(box.style.top).toBe('106px');
+    expect(grip.style.cursor).toBe('grab'); // never entered drag mode
+  });
+
+  it('a drag never dismisses the card — its own events, or a scroll mid-gesture', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 210, 320);
+      await tick();
+    });
+    // A page scroll landing mid-gesture must not yank the card out from under
+    // the pointer (touch/kinetic scrolling while dragging).
+    await act(async () => {
+      document.dispatchEvent(new Event('scroll'));
+      await tick();
+    });
+    expect(handle(baseElement)).not.toBeNull();
+    expect(baseElement.textContent).toContain('译文');
+
+    await act(async () => {
+      sendPointer(grip, 'pointerup', 210, 320);
+      // The captured release retargets onto our handle: a mouseup whose path
+      // runs through our own UI must not read as "the user selected elsewhere".
+      grip.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+      await tick(30);
+    });
+    expect(handle(baseElement)).not.toBeNull();
+    expect(baseElement.textContent).toContain('译文');
+
+    // …and the guard dies with the drag: a REAL page scroll still dismisses.
+    await act(async () => {
+      document.dispatchEvent(new Event('scroll'));
+      await tick();
+    });
+    expect(pill(baseElement)).toBeNull();
+    expect(handle(baseElement)).toBeNull();
+  });
+
+  it('a NEW selection drops the manual position and re-anchors', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 210, 320);
+      sendPointer(grip, 'pointerup', 210, 320);
+      await tick();
+    });
+    expect(box.style.left).toBe('200px');
+
+    // The user selects something else on the host page (mouseup OUTSIDE our UI).
+    await act(async () => {
+      mockSelection('another passage', { left: 300, bottom: 150 });
+      mouseUp();
+      await tick(30);
+    });
+    expect(box.style.left).toBe('300px'); // back to the anchor…
+    expect(box.style.top).toBe('156px'); // …not the dragged spot (200, 306)
+  });
+
+  it('a pinned card KEEPS its dragged spot across selections', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    await act(async () => {
+      const pin = [...baseElement.querySelectorAll('button')].find((b) => b.getAttribute('aria-label') === m.sel_pin());
+      pin!.click();
+      await tick();
+    });
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 210, 320);
+      sendPointer(grip, 'pointerup', 210, 320);
+      await tick();
+    });
+    expect(box.style.left).toBe('200px');
+
+    await act(async () => {
+      mockSelection('another passage', { left: 300, bottom: 150 });
+      mouseUp();
+      await tick(30);
+    });
+    // Pinning froze the anchor already; the dragged spot must survive with it.
+    expect(box.style.left).toBe('200px');
+    expect(box.style.top).toBe('306px');
+  });
+
+  it('dragging past the viewport edges clamps into the 8px margin', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 5000, 5000);
+      await tick();
+    });
+    expect(box.style.left).toBe('644px'); // 1000 − 348 (card width) − 8
+    expect(box.style.top).toBe('352px'); // 600 − 240 (card max height) − 8
+    await act(async () => {
+      sendPointer(grip, 'pointerup', 5000, 5000);
+      sendPointer(grip, 'pointerdown', 650, 360);
+      sendPointer(grip, 'pointermove', -5000, -5000);
+      await tick();
+    });
+    expect(box.style.left).toBe('8px');
+    expect(box.style.top).toBe('8px');
+    await act(async () => {
+      sendPointer(grip, 'pointerup', -5000, -5000);
+      await tick();
+    });
+  });
+
+  it('a window resize re-clamps a dragged spot back on screen', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 5000, 5000);
+      sendPointer(grip, 'pointerup', 5000, 5000);
+      await tick();
+    });
+    expect(box.style.left).toBe('644px'); // parked at the old right edge
+
+    window.innerWidth = 500;
+    window.innerHeight = 400;
+    await act(async () => {
+      window.dispatchEvent(new Event('resize'));
+      await tick();
+    });
+    expect(box.style.left).toBe('144px'); // 500 − 348 − 8
+    expect(box.style.top).toBe('232px'); // 400 − 160 (max height) − 8
+  });
+
+  it('a visualViewport resize re-clamps too', async () => {
+    window.innerWidth = 1000;
+    window.innerHeight = 600;
+    // An EventTarget stands in for the (happy-dom-less) visual viewport; the
+    // stub must be in place BEFORE mount so the listener subscribes to it.
+    const vv = new EventTarget();
+    const had = Object.getOwnPropertyDescriptor(window, 'visualViewport');
+    Object.defineProperty(window, 'visualViewport', { value: vv, configurable: true, writable: true });
+    onTestFinished(() => {
+      if (had) Object.defineProperty(window, 'visualViewport', had);
+      else delete (window as unknown as { visualViewport?: unknown }).visualViewport;
+    });
+
+    const { baseElement } = await mountWithSelection();
+    await openCard(baseElement);
+    const box = cardBox(baseElement);
+    const grip = handle(baseElement)!;
+    await act(async () => {
+      sendPointer(grip, 'pointerdown', 110, 120);
+      sendPointer(grip, 'pointermove', 5000, 5000);
+      sendPointer(grip, 'pointerup', 5000, 5000);
+      await tick();
+    });
+    expect(box.style.left).toBe('644px');
+
+    window.innerWidth = 500;
+    window.innerHeight = 400;
+    await act(async () => {
+      vv.dispatchEvent(new Event('resize'));
+      await tick();
+    });
+    expect(box.style.left).toBe('144px');
+    expect(box.style.top).toBe('232px');
+  });
+
+  for (const ending of ['pointercancel', 'lostpointercapture'] as const) {
+    it(`an interrupted drag settles on ${ending} and keeps its spot`, async () => {
+      window.innerWidth = 1000;
+      window.innerHeight = 600;
+      const { baseElement } = await mountWithSelection();
+      await openCard(baseElement);
+      const box = cardBox(baseElement);
+      const grip = handle(baseElement)!;
+      await act(async () => {
+        sendPointer(grip, 'pointerdown', 110, 120);
+        sendPointer(grip, 'pointermove', 210, 320);
+        await tick();
+      });
+      expect(grip.style.cursor).toBe('grabbing');
+      await act(async () => {
+        sendPointer(grip, ending, 210, 320);
+        sendPointer(grip, 'pointermove', 400, 400); // press is gone — dead traffic
+        await tick();
+      });
+      expect(grip.style.cursor).toBe('grab');
+      expect(box.style.left).toBe('200px'); // interrupted drag keeps its spot
+      expect(box.style.top).toBe('306px');
+    });
+  }
 });
