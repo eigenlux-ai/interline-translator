@@ -17,7 +17,6 @@
  */
 
 import { useEffect, useMemo, useState, useSyncExternalStore, type PropsWithChildren } from 'react';
-import { generateColorsMap } from '@mantine/colors-generator';
 import {
   Combobox,
   createTheme,
@@ -31,9 +30,6 @@ import {
   Popover,
   Tooltip,
   type Direction,
-  type MantineColorShade,
-  type MantineColorsTuple,
-  type MantinePrimaryShade,
   type MantineThemeOverride,
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
@@ -44,6 +40,7 @@ import { RTL_UI_LANGS } from '@/data/models/lang';
 import { getHostColorScheme, subscribeHostColorScheme } from '@/dom/host-scheme';
 import { getUiLocale, subscribeUiLocale } from '@/i18n';
 import { extStorageColorSchemeManager } from '../colorSchemeManager';
+import { isCustomPrimaryColor, useGeneratedPrimaryRamp } from '../color-generation';
 import type { VisualColorScheme, VisualPrimaryColor } from '../defs';
 import { interlineTheme } from '../theme';
 
@@ -93,19 +90,12 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
   // palette and displace the brand 朱. A NAMED color (the default `cinnabar`,
   // or any Mantine palette name) resolves from the merged base theme, which
   // preserves cinnabar's virtualColor (light/dark ramps) and primaryShade.
-  const { colors, baseColorIndex } = useMemo((): {
-    colors: MantineColorsTuple | undefined;
-    baseColorIndex: MantineColorShade | MantinePrimaryShade | undefined;
-  } => {
-    if (primaryColor.startsWith('#')) {
-      const result = generateColorsMap(primaryColor);
-      return {
-        colors: result.colors.map((color) => color.hex()) as unknown as MantineColorsTuple,
-        baseColorIndex: result.baseColorIndex as MantineColorShade,
-      };
-    }
-    return { colors: undefined, baseColorIndex: undefined };
-  }, [primaryColor]);
+  // Generation goes through ../color-generation: a dynamic import keeps
+  // chroma-js out of the resident bundle and results are cached per hex. The
+  // first generation for a custom hex resolves asynchronously (one frame),
+  // during which `colors` is undefined and the brand default shows — see the
+  // primaryColor fallback in the theme override below.
+  const { colors, baseColorIndex } = useGeneratedPrimaryRamp(primaryColor);
 
   const theme = useMemo(() => {
     const overrides: MantineThemeOverride = {
@@ -119,7 +109,10 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
           }
         : {
             // Named: let the merged theme resolve it (default = brand cinnabar).
-            primaryColor,
+            // A custom HEX still generating has no palette yet — fall back to
+            // the brand default for that frame instead of naming a palette
+            // that doesn't exist (a hex string is not a palette name).
+            primaryColor: isCustomPrimaryColor(primaryColor) ? 'cinnabar' : primaryColor,
           }),
       components: {
         ...(isShadow

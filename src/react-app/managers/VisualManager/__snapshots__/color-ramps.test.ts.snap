@@ -1,0 +1,54 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`generated color ramps (VisualManager/color-ramps) > are 10-shade tuples, pinned by snapshot 1`] = `
+{
+  "cinnabarDark": [
+    "#ffece7",
+    "#fedad3",
+    "#f4b3a8",
+    "#eb8a79",
+    "#e2614a",
+    "#df5138",
+    "#de452a",
+    "#c5361e",
+    "#b02e18",
+    "#9b2311",
+  ],
+  "cinnabarLight": [
+    "#ffeeea",
+    "#f9dcd7",
+    "#edb7ad",
+    "#e28f81",
+    "#d96d5b",
+    "#d45843",
+    "#d24d36",
+    "#c2402a",
+    "#a73522",
+    "#932a1a",
+  ],
+  "dangerDark": [
+    "#ffeaed",
+    "#fed5d9",
+    "#f3a9b1",
+    "#e97b87",
+    "#e04c5c",
+    "#dd3a4c",
+    "#dc2c40",
+    "#c31e32",
+    "#af162b",
+    "#9a0823",
+  ],
+  "dangerLight": [
+    "#ffecee",
+    "#f8d7da",
+    "#eeabb3",
+    "#e57d89",
+    "#de5765",
+    "#da3f4e",
+    "#d83243",
+    "#c02535",
+    "#a81d2d",
+    "#971226",
+  ],
+}
+`;
