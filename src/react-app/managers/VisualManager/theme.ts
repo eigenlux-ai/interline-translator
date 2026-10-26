@@ -10,24 +10,24 @@
  * (portal target, zIndex, floatingStrategy, scale) layer on top.
  */
 
-import { generateColors } from '@mantine/colors-generator';
 import { createTheme, virtualColor, type MantineColorsTuple } from '@mantine/core';
+import { cinnabarDark, cinnabarLight, dangerDark, dangerLight } from './color-ramps';
 
 /* ── 朱 cinnabar: the single accent / primary.
- *   generateColors emits ONE 10-step ramp (not light+dark); default light/dark
- *   difference is only a primaryShade index swap. Our 朱 must be precise in BOTH
- *   schemes, so we generate a ramp for each and pin them with virtualColor
- *   (Mantine 7.7+), with 10 steps each. ── */
-const cinnabarLight: MantineColorsTuple = generateColors('#C2402A'); // light 朱
-const cinnabarDark: MantineColorsTuple = generateColors('#E2614A'); // dark 朱 (brighter/warmer, pops on dark)
+ *   The ramp generator emits ONE 10-step ramp (not light+dark); default
+ *   light/dark difference is only a primaryShade index swap. Our 朱 must be
+ *   precise in BOTH schemes, so each scheme has its own ramp, pinned with
+ *   virtualColor (Mantine 7.7+), 10 steps each. The four ramps come PRECOMPUTED
+ *   from ./color-ramps (generated once from @mantine/colors-generator) so this
+ *   module does not statically import that package — see color-ramps.ts for why
+ *   (chroma-js resident-bundle weight) and color-ramps.test.ts for the pin. ── */
 
 /* ── danger: a cool deep red for error + destructive actions. The brand cinnabar
  *   is a warm orange-red; danger sits on the cool side so the two never collide.
  *   Error states always pair icon + copy, never colour alone.
  *   In global.css we map `--mantine-color-error` → `--mantine-color-danger-6`
- *   (auto-follows scheme through virtualColor). ── */
-const dangerLight: MantineColorsTuple = generateColors('#A81D2D'); // error/danger (light, cool deep red)
-const dangerDark: MantineColorsTuple = generateColors('#E04C5C'); // error/danger (dark, brightened cool red)
+ *   (auto-follows scheme through virtualColor). dangerLight/dangerDark come
+ *   precomputed from ./color-ramps like the 朱 ramps. ── */
 
 /* ── 暖灰 sand: warm neutral ramp (paper → ink). Text hierarchy de-emphasises
  *   via this ramp; never grey text on a coloured ground. ── */
