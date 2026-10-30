@@ -111,6 +111,7 @@ class SatelliteRegistry {
   private observer: MutationObserver | null = null;
   private checkScheduled = false;
   private useConstructableSheets = supportsConstructableSheets;
+  private refreshToken = 0;
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -147,6 +148,10 @@ class SatelliteRegistry {
     const source = this.styleSource;
     if (!source) return;
 
+    // Dev stylesheet fetches can finish out of order after a theme/source
+    // change. Only the latest refresh may publish sheets and cached CSS.
+    const token = ++this.refreshToken;
+
     const cssTexts: string[] = [];
     source.querySelectorAll('style').forEach((styleEl) => {
       if (styleEl.textContent) cssTexts.push(styleEl.textContent);
@@ -163,6 +168,8 @@ class SatelliteRegistry {
         console.warn('[surface/satellite] failed to inline stylesheet link (host CSP?)', error);
       }
     }
+
+    if (token !== this.refreshToken) return;
 
     this.cssTexts = cssTexts;
     if (this.useConstructableSheets) {
