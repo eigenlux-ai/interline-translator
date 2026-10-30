@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.7 — 2026-10-31
+
+- Fix translation lifecycle, page traversal, placeholder handling and input replacement regressions.
+- Prevent stale provider settings requests from overwriting newer configuration and tighten loopback URL validation.
+- Correct Gemini model capability detection and thinking parameters.
+- Ignore outdated asynchronous satellite stylesheet refreshes so newer styles remain applied.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.6 — 2026-10-22
 
 - Snap the floating ball to the nearest edge when dragging is cancelled or pointer capture is lost, and use the latest pointer position when settling a drag.
