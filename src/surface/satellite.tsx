@@ -141,6 +141,9 @@ class SatelliteRegistry {
   private observer: MutationObserver | null = null;
   private checkScheduled = false;
   private useConstructableSheets = supportsConstructableSheets;
+  /** Bumped on every refresh: an async (dev `<link>`) capture may only publish
+   *  its result while it is still the latest refresh. */
+  private refreshToken = 0;
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -192,6 +195,10 @@ class SatelliteRegistry {
     // Zero satellites → nothing to style; skip the capture completely.
     if (!source || this.records.size === 0) return;
 
+    // Dev stylesheet fetches can finish out of order after a theme/source
+    // change. Only the latest refresh may publish sheets and cached CSS.
+    const token = ++this.refreshToken;
+
     const cssTexts: string[] = [];
     source.querySelectorAll('style').forEach((styleEl) => {
       if (styleEl.textContent) cssTexts.push(styleEl.textContent);
@@ -208,6 +215,11 @@ class SatelliteRegistry {
         console.warn('[surface/satellite] failed to inline stylesheet link (host CSP?)', error);
       }
     }
+
+    // Stale or orphaned capture: a newer refresh already started, or the last
+    // satellite went away while this fetch was in flight (publishing then
+    // would re-hold the CSSOM the on-demand policy just freed).
+    if (token !== this.refreshToken || this.records.size === 0) return;
 
     // Dedupe: unchanged CSS (common — theme object churn, dir flips) must not
     // rebuild the sheets.
