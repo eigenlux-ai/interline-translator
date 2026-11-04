@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.8 — 2026-11-04
+
+- Make the selection translation card draggable by its header. The new position lasts for the current card; a new selection re-anchors it.
+- Leave API keys out of configuration exports by default. Exporting with keys is a separate action behind a plain-text warning.
+- Label the Anthropic-compatible example Base URL as a third-party service. A blank Base URL still uses the official Anthropic endpoint.
+- Reduce per-page memory: ship only the Mantine component styles the in-page UI uses (float-ui CSS 262 KB → 158 KB), load satellite styles only while satellites exist, cap the re-injection HTML cache, and clean up removed content inside shadow roots.
+- Upgrade zod and @ai-sdk/provider-utils to fix GHSA-mrhx-c7xc-m3w5 and GHSA-866g-f22w-33x8.
+
+Thanks to Rito-492 for the first external contribution. No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.7 — 2026-10-31
 
 - Fix translation lifecycle, page traversal, placeholder handling and input replacement regressions.
