@@ -3,7 +3,8 @@
    This test PLAYS THE HOST PAGE (repaints body, inspects head/html) to assert
    the exact discipline the lint rule enforces: the surface must not touch the
    host document. The assertions need direct host access to prove that. */
-import { useDirection } from '@mantine/core';
+import { generateColorsMap } from '@mantine/colors-generator';
+import { useDirection, useMantineTheme, type MantineTheme } from '@mantine/core';
 import { act, cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { SurfaceProvider } from '@/surface/context';
@@ -125,5 +126,44 @@ describe('MantineRegistry direction', () => {
     await waitFor(() => expect(getByTestId('dir').textContent).toBe('rtl'));
     expect(env.rootElement.getAttribute('dir')).toBe('rtl');
     expect(document.documentElement.hasAttribute('dir')).toBe(false);
+  });
+});
+
+/**
+ * Custom HEX primary: an explicit user customization displaces the brand 朱
+ * with a generated palette. Since the generation moved to the LAZY
+ * ../color-generation path (dynamic import keeps chroma-js out of the resident
+ * bundle), the palette is not there on the first frame — the brand default
+ * shows instead — and the merged theme must carry EXACTLY the
+ * `generateColorsMap` values once it resolves. (The value pin itself lives in
+ * ../color-generation.test.ts; this covers the wiring + fallback semantics.)
+ */
+describe('MantineRegistry custom primary color', () => {
+  let probeTheme: MantineTheme | undefined;
+  function ThemeProbe() {
+    probeTheme = useMantineTheme();
+    return null;
+  }
+
+  it('falls back to the brand default for one frame, then displaces it with the generated palette', async () => {
+    const hex = '#C2402A';
+    const expected = generateColorsMap(hex);
+    const env = makeShadowEnv();
+    render(
+      <SurfaceProvider env={env}>
+        <MantineRegistry colorScheme="light" primaryColor={hex}>
+          <ThemeProbe />
+        </MantineRegistry>
+      </SurfaceProvider>
+    );
+
+    // Synchronous first frame: the custom ramp is still generating.
+    expect(probeTheme?.primaryColor).toBe('cinnabar'); // brand fallback, not the raw hex
+    expect(probeTheme?.colors.primary).toBeUndefined();
+
+    // …then the generated palette takes over, byte-identical to the generator.
+    await waitFor(() => expect(probeTheme?.primaryColor).toBe('primary'));
+    expect(probeTheme?.colors.primary).toEqual(expected.colors.map((color) => color.hex()));
+    expect(probeTheme?.primaryShade).toBe(expected.baseColorIndex);
   });
 });

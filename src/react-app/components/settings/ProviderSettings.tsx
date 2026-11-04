@@ -67,11 +67,39 @@ const ADDABLE: Array<{ kind: LlmProviderKind; label: string; defaultModel: strin
 /** Placeholder hint per kind — a suggestion only; new engines start with a blank model. */
 const MODEL_HINT: Record<string, string> = Object.fromEntries(ADDABLE.map((a) => [a.kind, a.defaultModel]));
 
-/** Real-world baseURL examples for the *-compatible kinds, where a custom endpoint is the point. */
-const BASE_URL_HINT: Record<string, string> = {
+/**
+ * Presets whose EXAMPLE endpoint is somebody else's service rather than the
+ * vendor's own: `anthropic-compatible` exists to reach Kimi / GLM / a local
+ * proxy, so its real-world example is a third-party endpoint. The UI marks
+ * these 「第三方服务」 so the example is never read as the built-in default —
+ * the request fallback (`DEFAULT_BASE` in core/rpc/provider-models, and the
+ * ai-sdk default when Base URL is blank) stays the OFFICIAL endpoint, so a
+ * blank field never ships the user's key to a third party. Exported for the
+ * endpoint-invariant test in ProviderSettings-endpoints.test.ts.
+ */
+export const THIRD_PARTY_KINDS: ReadonlySet<LlmProviderKind> = new Set<LlmProviderKind>(['anthropic-compatible']);
+
+/**
+ * Real-world baseURL examples for the *-compatible kinds, where a custom
+ * endpoint is the point. A hint is a PLACEHOLDER, never a default: values here
+ * are not used for any request. Keep the anthropic-compatible entry on a
+ * clearly third-party endpoint (labeled as such in the UI — see
+ * {@link THIRD_PARTY_KINDS}) and never on `https://api.anthropic.com/v1`,
+ * which is what a blank Base URL already resolves to.
+ */
+export const BASE_URL_HINT: Record<string, string> = {
   'openai-compatible': 'http://localhost:11434/v1',
   'anthropic-compatible': 'https://api.moonshot.cn/anthropic',
 };
+
+/** 「第三方服务」 chip shown wherever a {@link THIRD_PARTY_KINDS} preset appears. */
+function ThirdPartyBadge({ size = 'xs' }: { size?: 'xs' | 'sm' }) {
+  return (
+    <Badge variant="light" color="sand" size={size} style={{ flexShrink: 0 }}>
+      {m.provider_third_party()}
+    </Badge>
+  );
+}
 
 export interface ProviderSettingsProps {
   config: Config;
@@ -353,6 +381,7 @@ function ProviderCard({
               <Badge variant="light" color="cinnabar" size="sm" style={{ flexShrink: 0 }}>
                 {p.kind}
               </Badge>
+              {THIRD_PARTY_KINDS.has(p.kind) && <ThirdPartyBadge size="sm" />}
               {inferModelCapabilities(p.kind, p.model).reasoning === 'mandatory' && (
                 <Badge variant="light" color="cinnabar" size="sm" style={{ flexShrink: 0 }}>
                   {m.provider_reasoning_required()}
@@ -436,6 +465,9 @@ function ProviderCard({
               label={m.provider_base_url()}
               size="xs"
               placeholder={BASE_URL_HINT[p.kind] ?? m.provider_base_url_default()}
+              // The placeholder is a third-party EXAMPLE for these kinds — say
+              // so, and say where a blank field actually goes.
+              description={THIRD_PARTY_KINDS.has(p.kind) ? m.provider_base_url_third_party_desc() : undefined}
               value={baseURLText}
               error={baseURLError ? m.provider_base_url_insecure() : undefined}
               onChange={(e) => {
@@ -684,7 +716,11 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
       </Menu.Target>
       <Menu.Dropdown>
         {ADDABLE.map((a) => (
-          <Menu.Item key={a.kind} onClick={() => add(a.kind, a.label)}>
+          <Menu.Item
+            key={a.kind}
+            onClick={() => add(a.kind, a.label)}
+            rightSection={THIRD_PARTY_KINDS.has(a.kind) ? <ThirdPartyBadge /> : undefined}
+          >
             {a.label}
           </Menu.Item>
         ))}
@@ -725,6 +761,7 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
                     size="xs"
                     variant="default"
                     leftSection={<PlusIcon width={12} height={12} />}
+                    rightSection={THIRD_PARTY_KINDS.has(a.kind) ? <ThirdPartyBadge /> : undefined}
                     onClick={() => add(a.kind, a.label)}
                   >
                     {a.label}

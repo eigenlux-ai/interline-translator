@@ -12,6 +12,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import {
   ActionIcon,
   Badge,
@@ -28,6 +29,8 @@ import {
 } from '@mantine/core';
 import { CheckIcon, CloseIcon, CopyIcon, PinIcon, SparklesIcon, VolumeIcon } from '@/react-app/components/icons';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
+import { usePointerDrag } from '@/react-app/hooks/usePointerDrag';
+import type { DragPoint } from '@/react-app/hooks/usePointerDrag';
 import { DATA_OMNI, Z_INDEX } from '@/constants';
 import { selectionNeighbors } from '@/dom/selection-context';
 import { syncUiLocaleFrom } from '@/i18n';
@@ -149,6 +152,10 @@ export default function SelectionApp() {
   const [sel, setSel] = useState<SelectionInfo | null>(null);
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);
+  /** Where the user last dragged the card (fixed left/top). Overrides the
+   *  selection anchor for THIS showing only — never persisted; a new selection
+   *  or a dismiss drops it and the card falls back to the anchor. */
+  const [manualPos, setManualPos] = useState<DragPoint | null>(null);
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -176,11 +183,65 @@ export default function SelectionApp() {
   /** The showing pill was summoned by the keyboard, and no Tab has claimed it yet. */
   const pillAwaitsTab = useRef(false);
 
+  // ── Positioning: the container is fixed at the selection anchor, or at the
+  //    spot the user dragged it to (manualPos). Either way it is clamped into
+  //    the viewport with an 8px margin, using the SAME bounds for both. ──
+  const width = open ? 348 : 36;
+  const cardMaxH = Math.min(window.innerHeight * 0.4, 480);
+  const clampToViewport = useCallback(
+    (p: DragPoint): DragPoint => {
+      // Bounds read at CALL time: a resize mid-gesture must clamp against the
+      // viewport that exists now, not the one captured at render/subscribe.
+      const maxH = Math.min(window.innerHeight * 0.4, 480);
+      return {
+        x: Math.max(8, Math.min(p.x, window.innerWidth - width - 8)),
+        y: Math.max(8, Math.min(p.y, window.innerHeight - (open ? maxH + 8 : 40))),
+      };
+    },
+    [open, width]
+  );
+
+  // True from drag start to drag end — kept in a ref so the scroll listener
+  // (subscribed once) can tell "a drag is in flight" without re-subscribing.
+  const dragActive = useRef(false);
+  const drag = usePointerDrag({
+    // The grab offset must be measured from where the box RENDERS (clamped) —
+    // a raw anchor outside the viewport would make the card jump on first move.
+    position: clampToViewport(manualPos ?? (sel ? { x: sel.x, y: sel.y + 6 } : { x: 0, y: 0 })),
+    clamp: clampToViewport,
+    onDragStart: () => {
+      dragActive.current = true;
+    },
+    onDrag: (pos) => setManualPos(pos),
+    onDragEnd: () => {
+      dragActive.current = false;
+    },
+  });
+
+  // A viewport change must never leave a dragged card stranded off-screen:
+  // re-clamp the manual position (the anchor case re-clamps on every render).
+  useEffect(() => {
+    const onResize = () => {
+      setManualPos((p) => {
+        if (!p) return p;
+        const c = clampToViewport(p);
+        return c.x === p.x && c.y === p.y ? p : c;
+      });
+    };
+    window.addEventListener('resize', onResize);
+    window.visualViewport?.addEventListener('resize', onResize);
+    return () => {
+      window.removeEventListener('resize', onResize);
+      window.visualViewport?.removeEventListener('resize', onResize);
+    };
+  }, [clampToViewport]);
+
   const dismiss = useCallback(() => {
     invalidate();
     setSel(null);
     setOpen(false);
     setPinned(false);
+    setManualPos(null); // the dragged spot dies with the showing
     pillAwaitsTab.current = false;
   }, [invalidate]);
 
@@ -205,6 +266,10 @@ export default function SelectionApp() {
       const ay = caret ? caret.bottom : point?.y || rect.bottom;
       invalidate();
       pillAwaitsTab.current = point === null;
+      // A NEW selection re-anchors from scratch — a dragged spot belongs to the
+      // showing it was dragged in (pinned never reaches here, so a pinned card
+      // keeps its dragged position across selections).
+      setManualPos(null);
       setSel({ text, x: ax, y: ay, neighbors: selectionNeighbors(s!) });
       setOpen(false);
       setResult('');
@@ -235,7 +300,9 @@ export default function SelectionApp() {
       pillRef.current.focus({ preventScroll: true });
     };
     const onScroll = (e: Event) => {
-      if (isOwnUi(e) || pinned) return;
+      // A drag in flight is NOT a page walk-away: a scroll landing mid-gesture
+      // (touch, kinetic) must not yank the card out from under the pointer.
+      if (isOwnUi(e) || pinned || dragActive.current) return;
       dismiss();
     };
     document.addEventListener('mouseup', onMouseUp);
@@ -345,10 +412,9 @@ export default function SelectionApp() {
   };
   const fontKai = other.fontKai;
 
-  const width = open ? 348 : 36;
-  const cardMaxH = Math.min(window.innerHeight * 0.4, 480);
-  const left = Math.max(8, Math.min(sel.x, window.innerWidth - width - 8));
-  const top = Math.max(8, Math.min(sel.y + 6, window.innerHeight - (open ? cardMaxH + 8 : 40)));
+  // Dragged spot wins; otherwise the selection anchor. Same clamp either way.
+  const anchor = manualPos ?? { x: sel.x, y: sel.y + 6 };
+  const { x: left, y: top } = clampToViewport(anchor);
 
   return (
     <Box
@@ -408,14 +474,32 @@ export default function SelectionApp() {
                 overflow: 'hidden',
               }}
             >
-              {/* Header */}
+              {/* Header — the drag handle: its blank area (译 badge + Badge
+                  included, the action buttons NOT) moves the card. */}
               <Group
                 justify="space-between"
                 align="center"
                 px={10}
                 py={6}
                 wrap="nowrap"
-                style={{ borderBottom: `1px solid ${other.hair[scheme]}` }}
+                data-testid="omni-selection-drag-handle"
+                onPointerDown={(e: ReactPointerEvent) => {
+                  // The buttons share the handle's blank area but are not part
+                  // of it: their presses keep their clicks (never preventDefault
+                  // them), and only a press off them starts a drag.
+                  if ((e.target as HTMLElement).closest('button')) return;
+                  drag.onPointerDown(e);
+                }}
+                onPointerMove={drag.onPointerMove}
+                onPointerUp={drag.onPointerUp}
+                onPointerCancel={drag.onPointerCancel}
+                onLostPointerCapture={drag.onLostPointerCapture}
+                style={{
+                  borderBottom: `1px solid ${other.hair[scheme]}`,
+                  cursor: drag.dragging ? 'grabbing' : 'grab',
+                  userSelect: 'none', // the Body keeps its text selectable
+                  touchAction: 'none', // touch drags must not scroll the host page
+                }}
               >
                 <Group gap={6} align="center">
                   <Box

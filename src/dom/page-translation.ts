@@ -59,6 +59,28 @@ const MAX_PAGE_BATCHES = 2;
 /** Attempts older than this don't count — benign periodic re-renders never starve. */
 const REINJECT_DECAY_MS = 5_000;
 
+/**
+ * Caps on the re-injection HTML cache (`lastHtmlById`: one final rendered 译文
+ * HTML string per translated unit, the zero-network source for SPA re-injection).
+ * Uncapped it grows with every unit ever translated on a long session — a heavy
+ * page easily pins megabytes of strings. Two bounds because they police
+ * different things:
+ *   - ENTRY count keeps the per-unit bookkeeping proportional to what a session
+ *     can actually revisit (500 units ≈ several screens of prose);
+ *   - CHAR budget is the memory ceiling itself — a few giant units would sail
+ *     past any sane entry count alone.
+ * Both are LRU: the least-recently-filled/refilled unit is dropped first. An
+ * evicted unit is never lost — its heal falls back to the retranslate path,
+ * which the background serves from the Dexie translation cache (same text →
+ * same cache key → zero network), so eviction costs a lookup, never a
+ * re-translation.
+ */
+const MAX_CACHED_HTML_ENTRIES = 500;
+/** ~2MB of cache payload (UTF-16 code units; a byte-precise allocator count would be noise). */
+const MAX_CACHED_HTML_CHARS = 2 * 1024 * 1024;
+/** Detached-unit sweep rate limit — see pruneDetached/schedulePruneDetached. */
+const PRUNE_DEBOUNCE_MS = 1_000;
+
 export interface PageTranslatorOptions {
   source: SourceLang;
   target: LangCode;
@@ -91,6 +113,10 @@ export interface PageTranslatorOptions {
   flushDelayMs?: number;
   /** Preload margin for the IntersectionObserver. */
   rootMargin?: string;
+  /** LRU entry cap on the re-injection HTML cache (default MAX_CACHED_HTML_ENTRIES). */
+  maxCachedHtmlEntries?: number;
+  /** LRU char budget on the re-injection HTML cache (default MAX_CACHED_HTML_CHARS). */
+  maxCachedHtmlChars?: number;
 }
 
 /**
@@ -129,8 +155,12 @@ export class PageTranslator {
   private rafQueued = false;
   /** unitId → final segDone text awaiting one anchored fill pass per frame. */
   private readonly fillQueue = new Map<string, { unit: TranslationUnit; text: string }>();
-  /** Final rendered HTML per unit — the zero-network source for SPA re-injection. */
+  /** Final rendered HTML per unit — the zero-network source for SPA re-injection.
+   *  Insertion order doubles as LRU order (touch = delete + re-set); bounded by
+   *  the entry/char caps via cacheHtml (see MAX_CACHED_HTML_*). */
   private readonly lastHtmlById = new Map<string, string>();
+  /** Running payload size of `lastHtmlById` (chars) — the budget side of the cap. */
+  private cachedHtmlChars = 0;
   /** Re-injection attempts per SOURCE ELEMENT (WeakMap: element identity survives
    *  the pending-path re-walk that mints a fresh unit id; GC owns the cleanup). */
   private readonly reinjectCount = new WeakMap<Element, { n: number; ts: number }>();
@@ -170,6 +200,9 @@ export class PageTranslator {
   private readonly rootMargin: string;
   private readonly policy: SkipPolicy;
   private readonly richText: boolean;
+  /** Re-injection HTML cache caps (LRU) — see MAX_CACHED_HTML_*. */
+  private readonly maxHtmlCacheEntries: number;
+  private readonly maxHtmlCacheChars: number;
 
   constructor(
     private readonly root: Element,
@@ -180,6 +213,8 @@ export class PageTranslator {
     this.rootMargin = opts.rootMargin ?? '300px';
     this.policy = skipPolicy(opts.target, opts.skipLanguages ?? []);
     this.richText = opts.richText ?? true;
+    this.maxHtmlCacheEntries = opts.maxCachedHtmlEntries ?? MAX_CACHED_HTML_ENTRIES;
+    this.maxHtmlCacheChars = opts.maxCachedHtmlChars ?? MAX_CACHED_HTML_CHARS;
   }
 
   /**
@@ -286,6 +321,8 @@ export class PageTranslator {
     if (this.flushTimer) clearTimeout(this.flushTimer);
     if (this.dynamicTimer) clearTimeout(this.dynamicTimer);
     this.dynamicTimer = null;
+    if (this.pruneTimer !== null) clearTimeout(this.pruneTimer);
+    this.pruneTimer = null;
     this.rescanQueue.clear();
     this.retranslateQueue.clear();
     this.visibilityQueue.clear();
@@ -312,7 +349,7 @@ export class PageTranslator {
     this.unitsById.clear();
     this.modeById.clear();
     this.splitNodesById.clear();
-    this.lastHtmlById.clear();
+    this.clearHtmlCache();
     this.pending.clear();
     this.nearby.clear();
     this.dispatching.clear();
@@ -414,6 +451,48 @@ export class PageTranslator {
   }
 
   /**
+   * Re-injection HTML cache — a per-unit LRU. `lastHtmlById` is BOTH the store
+   * and the recency order (Map iteration = insertion order; a touch is a
+   * delete + re-set). Eviction is OLDEST-first under either cap; the entry just
+   * written is the newest, so it survives unless it cannot fit the char budget
+   * on its own (then it is never stored — its unit heals through the
+   * retranslate path instead, where the background Dexie cache absorbs the
+   * request with zero network).
+   */
+  private cacheHtml(id: string, html: string): void {
+    this.dropCachedHtml(id); // re-insert = refresh recency
+    if (html.length > this.maxHtmlCacheChars) return;
+    this.lastHtmlById.set(id, html);
+    this.cachedHtmlChars += html.length;
+    while (this.lastHtmlById.size > this.maxHtmlCacheEntries || this.cachedHtmlChars > this.maxHtmlCacheChars) {
+      const oldest = this.lastHtmlById.keys().next().value;
+      if (oldest === undefined) break;
+      this.dropCachedHtml(oldest);
+    }
+  }
+
+  /** Read with a recency touch — a unit about to be re-rendered was just used. */
+  private peekCachedHtml(id: string): string | undefined {
+    const html = this.lastHtmlById.get(id);
+    if (html === undefined) return undefined;
+    this.lastHtmlById.delete(id);
+    this.lastHtmlById.set(id, html);
+    return html;
+  }
+
+  private dropCachedHtml(id: string): void {
+    const html = this.lastHtmlById.get(id);
+    if (html === undefined) return;
+    this.lastHtmlById.delete(id);
+    this.cachedHtmlChars -= html.length;
+  }
+
+  private clearHtmlCache(): void {
+    this.lastHtmlById.clear();
+    this.cachedHtmlChars = 0;
+  }
+
+  /**
    * The rescan half of SPA re-injection protection: a tracked unit whose 译文
    * is GONE (host deleted it) but whose final HTML is cached gets it back.
    * The walk itself can't help — the source still carries its walked marker,
@@ -444,7 +523,7 @@ export class PageTranslator {
    * True when a gloss was actually (re)created.
    */
   private refillFromCache(id: string, unit: TranslationUnit): boolean {
-    const html = this.lastHtmlById.get(id);
+    const html = this.peekCachedHtml(id);
     if (!html) return false;
     const mode = this.modeById.get(id) ?? 'block';
     // A surviving gloss usually means "already there (paths raced)" — no
@@ -519,11 +598,19 @@ export class PageTranslator {
 
   /**
    * Drop map entries whose source element has left the document (SPA route
-   * change, virtual-list recycling). Without this `unitsById`/`modeById` only
-   * ever grow over a long session and pin detached DOM from being GC'd. Keyed on
-   * `isConnected`, so a node that was MOVED (still in the tree) is kept. Run once
-   * per mutation batch and on route change — not per scanned subtree (which would
-   * be O(insertions × units) on a chatty page).
+   * change, virtual-list recycling). Without this `unitsById`/`modeById`/
+   * `lastHtmlById` only ever grow over a long session and pin detached DOM from
+   * being GC'd. Keyed on `isConnected`, so a node that was MOVED (still in the
+   * tree) is kept.
+   *
+   * TIMING: on route change it runs immediately; on mutations it is scheduled
+   * through schedulePruneDetached — a DEBOUNCED sweep (at most one per
+   * PRUNE_DEBOUNCE_MS window, never postponed by a storm) rather than a pass
+   * per mutation batch. The pass is O(units) while a chatty page delivers
+   * batches every frame; once per second bounds that cost while detached units
+   * (and the IntersectionObserver targets pinning them) linger at most one
+   * extra second. Not per scanned subtree either — that would be
+   * O(insertions × units).
    */
   private pruneDetached(): void {
     for (const [id, unit] of this.unitsById) {
@@ -539,6 +626,16 @@ export class PageTranslator {
     for (const shadow of this.shadowRoots) {
       if (!shadow.host?.isConnected) this.shadowRoots.delete(shadow);
     }
+  }
+
+  /** Debounced entry point for the mutation-driven sweep — see pruneDetached. */
+  private schedulePruneDetached(): void {
+    if (this.pruneTimer !== null) return; // already pending — do NOT postpone it
+    this.pruneTimer = setTimeout(() => {
+      this.pruneTimer = null;
+      if (!this.active) return;
+      this.pruneDetached();
+    }, PRUNE_DEBOUNCE_MS);
   }
 
   private onIntersect(entries: IntersectionObserverEntry[]): void {
@@ -562,6 +659,7 @@ export class PageTranslator {
     if (!this.active) return; // queued records can still arrive after disconnect — ignore
     const orphanIds = new Set<string>();
     const evictedIds = new Set<string>();
+    let sawRemovals = false;
     for (const m of muts) {
       // Ignore mutations inside our own output (spinner/innerHTML/stream text
       // updates). characterData records target a TEXT node — resolve to its
@@ -631,6 +729,7 @@ export class PageTranslator {
           this.onTextChanged(targetEl);
         }
         if (node.nodeType !== 1) continue;
+        sawRemovals = true;
         this.collectGlossEvictions(node as Element, evictedIds);
         this.collectOrphans(node as Element, orphanIds);
       }
@@ -639,6 +738,10 @@ export class PageTranslator {
     // pass below only re-injects for sources that are still alive.
     if (orphanIds.size) this.reconcileRemovals(orphanIds);
     if (evictedIds.size) this.reinjectEvicted(evictedIds);
+    // Removals are the only way a tracked unit goes detached — schedule the
+    // debounced full sweep for whatever this batch's own orphan pass could not
+    // see (a record that never arrived, a shadow root whose host left).
+    if (sawRemovals) this.schedulePruneDetached();
   }
 
   /**
@@ -681,8 +784,11 @@ export class PageTranslator {
         if (this.lastHtmlById.has(id)) {
           this.refillFromCache(id, unit);
         } else if (this.bumpReinject(unit.element)) {
-          // Evicted while still streaming/pending: retire the unit and let the
-          // normal pipeline redo it (the request cache absorbs the cost). The
+          // No cached HTML to fall back on — evicted while still
+          // streaming/pending, or dropped by the re-injection cache's LRU cap:
+          // retire the unit and let the normal pipeline redo it (the request
+          // cache absorbs the cost — the resend is byte-identical, so the
+          // background Dexie cache serves it with zero network). The
           // element-keyed cap holds across the re-walk's fresh unit id, so a
           // host that keeps eating pending glosses still runs out of rounds.
           this.rewalk(unit.element, id);
@@ -708,7 +814,7 @@ export class PageTranslator {
     this.streamAcc.delete(id);
     this.streamBuf.delete(id);
     this.fillQueue.delete(id);
-    this.lastHtmlById.delete(id);
+    this.dropCachedHtml(id);
   }
 
   private sourceUnavailable(el: Element): boolean {
@@ -782,6 +888,8 @@ export class PageTranslator {
   private readonly retranslateQueue = new Set<Element>();
   private readonly visibilityQueue = new Set<Element>();
   private dynamicTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Pending detached-unit sweep (schedulePruneDetached) — at most one per window. */
+  private pruneTimer: ReturnType<typeof setTimeout> | null = null;
 
   private scheduleRescan(el: Element): void {
     this.rescanQueue.add(el);
@@ -912,7 +1020,9 @@ export class PageTranslator {
    * state, so an `isConnected` source is one that moved, not one that left. We
    * must NOT reconcile those: their inside gloss moved along with them, and
    * pruning their tracking would orphan the gloss and (since the source keeps its
-   * `data-omni-walked` marker) leave it never re-translated.
+   * `data-omni-walked` marker) leave it never re-translated. The scan crosses
+   * shadow boundaries explicitly (see insideRemovedSubtree) — a querySelectorAll
+   * alone would leave units inside an adopted root of a removed host tracked.
    */
   private collectOrphans(removed: Element, ids: Set<string>): void {
     // Our own gloss being removed (isUnchanged / teardown) is not a source removal.
@@ -920,11 +1030,33 @@ export class PageTranslator {
     const walked: Element[] = [];
     if (removed.hasAttribute(DATA_OMNI.walked)) walked.push(removed);
     removed.querySelectorAll(`[${DATA_OMNI.walked}]`).forEach((el) => walked.push(el));
+    // querySelectorAll stops at a shadow boundary: units living inside an
+    // ADOPTED shadow root of a host in this removed subtree would otherwise
+    // linger in the tracking maps while their IntersectionObserver targets stay
+    // browser-held (pinning the whole detached tree). Scan those roots too.
+    if (this.shadowRoots.size) {
+      for (const shadow of this.shadowRoots) {
+        if (!shadow.host || !this.insideRemovedSubtree(shadow.host, removed)) continue;
+        shadow.querySelectorAll(`[${DATA_OMNI.walked}]`).forEach((el) => walked.push(el));
+      }
+    }
     for (const el of walked) {
       if (el.isConnected) continue; // moved, still live — keep tracking it
       const id = el.getAttribute(DATA_OMNI.walkId);
       if (id) ids.add(id);
     }
+  }
+
+  /** True when `el` sits inside the removed subtree — through shadow boundaries
+   *  too (a host chain is followed up to the light DOM). `contains` alone would
+   *  miss a host under a nested adopted root. */
+  private insideRemovedSubtree(el: Element, removed: Element): boolean {
+    for (let cur: Element | null = el; cur; ) {
+      if (cur === removed || removed.contains(cur)) return true;
+      const tree = cur.getRootNode();
+      cur = cur.parentElement ?? (tree instanceof ShadowRoot ? tree.host : null);
+    }
+    return false;
   }
 
   /**
@@ -1252,7 +1384,7 @@ export class PageTranslator {
       // OUR removal, not a host eviction — mark it so the SPA re-injection
       // pass doesn't resurrect (and endlessly re-translate) an unchanged unit.
       this.selfRemovedGloss.add(node);
-      this.lastHtmlById.delete(unit.id);
+      this.dropCachedHtml(unit.id);
       node.remove();
       // Stamp lifetime == gloss lifetime: a clipped source whose gloss was
       // just dropped must not stay armed for the 仅译文 collapse (the CSS is
@@ -1263,7 +1395,7 @@ export class PageTranslator {
     // restoreInline always returns safe HTML (text escaped, only page tags raw);
     // on placeholder mismatch it returns escaped plain text.
     const { html } = restoreInline(translated, p.tags);
-    this.lastHtmlById.set(unit.id, html); // the re-injection source (see reinjectEvicted)
+    this.cacheHtml(unit.id, html); // the re-injection source (see reinjectEvicted), LRU-capped
     this.placeTranslatedHtml(unit, node, html);
   }
 

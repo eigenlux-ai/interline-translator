@@ -12,18 +12,13 @@
  */
 
 /*
- * Cascade order (a later layer wins). Mantine ships its styles wrapped in
- * `@layer mantine` through the `.layer.css` entries (not the unlayered
- * `styles.css`), so this one declaration fixes precedence: Tailwind utilities
- * beat Mantine, which beats Tailwind base/theme — letting utility classes tweak
- * Mantine components without specificity wars. Unlayered rules below (e.g. the
- * rem compensation) still beat everything layered.
+ * Partial, not an entry: the Mantine styles, the cascade-layer order and
+ * `@import 'tailwindcss'` live in the two surface entries, because Mantine is
+ * shipped differently per surface kind:
+ *   - shadow-surface.css   (content-script shadow roots) — per-component, on demand
+ *   - document-surface.css (options page) — the full rem-based bundle
+ * Both entries import this file last, so everything below is shared verbatim.
  */
-@layer theme, base, mantine, components, utilities;
-@import '@mantine/core/styles.layer.css';
-@import '@mantine/notifications/styles.layer.css';
-
-@import 'tailwindcss';
 
 /* Drive Tailwind's `dark:` variant off Mantine's color-scheme attribute (instead
    of prefers-color-scheme / a `.dark` class) so `dark:` utilities and Mantine

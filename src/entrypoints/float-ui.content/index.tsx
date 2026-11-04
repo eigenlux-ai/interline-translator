@@ -12,6 +12,7 @@ import FloatingBallApp from '@/react-app/apps/floating-ball/App';
 import SelectionApp from '@/react-app/apps/selection/App';
 import { renderSurfaceApp } from '@/react-app/bootstrap';
 import { SHADOW_SURFACE_TAG } from '@/constants';
+import '@/react-app/styles/shadow-surface.css';
 
 export default defineContentScript({
   matches: ['http://*/*', 'https://*/*'],

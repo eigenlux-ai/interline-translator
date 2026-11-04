@@ -1,8 +1,30 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DATA_OMNI } from '@/constants';
-import { PageTranslator } from './page-translation';
+import { PageTranslator as BasePageTranslator, type PageTranslatorOptions } from './page-translation';
 import * as skipPolicyModule from './skip-policy';
+
+/**
+ * The happy-dom MutationObserver keep-alive shim (pinning happy-dom's
+ * WeakRef'd record-dispatch closure against mid-test GC) lives in
+ * vitest.setup.ts, global for every test file — see its write-up there for the
+ * root-cause analysis of the flakiness this file used to show.
+ */
+
+/**
+ * Every PageTranslator a test constructs. afterEach force-stops them all: a
+ * test that dies mid-way must never leak a live observer / timer / stylesheet
+ * into the next one (classic cross-test pollution). stop() is idempotent, so
+ * the explicit in-test stop() calls stay as they are — they also assert the
+ * teardown behaviour this wrapper cannot.
+ */
+const liveTranslators = new Set<BasePageTranslator>();
+class PageTranslator extends BasePageTranslator {
+  constructor(root: Element, opts: PageTranslatorOptions) {
+    super(root, opts);
+    liveTranslators.add(this);
+  }
+}
 
 // Page translation now streams over the batch Port. We mock the client and keep
 // `translateBatch` as the configurable backing fn (its `{ items }` arg + return
@@ -96,13 +118,18 @@ beforeEach(() => {
     items: items.map((s) => `[t]${s}`),
     providerId: 'mock',
   }));
-  // Fresh <body> per test: happy-dom doesn't always flush a MutationObserver's
-  // queued records on disconnect(), so a prior test's leaked observer would still
-  // fire on this test's DOM. Replacing the body leaves it observing a detached node.
+  // Fresh <body> per test: cheap per-test DOM isolation — every test's root is
+  // a body no earlier test (or stray observer) can see, and module-level state
+  // keyed on the root (page-context views) starts clean. Leaked observers are
+  // stopped in afterEach; the keep-alive shim above makes live ones reliable.
   document.body.replaceWith(document.createElement('body'));
 });
 
 afterEach(() => {
+  // Force-stop every instance a test constructed — belt and braces against
+  // cross-test pollution from a test that died before its own pt.stop().
+  for (const pt of liveTranslators) pt.stop();
+  liveTranslators.clear();
   document.body.innerHTML = '';
 });
 
@@ -706,15 +733,9 @@ describe('PageTranslator', () => {
     expect(document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.walkId}="u-orphan"]`)).not.toBeNull();
 
     src.remove(); // host removes ONLY the source → afterend gloss now orphaned
-    // Poll for the sweep (MO delivery can lag under worker load — a fixed
-    // tick flaked); the assertion below still fails hard if it never happens.
-    const t0 = Date.now();
-    while (
-      document.querySelector(`[${DATA_OMNI.walkId}="u-orphan"][${DATA_OMNI.translated}]`) &&
-      Date.now() - t0 < 2000
-    ) {
-      await tick(20);
-    }
+    // Poll for the sweep (the observer callback chain runs on microtasks +
+    // timers); the assertion below still fails hard if it never happens.
+    await waitFor(() => !document.querySelector(`[${DATA_OMNI.walkId}="u-orphan"][${DATA_OMNI.translated}]`));
     expect(document.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.walkId}="u-orphan"]`)).toBeNull();
     pt.stop();
   });
@@ -767,8 +788,9 @@ describe('PageTranslator', () => {
 });
 
 describe('PageTranslator — dynamic content (reveal / text change / node pool)', () => {
-  // The debounced dynamic flush waits 150ms, but under worker load a timer can
-  // For NEGATIVE assertions (nothing should happen) a fixed wait is the point.
+  // Longer than the 150ms dynamic-flush debounce with headroom for timer
+  // latency. For NEGATIVE assertions (nothing should happen) a fixed wait is
+  // the point — the elapsed time IS the assertion.
   const dynamicTick = () => tick(300);
 
   it('sweeps glosses once per root for a batch rewrite, preserving unchanged translations', async () => {
@@ -835,18 +857,14 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     const p = document.getElementById('chat')!;
     expect(p.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]First message');
 
-    // happy-dom occasionally DROPS a characterData record when many observers
-    // ran earlier in the same worker (cousin of the disconnect quirk noted in
-    // beforeEach) — diagnosed via state snapshot: on flaky runs the unit's
-    // walkId never changed, i.e. the record never arrived. Re-poke instead of
-    // sleeping longer: a genuinely broken retranslate path fails regardless of
-    // how many pokes it gets. Verified against real Chrome's MO live.
-    const translatedSecond = () =>
-      document.querySelector(`[${DATA_OMNI.translated}]`)?.textContent?.includes('[t]Second') ?? false;
-    for (let poke = 0; poke < 4 && !translatedSecond(); poke++) {
-      (p.firstChild as Text).data = `Second message${'.'.repeat(poke)}`; // in-place swap, no childList record
-      await waitFor(translatedSecond, 700);
-    }
+    // In-place swap, no childList record — the characterData half of the
+    // observer contract. (This test once re-poked up to 4× because happy-dom's
+    // WeakRef'd MO callback could die mid-suite — see the keep-alive shim at
+    // the top; delivery is deterministic now.)
+    (p.firstChild as Text).data = 'Second message';
+    await waitFor(
+      () => document.querySelector(`[${DATA_OMNI.translated}]`)?.textContent?.includes('[t]Second') ?? false
+    );
 
     const glosses = document.querySelectorAll(`[${DATA_OMNI.translated}]`);
     expect(glosses[0]?.textContent).toContain('[t]Second');
@@ -864,23 +882,14 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     expect(skeleton.querySelector(`[${DATA_OMNI.translated}]`)).toBeNull();
 
     skeleton.appendChild(document.createTextNode('Streamed-in content')); // bare text node, no element added
-    // happy-dom drops MO records under worker load (see the chat test's note):
-    // re-poke via the rescan nudge — production's own second healing signal.
-    const filled = () => !!skeleton.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`);
-    for (let poke = 0; poke < 4 && !filled(); poke++) {
-      pt.notifyShadowAttached();
-      await waitFor(filled, 700);
-    }
+    // childList record on the skeleton → addedNodes text → onTextChanged → rescan.
+    await waitFor(() => !!skeleton.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
 
     expect(skeleton.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Streamed-in content');
     pt.stop();
   });
 
-  // retry: this test needs a LIVE MutationObserver, and happy-dom's wedges
-  // outright under worker load (hand-fed records + rescan nudges were both
-  // tried; the downstream path stalls with the environment, not our code —
-  // verified against real Chrome's MO). Independent runs pass; retry owns it.
-  it('re-translates a pooled node re-attached with STALE marks (virtual list)', { retry: 3 }, async () => {
+  it('re-translates a pooled node re-attached with STALE marks (virtual list)', async () => {
     document.body.innerHTML = '<div id="list"><p id="row">Row content</p></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -1034,9 +1043,8 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
 
     const { shadow } = mountShadowHost('<p>Late host shadow text</p>');
     // Production fires TWO discovery signals for a late host: the light-DOM MO
-    // record AND the MAIN-world attachShadow hook. happy-dom under parallel
-    // load occasionally drops the MO delivery — exercise the second signal
-    // too, exactly as a real page would.
+    // record AND the MAIN-world attachShadow hook. Exercise the second one too,
+    // exactly as a real page would.
     pt.notifyShadowAttached();
     await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
     expect(shadow.querySelector(`[${DATA_OMNI.translated}]`)?.textContent).toContain('[t]Late host shadow text');
@@ -1231,8 +1239,8 @@ describe('SPA re-injection protection', () => {
       expect(doneGloss(), `round ${round}: gloss should exist before deletion`).not.toBeNull();
       doneGloss()!.remove();
       // Belt and braces: the eviction path answers the removal record, and the
-      // RESCAN healer answers this nudge — production has both; happy-dom
-      // under parallel load sometimes loses the former's MO delivery.
+      // RESCAN healer answers this nudge — production has both signals, and
+      // driving both keeps the round count deterministic here.
       pt.notifyShadowAttached();
     }
     // Third re-injection was the last allowed — the fourth deletion sticks.
@@ -1431,7 +1439,7 @@ describe('re-injection cap hardening (element-keyed + decay + stale guard)', () 
       const g = anyGloss();
       if (!g) break;
       g.remove();
-      pt.notifyShadowAttached(); // deterministic trigger (MO delivery can drop under load)
+      pt.notifyShadowAttached(); // also drive the rescan healer — production fires both signals
       await tick(200);
     }
     await tick(300);
@@ -2329,4 +2337,191 @@ it.each(['hidden', 'revealed'])('ignores retired clipped source batch results wh
     pt.stop();
     vi.useRealTimers();
   }
+});
+
+describe('re-injection HTML cache (lastHtmlById) LRU cap', () => {
+  // White-box peeks: the cache is private by design and invisible from the DOM
+  // (an evicted unit still renders — only its zero-network heal source is gone).
+  const htmlCache = (pt: PageTranslator) => (pt as unknown as { lastHtmlById: Map<string, string> }).lastHtmlById;
+  const walkId = (sel: string) => document.querySelector(sel)!.getAttribute(DATA_OMNI.walkId)!;
+
+  it('over the entry cap evicts the OLDEST unit first (LRU, not newest)', async () => {
+    document.body.innerHTML =
+      '<p id="u1">First cached unit</p><p id="u2">Second cached unit</p><p id="u3">Third cached unit</p>';
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      maxCachedHtmlEntries: 2,
+    });
+    pt.start();
+    await waitForDone(3);
+
+    const cache = htmlCache(pt);
+    expect(cache.size).toBe(2);
+    expect(cache.has(walkId('#u1'))).toBe(false); // oldest — evicted first
+    expect(cache.has(walkId('#u2'))).toBe(true);
+    expect(cache.has(walkId('#u3'))).toBe(true);
+    pt.stop();
+  });
+
+  it('a cache refill counts as LRU use — the healed unit survives the next eviction', async () => {
+    document.body.innerHTML = '<p id="u1">First cached unit</p><p id="u2">Second cached unit</p>';
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      maxCachedHtmlEntries: 2,
+    });
+    pt.start();
+    await waitForDone(2);
+    const cache = htmlCache(pt);
+    expect([...cache.keys()]).toEqual([walkId('#u1'), walkId('#u2')]); // u1 is the oldest
+
+    // Host deletes u1's 译文 → the SPA re-injection path refills it FROM CACHE
+    // (zero network, no new batch — the peek above is also its LRU touch).
+    document.querySelector('#u1 [data-omni-translated]')!.remove();
+    await waitFor(() => !!document.querySelector('#u1 [data-omni-translated]'));
+    const callsAfterHeal = translateBatch.mock.calls.length;
+
+    // A third unit fills the cache past the cap — u2 (now the oldest) goes.
+    document.body.insertAdjacentHTML('beforeend', '<p id="u3">Third cached unit</p>');
+    await waitForDone(3);
+    expect(cache.size).toBe(2);
+    expect(cache.has(walkId('#u1'))).toBe(true); // touched by the refill
+    expect(cache.has(walkId('#u2'))).toBe(false); // oldest after the touch
+    expect(cache.has(walkId('#u3'))).toBe(true);
+    expect(translateBatch.mock.calls.length).toBe(callsAfterHeal + 1); // only u3 requested
+    pt.stop();
+  });
+
+  it('an evicted unit re-injects through the retranslate path — same text, so the Dexie cache serves it (zero network)', async () => {
+    document.body.innerHTML =
+      '<p id="u1">First cached unit</p><p id="u2">Second cached unit</p><p id="u3">Third cached unit</p>';
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      maxCachedHtmlEntries: 2,
+    });
+    pt.start();
+    await waitForDone(3);
+    const cache = htmlCache(pt);
+    expect(cache.has(walkId('#u1'))).toBe(false); // u1's HTML was LRU-evicted
+
+    // Host deletes u1's 译文. Its cached HTML is gone, so the heal falls back to
+    // re-entering the pipeline (rewalk → streamBatchTranslate). Production
+    // serves that request from the Dexie translation cache — the payload is the
+    // identical text, hence the identical cache key — and returns it with ZERO
+    // network; the mock stands in for that cache-hit response here.
+    const callsBefore = translateBatch.mock.calls.length;
+    document.querySelector('#u1 [data-omni-translated]')!.remove();
+    await waitFor(() => !!document.querySelector('#u1 [data-omni-translated]'));
+
+    const healed = document.querySelector('#u1 [data-omni-translated]');
+    expect(healed?.textContent).toContain('[t]First cached unit');
+    expect(translateBatch.mock.calls.length).toBe(callsBefore + 1); // one re-request, not a silent give-up
+    const resent = translateBatch.mock.calls.at(-1)![0] as { items: string[] };
+    expect(resent.items).toEqual(['First cached unit']); // byte-identical payload → same cache key
+    expect(cache.size).toBeLessThanOrEqual(2); // the cap holds across heals
+    pt.stop();
+  });
+
+  it('the char budget evicts until it fits and never stores an entry that cannot fit alone', async () => {
+    const long = 'x'.repeat(200); // cached html = '[t]' + the text
+    document.body.innerHTML = `<p id="big">${long}</p>`;
+    const pt = new PageTranslator(document.body, {
+      source: 'auto',
+      target: 'zh-CN',
+      flushDelayMs: 0,
+      maxCachedHtmlChars: 15, // below one big entry AND below two tiny ones
+    });
+    pt.start();
+    await waitForDone(1);
+    // Rendered normally — only the re-injection source is skipped.
+    expect(document.querySelector('#big [data-omni-translated]')?.textContent).toContain('[t]xxx');
+    expect(htmlCache(pt).size).toBe(0);
+
+    // Two small units (11 chars of cached html each) under a 15-char budget:
+    // the older one goes when the second lands.
+    document.body.innerHTML = '<p id="s1">Tiny one</p><p id="s2">Tiny two</p>';
+    pt.notifyShadowAttached(); // full rescan picks up the swapped-in content
+    await waitForDone(2);
+    const cache = htmlCache(pt);
+    expect(cache.size).toBe(1);
+    expect(cache.has(walkId('#s2'))).toBe(true);
+    pt.stop();
+  });
+});
+
+describe('detached pruning + shadow-boundary orphan sweep', () => {
+  const internals = (pt: PageTranslator) =>
+    pt as unknown as {
+      unitsById: Map<string, unknown>;
+      lastHtmlById: Map<string, string>;
+      pruneDetached: () => void;
+    };
+
+  it('removing a host with an adopted shadow root retires its units (tracking, HTML cache, IO target, glosses)', async () => {
+    // ControlledIO: emit only ONE of the shadow's two units — the other stays
+    // observed-but-undispatched, which is exactly the IO-pin leak shape (the
+    // browser holds an IntersectionObserver target for a detached subtree).
+    globalThis.IntersectionObserver = ControlledIO as unknown as typeof IntersectionObserver;
+    document.body.innerHTML = '<div id="outer"><div id="host"></div></div>';
+    const host = document.getElementById('host')!;
+    const shadow = host.attachShadow({ mode: 'open' });
+    shadow.innerHTML = '<p id="s1">Shadow paragraph one here</p><p id="s2">Shadow paragraph two here</p>';
+    const [s1, s2] = Array.from(shadow.querySelectorAll('p'));
+    const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+    pt.start();
+    await waitFor(() => ControlledIO.instance.observed.has(s1) && ControlledIO.instance.observed.has(s2));
+    ControlledIO.instance.emit([s1], true); // s1 translates; s2 keeps its IO registration
+    await waitFor(() => !!shadow.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.state}="done"]`));
+    expect(internals(pt).unitsById.size).toBe(2);
+    expect(internals(pt).lastHtmlById.size).toBe(1); // s1's fill cached its HTML
+
+    document.getElementById('outer')!.remove(); // the whole host leaves the document
+    await waitFor(() => internals(pt).unitsById.size === 0);
+    expect(internals(pt).unitsById.size).toBe(0); // both shadow units retired
+    expect(internals(pt).lastHtmlById.size).toBe(0); // their re-injection sources dropped
+    expect(ControlledIO.instance.observed.has(s2)).toBe(false); // IO target released
+    expect(shadow.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(0); // orphaned gloss swept
+    pt.stop();
+  });
+
+  it('the detached sweep is debounced: one pass per removal storm, then one per later batch', async () => {
+    vi.useFakeTimers();
+    try {
+      document.body.innerHTML = '<div id="list"></div>';
+      const list = document.getElementById('list')!;
+      const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
+      const prune = vi.spyOn(internals(pt), 'pruneDetached');
+      pt.start();
+      // Five removal batches (separate observer deliveries) inside one window.
+      for (let i = 0; i < 5; i++) {
+        const row = document.createElement('p');
+        row.textContent = `Row ${i} content here`;
+        list.appendChild(row);
+        await vi.advanceTimersByTimeAsync(20);
+        row.remove();
+        await vi.advanceTimersByTimeAsync(20);
+      }
+      expect(prune).not.toHaveBeenCalled(); // still inside the first debounce window
+      await vi.advanceTimersByTimeAsync(1000);
+      expect(prune).toHaveBeenCalledTimes(1); // ONE sweep for the whole storm
+
+      // A later batch schedules the next sweep — the window rate-limits, it does
+      // not shut the sweeper down.
+      const extra = document.createElement('p');
+      extra.textContent = 'Late row content';
+      list.appendChild(extra);
+      await vi.advanceTimersByTimeAsync(20);
+      extra.remove();
+      await vi.advanceTimersByTimeAsync(20 + 1000);
+      expect(prune).toHaveBeenCalledTimes(2);
+      pt.stop();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });

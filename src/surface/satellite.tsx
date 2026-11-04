@@ -9,7 +9,10 @@
  * - No stylesheet copies — the host surface's injected styles (Mantine layer
  *   CSS, prefixed Tailwind, theme variables) are compiled once into
  *   constructable CSSStyleSheets and shared across every satellite shadow
- *   root via `adoptedStyleSheets`.
+ *   root via `adoptedStyleSheets`. The compilation is ON-DEMAND: it happens
+ *   when the first satellite is created and is released with the last one, so
+ *   a satellite-free page keeps zero style copies resident (and repeated
+ *   theme changes don't churn the CSSOM when the CSS text is unchanged).
  * - Lifecycle management — host pages can mutate anchors at any time during
  *   SPA re-renders. A single MutationObserver cleans up orphaned satellites
  *   (when the anchor is removed) and re-attaches displaced ones (when the anchor
@@ -99,6 +102,27 @@ function isSatelliteAdjacent(anchor: Element, host: HTMLElement, position: Inser
 
 const supportsConstructableSheets = typeof CSSStyleSheet !== 'undefined' && 'replaceSync' in CSSStyleSheet.prototype;
 
+/**
+ * Cheap style-text digest (count + total length + FNV-1a) used to skip sheet
+ * rebuilds when a refresh finds byte-identical CSS — theme identity changes
+ * (and colour-scheme flips that don't rewrite the variables style) otherwise
+ * re-run `replaceSync` and churn the CSSOM for nothing. Not cryptographic; a
+ * collision would only miss one rebuild until the next real change, and the
+ * length+count prefix makes even that astronomically unlikely.
+ */
+function digestCssTexts(cssTexts: string[]): string {
+  let hash = 0x811c9dc5;
+  let length = 0;
+  for (const css of cssTexts) {
+    length += css.length;
+    for (let i = 0; i < css.length; i += 1) {
+      hash ^= css.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+  }
+  return `${cssTexts.length}:${length}:${(hash >>> 0).toString(36)}`;
+}
+
 let nextSatelliteId = 0;
 
 class SatelliteRegistry {
@@ -106,11 +130,19 @@ class SatelliteRegistry {
   private snapshot: SatelliteRecord[] = [];
   private listeners = new Set<() => void>();
   private sheets: CSSStyleSheet[] = [];
+  /** Retained ONLY in the <style>-clone fallback path (applySheets needs the
+   * text per root). With constructable sheets the CSSOM is the single resident
+   * copy — the text duplicates are dropped right after the sheets are built. */
   private cssTexts: string[] = [];
+  /** Digest of the style text the current sheets were built from; `null` means
+   * "nothing captured yet / must rebuild". */
+  private styleDigest: string | null = null;
   private styleSource: ShadowRoot | null = null;
   private observer: MutationObserver | null = null;
   private checkScheduled = false;
   private useConstructableSheets = supportsConstructableSheets;
+  /** Bumped on every refresh: an async (dev `<link>`) capture may only publish
+   *  its result while it is still the latest refresh. */
   private refreshToken = 0;
 
   subscribe = (listener: () => void): (() => void) => {
@@ -129,7 +161,13 @@ class SatelliteRegistry {
   setStyleSource(shadowRoot: ShadowRoot) {
     if (this.styleSource === shadowRoot) return;
     this.styleSource = shadowRoot;
-    void this.refreshSheets();
+    // A different source has different styles — drop the digest so the next
+    // capture cannot be deduped against the previous source's content.
+    this.styleDigest = null;
+    // Satellites created before the outlet mounted are still unstyled, so
+    // capture now for them. With zero satellites the capture stays deferred
+    // (see refreshSheets) — the whole point of the on-demand policy.
+    if (this.records.size > 0) void this.refreshSheets();
   }
 
   /**
@@ -139,6 +177,14 @@ class SatelliteRegistry {
    * rendered in-tree — single source of truth, no extra plumbing. Re-run on
    * theme changes (the variables style content is rewritten in place).
    *
+   * On-demand + deduplicated (the memory optimisation):
+   * - The capture is DEFERRED until the first satellite exists — a page with
+   *   zero satellites holds no cssTexts copy and no constructed CSSOM at all
+   *   (it used to keep ≈3× the CSS size permanently, from surface mount).
+   * - Consecutive refreshes are deduped by a digest of the style text: a
+   *   theme/identity change that leaves the emitted CSS byte-identical skips
+   *   the rebuild entirely (no `replaceSync`, no CSSOM churn).
+   *
    * Note on side effects: the captured static CSS includes the global.css
    * `--text-*`/`--radius-*` Tailwind rem-compensation (`* var(--mantine-scale)`).
    * This allows satellites to inherit the host surface's rem scale automatically,
@@ -146,7 +192,8 @@ class SatelliteRegistry {
    */
   async refreshSheets() {
     const source = this.styleSource;
-    if (!source) return;
+    // Zero satellites → nothing to style; skip the capture completely.
+    if (!source || this.records.size === 0) return;
 
     // Dev stylesheet fetches can finish out of order after a theme/source
     // change. Only the latest refresh may publish sheets and cached CSS.
@@ -169,9 +216,17 @@ class SatelliteRegistry {
       }
     }
 
-    if (token !== this.refreshToken) return;
+    // Stale or orphaned capture: a newer refresh already started, or the last
+    // satellite went away while this fetch was in flight (publishing then
+    // would re-hold the CSSOM the on-demand policy just freed).
+    if (token !== this.refreshToken || this.records.size === 0) return;
 
-    this.cssTexts = cssTexts;
+    // Dedupe: unchanged CSS (common — theme object churn, dir flips) must not
+    // rebuild the sheets.
+    const digest = digestCssTexts(cssTexts);
+    if (digest === this.styleDigest) return;
+    this.styleDigest = digest;
+
     if (this.useConstructableSheets) {
       try {
         this.sheets = cssTexts.map((css) => {
@@ -179,13 +234,19 @@ class SatelliteRegistry {
           sheet.replaceSync(css);
           return sheet;
         });
+        // The CSSOM is the single resident copy now — drop the text duplicates
+        // (only the <style>-clone fallback needs them, and it re-retains below).
+        this.cssTexts = [];
       } catch (error) {
         // Constructability can fail even where replaceSync exists (e.g.
         // restrictive environments) — degrade to per-root <style> clones.
         console.warn('[surface/satellite] constructable sheets unavailable, falling back', error);
         this.useConstructableSheets = false;
         this.sheets = [];
+        this.cssTexts = cssTexts;
       }
+    } else {
+      this.cssTexts = cssTexts;
     }
     this.records.forEach((record) => this.applySheets(record.rootElement.getRootNode() as ShadowRoot));
   }
@@ -234,9 +295,16 @@ class SatelliteRegistry {
     const rootElement = document.createElement('div');
     rootElement.classList.add(SURFACE_ROOT_CLASS);
     shadowRoot.append(rootElement);
-    this.applySheets(shadowRoot);
 
     this.records.set(id, { id, anchor, position, hostElement, rootElement, node });
+    // On-demand style capture: the shared sheets are copied/compiled HERE, on
+    // the first satellite that actually needs them — not at outlet mount. The
+    // synchronous part of refreshSheets (everything but dev-mode <link>
+    // fetching) completes before this line returns, so the new root is styled
+    // via the loop inside refreshSheets and the applySheets below; a dev-mode
+    // fetch resolves later and re-applies to every record.
+    if (this.records.size === 1) void this.refreshSheets();
+    this.applySheets(shadowRoot);
     this.ensureObserver();
     this.commit();
 
@@ -263,6 +331,16 @@ class SatelliteRegistry {
     if (this.records.size === 0) {
       this.observer?.disconnect();
       this.observer = null;
+      // Release the shared sheets with the LAST satellite: with zero adopters
+      // nothing references them, and keeping them resident is exactly the
+      // per-page CSS overhead (CSSOM ± fallback text clones) this module wants
+      // to avoid. Cost: the next satellite re-captures once (text scan + one
+      // sheet build). Worth it — satellites are long-lived plugin chrome and
+      // satellite-free pages are the common case; the alternative is holding
+      // ~2× the CSS size forever for a feature that may never come back.
+      this.sheets = [];
+      this.cssTexts = [];
+      this.styleDigest = null;
     }
     this.commit();
   }
@@ -340,7 +418,10 @@ export function SatelliteOutlet() {
 
   // Theme object identity changes on primary-color/theme updates, and the
   // in-tree Mantine variables <style> may also be rewritten on color-scheme
-  // flips — re-capture the shared sheets on either signal.
+  // flips — re-capture the shared sheets on either signal. refreshSheets is
+  // on-demand and self-deduping: with zero satellites it does nothing (no
+  // capture at all), and when the style text is byte-identical it skips the
+  // sheet rebuild.
   useEffect(() => {
     void satellites.refreshSheets();
   }, [theme, computedColorScheme]);
