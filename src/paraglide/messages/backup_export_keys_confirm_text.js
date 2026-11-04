@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Export_Keys_Confirm_TextInputs */
 
 const zh_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`导出的 JSON 文件将包含 API Key 明文。仅用于在自己可信的设备之间迁移，请勿分享或上传该文件。`)
+	return /** @type {LocalizedString} */ (`导出的 JSON 文件将以明文包含 API 密钥。仅用于在自己信任的设备之间迁移，请勿分享或上传该文件。`)
 };
 
 const zh_tw2_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案將包含 API 金鑰明文。僅用於在自己信任的裝置間遷移，請勿分享或上傳該檔案。`)
+	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案將以明文包含 API 金鑰。僅用於在自己信任的裝置之間遷移，請勿分享或上傳該檔案。`)
 };
 
 const en_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
@@ -22,15 +22,15 @@ const ja_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Key
 };
 
 const ko_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`내보낸 JSON 파일에 API 키가 평문으로 포함됩니다. 신뢰할 수 있는 내 기기 간 이동에만 사용하고 파일을 공유하거나 업로드하지 마세요.`)
+	return /** @type {LocalizedString} */ (`내보낸 JSON 파일에 API 키가 평문으로 포함됩니다. 본인이 신뢰하는 기기 간 이전에만 사용하고, 파일을 공유하거나 업로드하지 마세요.`)
 };
 
 const fr_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Le fichier JSON exporté contiendra vos clés API en clair. Utilisez-le uniquement pour migrer entre vos propres appareils de confiance — ne partagez ni ne téléversez jamais ce fichier.`)
+	return /** @type {LocalizedString} */ (`Le fichier JSON exporté contiendra vos clés API en clair. Utilisez-le uniquement pour passer d’un de vos appareils de confiance à un autre — ne partagez jamais ce fichier et ne le mettez jamais en ligne.`)
 };
 
 const de_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Die exportierte JSON-Datei enthält Ihre API-Schlüssel im Klartext. Verwenden Sie sie nur für den Umstieg zwischen Ihren eigenen vertrauenswürdigen Geräten — teilen oder laden Sie die Datei niemals hoch.`)
+	return /** @type {LocalizedString} */ (`Die exportierte JSON-Datei enthält Ihre API-Schlüssel im Klartext. Verwenden Sie sie nur, um Einstellungen zwischen Ihren eigenen vertrauenswürdigen Geräten zu übertragen — teilen Sie die Datei niemals und laden Sie sie nirgendwo hoch.`)
 };
 
 const es_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
@@ -38,11 +38,11 @@ const es_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Key
 };
 
 const ru_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Экспортированный файл JSON будет содержать ваши API-ключи в открытом виде. Используйте его только для переноса между своими доверенными устройствами — не передавайте и не загружайте файл.`)
+	return /** @type {LocalizedString} */ (`Экспортированный файл JSON будет содержать ваши API-ключи в открытом виде. Используйте его только для переноса настроек между своими доверенными устройствами — никому не передавайте файл и не выкладывайте его в сеть.`)
 };
 
 const pt_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`O arquivo JSON exportado conterá suas chaves de API em texto simples. Use-o apenas para migrar entre seus próprios dispositivos confiáveis; nunca compartilhe nem envie o arquivo.`)
+	return /** @type {LocalizedString} */ (`O arquivo JSON exportado conterá suas chaves de API em texto simples. Use-o apenas para migrar entre seus próprios dispositivos confiáveis; nunca compartilhe o arquivo nem faça upload dele.`)
 };
 
 const it_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
@@ -50,7 +50,7 @@ const it_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Key
 };
 
 const ar_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`سيحتوي ملف JSON المصدَّر على مفاتيح API نصًا صريحًا. استخدمه فقط للانتقال بين أجهزتك الموثوقة، ولا تشارك الملف أو ترفعه أبدًا.`)
+	return /** @type {LocalizedString} */ (`سيحتوي ملف JSON المُصدَّر على مفاتيح API بنص غير مشفّر. استخدمه فقط لنقل الإعدادات بين أجهزتك الموثوقة، ولا تشارك الملف أو ترفعه إلى أي مكان أبدًا.`)
 };
 
 /**

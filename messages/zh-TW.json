@@ -125,7 +125,7 @@
 	"backup_section_desc": "將設定匯出為 JSON 檔案（預設不含 API 金鑰），或從備份檔案還原。",
 	"backup_export": "匯出設定",
 	"backup_export_keys": "含金鑰匯出",
-	"backup_export_keys_confirm_text": "匯出的 JSON 檔案將包含 API 金鑰明文。僅用於在自己信任的裝置間遷移，請勿分享或上傳該檔案。",
+	"backup_export_keys_confirm_text": "匯出的 JSON 檔案將以明文包含 API 金鑰。僅用於在自己信任的裝置之間遷移，請勿分享或上傳該檔案。",
 	"backup_export_keys_confirm": "確認含金鑰匯出",
 	"backup_import": "匯入設定",
 	"backup_reset": "還原預設值",

@@ -89,7 +89,7 @@
 	"provider_base_url": "URL di base (facoltativo)",
 	"provider_base_url_default": "Valore del provider",
 	"provider_base_url_insecure": "Usa un URL https:// — http:// è ammesso solo per localhost.",
-	"provider_base_url_third_party_desc": "L'esempio è un servizio di terze parti (Moonshot), non l'endpoint ufficiale. Lascia vuoto per inviare le richieste all'endpoint ufficiale https://api.anthropic.com/v1.",
+	"provider_base_url_third_party_desc": "L'esempio è un servizio di terze parti (Moonshot), non l'endpoint ufficiale. Se lasci il campo vuoto, le richieste vengono inviate all'endpoint ufficiale https://api.anthropic.com/v1.",
 	"provider_third_party": "Servizio di terze parti",
 	"provider_headers": "Header aggiuntivi (facoltativi)",
 	"provider_headers_desc": "Uno per riga, nel formato Header-Name: value",
