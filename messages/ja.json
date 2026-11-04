@@ -89,7 +89,7 @@
 	"provider_base_url": "ベース URL（任意）",
 	"provider_base_url_default": "プロバイダーの既定",
 	"provider_base_url_insecure": "https:// の URL を入力してください。http:// はローカルホストのみ有効です。",
-	"provider_base_url_third_party_desc": "例はサードパーティサービス（Moonshot）のエンドポイントで、公式のものではありません。空欄の場合は公式エンドポイント https://api.anthropic.com/v1 にリクエストします。",
+	"provider_base_url_third_party_desc": "例として示しているのはサードパーティサービス（Moonshot）のエンドポイントで、公式のものではありません。空欄の場合、リクエストは公式エンドポイント https://api.anthropic.com/v1 に送信されます。",
 	"provider_third_party": "サードパーティサービス",
 	"provider_headers": "追加ヘッダー(任意)",
 	"provider_headers_desc": "1 行に 1 つ、Header-Name: value の形式で",

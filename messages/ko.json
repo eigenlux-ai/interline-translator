@@ -125,7 +125,7 @@
 	"backup_section_desc": "설정을 JSON 파일로 내보냅니다(기본적으로 API 키 제외). 파일에서 복원할 수도 있습니다.",
 	"backup_export": "설정 내보내기",
 	"backup_export_keys": "API 키 포함 내보내기",
-	"backup_export_keys_confirm_text": "내보낸 JSON 파일에 API 키가 평문으로 포함됩니다. 신뢰할 수 있는 내 기기 간 이동에만 사용하고 파일을 공유하거나 업로드하지 마세요.",
+	"backup_export_keys_confirm_text": "내보낸 JSON 파일에 API 키가 평문으로 포함됩니다. 본인이 신뢰하는 기기 간 이전에만 사용하고, 파일을 공유하거나 업로드하지 마세요.",
 	"backup_export_keys_confirm": "네, API 키 포함 내보내기",
 	"backup_import": "설정 가져오기",
 	"backup_reset": "기본값 복원",
