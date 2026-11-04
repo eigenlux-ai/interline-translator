@@ -4,6 +4,10 @@
  * The one renderer every surface uses. Entry points stay ~3 lines:
  * build a SurfaceEnv (documentSurface() or via createShadowSurfaceUi) and
  * hand it here together with the app node.
+ *
+ * Stylesheets are NOT imported here: each entry imports the one for its surface
+ * kind (styles/shadow-surface.css or styles/document-surface.css), because
+ * Mantine ships differently per kind — see those files.
  */
 
 import React from 'react';
@@ -14,7 +18,6 @@ import { SatelliteOutlet } from '@/surface/satellite';
 import { useSurfaceLang } from '@/react-app/hooks/useSurfaceLang';
 import ManagersRegistry from '@/react-app/managers/ManagersRegistry';
 import { getManagersPersistentState } from '@/react-app/managers/persistent-util';
-import '@/react-app/styles/global.css';
 
 /** Renders nothing — it exists so the `lang` stamp runs inside the providers. */
 function SurfaceLang(): null {

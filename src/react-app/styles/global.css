@@ -12,92 +12,13 @@
  */
 
 /*
- * Cascade order (a later layer wins). Mantine ships its styles wrapped in
- * `@layer mantine` through the `.layer.css` entries (not the unlayered
- * `styles.css`), so this one declaration fixes precedence: Tailwind utilities
- * beat Mantine, which beats Tailwind base/theme — letting utility classes tweak
- * Mantine components without specificity wars. Unlayered rules below (e.g. the
- * rem compensation) still beat everything layered.
+ * Partial, not an entry: the Mantine styles, the cascade-layer order and
+ * `@import 'tailwindcss'` live in the two surface entries, because Mantine is
+ * shipped differently per surface kind:
+ *   - shadow-surface.css   (content-script shadow roots) — per-component, on demand
+ *   - document-surface.css (options page) — the full rem-based bundle
+ * Both entries import this file last, so everything below is shared verbatim.
  */
-@layer theme, base, mantine, components, utilities;
-
-/*
- * Mantine styles, ON DEMAND — the three base files plus one `*.layer.css` per
- * component actually used (44 of 97), instead of the full `styles.layer.css`
- * bundle (which alone carried ≈218KB of the shipped CSS). Every file is
- * already wrapped in `@layer mantine`, so the cascade declaration above keeps
- * working unchanged.
- *
- * - The base trio is mandatory: `baseline` (reset), `global` (shared utility
- *   classes such as .mantine-focus-*), `default-css-variables` (ALL theme
- *   variables — the :root/:host block plus per-color-scheme blocks). Dropping
- *   any of them breaks every component.
- * - IMPORT ORDER MATTERS: dependency styles come before the components built
- *   on them (UnstyledButton → Button, Paper → Card, Input → TextInput, …).
- *   Reversing an edge lets the dependency override its dependent. The sequence
- *   below mirrors the order of `@mantine/core/styles.layer.css` 1:1, filtered
- *   to what we use (same order, same cascade).
- * - `mantine-coverage.test.ts` (next to this file) is the guard: it fails when
- *   a Mantine component is imported in src/ without its styles here, when the
- *   order drifts from the dependency order, or when @mantine/core's internals
- *   change the dependency map. Adding a component = adding its line (after its
- *   dependencies) and letting that test pin it.
- * - NOTE: Mantine publishes the per-component files with px-folded sizes
- *   (30px) where the full bundle keeps `calc(1.875rem * var(--mantine-scale))`.
- *   In shadow surfaces the two are identical (theme.scale = 16/hostRemPx, so
- *   the rem form resolves to exactly those px), so host pages are unaffected;
- *   the one caveat lives on document surfaces with a non-16px root font size.
- */
-@import '@mantine/core/styles/baseline.layer.css';
-@import '@mantine/core/styles/global.layer.css';
-@import '@mantine/core/styles/default-css-variables.layer.css';
-@import '@mantine/core/styles/ScrollArea.layer.css';
-@import '@mantine/core/styles/UnstyledButton.layer.css';
-@import '@mantine/core/styles/VisuallyHidden.layer.css';
-@import '@mantine/core/styles/Paper.layer.css';
-@import '@mantine/core/styles/Overlay.layer.css';
-@import '@mantine/core/styles/Popover.layer.css';
-@import '@mantine/core/styles/Loader.layer.css';
-@import '@mantine/core/styles/ActionIcon.layer.css';
-@import '@mantine/core/styles/CloseButton.layer.css';
-@import '@mantine/core/styles/Group.layer.css';
-@import '@mantine/core/styles/ModalBase.layer.css';
-@import '@mantine/core/styles/Input.layer.css';
-@import '@mantine/core/styles/FloatingIndicator.layer.css';
-@import '@mantine/core/styles/Accordion.layer.css';
-@import '@mantine/core/styles/Alert.layer.css';
-@import '@mantine/core/styles/Text.layer.css';
-@import '@mantine/core/styles/Anchor.layer.css';
-@import '@mantine/core/styles/Combobox.layer.css';
-@import '@mantine/core/styles/InlineInput.layer.css';
-@import '@mantine/core/styles/Badge.layer.css';
-@import '@mantine/core/styles/Button.layer.css';
-@import '@mantine/core/styles/Card.layer.css';
-@import '@mantine/core/styles/Center.layer.css';
-@import '@mantine/core/styles/Code.layer.css';
-@import '@mantine/core/styles/Divider.layer.css';
-@import '@mantine/core/styles/Drawer.layer.css';
-@import '@mantine/core/styles/Menu.layer.css';
-@import '@mantine/core/styles/Modal.layer.css';
-@import '@mantine/core/styles/Pill.layer.css';
-@import '@mantine/core/styles/PillsInput.layer.css';
-@import '@mantine/core/styles/Notification.layer.css';
-@import '@mantine/core/styles/NumberInput.layer.css';
-@import '@mantine/core/styles/PasswordInput.layer.css';
-@import '@mantine/core/styles/RadioCard.layer.css';
-@import '@mantine/core/styles/RadioIndicator.layer.css';
-@import '@mantine/core/styles/Radio.layer.css';
-@import '@mantine/core/styles/Tooltip.layer.css';
-@import '@mantine/core/styles/SegmentedControl.layer.css';
-@import '@mantine/core/styles/SimpleGrid.layer.css';
-@import '@mantine/core/styles/Skeleton.layer.css';
-@import '@mantine/core/styles/Stack.layer.css';
-@import '@mantine/core/styles/Switch.layer.css';
-@import '@mantine/core/styles/Table.layer.css';
-@import '@mantine/core/styles/Title.layer.css';
-@import '@mantine/notifications/styles.layer.css';
-
-@import 'tailwindcss';
 
 /* Drive Tailwind's `dark:` variant off Mantine's color-scheme attribute (instead
    of prefers-color-scheme / a `.dark` class) so `dark:` utilities and Mantine

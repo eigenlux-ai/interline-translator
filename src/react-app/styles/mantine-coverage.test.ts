@@ -3,10 +3,10 @@ import { dirname, join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 /**
- * 防退化守卫：global.css 的 Mantine 样式是「按需引入」的（base 三件套 + 用到的
+ * 防退化守卫：shadow-surface.css（注入每个网页的 content-script 样式入口）的 Mantine 样式是「按需引入」的（base 三件套 + 用到的
  * 组件 `*.layer.css`），不是全量 `styles.layer.css`。这个文件钉死三件事：
  *
- *  1. src/ 里 import 了的每个 Mantine 组件，其所需样式文件都已在 global.css 引入
+ *  1. src/ 里 import 了的每个 Mantine 组件，其所需样式文件都已在 shadow-surface.css 引入
  *     —— 新组件忘了引样式会直接红，并说清缺哪个组件的哪个文件；
  *  2. 引入顺序符合 Mantine 官方要求的「依赖在前」（Button 晚于 UnstyledButton、
  *     Card 晚于 Paper ……），否则依赖样式会覆盖派生组件；
@@ -21,7 +21,8 @@ import { describe, expect, it } from 'vitest';
  */
 
 const REPO_ROOT = process.cwd();
-const GLOBAL_CSS_PATH = join(REPO_ROOT, 'src', 'react-app', 'styles', 'global.css');
+const SHADOW_CSS_PATH = join(REPO_ROOT, 'src', 'react-app', 'styles', 'shadow-surface.css');
+const DOCUMENT_CSS_PATH = join(REPO_ROOT, 'src', 'react-app', 'styles', 'document-surface.css');
 const SRC_DIR = join(REPO_ROOT, 'src');
 const MANTINE_ESM_DIR = join(REPO_ROOT, 'node_modules', '@mantine', 'core', 'esm');
 const MANTINE_STYLES_DIR = join(REPO_ROOT, 'node_modules', '@mantine', 'core', 'styles');
@@ -334,11 +335,11 @@ interface UsedImport {
 const CORE_SPEC_PREFIX = '@mantine/core/styles/';
 const LAYER_SUFFIX = '.layer.css';
 
-function readGlobalCss(): string {
-  return readFileSync(GLOBAL_CSS_PATH, 'utf8');
+function readShadowCss(): string {
+  return readFileSync(SHADOW_CSS_PATH, 'utf8');
 }
 
-/** global.css 里的 @import 目标，按出现顺序。 */
+/** shadow-surface.css 里的 @import 目标，按出现顺序。 */
 function cssImports(css: string): string[] {
   return [...css.matchAll(/@import\s+'([^']+)'/g)].map((m) => m[1]);
 }
@@ -436,15 +437,15 @@ function deriveStyleClosure(component: string): string[] | null {
   return [...modules].sort();
 }
 
-describe('Mantine 样式按需引入（global.css）防退化', () => {
-  const imports = cssImports(readGlobalCss());
+describe('Mantine 样式按需引入（shadow-surface.css）防退化', () => {
+  const imports = cssImports(readShadowCss());
   const importedCore = coreStyleNames(imports);
   const importedCoreSet = new Set(importedCore);
 
-  it('global.css 的引入清单与顺序 == 钉死的清单（base + 依赖顺序 + notifications），且不含全量包', () => {
+  it('shadow-surface.css 的引入清单与顺序 == 钉死的清单（base + 依赖顺序 + notifications），且不含全量包', () => {
     expect(
       importedCore,
-      `global.css 的 @mantine/core 样式清单/顺序与 EXPECTED_CORE_IMPORTS 不一致。\n` +
+      `shadow-surface.css 的 @mantine/core 样式清单/顺序与 EXPECTED_CORE_IMPORTS 不一致。\n` +
         `新增组件请在 DEPENDENCY_ORDER 与 STYLE_FILE_MAP 里补（依赖排在前面），` +
         `顺序即 @mantine/core/styles.layer.css 的内部顺序。`
     ).toEqual(EXPECTED_CORE_IMPORTS);
@@ -490,7 +491,7 @@ describe('Mantine 样式按需引入（global.css）防退化', () => {
           if (!/^[A-Z]/.test(used.name)) continue;
           problems.push(
             `${used.where}: @mantine/core 的 ${used.name} 既不在 STYLE_FILE_MAP 也不在 STYLELESS_CORE_EXPORTS。` +
-              `若是组件：把它的依赖闭包（styles/<X>.layer.css 清单）补进 STYLE_FILE_MAP 并在 global.css 引入；` +
+              `若是组件：把它的依赖闭包（styles/<X>.layer.css 清单）补进 STYLE_FILE_MAP 并在 shadow-surface.css 引入；` +
               `若是无样式导出：加入 STYLELESS_CORE_EXPORTS。`
           );
           continue;
@@ -498,7 +499,7 @@ describe('Mantine 样式按需引入（global.css）防退化', () => {
         const missing = files.filter((f) => !importedCoreSet.has(f));
         if (missing.length > 0) {
           problems.push(
-            `${used.where}: 组件 ${used.name} 缺样式 ${missing.map((m) => `styles/${m}.layer.css`).join(', ')} — 在 global.css 按依赖顺序补引`
+            `${used.where}: 组件 ${used.name} 缺样式 ${missing.map((m) => `styles/${m}.layer.css`).join(', ')} — 在 shadow-surface.css 按依赖顺序补引`
           );
         }
       } else {
@@ -542,7 +543,7 @@ describe('Mantine 样式按需引入（global.css）防退化', () => {
       if (missing.length > 0 || extra.length > 0) {
         problems.push(
           `STYLE_FILE_MAP['${component}'] 与 @mantine/core 实际依赖不符 — 多引 ${missing.join(', ') || '无'}；漏引 ${extra.join(', ') || '无'}。` +
-            `请照 esm/components/${component} 的 *.module.mjs 依赖重新推导并更新映射与 global.css`
+            `请照 esm/components/${component} 的 *.module.mjs 依赖重新推导并更新映射与 shadow-surface.css`
         );
       }
     }
@@ -553,5 +554,28 @@ describe('Mantine 样式按需引入（global.css）防退化', () => {
     const union = (...names: string[]): string[] => [...new Set(names.flatMap((n) => STYLE_FILE_MAP[n] ?? []))].sort();
     expect(PACKAGE_STYLES.modals.core.slice().sort()).toEqual(union('Modal', 'Button', 'Group'));
     expect(PACKAGE_STYLES.notifications.core.slice().sort()).toEqual(union('Notification'));
+  });
+});
+
+/**
+ * document 入口（options 页）刻意用全量 rem 包：按组件文件把尺寸折成了 px，在
+ * theme.scale = 1 的 document surface 上会让组件尺寸不再跟随浏览器默认字号。
+ * 它只在打开设置页时加载，体积不是常驻成本。层顺序必须与 shadow 入口一致。
+ */
+describe('document-surface.css 使用全量 rem 包', () => {
+  const docImports = cssImports(readFileSync(DOCUMENT_CSS_PATH, 'utf8'));
+  const layerDecl = (css: string): string | undefined => css.match(/^@layer [^{;]+;/m)?.[0];
+
+  it('引入 @mantine/core 全量 styles.layer.css，且不混入按组件文件', () => {
+    expect(docImports).toContain('@mantine/core/styles.layer.css');
+    expect(docImports).toContain('@mantine/notifications/styles.layer.css');
+    expect(docImports.filter((s) => s.startsWith(CORE_SPEC_PREFIX))).toEqual([]);
+    expect(docImports.slice(-2)).toEqual(['tailwindcss', './global.css']);
+  });
+
+  it('两个入口的 @layer 顺序声明一致，且 shadow 入口同样以 tailwindcss + global.css 收尾', () => {
+    expect(layerDecl(readFileSync(DOCUMENT_CSS_PATH, 'utf8'))).toBe(layerDecl(readShadowCss()));
+    expect(layerDecl(readShadowCss())).toBeDefined();
+    expect(cssImports(readShadowCss()).slice(-2)).toEqual(['tailwindcss', './global.css']);
   });
 });

@@ -1,0 +1,15 @@
+/*
+ * Stylesheet entry for DOCUMENT surfaces (the options page). Loaded only when
+ * the page is opened, so it keeps Mantine's full rem-based bundle: at
+ * theme.scale 1 every component size follows the browser's default font size
+ * (the per-component files in shadow-surface.css fold sizes to px).
+ *
+ * Cascade order — must stay identical to shadow-surface.css (see the note there).
+ */
+@layer theme, base, mantine, components, utilities;
+
+@import '@mantine/core/styles.layer.css';
+@import '@mantine/notifications/styles.layer.css';
+
+@import 'tailwindcss';
+@import './global.css';
