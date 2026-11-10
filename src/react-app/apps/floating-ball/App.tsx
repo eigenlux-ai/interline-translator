@@ -50,6 +50,7 @@ import { m } from '@/paraglide/messages.js';
 import { getConfigService, type PublicConfig, type PublicConfigPatch } from '@/services/config/public';
 import { isSiteEnabled, resolveSiteMode, setSiteMode } from '@/services/config/site-control';
 import displayModeClasses from './DisplayMode.module.css';
+import fontChoiceClasses from './FontChoice.module.css';
 import {
   BALL,
   clamp,
@@ -728,6 +729,31 @@ export default function FloatingBallApp() {
                       accent: PRESET_ACCENT,
                     }}
                   />
+                  {/* 译文字体: 跟随页面 is the "use the site's own look" escape
+                      hatch for sites whose visual identity the kai stack breaks. */}
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 2 }}>
+                    <Text size="xs" style={{ color: g.inkDim }}>
+                      {m.settings_font_title()}
+                    </Text>
+                    <SegmentedControl
+                      classNames={fontChoiceClasses}
+                      size="xs"
+                      fullWidth
+                      data={[
+                        { value: 'kai', label: m.style_font_kai() },
+                        { value: 'inherit', label: m.style_font_inherit() },
+                      ]}
+                      value={config.appearance.translationFont}
+                      onChange={(v) =>
+                        patchAndReapply((c) => ({
+                          appearance: { ...c.appearance, translationFont: v as 'kai' | 'inherit' },
+                        }))
+                      }
+                      styles={{
+                        root: { background: scheme === 'dark' ? 'rgba(0,0,0,0.28)' : 'rgba(33,28,21,0.07)' },
+                      }}
+                    />
+                  </Box>
                 </Box>
 
                 {/* Card 3: 站点规则 (Site Rules) */}

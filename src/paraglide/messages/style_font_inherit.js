@@ -46,7 +46,7 @@ const pt_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => L
 };
 
 const it_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Carattere della pagina`)
+	return /** @type {LocalizedString} */ (`Come la pagina`)
 };
 
 const ar_style_font_inherit = /** @type {(inputs: Style_Font_InheritInputs) => LocalizedString} */ () => {

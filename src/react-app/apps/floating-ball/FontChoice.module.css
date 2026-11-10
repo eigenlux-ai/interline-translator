@@ -1,0 +1,35 @@
+/* Two equal segments (楷体 / 跟随页面): same layout-coordinate indicator as
+   DisplayMode.module.css — FloatingIndicator's getBoundingClientRect
+   measurements include the panel's genie transform. */
+.root {
+  --ball-font-index: 0;
+}
+
+.root:has(input[value='inherit']:checked) {
+  --ball-font-index: 1;
+}
+
+.control {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.indicator {
+  top: 4px;
+  inset-inline-start: 4px;
+  inset-inline-end: auto;
+  /* Override only the geometry Mantine writes imperatively during measurement. */
+  width: calc((100% - 8px) / 2) !important;
+  height: calc(100% - 8px) !important;
+  transform: translateX(calc(var(--ball-font-index) * 100%)) !important;
+}
+
+:global([dir='rtl']) .indicator {
+  transform: translateX(calc(var(--ball-font-index) * -100%)) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indicator {
+    transition-duration: 0ms !important;
+  }
+}
