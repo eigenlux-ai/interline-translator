@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.0.9 — 2026-11-10
+
+- Add a translation typeface switch to the in-page panel. Choosing the page font keeps translations in the site's own typeface; with the default "Match page" style they then match the source's font, size, weight and colour (#2).
+- Pick the written-hand typeface by target language instead of always using Chinese kai: kai for Simplified Chinese, kai shu for Traditional Chinese, kyokasho for Japanese, myeongjo for Korean, serif italic for Latin, Cyrillic and Greek scripts, and naskh for Arabic. Only fonts already on the system are used. Without them, translations fall back to the page's own font.
+- Fix the input translation hint, where the loading spinner rendered as a blank square.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.8 — 2026-11-04
 
 - Make the selection translation card draggable by its header. The new position lasts for the current card; a new selection re-anchors it.
