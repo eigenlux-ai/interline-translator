@@ -8,8 +8,8 @@
  */
 
 import type { LangCode, SourceLang, UiLangSetting } from './lang';
-import type { GlossaryEntry } from './translate';
 import type { ProviderConfig } from './provider';
+import type { GlossaryEntry } from './translate';
 
 export interface TranslateConfig {
   /** Provider used when a request doesn't name one. */
@@ -175,7 +175,11 @@ export interface AppearanceConfig {
   colorScheme: 'auto' | 'light' | 'dark';
   /** Opt-in visual treatment of the translated node; `blend` = look like source. */
   bilingualStyle: BilingualStyle;
-  /** Translation typeface: the kai brush font, or inherit the host's. */
+  /**
+   * Translation typeface: `kai` = the target language's written hand (楷体,
+   * 教科書体, serif italic, … — dom/inject/hand-face; system fonts only), or
+   * inherit the host's.
+   */
   translationFont: 'kai' | 'inherit';
   /** The three-state view of a translated page (bilingual/translation/original). */
   displayMode: DisplayMode;

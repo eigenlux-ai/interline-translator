@@ -14,6 +14,7 @@
 
 import { DATA_OMNI, OMNI_BLOCK_TAG, OMNI_INLINE_TAG, PROJECT_PREFIX } from '@/constants';
 import type { BilingualStyle, DisplayMode } from '@/data/models';
+import { HAND_FACES, type HandFace } from './hand-face';
 import { buildPetalCss } from './petal-loader';
 
 /** Class on the translation node carrying typography. */
@@ -28,8 +29,10 @@ export const PRESET_ACCENT = '#C2402A';
  *  translation-only mode collapses the source's own text to font-size 0. */
 export const SRC_FONT_VAR = '--aie-omt-src-fs';
 export const SRC_LINE_VAR = '--aie-omt-src-lh';
-/** The kai/brush stack the 'kai' translationFont switches the 译文 to. */
-export const KAI_FONT_STACK = '"LXGW WenKai", "Kaiti SC", "Kaiti", "Noto Serif SC", serif';
+/** Per-gloss CSS var carrying the SOURCE's computed font-family, stamped only
+ *  when a hand face applies (wrapper.ensureGlossNode): the last entry of every
+ *  face stack, so a machine without the face falls back to the page's font. */
+export const SRC_FAMILY_VAR = '--aie-omt-src-ff';
 
 /**
  * The visual treatment of each 译文 style preset, as declarative data so the
@@ -117,6 +120,17 @@ function buildPresetCss(): string {
     if (v.hoverReveal) rules.push(`${styleSel}:hover { filter: none; opacity: 1; }`);
   }
   return rules.join('\n');
+}
+
+/** One rule per hand face, keyed on the resolved data-omni-font value. */
+function buildHandFaceCss(): string {
+  return (Object.keys(HAND_FACES) as HandFace[])
+    .map((face) => {
+      const spec = HAND_FACES[face];
+      const italic = spec.italic ? ' font-style: italic !important;' : '';
+      return `[${DATA_OMNI.translated}][${DATA_OMNI.font}="${face}"] { font-family: ${spec.stack}, var(${SRC_FAMILY_VAR}, serif) !important;${italic} }`;
+    })
+    .join('\n');
 }
 
 /**
@@ -247,12 +261,12 @@ ${OMNI_BLOCK_TAG}, ${OMNI_INLINE_TAG} {
 }
 ${buildPresetCss()}
 
-/* Opt-in译文 font: 'kai' switches the 译文 to the brush/kai stack. !important so
-   it wins over the inline font-family mirrorTypography copies onto the block
-   clipped-source fallback, and over host rules (no shadow isolation here). */
-[${DATA_OMNI.translated}][${DATA_OMNI.font}="kai"] {
-  font-family: ${KAI_FONT_STACK} !important;
-}
+/* Opt-in译文 font: the 'kai' setting resolves per target language to that
+   language's written hand (see ./hand-face), stamped as data-omni-font.
+   !important so it wins over the inline font-family mirrorTypography copies
+   onto the block clipped-source fallback, and over host rules (no shadow
+   isolation here). */
+${buildHandFaceCss()}
 
 /* ─────────────────────────────────────────────────────────────────────────
    Three-state view (双语/仅译文/仅原文) — see buildDisplayModeCss. */

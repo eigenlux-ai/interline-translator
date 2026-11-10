@@ -18,8 +18,9 @@ import { DATA_OMNI, OMNI_BLOCK_TAG, OMNI_INLINE_TAG } from '@/constants';
 import { isInlineTag, isShellElement } from '../filter';
 import { NEWLINE_PRESERVING, NO_CARVE_TAGS } from '../policy';
 import type { TranslationUnit } from '../traversal';
+import { handFaceFor } from './hand-face';
 import { createPetalSpinner } from './petal-loader';
-import { GLOSS_CLASS, PENDING_CLASS, SRC_FONT_VAR, SRC_LINE_VAR } from './styles';
+import { GLOSS_CLASS, PENDING_CLASS, SRC_FAMILY_VAR, SRC_FONT_VAR, SRC_LINE_VAR } from './styles';
 
 export type InjectMode = 'block' | 'inline';
 
@@ -376,9 +377,12 @@ export function ensureGlossNode(
   // keyed on this attribute. Always stamped (even 'blend', which has no rule) so
   // the active style is inspectable and a live toggle is one attribute write.
   if (style) node.setAttribute(DATA_OMNI.style, style);
-  // Opt-in译文 font — only 'kai' has a rule; 'inherit' leaves the 译文 on the
-  // host font (no attribute → no override), so we stamp nothing for it.
-  if (font === 'kai') node.setAttribute(DATA_OMNI.font, font);
+  // Opt-in译文 font — 'kai' resolves to the TARGET language's written hand
+  // (楷体 / 教科書体 / serif italic / …, see ./hand-face); 'inherit', or a
+  // language with no such face, leaves the 译文 on the host font (no attribute
+  // → no override), so we stamp nothing for it.
+  const face = font === 'kai' ? handFaceFor(targetLang) : null;
+  if (face) node.setAttribute(DATA_OMNI.font, face);
   // `dir="auto"` lets the browser pick writing direction from the 译文's own text,
   // so an RTL target (ar/he/fa) renders right-to-left even though it inherits an
   // LTR source/host. Re-evaluates as the spinner is replaced by real text.
@@ -393,6 +397,9 @@ export function ensureGlossNode(
   // is about to go either way (inside it, or beside it under the same parent).
   setPending(node, glossTree(unit.element));
 
+  // Whose font the 译文 would wear without a face: its parent's for an inside
+  // gloss, the source's for the clipped sibling (mirrorTypography copies it).
+  let fontHost: Element | null = null;
   if (mode === 'inline') {
     // Inline gloss appended INSIDE the source → inherits the source's type and
     // reads on the same line.
@@ -406,13 +413,30 @@ export function ensureGlossNode(
     unit.element.setAttribute(DATA_OMNI.clipped, '');
     unit.element.insertAdjacentElement('afterend', node);
     mirrorTypography(node, unit.element);
+    fontHost = unit.element;
   } else {
     // Default: append inside the source (after its content). The translation
     // groups with the text, inheriting the source's typography and color naturally.
     unit.element.appendChild(node);
   }
   stampSourceMetrics(node);
+  if (face) stampSourceFamily(node, fontHost ?? node.parentElement);
   return node;
+}
+
+/**
+ * Freeze the font the 译文 would otherwise inherit onto it as SRC_FAMILY_VAR —
+ * the tail of every hand-face stack (styles.buildHandFaceCss), so a machine
+ * without the face (optional OS fonts are often absent) degrades to the page's
+ * own font, not to a browser-default serif. Read from the host element, never
+ * the gloss itself: the face rule already applies to the gloss. No-op without a
+ * layout engine (happy-dom) — the CSS falls back to the var default.
+ */
+function stampSourceFamily(node: HTMLElement, host: Element | null): void {
+  const win = node.ownerDocument.defaultView;
+  if (!host || !win?.getComputedStyle) return;
+  const family = win.getComputedStyle(host).fontFamily;
+  if (family) node.style.setProperty(SRC_FAMILY_VAR, family);
 }
 
 /**

@@ -14,10 +14,13 @@
 
 import type { CSSProperties } from 'react';
 import { Box, SimpleGrid, Text, UnstyledButton, useComputedColorScheme, useMantineTheme } from '@mantine/core';
-import { BILINGUAL_STYLES, type BilingualStyle } from '@/data/models';
-import { KAI_FONT_STACK, PRESET_ACCENT, PRESET_VISUALS } from '@/dom/inject/styles';
-import { m } from '@/paraglide/messages.js';
 import { CheckIcon } from '@/react-app/components/icons';
+import { BILINGUAL_STYLES, type BilingualStyle } from '@/data/models';
+import { handFaceFor, handFaceStyle, type HandFace } from '@/dom/inject/hand-face';
+import { PRESET_ACCENT, PRESET_VISUALS } from '@/dom/inject/styles';
+import { getUiLocale } from '@/i18n';
+import { m } from '@/paraglide/messages.js';
+
 /** Per-preset label lookup — the `Record` keeps it exhaustive when a preset is added. */
 const PRESET_LABEL: Record<BilingualStyle, () => string> = {
   blend: m.style_blend,
@@ -66,7 +69,9 @@ function StyleSwatch({
   onSelect: () => void;
 }) {
   const isBlur = preset === 'blur';
-  const glossFont = font === 'kai' ? KAI_FONT_STACK : 'inherit';
+  // The sample is in the UI language, so 'kai' previews THAT language's hand
+  // (the page resolves it per target, which the UI follows by default).
+  const glossFont = handFaceStyle(font === 'kai' ? handFaceFor(getUiLocale()) : null);
   const sampleFontSize = compact ? 12 : 14;
 
   return (
@@ -125,7 +130,7 @@ function StyleSwatch({
           style={{
             display: 'block',
             marginTop: compact ? 0 : 2,
-            fontFamily: glossFont,
+            ...glossFont,
             fontSize: sampleFontSize,
             lineHeight: 1.4,
             color: tokens.gloss,
@@ -204,10 +209,17 @@ export interface FontPreviewProps {
   onChange: (value: 'kai' | 'inherit') => void;
 }
 
-const FONT_OPTIONS: { value: 'kai' | 'inherit'; stack: string }[] = [
-  { value: 'kai', stack: KAI_FONT_STACK },
-  { value: 'inherit', stack: 'inherit' },
-];
+const FONT_OPTIONS: ('kai' | 'inherit')[] = ['kai', 'inherit'];
+
+/** A line in each hand face's own script, so both cards compare the same text. */
+const FACE_SAMPLE: Record<HandFace, string> = {
+  kai: '落霞与孤鹜齐飞，秋水共长天一色。',
+  'kai-tc': '落霞與孤鶩齊飛，秋水共長天一色。',
+  kyokasho: 'いろはにほへと ちりぬるを',
+  myeongjo: '다람쥐 헌 쳇바퀴에 타고파',
+  italic: 'The quick brown fox jumps over the lazy dog.',
+  naskh: 'نص حكيم له سر قاطع وذو شأن عظيم',
+};
 
 /** The 译文 font picker: two cards, each rendering the same phrase in that font. */
 export function FontPreview({ value, onChange }: FontPreviewProps) {
@@ -219,16 +231,19 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
     hair: Record<Scheme, string>;
     paperRaised: Record<Scheme, string>;
   };
+  // Like the swatches: preview the UI language's own hand.
+  const face = handFaceFor(getUiLocale());
 
   return (
     <SimpleGrid cols={2} spacing={10}>
       {FONT_OPTIONS.map((opt) => {
-        const active = opt.value === value;
-        const label = opt.value === 'kai' ? m.style_font_kai() : m.style_font_inherit();
+        const active = opt === value;
+        const label = opt === 'kai' ? m.style_font_kai() : m.style_font_inherit();
+        const faceStyle = handFaceStyle(opt === 'kai' ? face : null);
         return (
           <UnstyledButton
-            key={opt.value}
-            onClick={() => onChange(opt.value)}
+            key={opt}
+            onClick={() => onChange(opt)}
             aria-pressed={active}
             aria-label={m.style_font_aria({ label })}
             style={{
@@ -273,23 +288,20 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
                 </Box>
               )}
             </Box>
-            <Text
-              component="span"
-              style={{ fontFamily: opt.stack, fontSize: 16, lineHeight: 1.4, color: other.gloss[scheme] }}
-            >
+            <Text component="span" style={{ ...faceStyle, fontSize: 16, lineHeight: 1.4, color: other.gloss[scheme] }}>
               {m.style_sample_gloss()}
             </Text>
             <Text
               component="span"
               style={{
-                fontFamily: opt.stack,
+                ...faceStyle,
                 fontSize: 12,
                 lineHeight: 1.4,
                 color: other.inkFaint[scheme],
                 opacity: 0.85,
               }}
             >
-              {opt.value === 'kai' ? '落霞与孤鹜齐飞，秋水共长天一色。' : 'The quick brown fox jumps over the lazy dog.'}
+              {FACE_SAMPLE[face ?? 'italic']}
             </Text>
           </UnstyledButton>
         );

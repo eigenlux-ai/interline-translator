@@ -14,49 +14,49 @@ const zh_tw2_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => Local
 };
 
 const en_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Kai script`)
+	return /** @type {LocalizedString} */ (`Italic`)
 };
 
 const ja_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`楷書体`)
+	return /** @type {LocalizedString} */ (`教科書体`)
 };
 
 const ko_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`해서체`)
+	return /** @type {LocalizedString} */ (`명조체`)
 };
 
 const fr_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Écriture kai`)
+	return /** @type {LocalizedString} */ (`Italique`)
 };
 
 const de_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Kai-Schrift`)
+	return /** @type {LocalizedString} */ (`Kursiv`)
 };
 
 const es_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Escritura kai`)
+	return /** @type {LocalizedString} */ (`Cursiva`)
 };
 
 const ru_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Шрифт кай`)
+	return /** @type {LocalizedString} */ (`Курсив`)
 };
 
 const pt_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Escrita kai`)
+	return /** @type {LocalizedString} */ (`Itálico`)
 };
 
 const it_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Scrittura kai`)
+	return /** @type {LocalizedString} */ (`Corsivo`)
 };
 
 const ar_style_font_kai = /** @type {(inputs: Style_Font_KaiInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`خط كاي`)
+	return /** @type {LocalizedString} */ (`خط النسخ`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Kai script" |
+* | "Italic" |
 *
 * @param {Style_Font_KaiInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

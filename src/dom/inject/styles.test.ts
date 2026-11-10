@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { KAI_FONT_STACK, PRESET_VISUALS, SRC_FONT_VAR, SRC_LINE_VAR, TRANSLATION_CSS } from './styles';
+import { HAND_FACES } from './hand-face';
+import { PRESET_VISUALS, SRC_FAMILY_VAR, SRC_FONT_VAR, SRC_LINE_VAR, TRANSLATION_CSS } from './styles';
 
 /**
  * The preset CSS is generated from PRESET_VISUALS (the same data source used by
@@ -45,8 +46,17 @@ describe('generated preset stylesheet', () => {
     expect(css).not.toContain('[data-omni-style="blend"]');
   });
 
-  it('the kai font preset switches to the brush stack, with !important to win over the mirror', () => {
-    expect(css).toContain(`[data-omni-font="kai"] { font-family: ${KAI_FONT_STACK} !important; }`);
+  it('each hand face gets its stack, ending in the source font, with !important to win over the mirror', () => {
+    expect(css).toContain(
+      `[data-omni-font="kai"] { font-family: ${HAND_FACES.kai.stack}, var(${SRC_FAMILY_VAR}, serif) !important; }`
+    );
+    expect(css).toContain(
+      `[data-omni-font="italic"] { font-family: ${HAND_FACES.italic.stack}, var(${SRC_FAMILY_VAR}, serif) !important; font-style: italic !important; }`
+    );
+    // System fonts only: no face may name a generic family (the page font is
+    // the fallback) or pull a font file in.
+    for (const spec of Object.values(HAND_FACES)) expect(spec.stack).not.toMatch(/\b(serif|sans-serif|monospace)\b/);
+    expect(css).not.toContain('@font-face');
   });
 
   it('the three-state view: original hides the 译文; translation collapses the source and restores the gloss from its vars', () => {

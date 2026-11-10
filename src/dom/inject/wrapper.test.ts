@@ -145,6 +145,15 @@ describe('findGloss / dedup', () => {
     expect(ensureGlossNode(b, 'inline', 'zh-CN', 'blend', 'inherit').hasAttribute(DATA_OMNI.font)).toBe(false);
   });
 
+  it("resolves 'kai' to the TARGET language's hand face, and to nothing where none exists", () => {
+    const r = root('<h2>One</h2><h2>Two</h2><h2>Three</h2><h2>Four</h2>');
+    const [a, b, c, d] = walkAndLabel(r, seqId);
+    expect(ensureGlossNode(a, 'inline', 'zh-TW', 'blend', 'kai').getAttribute(DATA_OMNI.font)).toBe('kai-tc');
+    expect(ensureGlossNode(b, 'inline', 'en', 'blend', 'kai').getAttribute(DATA_OMNI.font)).toBe('italic');
+    expect(ensureGlossNode(c, 'inline', 'ja', 'blend', 'kai').getAttribute(DATA_OMNI.font)).toBe('kyokasho');
+    expect(ensureGlossNode(d, 'inline', 'th', 'blend', 'kai').hasAttribute(DATA_OMNI.font)).toBe(false);
+  });
+
   it('block: finds the gloss appended inside the source (no clip → inside, not sibling)', () => {
     const r = root('<div><p>A long paragraph for block injection mode testing here please thanks.</p></div>');
     const [u] = walkAndLabel(r, seqId);

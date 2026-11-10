@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Kai script" |
+* | "Italic" |
 *
 * @param {Style_Font_KaiInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options
