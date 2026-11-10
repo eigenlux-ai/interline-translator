@@ -138,8 +138,12 @@ export class InputHint {
 
   /** Show the "翻译中…" spinner pill under `anchor`. */
   spinner(anchor: Element): void {
-    const { pill } = this.swapPill(anchor);
-    const spin = createPetalSpinner(document);
+    const { shadow, pill } = this.swapPill(anchor);
+    // The spinner's `<use href="#…">` layers resolve only inside their OWN
+    // tree, so the shared geometry must live in this shadow root — built
+    // against `document`, every layer points at nothing and the spinner
+    // renders as an empty box.
+    const spin = createPetalSpinner(shadow);
     spin.setAttribute('class', SPINNER_CLASS);
     spin.setAttribute('aria-hidden', 'true');
     const label = document.createElement('span');
