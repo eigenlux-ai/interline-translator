@@ -67,16 +67,10 @@ import { useTuck } from './use-tuck';
 const PANEL_W = 328;
 const DRAG_THRESHOLD = 4; // px of movement that turns a pending click into a drag
 const LONG_PRESS_MS = 350; // hold this long (without moving) to enter drag mode
-const GLASS_BLUR = 'blur(20px) saturate(180%)'; // frosted vibrancy
+const PANEL_BLUR = 'blur(20px) saturate(180%)';
 
-/**
- * Scheme-adaptive glass palette. The DISC stays a neutral lens over the host
- * page (it defers by design), but the opened PANEL is OUR instrument — it
- * speaks the manuscript palette: frosted PAPER, warm ink, 朱 accents. Values
- * mirror theme.other (paper/paperRaised/ink/inkSoft — hand-mirrored: this
- * component is deliberately token-inlined for the lean glass math).
- */
-interface Glass {
+/** Scheme-adaptive frosted paper and ink over the host page. */
+interface PanelPalette {
   ring: string;
   ink: string;
   inkDim: string;
@@ -85,22 +79,22 @@ interface Glass {
   shadow: string;
 }
 
-const LIGHT_GLASS: Glass = {
+const LIGHT_PANEL: PanelPalette = {
   ring: 'rgba(33,28,21,0.12)', // hair (warm ink)
   ink: '#211C15', // ink
   inkDim: '#5C5348', // ink-soft
-  inkFaint: '#74695B', // sand.6 — ≥4.5:1 on frosted paper
-  panelBg: 'rgba(255,253,248,0.82)', // paper-raised, frosted
+  inkFaint: '#74695B', // sand.6 — ≥4.5:1 on paper
+  panelBg: 'rgba(255,253,248,0.82)', // frosted paper
   shadow: '0 1px 2px rgba(33,28,21,.06), 0 16px 40px -12px rgba(33,28,21,.26)',
 };
 
-const DARK_GLASS: Glass = {
+const DARK_PANEL: PanelPalette = {
   ring: 'rgba(236,228,214,0.15)',
   ink: '#ECE4D6',
   inkDim: '#B3A893',
   inkFaint: '#93897A',
-  panelBg: 'rgba(22,19,14,0.80)', // warm charcoal, frosted
-  shadow: '0 2px 4px rgba(0,0,0,.4), 0 16px 40px -12px rgba(0,0,0,.6)',
+  panelBg: 'rgba(22,19,14,0.80)', // frosted charcoal
+  shadow: '0 8px 24px rgba(0,0,0,.24)',
 };
 
 /**
@@ -147,7 +141,7 @@ const TARGET_OPTIONS = langOptions();
 export default function FloatingBallApp() {
   const theme = useMantineTheme();
   const scheme = useComputedColorScheme('light');
-  const g = scheme === 'dark' ? DARK_GLASS : LIGHT_GLASS;
+  const g = scheme === 'dark' ? DARK_PANEL : LIGHT_PANEL;
 
   // Viewport size for placement math — visualViewport, NOT window.inner*:
   // classic scrollbars (Windows, macOS "always show") live inside innerWidth
@@ -599,8 +593,8 @@ export default function FloatingBallApp() {
                 pointerEvents: open ? 'auto' : 'none',
                 willChange: motionStyle.transitionDuration === '0ms' ? undefined : 'transform, opacity',
                 background: g.panelBg,
-                backdropFilter: GLASS_BLUR,
-                WebkitBackdropFilter: GLASS_BLUR,
+                backdropFilter: PANEL_BLUR,
+                WebkitBackdropFilter: PANEL_BLUR,
                 border: `1px solid ${g.ring}`,
                 borderRadius: 16,
                 boxShadow: g.shadow,
@@ -610,20 +604,18 @@ export default function FloatingBallApp() {
               }}
             >
               {/* Header */}
-              <Group justify="space-between" align="center" px="md" pt="sm" pb={6}>
-                <Text style={{ fontSize: 15, fontWeight: 600, color: g.ink, letterSpacing: '-0.01em' }}>
-                  {m.ball_panel_title()}
-                </Text>
+              <Group justify="space-between" align="center" px={16} pt={16} pb={4}>
+                <Text style={{ fontSize: 15, fontWeight: 500, color: g.ink }}>{m.ball_panel_title()}</Text>
                 <CloseButton onClick={() => setOpen(false)} size="sm" aria-label={m.ball_close_panel()} c={g.inkDim} />
               </Group>
-              <Stack gap="xs" px="md" pb="md">
+              <Stack gap={4} px={16} pb={16}>
                 {/* Card 1: 阅读视图 (Reading View) */}
                 <Box
-                  p={10}
+                  py={12}
                   style={{
-                    borderRadius: 10,
-                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
-                    border: `1px solid ${g.ring}`,
+                    borderRadius: 0,
+                    backgroundColor: 'transparent',
+                    borderBottom: `1px solid ${g.ring}`,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 8,
@@ -636,6 +628,7 @@ export default function FloatingBallApp() {
                     </Text>
                     <Select
                       variant="unstyled"
+                      aria-label={m.ball_target()}
                       data={TARGET_OPTIONS}
                       value={target}
                       onChange={(v) => v && patchAndReapply((c) => ({ translate: { ...c.translate, target: v } }))}
@@ -651,7 +644,7 @@ export default function FloatingBallApp() {
                   </Box>
 
                   {/* Three-state view (双语/仅译文/仅原文) */}
-                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <Text size="xs" fw={600} style={{ color: g.inkDim }}>
                       {m.display_label()}
                     </Text>
@@ -682,7 +675,7 @@ export default function FloatingBallApp() {
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         gap: 8,
-                        paddingTop: 2,
+                        paddingTop: 4,
                       }}
                     >
                       <Text size="xs" style={{ color: g.inkDim }}>
@@ -691,6 +684,7 @@ export default function FloatingBallApp() {
                       <Switch
                         size="xs"
                         color="cinnabar"
+                        aria-label={m.interleave_label()}
                         checked={config.appearance.paragraphInterleave ?? true}
                         onChange={(e) => {
                           const on = e.currentTarget.checked;
@@ -703,11 +697,11 @@ export default function FloatingBallApp() {
 
                 {/* Card 2: 译文样式 (Translation Style) */}
                 <Box
-                  p={10}
+                  py={12}
                   style={{
-                    borderRadius: 10,
-                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
-                    border: `1px solid ${g.ring}`,
+                    borderRadius: 0,
+                    backgroundColor: 'transparent',
+                    borderBottom: `1px solid ${g.ring}`,
                     display: 'flex',
                     flexDirection: 'column',
                     gap: 8,
@@ -731,7 +725,7 @@ export default function FloatingBallApp() {
                   />
                   {/* 译文字体: 跟随页面 is the "use the site's own look" escape
                       hatch for sites whose visual identity the kai stack breaks. */}
-                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingTop: 2 }}>
+                  <Box style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
                     <Text size="xs" style={{ color: g.inkDim }}>
                       {m.settings_font_title()}
                     </Text>
@@ -758,11 +752,11 @@ export default function FloatingBallApp() {
 
                 {/* Card 3: 站点规则 (Site Rules) */}
                 <Box
-                  p={10}
+                  py={12}
                   style={{
-                    borderRadius: 10,
-                    backgroundColor: scheme === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(255, 253, 248, 0.65)',
-                    border: `1px solid ${g.ring}`,
+                    borderRadius: 0,
+                    backgroundColor: 'transparent',
+                    borderBottom: `1px solid ${g.ring}`,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -774,7 +768,7 @@ export default function FloatingBallApp() {
                       {m.ball_always_site()}
                     </Text>
                     <Text
-                      size="10px"
+                      size="xs"
                       c="dimmed"
                       style={{
                         fontFamily: theme.fontFamilyMonospace,
@@ -790,6 +784,7 @@ export default function FloatingBallApp() {
                   <Switch
                     size="xs"
                     color="cinnabar"
+                    aria-label={m.ball_always_site()}
                     checked={alwaysOn}
                     onChange={(e) =>
                       patchConfig((c) => ({
@@ -814,8 +809,10 @@ export default function FloatingBallApp() {
                     onClick={() => requestSetPageTranslation(!active)}
                     style={{
                       fontWeight: 600,
-                      boxShadow: active ? 'none' : '0 2px 8px rgba(194, 64, 42, 0.35)',
-                      transition: 'all 0.2s ease',
+                      boxShadow: 'none',
+                      backgroundColor: active ? undefined : scheme === 'dark' ? g.ink : SEAL_ZHU,
+                      color: active ? undefined : scheme === 'dark' ? '#1C1A18' : SEAL_FACE,
+                      transition: 'background-color 160ms ease, color 160ms ease',
                     }}
                   >
                     {active ? m.ball_action_restore() : m.ball_action_translate()}
@@ -826,7 +823,7 @@ export default function FloatingBallApp() {
               {/* Footer */}
               <Box
                 style={{
-                  padding: '8px 14px',
+                  padding: '12px 16px',
                   borderTop: `1px solid ${g.ring}`,
                   display: 'flex',
                   justifyContent: 'space-between',
@@ -836,9 +833,7 @@ export default function FloatingBallApp() {
                 <Text
                   style={{
                     fontFamily: theme.fontFamilyMonospace,
-                    fontSize: 11,
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
+                    fontSize: 12,
                     color: g.inkDim,
                   }}
                 >
@@ -848,7 +843,7 @@ export default function FloatingBallApp() {
                   onClick={() => void sendMessage('openOptionsPage', undefined)}
                   aria-label={m.popup_open_settings()}
                   style={{
-                    fontSize: 11,
+                    fontSize: 12,
                     color: 'var(--mantine-color-cinnabar-6)',
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -857,7 +852,7 @@ export default function FloatingBallApp() {
                     cursor: 'pointer',
                   }}
                 >
-                  <GearIcon width={11} height={11} />
+                  <GearIcon width={16} height={16} />
                   {m.popup_settings()}
                 </UnstyledButton>
               </Box>
@@ -896,7 +891,7 @@ export default function FloatingBallApp() {
           ease-in press, exponential ease-out release, no elastic overshoot. */}
       <style>{`@keyframes ${SEAL_PRESS}{0%{scale:1;animation-timing-function:cubic-bezier(.55,0,.7,.4)}40%{scale:.9;animation-timing-function:cubic-bezier(.16,1,.3,1)}100%{scale:1}}
 @keyframes ${SUB_STAMP}{0%{opacity:0;scale:1.35;animation-timing-function:cubic-bezier(.5,0,.75,.35)}45%{opacity:1;scale:.96;animation-timing-function:cubic-bezier(.3,1,.36,1)}100%{opacity:1;scale:1}}
-@keyframes sealAura{0%{transform:scale(0.96);opacity:0.35}100%{transform:scale(1.06);opacity:0.85}}`}</style>
+`}</style>
 
       {/* The control — a stamped seal (印蜕): carved frame, gap, solid pad.
           Ink-grey at rest, seal-paste cinnabar when the page is translated. */}
@@ -947,19 +942,6 @@ export default function FloatingBallApp() {
           animation: stamping ? `${SEAL_PRESS} 280ms` : undefined,
         }}
       >
-        {/* aura — subtle breathing cinnabar glow when active */}
-        {active && (
-          <Box
-            style={{
-              position: 'absolute',
-              inset: -2.5,
-              borderRadius: SEAL_RADIUS + 2,
-              border: '1.5px solid var(--mantine-color-cinnabar-5)',
-              animation: 'sealAura 2s ease-in-out infinite alternate',
-              pointerEvents: 'none',
-            }}
-          />
-        )}
         {/* frame — 1.5px carved border */}
         <Box
           style={{

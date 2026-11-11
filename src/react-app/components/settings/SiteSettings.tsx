@@ -31,14 +31,14 @@ export default function SiteSettings({ config, onSave }: SiteSettingsProps) {
 
   return (
     <SettingsSection title={m.site_section_title()} description={m.site_section_desc()}>
-      <Stack gap={6}>
+      <Stack gap={8}>
         <Text size="sm" fw={500}>
           {m.site_default_label()}
         </Text>
         <SegmentedControl data={modeOptions()} value={sc.defaultMode} onChange={(v) => setDefault(v as SiteMode)} />
       </Stack>
 
-      <Stack gap={6}>
+      <Stack gap={8}>
         <Text size="sm" fw={500}>
           {m.site_rules_label()}
         </Text>
@@ -49,7 +49,12 @@ export default function SiteSettings({ config, onSave }: SiteSettingsProps) {
           addLabel={m.site_add_rule()}
           removeAria={m.site_remove_rule_aria()}
           renderControl={(r, replace) => (
-            <SegmentedControl size="xs" data={modeOptions()} value={r.mode} onChange={(v) => replace({ ...r, mode: v as SiteMode })} />
+            <SegmentedControl
+              size="xs"
+              data={modeOptions()}
+              value={r.mode}
+              onChange={(v) => replace({ ...r, mode: v as SiteMode })}
+            />
           )}
         />
       </Stack>

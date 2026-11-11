@@ -85,9 +85,9 @@ function StyleSwatch({
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        gap: compact ? 5 : 8,
-        minHeight: compact ? 58 : 74,
-        padding: compact ? '7px 8px' : '9px 10px',
+        gap: 8,
+        minHeight: compact ? 64 : 80,
+        padding: compact ? '8px' : '12px',
         borderRadius: 8,
         background: tokens.paper,
         border: `1px solid ${active ? tokens.accent : tokens.hair}`,
@@ -117,10 +117,7 @@ function StyleSwatch({
           gloss fits the narrow ball panel. */}
       <Box component="span" style={{ display: 'block' }}>
         {!compact && (
-          <Text
-            component="span"
-            style={{ display: 'block', fontSize: 9, color: tokens.inkFaint, lineHeight: 1.2, opacity: 0.7 }}
-          >
+          <Text component="span" style={{ display: 'block', fontSize: 11, color: tokens.inkFaint, lineHeight: 1.4 }}>
             {m.style_sample_source()}
           </Text>
         )}
@@ -183,11 +180,7 @@ export default function StylePreview({ value, onChange, font, compact = false, p
       {/* blur-to-learn: masked by default, cleared on hover — matches the page. */}
       <style>{`.aie-omt-swatch-gloss{transition:filter .12s ease,opacity .12s ease}
 [data-blur-swatch]:hover .aie-omt-swatch-gloss{filter:none!important;opacity:1!important}`}</style>
-      <SimpleGrid
-        cols={compact ? 4 : { base: 3, xs: 4, sm: 5 }}
-        spacing={compact ? 6 : 8}
-        verticalSpacing={compact ? 6 : 8}
-      >
+      <SimpleGrid cols={compact ? 4 : { base: 2, xs: 4, sm: 5 }} spacing={8} verticalSpacing={8}>
         {BILINGUAL_STYLES.map((preset) => (
           <StyleSwatch
             key={preset}
@@ -235,7 +228,7 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
   const face = handFaceFor(getUiLocale());
 
   return (
-    <SimpleGrid cols={2} spacing={10}>
+    <SimpleGrid cols={2} spacing={12}>
       {FONT_OPTIONS.map((opt) => {
         const active = opt === value;
         const label = opt === 'kai' ? m.style_font_kai() : m.style_font_inherit();
@@ -254,7 +247,7 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
               borderRadius: 8,
               background: other.paperRaised[scheme],
               border: `1px solid ${active ? PRESET_ACCENT : other.hair[scheme]}`,
-              boxShadow: active ? `inset 0 0 0 1.5px ${PRESET_ACCENT}, 0 2px 8px rgba(194, 64, 42, 0.08)` : 'none',
+              boxShadow: active ? `inset 0 0 0 1px ${PRESET_ACCENT}` : 'none',
               transition: 'border-color 140ms ease, box-shadow 140ms ease',
               textAlign: 'left',
             }}

@@ -207,8 +207,10 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
 
         {/* Drag and Drop Zone */}
         <Paper
-          p="lg"
-          radius="md"
+          component="button"
+          type="button"
+          p={24}
+          radius={12}
           withBorder
           onDragOver={(e) => {
             e.preventDefault();
@@ -228,13 +230,16 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
             backgroundColor: dragging
               ? 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 6%, var(--mantine-color-default))'
               : 'var(--mantine-color-default)',
-            boxShadow: 'var(--mantine-shadow-xs)',
-            transition: 'all 0.2s ease',
+            transition: 'border-color 160ms ease, background-color 160ms ease',
             textAlign: 'center',
+            width: '100%',
+            cursor: 'pointer',
+            color: 'inherit',
+            font: 'inherit',
           }}
         >
-          <Stack gap={6} align="center">
-            <ArchiveIcon width={24} height={24} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
+          <Stack gap={8} align="center">
+            <ArchiveIcon width={24} height={24} style={{ color: 'var(--mantine-color-dimmed)' }} />
             <Text size="sm" fw={600}>
               {m.backup_drop_label()}
             </Text>
@@ -262,11 +267,11 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
             p="md"
             radius="md"
             withBorder
-            style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+            style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'none' }}
           >
             <Stack gap="xs">
               <Group justify="space-between" align="center">
-                <Group gap={6} align="center">
+                <Group gap={8} align="center">
                   <CheckCircleIcon width={16} height={16} style={{ color: 'var(--mantine-color-teal-6)' }} />
                   <Text size="sm" fw={600}>
                     {m.backup_preview_ready()}

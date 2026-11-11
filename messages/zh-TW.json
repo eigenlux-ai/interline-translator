@@ -279,5 +279,6 @@
 	"about_data_title": "資料與模型",
 	"about_data_description": "本擴充功能未內建第三方詞典或語料庫。語言偵測使用 Chrome 內建的 LanguageDetector 模型，由瀏覽器管理。翻譯結果由所選服務提供，適用該服務的條款。匯入的術語表由使用者自行提供。",
 	"about_licenses_title": "開源授權",
-	"about_licenses_description": "專案基礎框架與執行階段相依套件（含間接相依，部分可能在打包時被移除）。展開項目可查看隨附的授權與聲明。"
+	"about_licenses_description": "專案基礎框架與執行階段相依套件（含間接相依，部分可能在打包時被移除）。展開項目可查看隨附的授權與聲明。",
+	"pattern_rule_label": "網站比對規則"
 }

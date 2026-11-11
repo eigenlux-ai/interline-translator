@@ -52,7 +52,7 @@ import { m } from '@/paraglide/messages.js';
 import { isSafeBaseURL } from '@/services/config/schema';
 import { getTranslationService } from '@/services/translation/contract';
 import { inferModelCapabilities } from '@/services/translation/model-capabilities';
-import { CheckIcon, ChevronIcon, PlusIcon, SparklesIcon } from '../icons';
+import { CheckIcon, ChevronIcon, PlusIcon } from '../icons';
 import SettingsSection from './SettingsSection';
 
 const ADDABLE: Array<{ kind: LlmProviderKind; label: string; defaultModel: string }> = [
@@ -327,17 +327,17 @@ function ProviderCard({
     return (
       <Card
         withBorder
-        radius="md"
-        padding="md"
-        style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+        radius={12}
+        p={{ base: 16, sm: 24 }}
+        style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'none' }}
       >
         <Stack gap="sm">
           <Group justify="space-between">
             <Group gap="xs">
               <Text fw={600}>{p.label ?? p.id}</Text>
-              <Badge variant="light" color="sand" size="sm">
+              <Text size="xs" c="dimmed" ff="monospace">
                 {p.kind}
-              </Badge>
+              </Text>
             </Group>
             <Switch
               size="sm"
@@ -357,14 +357,14 @@ function ProviderCard({
   return (
     <Card
       withBorder
-      radius="md"
-      padding="md"
-      style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+      radius={12}
+      p={{ base: 16, sm: 24 }}
+      style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'none' }}
     >
       <Stack gap="sm">
         <Group justify="space-between" wrap="nowrap">
           <UnstyledButton onClick={() => setOpen((o) => !o)} aria-expanded={open} style={{ flex: 1, minWidth: 0 }}>
-            <Group gap="xs" wrap="nowrap">
+            <Group gap="xs" wrap="wrap">
               <ChevronIcon
                 width={13}
                 height={13}
@@ -378,21 +378,16 @@ function ProviderCard({
               <Text fw={600} truncate>
                 {p.label ?? p.id}
               </Text>
-              <Badge variant="light" color="cinnabar" size="sm" style={{ flexShrink: 0 }}>
+              <Text size="xs" c="dimmed" ff="monospace" style={{ overflowWrap: 'anywhere' }}>
                 {p.kind}
-              </Badge>
+              </Text>
               {THIRD_PARTY_KINDS.has(p.kind) && <ThirdPartyBadge size="sm" />}
               {inferModelCapabilities(p.kind, p.model).reasoning === 'mandatory' && (
                 <Badge variant="light" color="cinnabar" size="sm" style={{ flexShrink: 0 }}>
                   {m.provider_reasoning_required()}
                 </Badge>
               )}
-              <Badge
-                variant={p.draft ? 'light' : 'outline'}
-                color={p.draft ? 'sand' : 'cinnabar'}
-                size="sm"
-                style={{ flexShrink: 0 }}
-              >
+              <Badge variant="light" color={p.draft ? 'sand' : 'gray'} size="sm" style={{ flexShrink: 0 }}>
                 {p.draft ? m.provider_badge_draft() : m.provider_badge_validated()}
               </Badge>
               {!open && p.model.trim() && (
@@ -537,7 +532,7 @@ function ProviderCard({
                 the user deliberately fills a field. */}
             <Stack gap={4}>
               <UnstyledButton onClick={() => setParamsOpen((o) => !o)} aria-expanded={paramsOpen}>
-                <Group gap={6} wrap="nowrap">
+                <Group gap={8} wrap="nowrap">
                   <ChevronIcon
                     width={11}
                     height={11}
@@ -639,7 +634,7 @@ function ProviderCard({
               </Group>
             ) : (
               <Group justify="space-between" align="center" gap="sm" wrap="nowrap">
-                <Group gap={6} align="center" c="cinnabar">
+                <Group gap={8} align="center" c="cinnabar">
                   <CheckIcon width={14} height={14} />
                   <Text size="xs" c="dimmed">
                     {m.provider_validated_usable()}
@@ -731,23 +726,12 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
 
   return (
     <SettingsSection title={m.provider_section_title()} description={m.provider_section_desc()} action={addMenu}>
-      <Stack gap="md">
+      <Stack gap={24}>
         {customCount === 0 && (
-          <Paper
-            p="md"
-            radius="md"
-            withBorder
-            style={{
-              borderStyle: 'dashed',
-              borderColor:
-                'color-mix(in srgb, var(--mantine-color-cinnabar-6) 30%, var(--mantine-color-default-border))',
-              backgroundColor: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 3%, var(--mantine-color-default))',
-            }}
-          >
+          <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
             <Stack gap="xs">
-              <Group gap={6} align="center">
-                <SparklesIcon width={14} height={14} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
-                <Text size="xs" fw={600} c="cinnabar">
+              <Group gap={8} align="center">
+                <Text size="sm" fw={500}>
                   {m.provider_add()} · {m.provider_quick_add()}
                 </Text>
               </Group>

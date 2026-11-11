@@ -14,7 +14,6 @@ import {
   Accordion,
   ActionIcon,
   Alert,
-  Badge,
   Button,
   Group,
   Menu,
@@ -26,7 +25,7 @@ import {
   TextInput,
 } from '@mantine/core';
 import { randomId } from '@/core/uid';
-import { BookIcon, PlusIcon, SearchIcon, TrashIcon } from '@/react-app/components/icons';
+import { PlusIcon, SearchIcon, TrashIcon } from '@/react-app/components/icons';
 import type { Config, GlossaryEntry, GlossarySet } from '@/data/models';
 import { m } from '@/paraglide/messages.js';
 import {
@@ -155,8 +154,9 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
 
   return (
     <SettingsSection title={m.glossary_section_title()} description={m.glossary_section_desc()}>
-      <Group gap="xs" wrap="wrap">
+      <Group gap="xs" wrap="wrap" align="flex-end">
         <TextInput
+          label={m.glossary_set_name_label()}
           placeholder={m.glossary_set_name_ph()}
           value={newName}
           onChange={(e) => setNewName(e.currentTarget.value)}
@@ -206,18 +206,8 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
       )}
 
       {config.glossary.length === 0 ? (
-        <Paper
-          p="md"
-          radius="md"
-          withBorder
-          style={{
-            borderStyle: 'dashed',
-            borderColor: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 30%, var(--mantine-color-default-border))',
-            backgroundColor: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 3%, var(--mantine-color-default))',
-          }}
-        >
+        <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
           <Stack gap="xs" align="center" py="sm">
-            <BookIcon width={24} height={24} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
             <Text size="sm" fw={600}>
               {m.glossary_empty()}
             </Text>
@@ -239,7 +229,7 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
             <Accordion.Item
               key={set.id}
               value={set.id}
-              style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}
+              style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'none' }}
             >
               <Accordion.Control>
                 <Group gap="sm" wrap="nowrap">
@@ -251,9 +241,9 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
                       {set.pattern}
                     </Text>
                   )}
-                  <Badge variant="light" color={set.enabled ? 'cinnabar' : 'gray'}>
+                  <Text size="xs" c="dimmed" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {set.entries.length}
-                  </Badge>
+                  </Text>
                   <Switch
                     size="sm"
                     checked={set.enabled}
@@ -380,6 +370,7 @@ function SetPanel({
       {set.entries.length > 5 && (
         <TextInput
           size="xs"
+          label={m.glossary_search()}
           placeholder={m.glossary_search()}
           leftSection={<SearchIcon width={12} height={12} />}
           value={search}
@@ -388,38 +379,48 @@ function SetPanel({
       )}
 
       {set.entries.length > 0 && (
-        <Table verticalSpacing="xs">
-          <Table.Tbody>
-            {filteredEntries.map(({ entry: r, originalIndex: i }) => (
-              <Table.Tr key={`${r.source}-${i}`}>
-                <Table.Td>
-                  <Text size="sm" fw={500}>
-                    {r.source}
-                  </Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="sm">{r.target}</Text>
-                </Table.Td>
-                <Table.Td>
-                  <Text size="xs" c="dimmed">
-                    {r.note ?? ''}
-                  </Text>
-                </Table.Td>
-                <Table.Td w={40}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="danger"
-                    size="sm"
-                    onClick={() => removeEntry(i)}
-                    aria-label={m.glossary_remove_aria()}
-                  >
-                    <TrashIcon width={13} height={13} />
-                  </ActionIcon>
-                </Table.Td>
+        <Table.ScrollContainer minWidth={480}>
+          <Table verticalSpacing="sm" highlightOnHover>
+            <Table.Thead>
+              <Table.Tr>
+                <Table.Th>{m.glossary_source_label()}</Table.Th>
+                <Table.Th>{m.glossary_target_label()}</Table.Th>
+                <Table.Th>{m.glossary_note_label()}</Table.Th>
+                <Table.Th />
               </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+            </Table.Thead>
+            <Table.Tbody>
+              {filteredEntries.map(({ entry: r, originalIndex: i }) => (
+                <Table.Tr key={`${r.source}-${i}`}>
+                  <Table.Td>
+                    <Text size="sm" fw={500}>
+                      {r.source}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="sm">{r.target}</Text>
+                  </Table.Td>
+                  <Table.Td>
+                    <Text size="xs" c="dimmed">
+                      {r.note ?? ''}
+                    </Text>
+                  </Table.Td>
+                  <Table.Td w={40}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="danger"
+                      size="sm"
+                      onClick={() => removeEntry(i)}
+                      aria-label={m.glossary_remove_aria()}
+                    >
+                      <TrashIcon width={13} height={13} />
+                    </ActionIcon>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       )}
     </Stack>
   );

@@ -279,5 +279,6 @@
 	"about_data_title": "Data & models",
 	"about_data_description": "No third-party dictionaries or corpora are bundled. Language detection uses Chrome’s built-in LanguageDetector model, managed by the browser. Translation results come from your selected provider and are subject to that provider’s terms. Imported glossaries are supplied by you.",
 	"about_licenses_title": "Open-source licenses",
-	"about_licenses_description": "Project framework and runtime dependencies (including transitive dependencies); some may be removed by bundling. Expand an entry to read its bundled license and notices."
+	"about_licenses_description": "Project framework and runtime dependencies (including transitive dependencies); some may be removed by bundling. Expand an entry to read its bundled license and notices.",
+	"pattern_rule_label": "Site pattern"
 }

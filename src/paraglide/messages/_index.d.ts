@@ -278,4 +278,5 @@ export * from "./about_data_title.js";
 export * from "./about_data_description.js";
 export * from "./about_licenses_title.js";
 export * from "./about_licenses_description.js";
+export * from "./pattern_rule_label.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

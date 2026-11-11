@@ -36,6 +36,7 @@ import {
 } from '@/services/translation/prompts';
 import { BUILTIN_STYLES, isBuiltinStyleId } from '@/services/translation/prompts/builtin-styles';
 import PatternRuleTable from './PatternRuleTable';
+import cls from './SettingsControls.module.css';
 import SettingsSection from './SettingsSection';
 import {
   builtinCopy,
@@ -184,8 +185,8 @@ function StyleRow({
   actions?: React.ReactNode;
 }) {
   return (
-    <Group gap="xs" wrap="nowrap" align="flex-start">
-      <Radio value={value} style={{ flex: 1 }} label={name} description={desc} />
+    <Group className={cls.styleRow} gap="xs" wrap="wrap" align="center">
+      <Radio value={value} style={{ flex: '1 1 180px', minWidth: 0 }} label={name} description={desc} />
       {actions}
     </Group>
   );
@@ -231,7 +232,7 @@ function StyleEditor({
             {m.styles_directives_label()}
           </Text>
           <Group gap={4} align="center">
-            <Text size="10px" c="dimmed">
+            <Text size="xs" c="dimmed">
               {m.expert_insert_variable()}
             </Text>
             {['{target}', '{source}', '{text}', '{title}'].map((variable) => (
@@ -240,7 +241,7 @@ function StyleEditor({
                 size="compact-xs"
                 variant="subtle"
                 color="cinnabar"
-                style={{ fontFamily: 'var(--mantine-font-family-monospace)', fontSize: 10 }}
+                style={{ fontFamily: 'var(--mantine-font-family-monospace)', fontSize: 12 }}
                 onClick={() => setDirectives((d) => `${d} ${variable}`.trim())}
               >
                 {variable}
@@ -252,6 +253,7 @@ function StyleEditor({
           {m.styles_directives_hint()}
         </Text>
         <Textarea
+          aria-label={m.styles_directives_label()}
           value={directives}
           onChange={(e) => setDirectives(e.currentTarget.value)}
           autosize
@@ -292,7 +294,7 @@ function SiteRules({ config, onSave }: PromptStyleSettingsProps) {
   const saveRules = (siteRules: typeof prompt.siteRules) => onSave({ ...config, prompt: { ...prompt, siteRules } });
 
   return (
-    <Stack gap={6}>
+    <Stack gap={8}>
       <Text size="sm" fw={500}>
         {m.styles_rules_label()}
       </Text>
@@ -308,6 +310,7 @@ function SiteRules({ config, onSave }: PromptStyleSettingsProps) {
         controlWidth={200}
         addExtra={
           <Select
+            label={m.styles_section_title()}
             data={selectData}
             value={styleId}
             onChange={(v) => v && setStyleId(v)}
@@ -318,6 +321,7 @@ function SiteRules({ config, onSave }: PromptStyleSettingsProps) {
         renderControl={(r, replace) => (
           <Select
             size="xs"
+            aria-label={m.styles_section_title()}
             data={selectData}
             value={r.styleId}
             allowDeselect={false}

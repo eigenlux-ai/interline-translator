@@ -279,5 +279,6 @@
 	"about_data_title": "Données et modèles",
 	"about_data_description": "Aucun dictionnaire ni corpus tiers n’est inclus. La détection de langue utilise le modèle LanguageDetector intégré à Chrome, géré par le navigateur. Les traductions proviennent du service choisi et sont soumises à ses conditions. Les glossaires importés sont fournis par vous.",
 	"about_licenses_title": "Licences open source",
-	"about_licenses_description": "Framework du projet et dépendances d’exécution, y compris les dépendances indirectes ; certaines peuvent être exclues lors de la compilation. Développez une entrée pour lire sa licence et ses mentions incluses."
+	"about_licenses_description": "Framework du projet et dépendances d’exécution, y compris les dépendances indirectes ; certaines peuvent être exclues lors de la compilation. Développez une entrée pour lire sa licence et ses mentions incluses.",
+	"pattern_rule_label": "Motif du site"
 }

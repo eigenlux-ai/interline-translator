@@ -22,13 +22,13 @@ export interface SettingsSectionProps {
 export default function SettingsSection({ title, description, action, children }: SettingsSectionProps) {
   return (
     <Box>
-      <Group justify="space-between" align="flex-end" gap="sm" wrap="nowrap">
-        <Box>
+      <Group justify="space-between" align="flex-end" gap="sm" wrap="wrap">
+        <Box style={{ flex: '1 1 240px', minWidth: 0 }}>
           <Title order={3} fz="h4" fw={600}>
             {title}
           </Title>
           {description && (
-            <Text c="dimmed" size="sm" mt={2}>
+            <Text c="dimmed" size="sm" mt={4}>
               {description}
             </Text>
           )}
@@ -36,7 +36,7 @@ export default function SettingsSection({ title, description, action, children }
         {action}
       </Group>
       <Divider my="md" />
-      <Stack gap="lg">{children}</Stack>
+      <Stack gap={24}>{children}</Stack>
     </Box>
   );
 }

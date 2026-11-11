@@ -9,18 +9,12 @@
 .page {
   min-height: 100vh;
   background-color: var(--mantine-color-body);
-  /* a faint warm vignette so the paper isn't a flat slab */
-  background-image: radial-gradient(
-    120% 80% at 50% -10%,
-    color-mix(in srgb, var(--mantine-color-cinnabar-6) 5%, transparent),
-    transparent 60%
-  );
 }
 
 .shell {
   max-width: 1280px;
   margin: 0 auto;
-  padding: clamp(28px, 5vw, 56px) clamp(20px, 4vw, 40px) 64px;
+  padding: 40px 32px 64px;
 }
 
 /* ── masthead ───────────────────────────────────────────────────────────── */
@@ -29,7 +23,7 @@
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding-bottom: 18px;
+  padding-bottom: 24px;
   border-bottom: 1px solid var(--mantine-color-default-border);
   position: relative;
 }
@@ -56,7 +50,7 @@
   font-size: 15px;
   letter-spacing: 0.18em;
   color: var(--mantine-color-cinnabar-6);
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   padding-left: 1px;
 }
 .brand {
@@ -75,25 +69,30 @@
 /* ── body: index + content ──────────────────────────────────────────────── */
 .body {
   display: grid;
-  grid-template-columns: 188px 1fr;
-  gap: clamp(28px, 5vw, 56px);
-  margin-top: 36px;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 40px;
+  margin-top: 32px;
   align-items: start;
+}
+
+.navFrame {
+  min-width: 0;
+  position: sticky;
+  top: 24px;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  position: sticky;
-  top: 28px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 11px;
-  padding: 9px 12px 9px 13px;
+  gap: 12px;
+  min-height: 48px;
+  padding: 8px 12px;
   border: 0;
   border-radius: var(--mantine-radius-md);
   background: transparent;
@@ -108,9 +107,21 @@
     color 120ms ease;
 }
 .navItem:hover {
-  background: color-mix(in srgb, var(--mantine-color-cinnabar-6) 7%, transparent);
+  background: var(--mantine-color-default-hover);
   color: var(--mantine-color-text);
 }
+.navItem:focus-visible {
+  outline: 2px solid var(--mantine-color-cinnabar-6);
+  outline-offset: 2px;
+}
+
+.navCount {
+  color: var(--mantine-color-dimmed);
+  font-size: 12px;
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
 .navItem svg {
   flex: none;
   opacity: 0.75;
@@ -118,8 +129,8 @@
 
 .navItemActive {
   color: var(--mantine-color-cinnabar-6);
-  background: color-mix(in srgb, var(--mantine-color-cinnabar-6) 11%, transparent);
-  font-weight: 600;
+  background: var(--mantine-color-default);
+  font-weight: 500;
 }
 .navItemActive svg {
   opacity: 1;
@@ -143,7 +154,7 @@
   line-height: 1.25;
 }
 .navHint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--mantine-color-dimmed);
   font-weight: 400;
 }
@@ -153,7 +164,7 @@
 }
 
 .footer {
-  margin-top: 56px;
+  margin-top: 48px;
   padding-top: 16px;
   border-top: 1px solid var(--mantine-color-default-border);
   display: flex;
@@ -163,16 +174,60 @@
 
 /* ── narrow: index folds to a horizontal scroller above the content ─────── */
 @media (max-width: 720px) {
+  .shell {
+    padding: 24px 16px 40px;
+  }
   .body {
     grid-template-columns: 1fr;
     gap: 24px;
+  }
+  .navFrame {
+    position: relative;
+    top: auto;
+  }
+  .navFrame::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    inset-inline-end: -4px;
+    bottom: 8px;
+    width: 32px;
+    background: linear-gradient(to right, transparent, var(--mantine-color-body));
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 120ms ease;
+  }
+  .navFrame[data-more]::after {
+    opacity: 1;
+  }
+  :global([dir='rtl']) .navFrame::after {
+    background: linear-gradient(to left, transparent, var(--mantine-color-body));
   }
   .nav {
     position: static;
     flex-direction: row;
     overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--mantine-color-default-border) transparent;
     gap: 4px;
-    padding-bottom: 4px;
+    padding: 4px 4px 8px;
+    margin: -4px;
+  }
+  .nav::-webkit-scrollbar {
+    height: 2px;
+  }
+  .nav::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .nav::-webkit-scrollbar-thumb {
+    background: var(--mantine-color-default-border);
+    border-radius: 2px;
+  }
+  @supports selector(::-webkit-scrollbar) {
+    .nav {
+      scrollbar-width: auto;
+      scrollbar-color: auto;
+    }
   }
   .navItem {
     flex: none;
@@ -187,6 +242,10 @@
     transform: translateX(-50%);
     width: 16px;
     height: 3px;
+  }
+  .footer {
+    gap: 16px;
+    flex-wrap: wrap;
   }
   .tagline {
     display: none;

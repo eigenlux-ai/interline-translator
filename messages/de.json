@@ -279,5 +279,6 @@
 	"about_data_title": "Daten und Modelle",
 	"about_data_description": "Es werden keine Wörterbücher oder Korpora Dritter mitgeliefert. Die Spracherkennung nutzt das in Chrome integrierte LanguageDetector-Modell, das vom Browser verwaltet wird. Übersetzungen stammen vom gewählten Anbieter und unterliegen dessen Bedingungen. Importierte Glossare werden von Ihnen bereitgestellt.",
 	"about_licenses_title": "Open-Source-Lizenzen",
-	"about_licenses_description": "Projekt-Framework und Laufzeitabhängigkeiten einschließlich indirekter Abhängigkeiten; einige können beim Erstellen entfernt werden. Klappen Sie einen Eintrag auf, um die mitgelieferte Lizenz und Hinweise zu lesen."
+	"about_licenses_description": "Projekt-Framework und Laufzeitabhängigkeiten einschließlich indirekter Abhängigkeiten; einige können beim Erstellen entfernt werden. Klappen Sie einen Eintrag auf, um die mitgelieferte Lizenz und Hinweise zu lesen.",
+	"pattern_rule_label": "Website-Muster"
 }

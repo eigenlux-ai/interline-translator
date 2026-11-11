@@ -56,7 +56,7 @@ const UNDERLINE_BASE: Record<string, string> = {
   textDecorationLine: 'underline',
   textDecorationColor: 'color-mix(in srgb, currentColor 40%, transparent)',
   textDecorationThickness: '1px',
-  textUnderlineOffset: '0.2em',
+  textUnderlineOffset: '0.25em',
 };
 
 export const PRESET_VISUALS: Record<BilingualStyle, PresetVisual> = {
@@ -80,19 +80,19 @@ export const PRESET_VISUALS: Record<BilingualStyle, PresetVisual> = {
   blockquote: {
     block: {
       borderInlineStart: '3px solid color-mix(in srgb, var(--aie-omt-accent) 55%, transparent)',
-      paddingInlineStart: '0.6em',
+      paddingInlineStart: '0.75em',
     },
     inline: {
       textDecoration: 'underline',
       textDecorationColor: 'color-mix(in srgb, var(--aie-omt-accent) 50%, transparent)',
-      textUnderlineOffset: '0.2em',
+      textUnderlineOffset: '0.25em',
     },
   },
   card: {
     block: {
       backgroundColor: 'color-mix(in srgb, var(--aie-omt-accent) 8%, transparent)',
-      borderRadius: '0.35em',
-      padding: '0.3em 0.5em',
+      borderRadius: '0.375em',
+      padding: '0.375em 0.625em',
     },
     inline: {
       backgroundColor: 'color-mix(in srgb, var(--aie-omt-accent) 14%, transparent)',
@@ -216,7 +216,7 @@ ${OMNI_BLOCK_TAG} {
      source's inline flow (our unique tag is never targeted by host rules, but a
      host 'p > *' reset shouldn't be able to flatten it to inline). */
   display: block !important;
-  margin-block: 0.2em 0.55em;
+  margin-block: 0.25em 0.5em;
   white-space: inherit;
 }
 ${OMNI_INLINE_TAG} {
@@ -227,7 +227,7 @@ ${OMNI_INLINE_TAG} {
   display: inline !important;
   white-space: inherit;
   /* A small gap so "原文译文" don't glue together on the same line. */
-  margin-inline-start: 0.35em;
+  margin-inline-start: 0.375em;
   /* When appended inside a nav/TOC link, don't pick up its underline — the 译文
      shouldn't masquerade as a second link. */
   text-decoration: none;

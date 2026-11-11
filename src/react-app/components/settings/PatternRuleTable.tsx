@@ -12,6 +12,8 @@
 import { useState, type ReactNode } from 'react';
 import { ActionIcon, Button, Code, Group, Table, TextInput } from '@mantine/core';
 import { PlusIcon, TrashIcon } from '@/react-app/components/icons';
+import { m } from '@/paraglide/messages.js';
+
 export interface PatternRuleTableProps<T extends { pattern: string }> {
   rules: T[];
   onChange: (rules: T[]) => void;
@@ -48,48 +50,56 @@ export default function PatternRuleTable<T extends { pattern: string }>({
 
   return (
     <>
-      <Group gap="xs">
+      <Group gap="xs" align="flex-end">
         <TextInput
+          label={m.pattern_rule_label()}
           placeholder="*.example.com"
           value={pattern}
           onChange={(e) => setPattern(e.currentTarget.value)}
           onKeyDown={(e) => e.key === 'Enter' && add()}
-          style={{ flex: 1 }}
+          style={{ flex: '1 1 200px', minWidth: 0 }}
         />
         {addExtra}
-        <Button variant="light" onClick={add} disabled={!pattern.trim()} leftSection={<PlusIcon width={12} height={12} />}>
+        <Button
+          variant="light"
+          onClick={add}
+          disabled={!pattern.trim()}
+          leftSection={<PlusIcon width={12} height={12} />}
+        >
           {addLabel}
         </Button>
       </Group>
 
       {rules.length > 0 && (
-        <Table verticalSpacing="xs">
-          <Table.Tbody>
-            {rules.map((r) => (
-              <Table.Tr key={r.pattern}>
-                <Table.Td>
-                  <Code style={{ fontSize: 12, padding: '3px 6px', fontWeight: 600 }}>
-                    {r.pattern}
-                  </Code>
-                </Table.Td>
-                <Table.Td w={controlWidth}>
-                  {renderControl(r, (next) => onChange(rules.map((x) => (x.pattern === r.pattern ? next : x))))}
-                </Table.Td>
-                <Table.Td w={40}>
-                  <ActionIcon
-                    variant="subtle"
-                    color="danger"
-                    size="sm"
-                    onClick={() => onChange(rules.filter((x) => x.pattern !== r.pattern))}
-                    aria-label={removeAria}
-                  >
-                    <TrashIcon width={13} height={13} />
-                  </ActionIcon>
-                </Table.Td>
-              </Table.Tr>
-            ))}
-          </Table.Tbody>
-        </Table>
+        <Table.ScrollContainer minWidth={480}>
+          <Table verticalSpacing="sm" highlightOnHover>
+            <Table.Tbody>
+              {rules.map((r) => (
+                <Table.Tr key={r.pattern}>
+                  <Table.Td>
+                    <Code style={{ fontSize: 12, padding: '4px 8px', fontWeight: 400, overflowWrap: 'anywhere' }}>
+                      {r.pattern}
+                    </Code>
+                  </Table.Td>
+                  <Table.Td w={controlWidth}>
+                    {renderControl(r, (next) => onChange(rules.map((x) => (x.pattern === r.pattern ? next : x))))}
+                  </Table.Td>
+                  <Table.Td w={40}>
+                    <ActionIcon
+                      variant="subtle"
+                      color="danger"
+                      size="sm"
+                      onClick={() => onChange(rules.filter((x) => x.pattern !== r.pattern))}
+                      aria-label={removeAria}
+                    >
+                      <TrashIcon width={13} height={13} />
+                    </ActionIcon>
+                  </Table.Td>
+                </Table.Tr>
+              ))}
+            </Table.Tbody>
+          </Table>
+        </Table.ScrollContainer>
       )}
     </>
   );

@@ -5,27 +5,17 @@
  */
 
 import { useEffect, useState } from 'react';
-import {
-  Anchor,
-  Badge,
-  Group,
-  MultiSelect,
-  Paper,
-  SegmentedControl,
-  Select,
-  Stack,
-  Switch,
-  Text,
-} from '@mantine/core';
-import { CheckCircleIcon, SparklesIcon, TranslateIcon } from '@/react-app/components/icons';
+import { Anchor, Badge, Group, MultiSelect, Paper, SegmentedControl, Select, Stack, Switch, Text } from '@mantine/core';
+import { CheckCircleIcon } from '@/react-app/components/icons';
+import { useVisual } from '@/react-app/managers/VisualManager/context';
+import type { VisualColorScheme } from '@/react-app/managers/VisualManager/defs';
 import { langOptions, sourceOptions, type Config, type DisplayMode } from '@/data/models';
 import { UI_LANG_NAMES, UI_LANGS, type UiLangSetting } from '@/data/models/lang';
 import { m } from '@/paraglide/messages.js';
-import { useVisual } from '@/react-app/managers/VisualManager/context';
-import type { VisualColorScheme } from '@/react-app/managers/VisualManager/defs';
 import { detectorStatus, downloadDetectorModel, type DetectorStatus } from '@/services/detect/model';
 import SettingsSection from './SettingsSection';
 import StylePreview, { FontPreview } from './StylePreview';
+
 const TARGETS = langOptions();
 
 const DETECTOR_COPY: Record<DetectorStatus | 'checking', () => string> = {
@@ -79,16 +69,15 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
     <SettingsSection title={m.settings_general_title()} description={m.settings_general_desc()}>
       <Stack gap="lg">
         {/* Card 1: 翻译与目标语言 */}
-        <Paper p="md" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+        <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
           <Stack gap="md">
-            <Group gap={6} align="center">
-              <TranslateIcon width={16} height={16} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
+            <Group gap={8} align="center">
               <Text size="sm" fw={600}>
                 {m.settings_source_label()} / {m.settings_target_label()}
               </Text>
             </Group>
 
-            <Group grow>
+            <Group grow preventGrowOverflow={false} wrap="wrap">
               <Select
                 label={m.settings_source_label()}
                 data={sources}
@@ -172,15 +161,8 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
         </Paper>
 
         {/* Card 2: 排版与呈现预览 */}
-        <Paper p="md" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+        <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
           <Stack gap="md">
-            <Group gap={6} align="center">
-              <SparklesIcon width={16} height={16} style={{ color: 'var(--mantine-color-cinnabar-6)' }} />
-              <Text size="sm" fw={600}>
-                {m.settings_style_title()}
-              </Text>
-            </Group>
-
             <Stack gap={8}>
               <div>
                 <Text size="sm" fw={500}>
@@ -207,7 +189,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
               />
             </Stack>
 
-            <Stack gap={6}>
+            <Stack gap={8}>
               <Text size="sm" fw={500}>
                 {m.display_label()}
               </Text>
@@ -232,12 +214,13 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
                 </Text>
               </div>
               <Switch
+                aria-label={m.interleave_label()}
                 checked={config.appearance.paragraphInterleave ?? true}
                 onChange={(e) => setAppearance({ paragraphInterleave: e.currentTarget.checked })}
               />
             </Group>
 
-            <Stack gap={6}>
+            <Stack gap={8}>
               <Text size="sm" fw={500}>
                 {m.settings_appearance_title()}
               </Text>
@@ -255,7 +238,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
         </Paper>
 
         {/* Card 3: 输入框就地翻译 */}
-        <Paper p="md" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+        <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
           <Stack gap="sm">
             <Group justify="space-between" align="flex-start" wrap="nowrap">
               <div>
@@ -309,7 +292,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
         </Paper>
 
         {/* Card 4: 端侧语言检测 */}
-        <Paper p="md" radius="md" withBorder style={{ backgroundColor: 'var(--mantine-color-default)', boxShadow: 'var(--mantine-shadow-xs)' }}>
+        <Paper p={{ base: 16, sm: 24 }} radius={12} withBorder>
           <Group justify="space-between" align="center" wrap="nowrap">
             <Stack gap={2}>
               <Text size="sm" fw={600}>

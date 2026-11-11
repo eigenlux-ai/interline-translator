@@ -31,7 +31,7 @@ const FAIL_MS = 1600; // failure notice: long enough to read, gone before it nag
 function positionUnder(host: HTMLElement, anchor: Element): void {
   const r = anchor.getBoundingClientRect();
   host.style.left = `${Math.round(r.left)}px`;
-  host.style.top = `${Math.round(Math.min(r.bottom + 6, window.innerHeight - 40))}px`;
+  host.style.top = `${Math.round(Math.min(r.bottom + 8, window.innerHeight - 40))}px`;
 }
 
 export class InputHint {
@@ -75,27 +75,33 @@ export class InputHint {
           to { opacity: 1; transform: translateY(0) scale(1); }
         }
         .pill {
-          display: inline-flex; align-items: center; gap: 6px;
-          font: 12px/1.3 "LXGW WenKai", "Kaiti SC", "Noto Serif SC", serif;
-          color: #3A332A; background: rgba(255,253,248,0.96);
-          border: 1px solid rgba(33,28,21,0.14); border-radius: 999px;
-          padding: 4px 11px; box-shadow: 0 1px 2px rgba(33,28,21,.06), 0 4px 12px -4px rgba(33,28,21,.12);
-          white-space: nowrap;
+          display: inline-flex; align-items: center; gap: 8px;
+          font: 12px/1.5 "LXGW WenKai", "Kaiti SC", "Noto Serif SC", serif;
+          color: #3A332A; background: rgba(255,253,248,0.90);
+          border: 1px solid rgba(33,28,21,0.14); border-radius: 8px;
+          padding: 4px 12px; box-shadow: 0 1px 2px rgba(33,28,21,.06), 0 4px 12px -4px rgba(33,28,21,.12);
+          backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+          max-width: calc(100vw - 24px); overflow-wrap: anywhere;
+          white-space: normal;
           animation: pillIn 120ms cubic-bezier(0.2, 0, 0, 1);
         }
         :host(.dark) .pill {
-          color: #D8CFBE; background: rgba(30,26,20,0.96);
+          color: #D8CFBE; background: rgba(30,26,20,0.90);
           border-color: rgba(236,228,214,0.16);
           box-shadow: 0 1px 2px rgba(0,0,0,.3), 0 4px 12px -4px rgba(0,0,0,.5);
         }
         .undo { pointer-events: auto; cursor: pointer; }
-        .undo:hover, .undo:focus-visible { color: #C2402A; outline: none; }
+        .undo:hover { color: #C2402A; }
+        .undo:focus-visible { outline: 2px solid #C2402A; outline-offset: 2px; }
         :host(.dark) .undo:hover, :host(.dark) .undo:focus-visible { color: #E2614A; }
         .fail { color: #A81D2D; }
         :host(.dark) .fail { color: #E04C5C; }
         .kbd {
-          font: 10px/1 "Spline Sans Mono", ui-monospace, monospace;
-          opacity: 0.7; letter-spacing: 0.04em;
+          font: 11px/1.4 "Spline Sans Mono", ui-monospace, monospace;
+          padding: 0 4px; border: 1px solid currentColor; border-radius: 4px;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pill { animation: none; }
         }
         .${SPINNER_CLASS} { color: #C2402A; }
         :host(.dark) .${SPINNER_CLASS} { color: #E2614A; }
@@ -146,6 +152,7 @@ export class InputHint {
     const spin = createPetalSpinner(shadow);
     spin.setAttribute('class', SPINNER_CLASS);
     spin.setAttribute('aria-hidden', 'true');
+    pill.setAttribute('role', 'status');
     const label = document.createElement('span');
     label.textContent = m.common_translating();
     pill.append(spin, label);

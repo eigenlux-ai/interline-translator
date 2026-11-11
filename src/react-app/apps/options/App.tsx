@@ -8,8 +8,8 @@
  * content via storage.watch).
  */
 
-import { useState } from 'react';
-import { Badge, Center, Group, Loader, Text } from '@mantine/core';
+import { useEffect, useRef, useState } from 'react';
+import { Center, Group, Loader, Text } from '@mantine/core';
 import { ArchiveIcon, BookIcon, BrushIcon, EngineIcon, GearIcon, GlobeIcon } from '@/react-app/components/icons';
 import AboutSettings from '@/react-app/components/settings/AboutSettings';
 import BackupSettings from '@/react-app/components/settings/BackupSettings';
@@ -40,6 +40,23 @@ const NAV: Array<{ id: SectionId; label: () => string; hint: () => string; Icon:
 export default function OptionsApp() {
   const { config, save, patch } = useConfig();
   const [active, setActive] = useState<SectionId>('general');
+  const navRef = useRef<HTMLElement>(null);
+  const [hasMoreNavigation, setHasMoreNavigation] = useState(false);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return;
+    const updateOverflow = () => {
+      setHasMoreNavigation(nav.scrollWidth - nav.clientWidth - Math.abs(nav.scrollLeft) > 1);
+    };
+    const observer = new ResizeObserver(updateOverflow);
+    observer.observe(nav);
+    nav.addEventListener('scroll', updateOverflow, { passive: true });
+    return () => {
+      observer.disconnect();
+      nav.removeEventListener('scroll', updateOverflow);
+    };
+  }, [config]);
 
   if (!config) {
     return (
@@ -67,48 +84,41 @@ export default function OptionsApp() {
         </header>
 
         <div className={cls.body}>
-          <nav className={cls.nav} aria-label={m.options_nav_aria()}>
-            {NAV.map(({ id, label, hint, Icon }) => {
-              let count: number | null = null;
-              if (id === 'providers') {
-                count = config.providers.filter((p) => p.enabled && !p.draft).length;
-              } else if (id === 'glossary') {
-                count = config.glossary.length;
-              } else if (id === 'sites') {
-                count = config.siteControl.rules.length;
-              } else if (id === 'styles') {
-                count = config.prompt.styles.length;
-              }
+          <div className={cls.navFrame} data-more={hasMoreNavigation || undefined}>
+            <nav ref={navRef} className={cls.nav} aria-label={m.options_nav_aria()}>
+              {NAV.map(({ id, label, hint, Icon }) => {
+                let count: number | null = null;
+                if (id === 'providers') {
+                  count = config.providers.filter((p) => p.enabled && !p.draft).length;
+                } else if (id === 'glossary') {
+                  count = config.glossary.length;
+                } else if (id === 'sites') {
+                  count = config.siteControl.rules.length;
+                } else if (id === 'styles') {
+                  count = config.prompt.styles.length;
+                }
 
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  className={`${cls.navItem} ${active === id ? cls.navItemActive : ''}`}
-                  aria-current={active === id ? 'page' : undefined}
-                  onClick={() => setActive(id)}
-                >
-                  <Icon width={16} height={16} />
-                  <Group justify="space-between" align="center" flex={1} wrap="nowrap" gap="xs">
-                    <span className={cls.navLabel}>
-                      {label()}
-                      <span className={cls.navHint}>{hint()}</span>
-                    </span>
-                    {count !== null && count > 0 && (
-                      <Badge
-                        size="xs"
-                        variant={active === id ? 'light' : 'subtle'}
-                        color={active === id ? 'cinnabar' : 'gray'}
-                        styles={{ root: { paddingInline: 6, height: 18 } }}
-                      >
-                        {count}
-                      </Badge>
-                    )}
-                  </Group>
-                </button>
-              );
-            })}
-          </nav>
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    className={`${cls.navItem} ${active === id ? cls.navItemActive : ''}`}
+                    aria-current={active === id ? 'page' : undefined}
+                    onClick={() => setActive(id)}
+                  >
+                    <Icon width={16} height={16} />
+                    <Group justify="space-between" align="center" flex={1} wrap="nowrap" gap="xs">
+                      <span className={cls.navLabel}>
+                        {label()}
+                        <span className={cls.navHint}>{hint()}</span>
+                      </span>
+                      {count !== null && count > 0 && <span className={cls.navCount}>{count}</span>}
+                    </Group>
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
           <main className={cls.content}>
             {active === 'general' && <GeneralSettings config={config} onPatch={patch} />}
             {active === 'styles' && <PromptStyleSettings config={config} onSave={save} />}

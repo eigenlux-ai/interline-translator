@@ -13,3 +13,8 @@
 
 @import 'tailwindcss';
 @import './global.css';
+
+/* Reserve the document scrollbar width across short and long settings panels. */
+:root {
+  scrollbar-gutter: stable;
+}

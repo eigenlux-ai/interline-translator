@@ -11,8 +11,7 @@
  * interacting with the pill/card doesn't dismiss it.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import {
   ActionIcon,
   Badge,
@@ -28,9 +27,8 @@ import {
   useMantineTheme,
 } from '@mantine/core';
 import { CheckIcon, CloseIcon, CopyIcon, PinIcon, SparklesIcon, VolumeIcon } from '@/react-app/components/icons';
+import { usePointerDrag, type DragPoint } from '@/react-app/hooks/usePointerDrag';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
-import { usePointerDrag } from '@/react-app/hooks/usePointerDrag';
-import type { DragPoint } from '@/react-app/hooks/usePointerDrag';
 import { DATA_OMNI, Z_INDEX } from '@/constants';
 import { selectionNeighbors } from '@/dom/selection-context';
 import { syncUiLocaleFrom } from '@/i18n';
@@ -447,9 +445,9 @@ export default function SelectionApp() {
             fontFamily: fontKai,
             fontSize: 15,
             fontWeight: 600,
-            boxShadow: '0 2px 6px rgba(194, 64, 42, 0.35)',
+            boxShadow: '0 1px 3px rgba(33,28,21,0.18)',
             cursor: 'pointer',
-            transition: 'transform 0.14s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.14s ease',
+            transition: 'background-color 140ms ease',
           }}
         >
           译
@@ -465,10 +463,13 @@ export default function SelectionApp() {
               style={{
                 ...enter,
                 width: 340,
+                maxWidth: 'calc(100vw - 24px)',
                 maxHeight: cardMaxH,
                 display: 'flex',
                 flexDirection: 'column',
-                background: other.paperRaised[scheme],
+                background: scheme === 'dark' ? 'rgba(30,26,20,0.88)' : 'rgba(255,253,248,0.90)',
+                backdropFilter: 'blur(20px) saturate(180%)',
+                WebkitBackdropFilter: 'blur(20px) saturate(180%)',
                 border: `1px solid ${other.hair[scheme]}`,
                 boxShadow: theme.shadows.lg,
                 overflow: 'hidden',
@@ -479,8 +480,8 @@ export default function SelectionApp() {
               <Group
                 justify="space-between"
                 align="center"
-                px={10}
-                py={6}
+                px={12}
+                py={8}
                 wrap="nowrap"
                 data-testid="omni-selection-drag-handle"
                 onPointerDown={(e: ReactPointerEvent) => {
@@ -501,7 +502,7 @@ export default function SelectionApp() {
                   touchAction: 'none', // touch drags must not scroll the host page
                 }}
               >
-                <Group gap={6} align="center">
+                <Group gap={8} align="center">
                   <Box
                     aria-hidden
                     style={{
@@ -536,7 +537,7 @@ export default function SelectionApp() {
                           onClick={() => speak(result)}
                           aria-label={m.sel_speak()}
                         >
-                          <VolumeIcon width={13} height={13} />
+                          <VolumeIcon width={16} height={16} />
                         </ActionIcon>
                       </Tooltip>
                       <Tooltip label={copied ? m.gloss_copied() : m.sel_copy()} withArrow>
@@ -551,7 +552,7 @@ export default function SelectionApp() {
                           }}
                           aria-label={m.sel_copy()}
                         >
-                          {copied ? <CheckIcon width={13} height={13} /> : <CopyIcon width={13} height={13} />}
+                          {copied ? <CheckIcon width={16} height={16} /> : <CopyIcon width={16} height={16} />}
                         </ActionIcon>
                       </Tooltip>
                     </>
@@ -565,20 +566,20 @@ export default function SelectionApp() {
                       onClick={() => setPinned(!pinned)}
                       aria-label={pinned ? m.sel_unpin() : m.sel_pin()}
                     >
-                      <PinIcon width={13} height={13} />
+                      <PinIcon width={16} height={16} />
                     </ActionIcon>
                   </Tooltip>
 
                   <Tooltip label={m.common_close()} withArrow>
                     <ActionIcon size="sm" variant="subtle" color="gray" onClick={dismiss} aria-label={m.common_close()}>
-                      <CloseIcon width={13} height={13} />
+                      <CloseIcon width={16} height={16} />
                     </ActionIcon>
                   </Tooltip>
                 </Group>
               </Group>
 
               {/* Body */}
-              <Box px={14} py={10} style={{ overflowY: 'auto', flex: 1 }}>
+              <Box px={16} py={12} style={{ overflowY: 'auto', flex: 1 }}>
                 {loading && !result ? (
                   <Box py={4}>
                     <Skeleton height={14} radius="sm" mb={8} width="90%" />
@@ -605,7 +606,7 @@ export default function SelectionApp() {
                     <Text
                       style={{
                         fontFamily: fontKai,
-                        fontSize: 14.5,
+                        fontSize: 15,
                         lineHeight: 1.8,
                         color: other.gloss[scheme],
                         wordBreak: 'break-word',
@@ -616,7 +617,7 @@ export default function SelectionApp() {
                     </Text>
 
                     {canAnnotate && result && (
-                      <Box mt={10} pt={8} style={{ borderTop: `1px solid ${other.hair[scheme]}` }}>
+                      <Box mt={12} pt={8} style={{ borderTop: `1px solid ${other.hair[scheme]}` }}>
                         <UnstyledButton
                           onClick={() => {
                             const next = !notesOpen;
