@@ -56,3 +56,13 @@
   min-height: 20px;
   white-space: normal;
 }
+
+.detector :global(.mantine-Badge-label) {
+  white-space: normal;
+  line-height: 1.5;
+}
+
+.column :global(.mantine-SegmentedControl-label) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

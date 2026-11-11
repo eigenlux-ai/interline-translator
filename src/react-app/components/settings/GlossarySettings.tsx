@@ -173,7 +173,15 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
         </Button>
         <Menu position="bottom-end">
           <Menu.Target>
-            <Button variant="default">{m.glossary_presets()}</Button>
+            <Button
+              variant="default"
+              styles={{
+                root: { height: 'auto', minHeight: 36, maxWidth: '100%', paddingBlock: 8 },
+                label: { whiteSpace: 'normal', textAlign: 'start' },
+              }}
+            >
+              {m.glossary_presets()}
+            </Button>
           </Menu.Target>
           <Menu.Dropdown>
             {GLOSSARY_PRESETS.map((gp) => (
@@ -214,9 +222,18 @@ export default function GlossarySettings({ config, onSave }: GlossarySettingsPro
             <Text size="xs" c="dimmed" ta="center">
               {m.glossary_empty_hint()}
             </Text>
-            <Group gap="xs" mt={4}>
+            <Group gap="xs" mt={4} maw="100%">
               {GLOSSARY_PRESETS.map((gp) => (
-                <Button key={gp.name()} size="xs" variant="light" onClick={() => addPreset(gp)}>
+                <Button
+                  key={gp.name()}
+                  size="xs"
+                  variant="light"
+                  styles={{
+                    root: { height: 'auto', minHeight: 30, maxWidth: '100%', paddingBlock: 6 },
+                    label: { whiteSpace: 'normal', textAlign: 'start' },
+                  }}
+                  onClick={() => addPreset(gp)}
+                >
                   + {gp.name()}
                 </Button>
               ))}

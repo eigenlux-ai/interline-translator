@@ -93,7 +93,7 @@ function StyleSwatch({
         border: `1px solid ${active ? tokens.accent : tokens.hair}`,
         boxShadow: active ? `inset 0 0 0 1px ${tokens.accent}` : 'none',
         transition: 'border-color 120ms ease, box-shadow 120ms ease',
-        textAlign: 'left',
+        textAlign: 'start',
         overflow: 'hidden',
       }}
     >
@@ -103,7 +103,8 @@ function StyleSwatch({
           fontSize: compact ? 11 : 12,
           fontWeight: active ? 600 : 500,
           color: active ? 'var(--interline-accent-ink)' : tokens.inkFaint,
-          lineHeight: 1,
+          lineHeight: 1.3,
+          overflowWrap: 'anywhere',
           letterSpacing: '0.01em',
         }}
       >
@@ -133,6 +134,7 @@ function StyleSwatch({
             color: tokens.gloss,
             width: 'fit-content',
             maxWidth: '100%',
+            overflowWrap: 'anywhere',
             ...presetSampleStyle(preset),
           }}
         >
@@ -180,7 +182,11 @@ export default function StylePreview({ value, onChange, font, compact = false, p
       {/* blur-to-learn: masked by default, cleared on hover — matches the page. */}
       <style>{`.aie-omt-swatch-gloss{transition:filter .12s ease,opacity .12s ease}
 [data-blur-swatch]:hover .aie-omt-swatch-gloss{filter:none!important;opacity:1!important}`}</style>
-      <SimpleGrid cols={compact ? 4 : { base: 2, xs: 4, sm: 5 }} spacing={8} verticalSpacing={8}>
+      <SimpleGrid
+        cols={compact ? (/^(zh|ja|ko)/.test(getUiLocale()) ? 4 : 3) : { base: 2, xs: 4, sm: 5 }}
+        spacing={8}
+        verticalSpacing={8}
+      >
         {BILINGUAL_STYLES.map((preset) => (
           <StyleSwatch
             key={preset}
@@ -249,7 +255,7 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
               border: `1px solid ${active ? PRESET_ACCENT : other.hair[scheme]}`,
               boxShadow: active ? `inset 0 0 0 1px ${PRESET_ACCENT}` : 'none',
               transition: 'border-color 140ms ease, box-shadow 140ms ease',
-              textAlign: 'left',
+              textAlign: 'start',
             }}
           >
             <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

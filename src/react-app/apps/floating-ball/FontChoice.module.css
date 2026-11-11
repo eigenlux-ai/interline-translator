@@ -33,3 +33,13 @@
     transition-duration: 0ms !important;
   }
 }
+
+.root :global(.mantine-SegmentedControl-label) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  height: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

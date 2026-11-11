@@ -745,10 +745,16 @@ export default function ProviderSettings({ config, onSave }: ProviderSettingsPro
                     size="xs"
                     variant="default"
                     leftSection={<PlusIcon width={12} height={12} />}
-                    rightSection={THIRD_PARTY_KINDS.has(a.kind) ? <ThirdPartyBadge /> : undefined}
+                    styles={{
+                      root: { height: 'auto', minHeight: 30, maxWidth: '100%', paddingBlock: 6 },
+                      inner: { minWidth: 0 },
+                      label: { whiteSpace: 'normal', flexWrap: 'wrap', gap: 6, textAlign: 'start' },
+                      section: { flexShrink: 0 },
+                    }}
                     onClick={() => add(a.kind, a.label)}
                   >
                     {a.label}
+                    {THIRD_PARTY_KINDS.has(a.kind) && <ThirdPartyBadge />}
                   </Button>
                 ))}
               </Group>
