@@ -12,6 +12,7 @@ import { z } from 'zod';
 import { BILINGUAL_STYLES, DISPLAY_MODES, type Config } from '@/data/models';
 import { UI_LANGS } from '@/data/models/lang';
 import { CONFIG_VERSION } from './migrations/v001';
+import { defaultVideoSubtitles, SUBTITLE_REQUEST_LIMITS } from './video-subtitles';
 
 const providerKind = z.enum([
   'openai',
@@ -86,8 +87,66 @@ export const providerConfigSchema = z.object({
 
 const siteMode = z.enum(['auto', 'always', 'never']);
 
+const budget = (name: keyof typeof SUBTITLE_REQUEST_LIMITS, integer = true) => {
+  const [min, max] = SUBTITLE_REQUEST_LIMITS[name];
+  const value = z.number().min(min).max(max);
+  return integer ? value.int() : value;
+};
+export const videoSubtitlesSchema = z
+  .object({
+    enabled: z.boolean(),
+    platforms: z.record(
+      z.string().regex(/^[a-z][a-z0-9-]{0,31}$/),
+      z.object({ enabled: z.boolean(), autoEnable: z.boolean() }).strict()
+    ),
+    translation: z
+      .object({
+        target: z.discriminatedUnion('mode', [
+          z.object({ mode: z.literal('inherit') }).strict(),
+          z.object({ mode: z.literal('fixed'), language: z.string().min(1).max(35) }).strict(),
+        ]),
+        provider: z.discriminatedUnion('mode', [
+          z.object({ mode: z.literal('inherit') }).strict(),
+          z.object({ mode: z.literal('fixed'), providerId: z.string().min(1).max(200) }).strict(),
+        ]),
+      })
+      .strict(),
+    requests: z
+      .object({
+        maxConcurrent: budget('maxConcurrent'),
+        requestsPerSecond: budget('requestsPerSecond', false),
+        mtLookAheadSeconds: budget('mtLookAheadSeconds'),
+        llmLookAheadSeconds: budget('llmLookAheadSeconds'),
+        maxBatchItems: budget('maxBatchItems'),
+        maxBatchChars: budget('maxBatchChars'),
+      })
+      .strict(),
+    appearance: z
+      .object({
+        displayMode: z.enum(DISPLAY_MODES),
+        translationPosition: z.enum(['above', 'below']),
+        fontSize: z.number().int().min(12).max(64),
+        positionPercent: z.number().min(0).max(60),
+        backgroundOpacity: z.number().min(0).max(1),
+      })
+      .strict(),
+  })
+  .strict();
+export const videoSubtitlesPatchSchema = videoSubtitlesSchema
+  .partial()
+  .extend({
+    platforms: z
+      .record(z.string().regex(/^[a-z][a-z0-9-]{0,31}$/), videoSubtitlesSchema.shape.platforms.valueType.partial())
+      .optional(),
+    translation: videoSubtitlesSchema.shape.translation.partial().optional(),
+    requests: videoSubtitlesSchema.shape.requests.partial().optional(),
+    appearance: videoSubtitlesSchema.shape.appearance.partial().optional(),
+  })
+  .strict();
+
 export const configSchema = z.object({
   version: z.number().int().nonnegative(),
+  videoSubtitles: videoSubtitlesSchema.default(defaultVideoSubtitles),
   language: z.object({ ui: z.enum(['auto', ...UI_LANGS]) }),
   providers: z.array(providerConfigSchema),
   translate: z.object({
@@ -166,6 +225,7 @@ export const FREE_MT_PROVIDER_ID = 'google-free';
 export function defaultConfig(): Config {
   return {
     version: CONFIG_VERSION,
+    videoSubtitles: defaultVideoSubtitles(),
     language: { ui: 'auto' },
     providers: [
       {

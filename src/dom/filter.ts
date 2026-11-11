@@ -202,9 +202,17 @@ export function isAriaHidden(el: Element): boolean {
   return el.getAttribute('aria-hidden') === 'true';
 }
 
+/** Player captions belong to the timed subtitle session, including DOM fallback. */
+function isVideoCaptionContainer(el: Element): boolean {
+  return (
+    /(^|\.)youtube\.com$/i.test(el.ownerDocument.location?.hostname ?? '') &&
+    el.classList.contains('ytp-caption-window-container')
+  );
+}
+
 /** True for elements whose entire subtree should be skipped. */
 export function isSkippedElement(el: Element): boolean {
-  if (SKIP_TAGS.has(tag(el)) || isCodePre(el)) return true;
+  if (SKIP_TAGS.has(tag(el)) || isCodePre(el) || isVideoCaptionContainer(el)) return true;
   if (el.getAttribute('translate') === 'no') return true;
   if (el.classList?.contains('notranslate')) return true;
   // Our own output / already-walked nodes.
@@ -239,7 +247,7 @@ export function inSkippedAncestry(el: Element, boundary?: Node): boolean {
   // Inherited contenteditable resolves without a chain walk where supported.
   if ((el as HTMLElement).isContentEditable) return true;
   for (let cur: Element | null = el; cur && cur !== boundary; ) {
-    if (SKIP_TAGS.has(tag(cur)) || isCodePre(cur)) return true;
+    if (SKIP_TAGS.has(tag(cur)) || isCodePre(cur) || isVideoCaptionContainer(cur)) return true;
     if (cur.getAttribute('translate') === 'no') return true;
     if (cur.classList?.contains('notranslate')) return true;
     if (cur.getAttribute('aria-hidden') === 'true') return true;

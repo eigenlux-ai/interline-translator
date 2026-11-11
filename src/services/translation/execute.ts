@@ -15,6 +15,7 @@
 import { generateText, type LanguageModel } from 'ai';
 import type { Config, ProviderConfig, TranslateRequest, TranslateResult } from '@/data/models';
 import { shortStopError } from '@/services/stream/limiter';
+import { sharedAdmission, type AdmissionMeta } from './admission';
 import { computeCacheKey, singleTranslationKey } from './cache/cache-key';
 import type { TranslationCache } from './cache/db';
 import { llmCallOptions, requireApiKey, resolveCallEnv, resolveProvider } from './preflight';
@@ -45,6 +46,7 @@ export interface ExecuteDeps {
   cache?: TranslationCache;
   /** Caller's cancellation, propagated to both LLM and free MT requests. */
   signal?: AbortSignal;
+  admission?: Omit<AdmissionMeta, 'providerId'>;
 }
 
 export async function executeTranslate(
@@ -87,31 +89,41 @@ export async function executeTranslate(
   }
 
   // Translate.
-  let result: TranslateResult;
-  if (useMt) {
-    const mt = deps.mtFetch ?? googleFreeTranslate;
-    const out = deps.signal ? await mt(text, source, target, undefined, deps.signal) : await mt(text, source, target);
-    result = { text: out.text, detectedSource: out.detectedSource, providerId: provider.id };
-  } else {
-    const apiKey = requireApiKey(provider);
-    const resolveModel = deps.resolveModel ?? createLlmModel;
-    const generate = deps.generate ?? generateText;
-    const model = await resolveModel(provider, apiKey);
-    const timeout = AbortSignal.timeout(EXECUTE_TIMEOUT_MS);
-    const gen = await generate({
-      model,
-      system: built.system,
-      prompt: built.prompt,
-      abortSignal: deps.signal ? AbortSignal.any([deps.signal, timeout]) : timeout,
-      ...llmCallOptions(provider),
-    });
-    // A capped or content-filtered completion is a HALF translation. Returning
-    // it would render a broken sentence and (below) cache it for 30 days —
-    // the streaming paths reject the same finishReason for the same reason.
-    const shortStop = shortStopError(gen.finishReason);
-    if (shortStop) throw shortStop;
-    result = { text: stripThink(gen.text).trim(), providerId: provider.id };
-  }
+  const result = await sharedAdmission.run(
+    { providerId: provider.id, signal: deps.signal, ...deps.admission },
+    async (): Promise<TranslateResult> => {
+      let result: TranslateResult;
+      if (useMt) {
+        const mt = deps.mtFetch ?? googleFreeTranslate;
+        const out = deps.signal
+          ? await mt(text, source, target, undefined, deps.signal)
+          : await mt(text, source, target);
+        result = { text: out.text, detectedSource: out.detectedSource, providerId: provider.id };
+      } else {
+        const apiKey = requireApiKey(provider);
+        const resolveModel = deps.resolveModel ?? createLlmModel;
+        const generate = deps.generate ?? generateText;
+        const model = await resolveModel(provider, apiKey);
+        const timeout = AbortSignal.timeout(EXECUTE_TIMEOUT_MS);
+        const gen = await generate({
+          model,
+          system: built.system,
+          prompt: built.prompt,
+          abortSignal: deps.signal ? AbortSignal.any([deps.signal, timeout]) : timeout,
+          maxRetries: 0,
+          ...llmCallOptions(provider),
+        });
+        // A capped or content-filtered completion is a HALF translation. Returning
+        // it would render a broken sentence and (below) cache it for 30 days —
+        // the streaming paths reject the same finishReason for the same reason.
+        const shortStop = shortStopError(gen.finishReason);
+        if (shortStop) throw shortStop;
+        result = { text: stripThink(gen.text).trim(), providerId: provider.id };
+      }
+
+      return result;
+    }
+  );
 
   // Store (best-effort; a cache write must never fail the translation).
   if (deps.cache && cacheKey && result.text) {

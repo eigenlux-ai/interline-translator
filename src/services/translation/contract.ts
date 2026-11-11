@@ -49,5 +49,13 @@ export const TRANSLATION_SERVICE_KEY = 'TranslationService' as ProxyServiceKey<T
  * Importing this does NOT pull `impl.ts` — only the type + the key string.
  */
 export function getTranslationService() {
-  return createProxyService(TRANSLATION_SERVICE_KEY);
+  const proxy = createProxyService(TRANSLATION_SERVICE_KEY);
+  return {
+    translate(req: TranslateRequest): Promise<TranslateResult> {
+      return browser.runtime.sendMessage({ type: 'interline:translate:v1', request: req });
+    },
+    detectLang: (text: string) => proxy.detectLang(text),
+    summarizePage: (text: string, target: LangCode) => proxy.summarizePage(text, target),
+    validateProvider: (provider: ProviderConfig) => proxy.validateProvider(provider),
+  };
 }

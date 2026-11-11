@@ -13,13 +13,20 @@
  * selection replays instantly instead of paying a second LLM call.
  */
 
-import { type LanguageModel, streamText } from 'ai';
+import { streamText, type LanguageModel } from 'ai';
 import type { AnnotateStart, StreamClientMessage, StreamServerMessage, TranslateRequest } from '@/data/models';
 import { getConfig } from '@/services/config/storage';
+import { sharedAdmission } from '@/services/translation/admission';
 import { singleTranslationKey } from '@/services/translation/cache/cache-key';
 import { dexieCache } from '@/services/translation/cache/db';
 import { executeTranslate } from '@/services/translation/execute';
-import { llmCallOptions, requireApiKey, resolveCallEnv, resolveProvider, type LlmCallOptions } from '@/services/translation/preflight';
+import {
+  llmCallOptions,
+  requireApiKey,
+  resolveCallEnv,
+  resolveProvider,
+  type LlmCallOptions,
+} from '@/services/translation/preflight';
 import { buildAnnotatePrompt } from '@/services/translation/prompts';
 import { createLlmModel } from '@/services/translation/provider/llm';
 import { createThinkStripper } from '@/services/translation/reasoning';
@@ -55,6 +62,7 @@ async function pumpModelStream(
   const watchdog = makeWatchdog(signal);
   const result = streamText({
     ...input,
+    maxRetries: 0,
     abortSignal: watchdog.signal,
     onError: ({ error }) => {
       streamError = error;
@@ -95,6 +103,10 @@ async function pumpModelStream(
 export function registerStreamServer(): void {
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== STREAM_PORT_NAME) return;
+    if (port.sender?.id !== browser.runtime.id) {
+      port.disconnect();
+      return;
+    }
     const controllers = new Map<string, AbortController>();
 
     port.onMessage.addListener((raw) => {
@@ -142,49 +154,64 @@ export async function handleStart(
   controllers: Map<string, AbortController>
 ): Promise<void> {
   const post = makePost(port);
-  await runStreamHandler(requestId, controllers, (message) => post({ type: 'error', requestId, message }), async (ac) => {
-    const text = request.text.trim();
-    if (!text) {
-      post({ type: 'done', requestId });
-      return;
-    }
-    const config = await getConfig();
-    const { provider, target, source, useMt } = resolveCallEnv(config, request);
+  await runStreamHandler(
+    requestId,
+    controllers,
+    (message) => post({ type: 'error', requestId, message }),
+    async (ac) => {
+      const text = request.text.trim();
+      if (!text) {
+        post({ type: 'done', requestId });
+        return;
+      }
+      const config = await getConfig();
+      const { provider, target, source, useMt } = resolveCallEnv(config, request);
 
-    if (useMt) {
-      // No streaming endpoint — reuse the non-streaming engine (incl. its cache)
-      // and emit the result as one chunk.
-      const out = await executeTranslate({ ...request, mode: 'mt' }, config, { cache: dexieCache, signal: ac.signal });
-      post({ type: 'chunk', requestId, delta: out.text });
-      post({ type: 'done', requestId, detectedSource: out.detectedSource });
-      return;
-    }
+      if (useMt) {
+        // No streaming endpoint — reuse the non-streaming engine (incl. its cache)
+        // and emit the result as one chunk.
+        const out = await executeTranslate({ ...request, mode: 'mt' }, config, {
+          cache: dexieCache,
+          signal: ac.signal,
+          admission: {
+            kind: 'interactive',
+            owner: `${port.sender?.tab?.id ?? 'extension'}:${port.sender?.documentId ?? port.sender?.url ?? ''}`,
+          },
+        });
+        post({ type: 'chunk', requestId, delta: out.text });
+        post({ type: 'done', requestId, detectedSource: out.detectedSource });
+        return;
+      }
 
-    const apiKey = requireApiKey(provider);
-    const { key, built } = await singleTranslationKey(text, provider, source, target, config, request.context);
-    const hit = await dexieCache.get(key).catch(() => undefined); // broken IndexedDB → miss
-    if (hit) {
-      post({ type: 'chunk', requestId, delta: hit });
-      post({ type: 'done', requestId });
-      return;
-    }
+      const apiKey = requireApiKey(provider);
+      const { key, built } = await singleTranslationKey(text, provider, source, target, config, request.context);
+      const hit = await dexieCache.get(key).catch(() => undefined); // broken IndexedDB → miss
+      if (hit) {
+        post({ type: 'chunk', requestId, delta: hit });
+        post({ type: 'done', requestId });
+        return;
+      }
 
-    const model = await createLlmModel(provider, apiKey);
-    // Deliberately NOT behind withStreamSlot: the cap exists to stop BATCH
-    // fan-out, not a lone selection. A user-initiated stream (划词) must never
-    // wait on a slot at all — even under the limiter's newest-first wake order
-    // it would still block while all four slots stream page batches (under the
-    // old FIFO order it spun for minutes behind them). The watchdog timeout
-    // still bounds a wedged upstream.
-    const full = await pumpModelStream(post, requestId, ac.signal, {
-      model,
-      system: built.system,
-      prompt: built.prompt,
-      ...llmCallOptions(provider),
-    });
-    const trimmed = full?.trim();
-    if (trimmed) void dexieCache.set(key, trimmed).catch(() => {});
-  });
+      const model = await createLlmModel(provider, apiKey);
+      const full = await sharedAdmission.run(
+        {
+          providerId: provider.id,
+          kind: 'interactive',
+          signal: ac.signal,
+          owner: `${port.sender?.tab?.id ?? 'extension'}:${port.sender?.documentId ?? port.sender?.url ?? ''}`,
+        },
+        () =>
+          pumpModelStream(post, requestId, ac.signal, {
+            model,
+            system: built.system,
+            prompt: built.prompt,
+            ...llmCallOptions(provider),
+          })
+      );
+      const trimmed = full?.trim();
+      if (trimmed) void dexieCache.set(key, trimmed).catch(() => {});
+    }
+  );
 }
 
 /**
@@ -202,18 +229,32 @@ async function handleAnnotate(
 ): Promise<void> {
   const { requestId } = msg;
   const post = makePost(port);
-  await runStreamHandler(requestId, controllers, (message) => post({ type: 'error', requestId, message }), async (ac) => {
-    const config = await getConfig();
-    const provider = resolveProvider(config, msg.providerId);
-    if (provider.kind === 'google-mt') throw new Error('annotation needs an LLM engine');
-    const apiKey = requireApiKey(provider);
-    const model = await createLlmModel(provider, apiKey);
-    const { system, prompt } = buildAnnotatePrompt(msg.text, msg.translation, msg.target || config.translate.target);
-    await pumpModelStream(post, requestId, ac.signal, {
-      model,
-      system,
-      prompt,
-      ...llmCallOptions(provider),
-    });
-  });
+  await runStreamHandler(
+    requestId,
+    controllers,
+    (message) => post({ type: 'error', requestId, message }),
+    async (ac) => {
+      const config = await getConfig();
+      const provider = resolveProvider(config, msg.providerId);
+      if (provider.kind === 'google-mt') throw new Error('annotation needs an LLM engine');
+      const apiKey = requireApiKey(provider);
+      const model = await createLlmModel(provider, apiKey);
+      const { system, prompt } = buildAnnotatePrompt(msg.text, msg.translation, msg.target || config.translate.target);
+      await sharedAdmission.run(
+        {
+          providerId: provider.id,
+          kind: 'interactive',
+          signal: ac.signal,
+          owner: `${port.sender?.tab?.id ?? 'extension'}:${port.sender?.documentId ?? port.sender?.url ?? ''}`,
+        },
+        () =>
+          pumpModelStream(post, requestId, ac.signal, {
+            model,
+            system,
+            prompt,
+            ...llmCallOptions(provider),
+          })
+      );
+    }
+  );
 }

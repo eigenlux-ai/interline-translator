@@ -2,37 +2,26 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { makeWatchdog, shortStopError, withStreamSlot } from './limiter';
 
 describe('withStreamSlot', () => {
-  it('never exceeds the cap, releases on failure, and wakes waiters newest-first', async () => {
-    let active = 0;
-    let peak = 0;
+  it('uses the shared six-call capacity and releases slots on failure', async () => {
+    let active = 0,
+      peak = 0;
     const order: number[] = [];
-
-    const job = (i: number, fail = false) =>
-      withStreamSlot(async () => {
-        active++;
-        peak = Math.max(peak, active);
-        order.push(i);
-        await new Promise((r) => setTimeout(r, 5));
-        active--;
-        if (fail) throw new Error(`job ${i} failed`);
-        return i;
-      });
-
-    // 10 jobs against a cap of 4; two of them fail (slots must still free up).
     const results = await Promise.allSettled(
-      Array.from({ length: 10 }, (_, i) => job(i, i === 2 || i === 6))
+      Array.from({ length: 10 }, (_, i) =>
+        withStreamSlot(async () => {
+          active++;
+          peak = Math.max(peak, active);
+          order.push(i);
+          await new Promise((r) => setTimeout(r, 5));
+          active--;
+          if (i === 2 || i === 6) throw new Error('failed');
+          return i;
+        })
+      )
     );
-
-    expect(peak).toBeLessThanOrEqual(4);
-    expect(order).toHaveLength(10); // every job eventually ran
+    expect(peak).toBeLessThanOrEqual(6);
+    expect(order).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     expect(results.filter((r) => r.status === 'rejected')).toHaveLength(2);
-    expect(order.slice(0, 4)).toEqual([0, 1, 2, 3]); // first wave in submission order
-    // Waiters wake LIFO — the newest batch is the one nearest the user's
-    // current viewport (see withStreamSlot). Each first-wave release pops the
-    // youngest waiter, so the backlog drains from the tail.
-    expect(order.slice(4)).toEqual([9, 8, 7, 6, 5, 4]);
-
-    // The semaphore is fully released: one more job runs immediately.
     await expect(withStreamSlot(async () => 'after')).resolves.toBe('after');
   });
 });

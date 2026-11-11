@@ -1,18 +1,6 @@
-/**
- * @module services/stream/limiter
- *
- * Global cap on concurrent upstream LLM streams. The stream/batch paths don't
- * go through the shared RequestQueue (they need incremental output, not a
- * settled promise), so without this a big page flushing a batch every 16
- * items/3000 chars would open dozens of simultaneous streamText calls against
- * the provider — rate-limit bait with no backpressure. BACKGROUND-ONLY state;
- * an SW restart naturally resets it.
- */
+/** Shared admission adapter and stream watchdog. Background-only. */
 
-const MAX_CONCURRENT_STREAMS = 4;
-
-let active = 0;
-const waiters: (() => void)[] = [];
+import { sharedAdmission, type AdmissionMeta } from '@/services/translation/admission';
 
 /**
  * Watchdog ceilings for one upstream stream. A wedged endpoint (accepts the
@@ -110,32 +98,10 @@ export function shortStopError(finishReason: string | undefined): Error | null {
   return why ? new Error(`translation stopped early — ${why}`) : null;
 }
 
-/**
- * Run `fn` once a stream slot frees up. Always releases.
- *
- * Waiters wake NEWEST-FIRST (LIFO). Batch arrival is viewport-gated on the
- * content side, so the youngest waiter is the batch closest to where the user
- * is looking right now; older waiters are content scrolled past on the way.
- * FIFO serviced exactly the wrong end: after a fast scroll, the paragraph in
- * front of the user queued behind every batch minted during the scroll.
- * Deferred batches can't starve in practice — new batches only arrive while
- * the user keeps scrolling, and the backlog drains as soon as they stop.
- * The pool is shared by every tab, but a backgrounded tab barely mints new
- * batches (its IntersectionObserver is throttled), so a foreground scroll
- * burst defers another tab's queued batches only briefly.
- */
-export async function withStreamSlot<T>(fn: () => Promise<T>): Promise<T> {
-  if (active >= MAX_CONCURRENT_STREAMS) {
-    await new Promise<void>((resolve) => waiters.push(resolve));
-    // The releaser transferred its slot to us — `active` already counts it.
-  } else {
-    active++;
-  }
-  try {
-    return await fn();
-  } finally {
-    const next = waiters.pop();
-    if (next) next(); // hand the slot over without touching the count
-    else active--;
-  }
+/** Compatibility adapter: one actual stream call, one shared admission lease. */
+export async function withStreamSlot<T>(
+  fn: () => Promise<T>,
+  meta: AdmissionMeta = { providerId: 'default', kind: 'page' }
+): Promise<T> {
+  return sharedAdmission.run(meta, fn);
 }

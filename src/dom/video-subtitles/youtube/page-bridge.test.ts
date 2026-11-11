@@ -1,0 +1,457 @@
+import { Window as HappyWindow } from 'happy-dom';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PROJECT_PREFIX } from '@/constants';
+import { BRIDGE_REQUEST, BRIDGE_RESPONSE, type YoutubeBridgeResponse } from './bridge-protocol';
+import { boundedSubtitleText, installYoutubeBridge, YOUTUBE_CAPTURE_TIMEOUT_MS } from './page-bridge';
+
+const body = '{"events":[{"tStartMs":0,"dDurationMs":1000,"segs":[{"utf8":"caption"}]}]}';
+const baseUrl = 'https://www.youtube.com/api/timedtext?v=video_123&lang=en';
+const track = { vssId: '.en', languageCode: 'en', baseUrl };
+let browser: HappyWindow;
+let win: Window;
+let dispose: (() => void) | undefined;
+let fetched: ReturnType<typeof vi.fn<typeof fetch>>;
+let posted: ReturnType<typeof vi.fn<(message: YoutubeBridgeResponse) => void>>;
+
+async function settle() {
+  for (let index = 0; index < 20; index += 1) await Promise.resolve();
+}
+function read(requestId = 'request', knownTrackId?: string, enableCaptions = false, resetRetry = false) {
+  win.dispatchEvent(
+    new browser.MessageEvent('message', {
+      origin: win.location.origin,
+      source: browser,
+      data: { type: BRIDGE_REQUEST, version: 1, action: 'read', requestId, enableCaptions, knownTrackId, resetRetry },
+    }) as unknown as MessageEvent
+  );
+}
+function stop() {
+  win.dispatchEvent(
+    new browser.MessageEvent('message', {
+      origin: win.location.origin,
+      source: browser,
+      data: { type: BRIDGE_REQUEST, version: 1, action: 'stop', requestId: 'stop' },
+    }) as unknown as MessageEvent
+  );
+}
+function responses() {
+  return posted.mock.calls.map(([data]) => data).filter((data) => data.type === BRIDGE_RESPONSE);
+}
+
+beforeEach(() => {
+  vi.useFakeTimers();
+  browser = new HappyWindow({ url: 'https://www.youtube.com/watch?v=video_123' });
+  win = browser as unknown as Window;
+  fetched = vi.fn<typeof fetch>().mockImplementation(async () => new Response(body));
+  win.fetch = fetched;
+  posted = vi.fn<(message: YoutubeBridgeResponse) => void>();
+  win.postMessage = posted;
+  const player = win.document.createElement('div');
+  player.id = 'movie_player';
+  Object.assign(player, {
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_123', title: 'Example' },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: [track] } },
+    }),
+    getOption: () => track,
+  });
+  win.document.body.append(player);
+});
+afterEach(async () => {
+  dispose?.();
+  dispose = undefined;
+  await browser.happyDOM.close();
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
+
+describe('bounded subtitle response reader', () => {
+  it('rejects timed-out partial text rather than caching a truncated successful response', async () => {
+    const response = new Response(
+      new ReadableStream({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode('partial'));
+        },
+      })
+    );
+    const result = expect(boundedSubtitleText(response)).rejects.toThrow('timeout');
+    await vi.advanceTimersByTimeAsync(YOUTUBE_CAPTURE_TIMEOUT_MS);
+    await result;
+  });
+
+  it('rejects oversized bodies and supports explicit abort', async () => {
+    await expect(boundedSubtitleText(new Response('x', { headers: { 'content-length': '2000001' } }))).rejects.toThrow(
+      'oversize'
+    );
+    const controller = new AbortController();
+    const response = new Response(new ReadableStream({ start() {} }));
+    const result = expect(boundedSubtitleText(response, controller.signal)).rejects.toThrow('aborted');
+    controller.abort();
+    await result;
+  });
+});
+
+describe('recoverable YouTube network bridge', () => {
+  it('preserves native fetch promise/arguments and reuses captured captions without a second request', async () => {
+    const promise = Promise.resolve(new Response(body));
+    fetched.mockReturnValue(promise);
+    const originalOpen = browser.XMLHttpRequest.prototype.open;
+    dispose = installYoutubeBridge(win);
+    expect(installYoutubeBridge(win)).toBe(dispose);
+    const options = { credentials: 'include' as const };
+    expect(win.fetch(baseUrl, options)).toBe(promise);
+    await settle();
+    read();
+    await settle();
+    expect(fetched).toHaveBeenCalledExactlyOnceWith(baseUrl, options);
+    expect(responses().at(-1)?.text).toBe(body);
+    await vi.advanceTimersByTimeAsync(250);
+    read('known', '.en');
+    await settle();
+    expect(responses().at(-1)).not.toHaveProperty('text');
+    stop();
+    expect(win.fetch).toBe(fetched);
+    expect(browser.XMLHttpRequest.prototype.open).toBe(originalOpen);
+  });
+
+  it('preserves the complete native request context when retrying a failed native response', async () => {
+    fetched.mockResolvedValueOnce(new Response('', { status: 403 }));
+    dispose = installYoutubeBridge(win);
+    await win.fetch(`${baseUrl}&pot=fresh-native-token&potc=1&c=WEB&cver=current&signature=fresh-signature`);
+    await settle();
+    read();
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    const fallback = new URL(String(fetched.mock.calls[1][0]));
+    expect(fallback.searchParams.get('pot')).toBe('fresh-native-token');
+    expect(fallback.searchParams.get('potc')).toBe('1');
+    expect(fallback.searchParams.get('c')).toBe('WEB');
+    expect(fallback.searchParams.get('cver')).toBe('current');
+    expect(fallback.searchParams.get('signature')).toBe('fresh-signature');
+    expect(fallback.searchParams.get('fmt')).toBe('json3');
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
+  it('reinstalls after the startup budget and after explicit stop without stacked wrappers', async () => {
+    dispose = installYoutubeBridge(win);
+    const wrapper = win.fetch;
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(win.fetch).toBe(fetched);
+    read();
+    await settle();
+    expect(win.fetch).toBe(wrapper);
+    stop();
+    expect(win.fetch).toBe(fetched);
+    read('restart');
+    await settle();
+    expect(win.fetch).toBe(wrapper);
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
+  it('suspends for bfcache and accepts a fresh enabled read after pageshow', async () => {
+    dispose = installYoutubeBridge(win);
+    const hidden = new browser.Event('pagehide');
+    Object.defineProperty(hidden, 'persisted', { value: true });
+    win.dispatchEvent(hidden as unknown as Event);
+    expect(win.fetch).toBe(fetched);
+    read('hidden');
+    expect(fetched).not.toHaveBeenCalled();
+    win.dispatchEvent(new browser.Event('pageshow') as unknown as Event);
+    read('restored');
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(win.fetch).not.toBe(fetched);
+  });
+
+  it('does not fetch or reuse content during an advertisement', async () => {
+    dispose = installYoutubeBridge(win);
+    win.document.querySelector('#movie_player')!.classList.add('ad-showing');
+    read();
+    await settle();
+    expect(fetched).not.toHaveBeenCalled();
+    expect(responses().at(-1)?.snapshot.ad).toBe(true);
+    expect(responses().at(-1)).not.toHaveProperty('text');
+  });
+
+  it('ignores forged message origins and stale asynchronous responses after video navigation', async () => {
+    let resolve!: (response: Response) => void;
+    fetched.mockImplementation(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    dispose = installYoutubeBridge(win);
+    win.dispatchEvent(
+      new browser.MessageEvent('message', {
+        origin: 'https://evil.test',
+        source: browser,
+        data: { type: BRIDGE_REQUEST, version: 1, action: 'read', requestId: 'forged', enableCaptions: false },
+      }) as unknown as MessageEvent
+    );
+    expect(fetched).not.toHaveBeenCalled();
+    read();
+    await settle();
+    browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
+    resolve(new Response(body));
+    await settle();
+    expect(responses().some((response) => response.text)).toBe(false);
+  });
+  it('follows real-player vss_id selection and restores only its own caption toggle', async () => {
+    const player = win.document.querySelector('#movie_player')!;
+    let enabled = false;
+    const toggle = vi.fn(() => {
+      enabled = !enabled;
+    });
+    Object.assign(player, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123' },
+        captions: {
+          playerCaptionsTracklistRenderer: {
+            captionTracks: [
+              { vssId: '.de', languageCode: 'de', baseUrl: baseUrl.replace('lang=en', 'lang=de') },
+              track,
+            ],
+          },
+        },
+      }),
+      getOption: () => ({ vss_id: '.en', languageCode: 'en', kind: '' }),
+      isSubtitlesOn: () => enabled,
+      toggleSubtitles: toggle,
+    });
+    dispose = installYoutubeBridge(win);
+    read('native-selection', undefined, true);
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+    expect(new URL(String(fetched.mock.calls[0][0])).searchParams.get('lang')).toBe('en');
+    expect(enabled).toBe(true);
+    stop();
+    expect(enabled).toBe(false);
+    expect(toggle).toHaveBeenCalledTimes(2);
+  });
+  it('keeps the confirmed source through an empty player selection, follows explicit changes, and resets on a new video', async () => {
+    const player = win.document.querySelector('#movie_player')!;
+    let videoId = 'video_123';
+    let selected: { vss_id?: string; languageCode?: string } | undefined = { vss_id: '.en', languageCode: 'en' };
+    Object.assign(player, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId },
+        captions: {
+          playerCaptionsTracklistRenderer: {
+            captionTracks: [
+              {
+                vssId: '.ar',
+                languageCode: 'ar',
+                baseUrl: `https://www.youtube.com/api/timedtext?v=${videoId}&lang=ar`,
+              },
+              { ...track, baseUrl: `https://www.youtube.com/api/timedtext?v=${videoId}&lang=en` },
+            ],
+          },
+        },
+      }),
+      getOption: () => selected,
+    });
+    dispose = installYoutubeBridge(win);
+    read('english');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+    selected = undefined;
+    await vi.advanceTimersByTimeAsync(250);
+    read('temporarily-empty', '.en');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+    selected = {};
+    await vi.advanceTimersByTimeAsync(250);
+    read('empty-object', '.en');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+    expect(fetched).toHaveBeenCalledTimes(1);
+    selected = { vss_id: '.ar', languageCode: 'ar' };
+    await vi.advanceTimersByTimeAsync(250);
+    read('explicit-arabic');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.ar');
+    expect(new URL(String(fetched.mock.calls.at(-1)?.[0])).searchParams.get('lang')).toBe('ar');
+    selected = { vss_id: '.en', languageCode: 'en' };
+    await vi.advanceTimersByTimeAsync(250);
+    read('explicit-english');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+    videoId = 'other_123';
+    selected = undefined;
+    browser.happyDOM.setURL(`https://www.youtube.com/watch?v=${videoId}`);
+    await vi.advanceTimersByTimeAsync(250);
+    read('new-video');
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.ar');
+    expect(new URL(String(fetched.mock.calls.at(-1)?.[0])).searchParams.get('v')).toBe('other_123');
+  });
+  it('preserves native CC off/on button intent and does not reopen captions on the next polling read', async () => {
+    const player = win.document.querySelector('#movie_player')!;
+    let enabled = false;
+    const toggle = vi.fn(() => {
+      enabled = !enabled;
+    });
+    Object.assign(player, { isSubtitlesOn: () => enabled, toggleSubtitles: toggle });
+    const button = win.document.createElement('button');
+    button.className = 'ytp-subtitles-button';
+    button.addEventListener('click', () => {
+      enabled = !enabled;
+    });
+    player.append(button);
+    dispose = installYoutubeBridge(win);
+    read('enable', undefined, true);
+    await settle();
+    expect(enabled).toBe(true);
+    button.click();
+    expect(enabled).toBe(false);
+    await vi.advanceTimersByTimeAsync(250);
+    read('poll-after-user-off', '.en', true);
+    await settle();
+    expect(enabled).toBe(false);
+    button.click();
+    expect(enabled).toBe(true);
+    stop();
+    expect(enabled).toBe(true);
+    expect(toggle).toHaveBeenCalledTimes(1);
+    expect((player as typeof player & { toggleSubtitles: unknown }).toggleSubtitles).toBe(toggle);
+  });
+  it('preserves native CC off/on API operations in the same track without mistaking its own toggles for user changes', async () => {
+    const player = win.document.querySelector('#movie_player')! as HTMLElement & { toggleSubtitles(): void };
+    let enabled = false;
+    const toggle = vi.fn(() => {
+      enabled = !enabled;
+    });
+    Object.assign(player, { isSubtitlesOn: () => enabled, toggleSubtitles: toggle });
+    dispose = installYoutubeBridge(win);
+    read('enable', undefined, true);
+    await settle();
+    Reflect.apply(player.toggleSubtitles, player, ['external-user-toggle']);
+    player.toggleSubtitles();
+    expect(toggle).toHaveBeenNthCalledWith(2, 'external-user-toggle');
+    expect(enabled).toBe(true);
+    stop();
+    expect(enabled).toBe(true);
+    expect(toggle).toHaveBeenCalledTimes(3);
+    expect(player.toggleSubtitles).toBe(toggle);
+  });
+  it('tracks internal caption state transitions between polls while excluding its own asynchronous button update', async () => {
+    const player = win.document.querySelector('#movie_player')!;
+    let enabled = false;
+    const button = win.document.createElement('button');
+    button.className = 'ytp-subtitles-button';
+    button.setAttribute('aria-pressed', 'false');
+    player.append(button);
+    const toggle = vi.fn(() => {
+      enabled = !enabled;
+      button.setAttribute('aria-pressed', String(enabled));
+    });
+    Object.assign(player, { isSubtitlesOn: () => enabled, toggleSubtitles: toggle });
+    dispose = installYoutubeBridge(win);
+    read('enable', undefined, true);
+    await settle();
+    await vi.advanceTimersByTimeAsync(0);
+    stop();
+    expect(enabled).toBe(false); // Own API/observer transition retained custody.
+    read('restart', undefined, true);
+    await settle();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(enabled).toBe(true);
+    // The native settings menu can change CC internally without calling the public API.
+    enabled = false;
+    button.setAttribute('aria-pressed', 'false');
+    enabled = true;
+    button.setAttribute('aria-pressed', 'true');
+    await vi.advanceTimersByTimeAsync(0);
+    stop();
+    expect(enabled).toBe(true);
+    expect(toggle).toHaveBeenCalledTimes(3);
+  });
+  it('respects CC keyboard operations but ignores C typed in an editable field', async () => {
+    const player = win.document.querySelector('#movie_player')!;
+    let enabled = false;
+    const toggle = vi.fn(() => {
+      enabled = !enabled;
+    });
+    Object.assign(player, { isSubtitlesOn: () => enabled, toggleSubtitles: toggle });
+    dispose = installYoutubeBridge(win);
+    read('enable', undefined, true);
+    await settle();
+    const input = win.document.createElement('input');
+    player.append(input);
+    input.dispatchEvent(new browser.KeyboardEvent('keydown', { key: 'c', bubbles: true }) as unknown as Event);
+    const ownHost = win.document.createElement(`${PROJECT_PREFIX}-video-subtitles`);
+    const ownButton = win.document.createElement('button');
+    ownHost.attachShadow({ mode: 'open' }).append(ownButton);
+    player.append(ownHost);
+    ownButton.dispatchEvent(
+      new browser.KeyboardEvent('keydown', { key: 'c', bubbles: true, composed: true }) as unknown as Event
+    );
+    stop();
+    expect(enabled).toBe(false);
+    read('restart', undefined, true);
+    await settle();
+    expect(enabled).toBe(true);
+    player.dispatchEvent(new browser.KeyboardEvent('keydown', { key: 'c', bubbles: true }) as unknown as Event);
+    enabled = false;
+    player.dispatchEvent(new browser.KeyboardEvent('keydown', { key: 'c', bubbles: true }) as unknown as Event);
+    enabled = true;
+    stop();
+    expect(enabled).toBe(true);
+    expect(toggle).toHaveBeenCalledTimes(3);
+  });
+  it('caps direct acquisition at three attempts and still recovers from a later native capture', async () => {
+    fetched.mockImplementation(async () => new Response('', { status: 403 }));
+    dispose = installYoutubeBridge(win);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      read(`attempt-${attempt}`);
+      await settle();
+      await vi.advanceTimersByTimeAsync(10_000);
+    }
+    read('exhausted');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(3);
+    expect(responses().at(-1)?.error).toBe('fetch');
+    fetched.mockResolvedValueOnce(new Response(body));
+    await win.fetch(baseUrl);
+    await settle();
+    await vi.advanceTimersByTimeAsync(250);
+    read('native-recovered');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(4);
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
+  it('allows explicit retry to reset an exhausted ordinary acquisition budget', async () => {
+    fetched.mockImplementation(async () => new Response('', { status: 403 }));
+    dispose = installYoutubeBridge(win);
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      read(`attempt-${attempt}`);
+      await settle();
+      await vi.advanceTimersByTimeAsync(10_000);
+    }
+    read('retry', undefined, false, true);
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(4);
+  });
+
+  it('does not let explicit retry or stop/restart bypass the minimum 429 cooldown', async () => {
+    fetched.mockImplementation(async () => new Response('', { status: 429 }));
+    dispose = installYoutubeBridge(win);
+    read();
+    await settle();
+    await vi.advanceTimersByTimeAsync(250);
+    read('retry-now', undefined, false, true);
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(1);
+    expect(responses().at(-1)?.error).toBe('rateLimit');
+    stop();
+    read('restart', undefined, false, true);
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60_000);
+    read('retry-after-cooldown', undefined, false, true);
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+  });
+});

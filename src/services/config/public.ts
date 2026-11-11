@@ -16,9 +16,26 @@
 import { createProxyService, type ProxyServiceKey } from '@webext-core/proxy-service';
 import { storage } from '#imports';
 import { PROJECT_PREFIX } from '@/constants';
-import type { Config } from '@/data/models';
+import type { Config, VideoSubtitlesPatch } from '@/data/models';
+import { defaultVideoSubtitles, resolveSubtitleProvider } from './video-subtitles';
 
+export interface AvailableSubtitleProvider {
+  id: string;
+  label: string;
+  kind: Config['providers'][number]['kind'];
+}
+export interface EffectiveSubtitleProvider {
+  status: 'inherited' | 'fixed' | 'unavailable';
+  id?: string;
+  label: string;
+  kind: Config['providers'][number]['kind'] | '';
+}
 export interface PublicConfig {
+  /** Opaque background-derived version of subtitle translation semantics. No provider configuration. */
+  subtitleTranslationRevision: string;
+  videoSubtitles: Config['videoSubtitles'];
+  availableProviders: AvailableSubtitleProvider[];
+  effectiveSubtitleProvider: EffectiveSubtitleProvider;
   translate: Config['translate'];
   inputTranslation: Config['inputTranslation'];
   siteControl: Config['siteControl'];
@@ -36,7 +53,7 @@ export interface PublicConfig {
 export const PUBLIC_CONFIG_KEY = `local:${PROJECT_PREFIX}:config-public` as const;
 
 /** Project a full config down to what content scripts may hold. */
-export function toPublicConfig(config: Config): PublicConfig {
+export function toPublicConfig(config: Config, subtitleTranslationRevision = ''): PublicConfig {
   // Mirror preflight.resolveProvider's selection (skip disabled/draft, fall
   // back to the first enabled non-draft) — a bare id lookup made the 注疏
   // affordance follow a provider that the runtime would never use (e.g. a
@@ -47,7 +64,23 @@ export function toPublicConfig(config: Config): PublicConfig {
   const def =
     (wanted ? config.providers.find((p) => p.id === wanted && p.enabled && !p.draft) : undefined) ??
     config.providers.find((p) => p.enabled && !p.draft);
+  const subtitleProvider = resolveSubtitleProvider(config);
   return {
+    subtitleTranslationRevision,
+    videoSubtitles: config.videoSubtitles,
+    availableProviders: config.providers
+      .filter((p) => p.enabled && !p.draft)
+      .map((p) => ({ id: p.id, label: p.label ?? p.id, kind: p.kind })),
+    effectiveSubtitleProvider: {
+      status: subtitleProvider
+        ? config.videoSubtitles.translation.provider.mode === 'inherit'
+          ? 'inherited'
+          : 'fixed'
+        : 'unavailable',
+      ...(subtitleProvider ? { id: subtitleProvider.id } : {}),
+      label: subtitleProvider?.label ?? subtitleProvider?.id ?? '',
+      kind: subtitleProvider?.kind ?? '',
+    },
     translate: config.translate,
     inputTranslation: config.inputTranslation,
     siteControl: config.siteControl,
@@ -66,10 +99,25 @@ export function toPublicConfig(config: Config): PublicConfig {
  */
 export function defaultPublicConfig(): PublicConfig {
   return {
+    subtitleTranslationRevision: '',
+    videoSubtitles: defaultVideoSubtitles(),
+    availableProviders: [{ id: 'google-free', label: 'Google Translate (free)', kind: 'google-mt' }],
+    effectiveSubtitleProvider: {
+      status: 'inherited',
+      id: 'google-free',
+      label: 'Google Translate (free)',
+      kind: 'google-mt',
+    },
     translate: { defaultProviderId: 'google-free', source: 'auto', target: 'zh-CN', skipLanguages: [] },
     inputTranslation: { enabled: true, triggerCount: 3, target: 'en' },
     siteControl: { defaultMode: 'auto', rules: [] },
-    appearance: { colorScheme: 'auto', bilingualStyle: 'blend', translationFont: 'kai', displayMode: 'bilingual', paragraphInterleave: true },
+    appearance: {
+      colorScheme: 'auto',
+      bilingualStyle: 'blend',
+      translationFont: 'kai',
+      displayMode: 'bilingual',
+      paragraphInterleave: true,
+    },
     uiLanguage: 'auto',
     defaultProviderLabel: 'Google Translate (free)',
     defaultProviderKind: 'google-mt',
@@ -84,13 +132,13 @@ const publicConfigStorage = storage.defineItem<PublicConfig | null>(PUBLIC_CONFI
  * older persisted config gets mirrored the moment the background wakes).
  */
 export async function getPublicConfig(): Promise<PublicConfig> {
-  return (await publicConfigStorage.getValue()) ?? defaultPublicConfig();
+  return { ...defaultPublicConfig(), ...(await publicConfigStorage.getValue()) };
 }
 
 /** Subscribe to projection changes. Returns an unwatch fn. */
 export function watchPublicConfig(cb: (config: PublicConfig) => void): () => void {
   return publicConfigStorage.watch((value) => {
-    if (value) cb(value);
+    if (value) cb({ ...defaultPublicConfig(), ...value });
   });
 }
 
@@ -100,6 +148,8 @@ export type PublicConfigPatch = Partial<Pick<Config, 'translate' | 'inputTransla
 export interface ConfigService {
   /** Merge a content-safe section patch into the persisted config (validated). */
   patch(patch: PublicConfigPatch): Promise<void>;
+  patchVideoSubtitles(patch: VideoSubtitlesPatch): Promise<void>;
+  resetVideoSubtitles(): Promise<void>;
 }
 
 export const CONFIG_SERVICE_KEY = 'ConfigService' as ProxyServiceKey<ConfigService>;

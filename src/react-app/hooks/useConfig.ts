@@ -79,10 +79,11 @@ export function useConfig(): UseConfig {
 
   const persist = useCallback((next: Config): Promise<void> => {
     revision.current++;
+    const base = local.current;
     local.current = next;
     setConfigState(next); // optimistic
     pending.current++;
-    const write = writeChain.current.then(() => setConfig(next));
+    const write = writeChain.current.then(() => setConfig(next, base ?? undefined));
     writeChain.current = write.catch(() => {}); // a failed write must not jam the chain
     return write.finally(() => {
       pending.current--;

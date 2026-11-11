@@ -219,12 +219,14 @@ describe('executeTranslate — cache hygiene & cancellation plumbing', () => {
       expect(opts.abortSignal?.aborted).toBe(true); // caller's cancel is visible downstream
       return { text: 'ok' };
     }) as unknown as typeof generateText;
-    await executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
-      resolveModel: () => SENTINEL_MODEL,
-      generate: generate2,
-      signal: ac.signal,
-    });
-    expect(generate2).toHaveBeenCalledTimes(1);
+    await expect(
+      executeTranslate({ text: 'hi', source: 'auto', target: 'zh-CN' }, config, {
+        resolveModel: () => SENTINEL_MODEL,
+        generate: generate2,
+        signal: ac.signal,
+      })
+    ).rejects.toMatchObject({ name: 'AbortError' });
+    expect(generate2).not.toHaveBeenCalled();
   });
 });
 

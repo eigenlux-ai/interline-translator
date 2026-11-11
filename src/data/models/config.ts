@@ -193,6 +193,40 @@ export interface AppearanceConfig {
   paragraphInterleave: boolean;
 }
 
+/** Independent, persisted video-subtitle preferences. */
+export interface VideoSubtitlesConfig {
+  enabled: boolean;
+  platforms: Record<string, { enabled: boolean; autoEnable: boolean }>;
+  translation: {
+    target: { mode: 'inherit' } | { mode: 'fixed'; language: LangCode };
+    provider: { mode: 'inherit' } | { mode: 'fixed'; providerId: string };
+  };
+  requests: {
+    maxConcurrent: number;
+    requestsPerSecond: number;
+    mtLookAheadSeconds: number;
+    llmLookAheadSeconds: number;
+    maxBatchItems: number;
+    maxBatchChars: number;
+  };
+  appearance: {
+    displayMode: DisplayMode;
+    translationPosition: 'above' | 'below';
+    fontSize: number;
+    positionPercent: number;
+    backgroundOpacity: number;
+  };
+}
+
+/** Only supplied fields change; inheritance is an explicit tagged value. */
+export interface VideoSubtitlesPatch {
+  enabled?: boolean;
+  platforms?: Record<string, Partial<VideoSubtitlesConfig['platforms'][string]>>;
+  translation?: Partial<VideoSubtitlesConfig['translation']>;
+  requests?: Partial<VideoSubtitlesConfig['requests']>;
+  appearance?: Partial<VideoSubtitlesConfig['appearance']>;
+}
+
 export interface Config {
   /** Schema version; drives the migration chain. */
   version: number;
@@ -212,4 +246,5 @@ export interface Config {
   inputTranslation: InputTranslationConfig;
   siteControl: SiteControlConfig;
   appearance: AppearanceConfig;
+  videoSubtitles: VideoSubtitlesConfig;
 }

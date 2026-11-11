@@ -11,7 +11,7 @@
  * shared RequestQueue: concurrency cap, in-flight dedup, retry with backoff.
  * The STREAMING paths (划词 / whole-page batch) deliberately do not — they need
  * incremental output, and their upstream pressure is bounded by the stream
- * limiter + watchdog instead (services/stream/limiter).
+ * shared actual-call admission + watchdog instead (services/stream/limiter).
  */
 
 import { registerService } from '@webext-core/proxy-service';
@@ -25,6 +25,7 @@ import {
   type TranslateResult,
 } from '@/data/models';
 import { getConfig } from '@/services/config/storage';
+import { sharedAdmission, type AdmissionMeta } from './admission';
 import { stableProviderFingerprint, stableStringify } from './cache/cache-key';
 import { dexieCache } from './cache/db';
 import { TRANSLATION_SERVICE_KEY, type ProviderValidation, type TranslationService } from './contract';
@@ -67,14 +68,19 @@ export function jobKey(config: Config, req: TranslateRequest): string {
 }
 
 class TranslationServiceImpl implements TranslationService {
-  async translate(req: TranslateRequest): Promise<TranslateResult> {
+  async translate(req: TranslateRequest, admission?: Omit<AdmissionMeta, 'providerId'>): Promise<TranslateResult> {
     const config = await getConfig();
-    return queue.enqueue(jobKey(config, req), () => executeTranslate(req, config, { cache: dexieCache }));
+    return queue.enqueue(`${admission?.owner ?? 'proxy'}:${jobKey(config, req)}`, () =>
+      executeTranslate(req, config, { cache: dexieCache, admission })
+    );
   }
 
   async detectLang(text: string): Promise<LangCode> {
     // Reuse the free MT endpoint's language detection (no key needed).
-    const out = await googleFreeTranslate(text.slice(0, 200), 'auto', 'en');
+    const signal = AbortSignal.timeout(10_000);
+    const out = await sharedAdmission.run({ providerId: 'google-mt', kind: 'interactive', signal }, () =>
+      googleFreeTranslate(text.slice(0, 200), 'auto', 'en', undefined, signal)
+    );
     return out.detectedSource ?? 'und';
   }
 
@@ -88,13 +94,19 @@ class TranslationServiceImpl implements TranslationService {
       const { system, prompt } = buildSummaryPrompt(pageText.slice(0, 8000), target);
       // One-off per page and best-effort: a hung/failed summary must never
       // block or fail the translation flow it serves.
-      const gen = await generateText({
-        model,
-        system,
-        prompt,
-        abortSignal: AbortSignal.timeout(30_000),
-        ...llmCallOptions(provider),
-      });
+      // One deadline covers admission wait and execution; an expired waiter
+      // must leave the queue rather than start a stale summary later.
+      const signal = AbortSignal.timeout(30_000);
+      const gen = await sharedAdmission.run({ providerId: provider.id, kind: 'page', signal }, () =>
+        generateText({
+          model,
+          system,
+          prompt,
+          abortSignal: signal,
+          maxRetries: 0,
+          ...llmCallOptions(provider),
+        })
+      );
       return stripThink(gen.text).trim().slice(0, 800);
     } catch {
       return '';
@@ -114,12 +126,16 @@ class TranslationServiceImpl implements TranslationService {
       // Engine settings ride along on purpose: the OpenAI reasoning line rejects
       // a temperature other than 1, so a knob the model refuses must fail HERE,
       // at the button the user just pressed — not later, on every translation.
-      const gen = await generateText({
-        model,
-        prompt: 'Reply with the single word: ok',
-        abortSignal: AbortSignal.timeout(15_000),
-        ...llmCallOptions(provider),
-      });
+      const signal = AbortSignal.timeout(15_000);
+      const gen = await sharedAdmission.run({ providerId: provider.id, kind: 'interactive', signal }, () =>
+        generateText({
+          model,
+          prompt: 'Reply with the single word: ok',
+          abortSignal: signal,
+          maxRetries: 0,
+          ...llmCallOptions(provider),
+        })
+      );
       return { ok: true, sample: gen.text.trim().slice(0, 40) };
     } catch (e) {
       if (e instanceof DOMException && e.name === 'TimeoutError') {
@@ -132,5 +148,13 @@ class TranslationServiceImpl implements TranslationService {
 
 /** Call exactly once from the background entrypoint. */
 export function registerTranslationService() {
-  return registerService(TRANSLATION_SERVICE_KEY, new TranslationServiceImpl());
+  const service = new TranslationServiceImpl();
+  browser.runtime.onMessage.addListener((raw, sender) => {
+    if (raw?.type !== 'interline:translate:v1' || sender.id !== browser.runtime.id) return;
+    const req = raw.request as TranslateRequest;
+    if (!req || typeof req.text !== 'string' || req.text.length > 100_000 || typeof req.source !== 'string') return;
+    const owner = `${sender.tab?.id ?? 'extension'}:${sender.documentId ?? sender.url ?? ''}`;
+    return service.translate(req, { owner, kind: 'interactive' });
+  });
+  return registerService(TRANSLATION_SERVICE_KEY, service);
 }

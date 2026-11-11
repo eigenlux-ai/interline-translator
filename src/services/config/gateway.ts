@@ -16,8 +16,9 @@
  */
 
 import { registerService } from '@webext-core/proxy-service';
-import { storage } from '#imports';
-import type { Config } from '@/data/models';
+import { browser, storage } from '#imports';
+import type { Config, VideoSubtitlesPatch } from '@/data/models';
+import { mergeConfigEdits } from './merge';
 import {
   CONFIG_SERVICE_KEY,
   PUBLIC_CONFIG_KEY,
@@ -25,13 +26,19 @@ import {
   type PublicConfig,
   type PublicConfigPatch,
 } from './public';
-import { getConfig, setConfig, watchConfig } from './storage';
+import { configSchema, videoSubtitlesPatchSchema } from './schema';
+import { CONFIG_EDIT_MESSAGE, getConfig, setConfig, watchConfig } from './storage';
+import { subtitleTranslationRevision } from './subtitle-revision';
+import { defaultVideoSubtitles, mergeVideoSubtitles } from './video-subtitles';
 
 /** The sections a content surface may write. Never providers/version/language. */
 const PATCHABLE = ['translate', 'inputTranslation', 'siteControl', 'appearance'] as const;
 
 async function mirror(config: Config): Promise<void> {
-  await storage.setItem<PublicConfig>(PUBLIC_CONFIG_KEY, toPublicConfig(config));
+  await storage.setItem<PublicConfig>(
+    PUBLIC_CONFIG_KEY,
+    toPublicConfig(config, await subtitleTranslationRevision(config))
+  );
 }
 
 export function registerConfigGateway(): void {
@@ -59,7 +66,46 @@ export function registerConfigGateway(): void {
     void enqueueMirror(config).catch(reportMirrorError);
   });
 
+  const enqueueWrite = (task: () => Promise<void>) => {
+    const run = patchChain.then(task);
+    patchChain = run.catch(() => {});
+    return run;
+  };
+  // Trusted options saves use the SAME queue as player field patches. A base
+  // snapshot makes an unrelated edit preserve fields changed in the meantime.
+  browser.runtime.onMessage.addListener((message, sender) => {
+    if (message?.type !== CONFIG_EDIT_MESSAGE) return;
+    // Firefox supplies sender.tab for trusted options tabs too; the browser-
+    // asserted extension URL is the trust boundary, not absence of a tab.
+    const trusted = sender.id === browser.runtime.id && sender.url?.startsWith(browser.runtime.getURL(''));
+    if (!trusted) return Promise.resolve({ ok: false });
+    return enqueueWrite(async () => {
+      const next = configSchema.parse(message.next);
+      const base = configSchema.parse(message.base);
+      const current = await getConfig();
+      await setConfig(configSchema.parse(mergeConfigEdits(current, next, base)));
+      await refreshMirror();
+    }).then(
+      () => ({ ok: true }),
+      () => ({ ok: false })
+    );
+  });
+
   registerService(CONFIG_SERVICE_KEY, {
+    patchVideoSubtitles(patch: VideoSubtitlesPatch): Promise<void> {
+      return enqueueWrite(async () => {
+        const safe = videoSubtitlesPatchSchema.parse(patch);
+        const current = await getConfig();
+        await setConfig({ ...current, videoSubtitles: mergeVideoSubtitles(current.videoSubtitles, safe) });
+        await refreshMirror();
+      });
+    },
+    resetVideoSubtitles(): Promise<void> {
+      return enqueueWrite(async () => {
+        await setConfig({ ...(await getConfig()), videoSubtitles: defaultVideoSubtitles() });
+        await refreshMirror();
+      });
+    },
     patch(patch: PublicConfigPatch): Promise<void> {
       const run = patchChain.then(async () => {
         const allowed: Partial<Config> = {};

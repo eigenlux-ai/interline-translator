@@ -29,6 +29,8 @@ interface ProtocolMap {
   getTabPageTranslation(): { enabled: boolean; origin: string } | null;
   /** Content → background: open the options / settings page in a tab. */
   openOptionsPage(): void;
+  /** Content → background: open the independent subtitle preferences. */
+  openVideoSubtitleSettings(): void;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

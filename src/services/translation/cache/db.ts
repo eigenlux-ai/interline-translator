@@ -102,3 +102,8 @@ export const dexieCache: TranslationCache = {
     await putCached({ key, value, detectedSource, createdAt: Date.now(), protocol: CACHE_PROTOCOL });
   },
 };
+
+/** Delete one namespace without disturbing page translations. */
+export async function clearCacheNamespace(prefix: string): Promise<void> {
+  await db().translationCache.where(':id').startsWith(prefix).delete();
+}

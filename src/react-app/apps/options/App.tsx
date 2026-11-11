@@ -10,16 +10,18 @@ import GlossarySettings from '@/react-app/components/settings/GlossarySettings';
 import PromptStyleSettings from '@/react-app/components/settings/PromptStyleSettings';
 import ProviderSettings from '@/react-app/components/settings/ProviderSettings';
 import SiteSettings from '@/react-app/components/settings/SiteSettings';
+import VideoSubtitleSettings from '@/react-app/components/settings/VideoSubtitleSettings';
 import { useConfig } from '@/react-app/hooks/useConfig';
 import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import cls from './Options.module.css';
 
-type SectionId = 'general' | 'styles' | 'glossary' | 'providers' | 'sites' | 'backup' | 'about';
+type SectionId = 'video-subtitles' | 'general' | 'styles' | 'glossary' | 'providers' | 'sites' | 'backup' | 'about';
 
 // label/hint are message FUNCTIONS (called in render, so they follow the
 // interface language) — a plain string here would freeze the compile-time locale.
 const NAV: Array<{ id: SectionId; label: () => string; hint: () => string; Icon: typeof GearIcon }> = [
+  { id: 'video-subtitles', label: m.video_subtitles_title, hint: m.video_subtitles_hint, Icon: GlobeIcon },
   { id: 'general', label: m.options_nav_general, hint: m.options_nav_general_hint, Icon: GearIcon },
   { id: 'styles', label: m.options_nav_styles, hint: m.options_nav_styles_hint, Icon: BrushIcon },
   { id: 'glossary', label: m.options_nav_glossary, hint: m.options_nav_glossary_hint, Icon: BookIcon },
@@ -31,7 +33,9 @@ const NAV: Array<{ id: SectionId; label: () => string; hint: () => string; Icon:
 
 export default function OptionsApp() {
   const { config, save, patch } = useConfig();
-  const [active, setActive] = useState<SectionId>('general');
+  const [active, setActive] = useState<SectionId>(() =>
+    window.location.hash === '#video-subtitles' ? 'video-subtitles' : 'general'
+  );
   const navRef = useRef<HTMLElement>(null);
   const [hasMoreNavigation, setHasMoreNavigation] = useState(false);
 
@@ -112,6 +116,7 @@ export default function OptionsApp() {
             </nav>
           </div>
           <main className={cls.content}>
+            {active === 'video-subtitles' && <VideoSubtitleSettings config={config} />}
             {active === 'general' && <GeneralSettings config={config} onPatch={patch} />}
             {active === 'styles' && <PromptStyleSettings config={config} onSave={save} />}
             {active === 'glossary' && <GlossarySettings config={config} onSave={save} />}

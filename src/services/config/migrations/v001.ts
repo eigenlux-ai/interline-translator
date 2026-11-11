@@ -6,7 +6,9 @@
  */
 
 /** Current config schema version. Bump when adding a migration step. */
-export const CONFIG_VERSION = 4;
+import { defaultVideoSubtitles } from '../video-subtitles';
+
+export const CONFIG_VERSION = 5;
 
 export type Migration = (input: Record<string, unknown>) => Record<string, unknown>;
 
@@ -15,6 +17,7 @@ export type Migration = (input: Record<string, unknown>) => Record<string, unkno
  * `version` to CONFIG_VERSION, apply every entry whose key is > stored version.
  */
 export const MIGRATIONS: Record<number, Migration> = {
+  5: (input) => ({ ...input, videoSubtitles: input.videoSubtitles ?? defaultVideoSubtitles() }),
   // 1: initial schema — nothing to migrate from.
   1: (input) => input,
   // 2: `language.ui` becomes the interface-language override with default

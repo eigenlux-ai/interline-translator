@@ -1,8 +1,10 @@
 // @vitest-environment happy-dom
+import { fakeBrowser } from 'wxt/testing';
 import { act, renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
-import { getConfig } from '@/services/config/storage';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { registerConfigGateway } from '@/services/config/gateway';
 import { defaultConfig } from '@/services/config/schema';
+import { getConfig } from '@/services/config/storage';
 import { useConfig } from './useConfig';
 
 /**
@@ -12,6 +14,16 @@ import { useConfig } from './useConfig';
  */
 
 describe('useConfig', () => {
+  beforeEach(() => {
+    registerConfigGateway();
+    vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(async (message: unknown) => {
+      const responses = await fakeBrowser.runtime.onMessage.trigger(message, {
+        id: fakeBrowser.runtime.id,
+        url: fakeBrowser.runtime.getURL('options.html'),
+      });
+      return responses.find((r) => r !== undefined);
+    });
+  });
   it('loads the persisted config on mount', async () => {
     const { result } = renderHook(() => useConfig());
     await waitFor(() => expect(result.current.config).not.toBeNull());

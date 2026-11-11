@@ -8,7 +8,9 @@ import { registerKeepAlive } from '@/services/keep-alive';
 import { registerMenusAndCommands } from '@/services/menus';
 import { registerPageSession } from '@/services/page-session';
 import { registerStreamServer } from '@/services/stream/server';
+import { registerSubtitleServer } from '@/services/subtitles/server';
 import { registerCacheCleanup } from '@/services/translation/cache/cleanup';
+
 export default defineBackground(() => {
   // Real background services (translation engine, …). This is the ONLY place
   // service impl.ts files (ai-sdk/dexie) enter a bundle — see services/index.ts.
@@ -16,6 +18,7 @@ export default defineBackground(() => {
 
   // Token-by-token streaming over the named Port (proxy-service is promise-only).
   registerStreamServer();
+  registerSubtitleServer();
 
   // Content-safe config projection (mirror) + the section-patch write gate —
   // content scripts never read or write the full config (API keys) directly.
@@ -41,6 +44,10 @@ export default defineBackground(() => {
   // Open options page on demand (from floating-ball panel button or other content surfaces)
   onMessage('openOptionsPage', () => {
     void browser.runtime.openOptionsPage();
+  });
+
+  onMessage('openVideoSubtitleSettings', () => {
+    void browser.tabs.create({ url: browser.runtime.getURL('/options.html#video-subtitles') });
   });
 
   // Clicking the extension action icon directly opens options / settings in a tab
