@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.10 — 2026-11-11
+
+- Refine the settings workspace with persistent navigation, grouped controls, and side-by-side translation previews.
+- Unify the settings page and in-page panel with warm-white daylight and obsidian night palettes, clearer control states, and consistent typography.
+- Improve segmented controls and multi-select keyboard focus styling, and refine layouts on smaller screens.
+- Prevent long localized labels, style previews, and glossary presets from being clipped; align Arabic previews with right-to-left layouts.
+
+No new browser permissions. Existing settings and cached translations remain compatible.
+
 ## 1.0.9 — 2026-11-10
 
 - Add a translation typeface switch to the in-page panel. Choosing the page font keeps translations in the site's own typeface; with the default "Match page" style they then match the source's font, size, weight and colour (#2).
