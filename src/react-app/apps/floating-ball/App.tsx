@@ -29,7 +29,6 @@ import {
   Text,
   Transition,
   UnstyledButton,
-  useComputedColorScheme,
   useMantineTheme,
 } from '@mantine/core';
 import { storage } from '#imports';
@@ -44,7 +43,6 @@ import StylePreview from '@/react-app/components/settings/StylePreview';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
 import { PROJECT_PREFIX, Z_INDEX } from '@/constants';
 import { langOptions, pairGlyphs, type DisplayMode } from '@/data/models';
-import { PRESET_ACCENT } from '@/dom/inject/styles';
 import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import { getConfigService, type PublicConfig, type PublicConfigPatch } from '@/services/config/public';
@@ -67,34 +65,14 @@ import { useTuck } from './use-tuck';
 const PANEL_W = 328;
 const DRAG_THRESHOLD = 4; // px of movement that turns a pending click into a drag
 const LONG_PRESS_MS = 350; // hold this long (without moving) to enter drag mode
-const PANEL_BLUR = 'blur(20px) saturate(180%)';
-
-/** Scheme-adaptive frosted paper and ink over the host page. */
-interface PanelPalette {
-  ring: string;
-  ink: string;
-  inkDim: string;
-  inkFaint: string;
-  panelBg: string;
-  shadow: string;
-}
-
-const LIGHT_PANEL: PanelPalette = {
-  ring: 'rgba(33,28,21,0.12)', // hair (warm ink)
-  ink: '#211C15', // ink
-  inkDim: '#5C5348', // ink-soft
-  inkFaint: '#74695B', // sand.6 — ≥4.5:1 on paper
-  panelBg: 'rgba(255,253,248,0.82)', // frosted paper
-  shadow: '0 1px 2px rgba(33,28,21,.06), 0 16px 40px -12px rgba(33,28,21,.26)',
-};
-
-const DARK_PANEL: PanelPalette = {
-  ring: 'rgba(236,228,214,0.15)',
-  ink: '#ECE4D6',
-  inkDim: '#B3A893',
-  inkFaint: '#93897A',
-  panelBg: 'rgba(22,19,14,0.80)', // frosted charcoal
-  shadow: '0 8px 24px rgba(0,0,0,.24)',
+/** Shared surface roles keep injected settings aligned with the options page. */
+const PANEL_PALETTE = {
+  ring: 'color-mix(in srgb, var(--mantine-color-text) 12%, transparent)',
+  ink: 'var(--mantine-color-text)',
+  inkDim: 'var(--mantine-color-dimmed)',
+  inkFaint: 'var(--mantine-color-dimmed)',
+  panelBg: 'var(--mantine-color-body)',
+  shadow: 'var(--mantine-shadow-lg)',
 };
 
 /**
@@ -140,8 +118,7 @@ const TARGET_OPTIONS = langOptions();
 
 export default function FloatingBallApp() {
   const theme = useMantineTheme();
-  const scheme = useComputedColorScheme('light');
-  const g = scheme === 'dark' ? DARK_PANEL : LIGHT_PANEL;
+  const g = PANEL_PALETTE;
 
   // Viewport size for placement math — visualViewport, NOT window.inner*:
   // classic scrollbars (Windows, macOS "always show") live inside innerWidth
@@ -593,8 +570,6 @@ export default function FloatingBallApp() {
                 pointerEvents: open ? 'auto' : 'none',
                 willChange: motionStyle.transitionDuration === '0ms' ? undefined : 'transform, opacity',
                 background: g.panelBg,
-                backdropFilter: PANEL_BLUR,
-                WebkitBackdropFilter: PANEL_BLUR,
                 border: `1px solid ${g.ring}`,
                 borderRadius: 16,
                 boxShadow: g.shadow,
@@ -605,7 +580,7 @@ export default function FloatingBallApp() {
             >
               {/* Header */}
               <Group justify="space-between" align="center" px={16} pt={16} pb={4}>
-                <Text style={{ fontSize: 15, fontWeight: 500, color: g.ink }}>{m.ball_panel_title()}</Text>
+                <Text style={{ fontSize: 18, fontWeight: 600, color: g.ink }}>{m.ball_panel_title()}</Text>
                 <CloseButton onClick={() => setOpen(false)} size="sm" aria-label={m.ball_close_panel()} c={g.inkDim} />
               </Group>
               <Stack gap={4} px={16} pb={16}>
@@ -623,11 +598,10 @@ export default function FloatingBallApp() {
                 >
                   {/* Target language */}
                   <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                    <Text size="sm" fw={500} style={{ color: g.inkDim }}>
                       {m.ball_target()}
                     </Text>
                     <Select
-                      variant="unstyled"
                       aria-label={m.ball_target()}
                       data={TARGET_OPTIONS}
                       value={target}
@@ -637,7 +611,7 @@ export default function FloatingBallApp() {
                       w={140}
                       comboboxProps={{ withinPortal: true }}
                       styles={{
-                        input: { textAlign: 'right', color: g.ink, fontWeight: 500, paddingRight: 24, fontSize: 12 },
+                        input: { color: g.ink, fontWeight: 500, fontSize: 13 },
                         section: { color: g.inkFaint, width: 18, justifyContent: 'flex-end' },
                       }}
                     />
@@ -645,7 +619,7 @@ export default function FloatingBallApp() {
 
                   {/* Three-state view (双语/仅译文/仅原文) */}
                   <Box style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                    <Text size="sm" fw={500} style={{ color: g.inkDim }}>
                       {m.display_label()}
                     </Text>
                     <SegmentedControl
@@ -661,9 +635,6 @@ export default function FloatingBallApp() {
                       onChange={(v) =>
                         patchConfig((c) => ({ appearance: { ...c.appearance, displayMode: v as DisplayMode } }))
                       }
-                      styles={{
-                        root: { background: scheme === 'dark' ? 'rgba(0,0,0,0.28)' : 'rgba(33,28,21,0.07)' },
-                      }}
                     />
                   </Box>
 
@@ -678,7 +649,7 @@ export default function FloatingBallApp() {
                         paddingTop: 4,
                       }}
                     >
-                      <Text size="xs" style={{ color: g.inkDim }}>
+                      <Text size="sm" style={{ color: g.inkDim }}>
                         {m.interleave_label()}
                       </Text>
                       <Switch
@@ -707,7 +678,7 @@ export default function FloatingBallApp() {
                     gap: 8,
                   }}
                 >
-                  <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                  <Text size="sm" fw={500} style={{ color: g.inkDim }}>
                     {m.ball_style()}
                   </Text>
                   <StylePreview
@@ -719,14 +690,14 @@ export default function FloatingBallApp() {
                       gloss: g.ink,
                       inkFaint: g.inkFaint,
                       hair: g.ring,
-                      paper: scheme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.55)',
-                      accent: PRESET_ACCENT,
+                      paper: 'var(--mantine-color-default)',
+                      accent: 'var(--interline-accent-ink)',
                     }}
                   />
                   {/* 译文字体: 跟随页面 is the "use the site's own look" escape
                       hatch for sites whose visual identity the kai stack breaks. */}
                   <Box style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
-                    <Text size="xs" style={{ color: g.inkDim }}>
+                    <Text size="sm" style={{ color: g.inkDim }}>
                       {m.settings_font_title()}
                     </Text>
                     <SegmentedControl
@@ -743,9 +714,6 @@ export default function FloatingBallApp() {
                           appearance: { ...c.appearance, translationFont: v as 'kai' | 'inherit' },
                         }))
                       }
-                      styles={{
-                        root: { background: scheme === 'dark' ? 'rgba(0,0,0,0.28)' : 'rgba(33,28,21,0.07)' },
-                      }}
                     />
                   </Box>
                 </Box>
@@ -764,7 +732,7 @@ export default function FloatingBallApp() {
                   }}
                 >
                   <Box style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                    <Text size="xs" fw={600} style={{ color: g.inkDim }}>
+                    <Text size="sm" fw={500} style={{ color: g.inkDim }}>
                       {m.ball_always_site()}
                     </Text>
                     <Text
@@ -810,8 +778,6 @@ export default function FloatingBallApp() {
                     style={{
                       fontWeight: 600,
                       boxShadow: 'none',
-                      backgroundColor: active ? undefined : scheme === 'dark' ? g.ink : SEAL_ZHU,
-                      color: active ? undefined : scheme === 'dark' ? '#1C1A18' : SEAL_FACE,
                       transition: 'background-color 160ms ease, color 160ms ease',
                     }}
                   >
@@ -844,7 +810,7 @@ export default function FloatingBallApp() {
                   aria-label={m.popup_open_settings()}
                   style={{
                     fontSize: 12,
-                    color: 'var(--mantine-color-cinnabar-6)',
+                    color: 'var(--interline-accent-ink)',
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: 4,

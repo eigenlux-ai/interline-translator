@@ -24,7 +24,7 @@ export default function SettingsSection({ title, description, action, children }
     <Box>
       <Group justify="space-between" align="flex-end" gap="sm" wrap="wrap">
         <Box style={{ flex: '1 1 240px', minWidth: 0 }}>
-          <Title order={3} fz="h4" fw={600}>
+          <Title order={2} fz={{ base: 24, sm: 28 }} fw={600} ff="var(--mantine-font-family)" lh={1.25}>
             {title}
           </Title>
           {description && (

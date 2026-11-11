@@ -1,0 +1,58 @@
+/* Behavior is edited on the left; actual reading samples carry the appearance column. */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  min-width: 0;
+}
+.column:last-child {
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--interline-reading-surface);
+}
+.section {
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+.column > .section + .section {
+  border-top: 1px solid var(--options-rule);
+  padding-block-start: 24px;
+}
+.preview :global(.mantine-SimpleGrid-root) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (max-width: 1200px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .column:last-child {
+    padding: 24px;
+  }
+}
+@media (max-width: 720px) {
+  .column:last-child {
+    padding: 16px;
+    margin-inline: -8px;
+  }
+}
+
+.detector > :global(.mantine-Group-root) {
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.detector :global(.mantine-Anchor-root) {
+  white-space: nowrap;
+}
+.detector :global(.mantine-Badge-root) {
+  height: auto;
+  min-height: 20px;
+  white-space: normal;
+}

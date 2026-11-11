@@ -1,15 +1,7 @@
-/**
- * @module react-app/apps/options
- *
- * The settings surface, dressed as an annotated manuscript: a warm-paper canvas,
- * a serif masthead whose wordmark carries its own interlinear 译文, and a
- * table-of-contents index whose active row wears the 朱批 tick. Four sections;
- * every edit auto-saves to the shared config (and propagates live to the popup /
- * content via storage.watch).
- */
+/** Settings workspace. Brand tokens and shared controls remain owned by VisualManager. */
 
 import { useEffect, useRef, useState } from 'react';
-import { Center, Group, Loader, Text } from '@mantine/core';
+import { Center, Group, Loader, Text, UnstyledButton } from '@mantine/core';
 import { ArchiveIcon, BookIcon, BrushIcon, EngineIcon, GearIcon, GlobeIcon } from '@/react-app/components/icons';
 import AboutSettings from '@/react-app/components/settings/AboutSettings';
 import BackupSettings from '@/react-app/components/settings/BackupSettings';
@@ -99,7 +91,7 @@ export default function OptionsApp() {
                 }
 
                 return (
-                  <button
+                  <UnstyledButton
                     key={id}
                     type="button"
                     className={`${cls.navItem} ${active === id ? cls.navItemActive : ''}`}
@@ -114,7 +106,7 @@ export default function OptionsApp() {
                       </span>
                       {count !== null && count > 0 && <span className={cls.navCount}>{count}</span>}
                     </Group>
-                  </button>
+                  </UnstyledButton>
                 );
               })}
             </nav>

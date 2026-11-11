@@ -42,15 +42,15 @@
   --aie-omt-z-max: 2147400000;
 
   --sb-track-color: transparent;
-  --sb-thumb-color: rgba(147, 137, 122, 0.28);
-  --sb-thumb-hover: rgba(116, 105, 91, 0.48);
+  --sb-thumb-color: rgba(152, 131, 101, 0.28);
+  --sb-thumb-hover: rgba(124, 106, 82, 0.48);
   --sb-size: 6px;
 
-  /* Warm paper default tokens for Mantine controls (overriding cool grey defaults) */
-  --mantine-color-default: #FFFDF8;
-  --mantine-color-default-color: #211C15;
-  --mantine-color-default-border: rgba(33, 28, 21, 0.12);
-  --mantine-color-default-hover: rgba(33, 28, 21, 0.04);
+  /* Glacier-white daylight surfaces; dark surfaces are overridden below. */
+  --mantine-color-default: #ffffff;
+  --mantine-color-default-color: #2c241f;
+  --mantine-color-default-border: rgba(81, 55, 31, 0.12);
+  --mantine-color-default-hover: rgba(81, 55, 31, 0.04);
 
   /* Error/destructive = the COOL `danger` ramp, not the warm brand 朱. One
      declaration suffices: `danger` is a Mantine virtualColor, so
@@ -60,14 +60,20 @@
   --mantine-color-error: var(--mantine-color-danger-6);
 }
 
+:root[data-mantine-color-scheme='light'],
+.aie-omt-surface-root[data-mantine-color-scheme='light'] {
+  --mantine-color-body: #fcfaf7;
+}
+
 :root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *),
 .aie-omt-surface-root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *) {
-  --sb-thumb-color: rgba(236, 228, 214, 0.22);
-  --sb-thumb-hover: rgba(236, 228, 214, 0.38);
-  --mantine-color-default: #1E1A14;
-  --mantine-color-default-color: #ECE4D6;
-  --mantine-color-default-border: rgba(236, 228, 214, 0.14);
-  --mantine-color-default-hover: rgba(236, 228, 214, 0.05);
+  --sb-thumb-color: rgba(245, 222, 185, 0.22);
+  --sb-thumb-hover: rgba(245, 222, 185, 0.38);
+  --mantine-color-body: var(--mantine-color-dark-8);
+  --mantine-color-default: var(--mantine-color-dark-7);
+  --mantine-color-default-color: #f5ebdd;
+  --mantine-color-default-border: rgba(245, 222, 185, 0.14);
+  --mantine-color-default-hover: rgba(245, 222, 185, 0.05);
 }
 
 ::-webkit-scrollbar {
@@ -89,9 +95,12 @@
   background: var(--sb-thumb-hover);
 }
 
-:root :focus-visible,
-.aie-omt-surface-root :focus-visible {
-  outline: 2px solid var(--mantine-color-cinnabar-5);
+/* Composite pill inputs own their focus ring at the outer control, not the inner search field. */
+:root :focus-visible:not(.mantine-PillsInputField-field),
+.aie-omt-surface-root :focus-visible:not(.mantine-PillsInputField-field),
+:root .mantine-Input-input:has(.mantine-PillsInputField-field:focus-visible),
+.aie-omt-surface-root .mantine-Input-input:has(.mantine-PillsInputField-field:focus-visible) {
+  outline: 2px solid var(--interline-focus);
   outline-offset: 2px;
 }
 
@@ -138,4 +147,15 @@
   --radius-2xl: calc(1rem * var(--mantine-scale, 1));
   --radius-3xl: calc(1.5rem * var(--mantine-scale, 1));
   --radius-4xl: calc(2rem * var(--mantine-scale, 1));
+}
+
+/* Light segmented controls: a white thumb on a quiet warm track. */
+[data-mantine-color-scheme='light'] .mantine-SegmentedControl-root {
+  --sc-label-color: var(--interline-accent-ink);
+  --sc-shadow: 0 1px 3px rgba(81, 55, 31, 0.12), 0 0 0 1px rgba(81, 55, 31, 0.05);
+  --sc-radius: var(--mantine-radius-md);
+}
+
+[data-mantine-color-scheme='light'] .mantine-SegmentedControl-control::before {
+  display: none;
 }

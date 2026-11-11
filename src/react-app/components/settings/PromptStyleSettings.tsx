@@ -91,7 +91,7 @@ export default function PromptStyleSettings({ config, onSave }: PromptStyleSetti
   return (
     <SettingsSection title={m.styles_section_title()} description={m.styles_section_desc()}>
       <Radio.Group value={toStyleSelectValue(prompt.activeStyleId)} onChange={setActive}>
-        <Stack gap="xs">
+        <div className={cls.styleGrid}>
           <StyleRow value={PLAIN} name={m.style_plain_name()} desc={m.style_plain_desc()} />
           {BUILTIN_STYLES.map((s) => (
             <StyleRow
@@ -130,7 +130,7 @@ export default function PromptStyleSettings({ config, onSave }: PromptStyleSetti
               }
             />
           ))}
-        </Stack>
+        </div>
       </Radio.Group>
 
       <Group>

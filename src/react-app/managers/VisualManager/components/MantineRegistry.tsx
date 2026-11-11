@@ -39,10 +39,10 @@ import { SURFACE_ROOT_CLASS, Z_INDEX } from '@/constants';
 import { RTL_UI_LANGS } from '@/data/models/lang';
 import { getHostColorScheme, subscribeHostColorScheme } from '@/dom/host-scheme';
 import { getUiLocale, subscribeUiLocale } from '@/i18n';
-import { extStorageColorSchemeManager } from '../colorSchemeManager';
 import { isCustomPrimaryColor, useGeneratedPrimaryRamp } from '../color-generation';
+import { extStorageColorSchemeManager } from '../colorSchemeManager';
 import type { VisualColorScheme, VisualPrimaryColor } from '../defs';
-import { interlineTheme } from '../theme';
+import { interlineCssVariables, interlineTheme } from '../theme';
 
 /**
  * Base theme: the project's Interline design tokens (朱/纸/墨 + danger + fonts),
@@ -204,6 +204,7 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
     <DirectionContext.Provider value={direction}>
       <MantineProvider
         theme={theme}
+        cssVariablesResolver={interlineCssVariables}
         defaultColorScheme={colorScheme}
         forceColorScheme={forceColorScheme}
         colorSchemeManager={colorSchemeManager}

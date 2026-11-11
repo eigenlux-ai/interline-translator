@@ -102,7 +102,7 @@ function StyleSwatch({
         style={{
           fontSize: compact ? 11 : 12,
           fontWeight: active ? 600 : 500,
-          color: active ? tokens.accent : tokens.inkFaint,
+          color: active ? 'var(--interline-accent-ink)' : tokens.inkFaint,
           lineHeight: 1,
           letterSpacing: '0.01em',
         }}
@@ -258,7 +258,7 @@ export function FontPreview({ value, onChange }: FontPreviewProps) {
                 style={{
                   fontSize: 13,
                   fontWeight: active ? 600 : 500,
-                  color: active ? PRESET_ACCENT : 'var(--mantine-color-text)',
+                  color: active ? 'var(--interline-accent-ink)' : 'var(--mantine-color-text)',
                   lineHeight: 1,
                 }}
               >

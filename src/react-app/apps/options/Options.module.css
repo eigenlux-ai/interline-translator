@@ -1,253 +1,248 @@
-/*
- * Options surface — "an annotated manuscript". Warm paper canvas, a serif
- * masthead whose wordmark carries its own interlinear 译文 (the product,
- * demonstrating itself), a table-of-contents nav whose active row wears the
- * 朱批 tick (the same cinnabar marginal mark the page-translation gloss uses).
- * All colours go through scheme-aware Mantine vars so light/dark just work.
- */
-
+/* Interline settings: persistent navigation and a quiet, independent work surface. */
 .page {
-  min-height: 100vh;
-  background-color: var(--mantine-color-body);
+  min-height: 100dvh;
+  background: var(--mantine-color-body);
+  --options-rule: color-mix(in srgb, var(--mantine-color-text) 12%, transparent);
+  --options-surface: var(--mantine-color-default);
 }
-
 .shell {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 40px 32px 64px;
+  display: grid;
+  grid-template-columns: 224px minmax(0, 1fr);
+  grid-template-rows: auto 1fr auto;
+  column-gap: 36px;
+  max-width: 1440px;
+  min-height: 100dvh;
+  margin-inline: auto;
+  padding: 32px;
 }
-
-/* ── masthead ───────────────────────────────────────────────────────────── */
 .masthead {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--mantine-color-default-border);
-  position: relative;
+  grid-column: 1;
+  grid-row: 1;
+  padding: 12px 12px 32px;
 }
-/* the cinnabar hair-rule that sits ON the masthead divider — a 朱 underline */
-.masthead::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: -1px;
-  width: 72px;
-  height: 2px;
-  background: var(--mantine-color-cinnabar-6);
-  border-radius: 2px;
-}
-
 .wordmark {
   display: flex;
-  flex-direction: column;
-  line-height: 1;
+  align-items: baseline;
+  gap: 10px;
+  white-space: nowrap;
 }
-/* 行间 — set ABOVE the latin wordmark as an interlinear gloss, in the kai hand */
 .gloss {
-  font-family: 'LXGW WenKai', 'Kaiti SC', 'Noto Serif SC', serif;
-  font-size: 15px;
-  letter-spacing: 0.18em;
-  color: var(--mantine-color-cinnabar-6);
-  margin-bottom: 8px;
-  padding-left: 1px;
+  font-family: var(--mantine-font-family-headings);
+  font-size: 28px;
+  color: var(--interline-accent-ink);
 }
 .brand {
   font-family: var(--mantine-font-family-headings);
-  font-size: clamp(30px, 5vw, 40px);
+  font-size: 24px;
   font-weight: 600;
-  letter-spacing: -0.012em;
-  color: var(--mantine-color-text);
 }
 .tagline {
-  text-align: right;
-  max-width: 220px;
-  padding-bottom: 4px;
+  margin-top: 12px;
+  line-height: 1.6;
 }
-
-/* ── body: index + content ──────────────────────────────────────────────── */
 .body {
-  display: grid;
-  grid-template-columns: 208px minmax(0, 1fr);
-  gap: 40px;
-  margin-top: 32px;
-  align-items: start;
+  display: contents;
 }
-
 .navFrame {
-  min-width: 0;
+  grid-column: 1;
+  grid-row: 2;
+  align-self: start;
   position: sticky;
-  top: 24px;
+  top: 32px;
+  min-width: 0;
 }
-
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
 }
-
 .navItem {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 48px;
-  padding: 8px 12px;
+  min-height: 56px;
+  padding: 10px 14px;
+  width: 100%;
   border: 0;
   border-radius: var(--mantine-radius-md);
   background: transparent;
   color: var(--mantine-color-dimmed);
   font: inherit;
-  font-size: var(--mantine-font-size-sm);
-  text-align: left;
+  font-size: 14px;
+  text-align: start;
   cursor: pointer;
   position: relative;
   transition:
-    background-color 120ms ease,
-    color 120ms ease;
+    background-color 160ms ease,
+    color 160ms ease;
 }
 .navItem:hover {
   background: var(--mantine-color-default-hover);
   color: var(--mantine-color-text);
 }
-.navItem:focus-visible {
-  outline: 2px solid var(--mantine-color-cinnabar-6);
-  outline-offset: 2px;
-}
-
-.navCount {
-  color: var(--mantine-color-dimmed);
-  font-size: 12px;
-  font-weight: 400;
-  font-variant-numeric: tabular-nums;
-}
-
-.navItem svg {
-  flex: none;
-  opacity: 0.75;
-}
-
 .navItemActive {
-  color: var(--mantine-color-cinnabar-6);
-  background: var(--mantine-color-default);
-  font-weight: 500;
+  background: var(--interline-selection-surface);
+  color: var(--mantine-color-text);
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--mantine-color-text) 6%, transparent);
 }
-.navItemActive svg {
-  opacity: 1;
-}
-/* 朱批 tick — the cinnabar marginal mark, echoing the gloss tick token */
 .navItemActive::before {
   content: '';
   position: absolute;
-  left: -1px;
-  top: 50%;
-  transform: translateY(-50%);
+  inset-inline-start: 0;
+  top: 8px;
+  bottom: 8px;
   width: 3px;
-  height: 16px;
   border-radius: 2px;
-  background: var(--mantine-color-cinnabar-6);
+  background: var(--interline-accent-ink);
 }
-
+.navItemActive svg {
+  color: var(--interline-accent-ink);
+}
+.navItem svg {
+  flex: none;
+}
+.navItem:focus-visible {
+  outline: 2px solid var(--interline-focus);
+  outline-offset: 3px;
+}
+.navItem:active {
+  background: var(--mantine-color-default-hover);
+}
+.navItem:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
 .navLabel {
   display: flex;
   flex-direction: column;
+  gap: 3px;
   line-height: 1.25;
+  font-weight: 500;
 }
 .navHint {
   font-size: 12px;
-  color: var(--mantine-color-dimmed);
   font-weight: 400;
+  color: var(--mantine-color-dimmed);
 }
-
+.navCount {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--mantine-color-dimmed);
+}
 .content {
+  grid-column: 2;
+  grid-row: 1 / 4;
   min-width: 0;
+  background: var(--options-surface);
+  border-radius: 16px;
+  border: 1px solid var(--options-rule);
+  padding: 32px;
 }
-
+.content h2 {
+  font-family: var(--mantine-font-family);
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+}
+.content :global(.mantine-Divider-root) {
+  --divider-color: var(--options-rule);
+  margin-block: 24px;
+}
+.content :global(.mantine-InputWrapper-label) {
+  font-weight: 500;
+}
+.content :global(.mantine-InputWrapper-description) {
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
 .footer {
-  margin-top: 48px;
-  padding-top: 16px;
-  border-top: 1px solid var(--mantine-color-default-border);
+  grid-column: 1;
+  grid-row: 3;
+  align-self: end;
+  padding: 32px 14px 8px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 6px;
 }
-
-/* ── narrow: index folds to a horizontal scroller above the content ─────── */
+@media (min-width: 1600px) {
+  .shell {
+    padding-block: 48px;
+  }
+}
+@media (max-width: 1100px) {
+  .shell {
+    grid-template-columns: 192px minmax(0, 1fr);
+    gap: 24px;
+    padding: 24px;
+  }
+  .content {
+    padding: 24px;
+  }
+  .wordmark {
+    flex-wrap: wrap;
+    gap: 4px 10px;
+  }
+}
 @media (max-width: 720px) {
   .shell {
-    padding: 24px 16px 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 12px;
   }
-  .body {
-    grid-template-columns: 1fr;
-    gap: 24px;
+  .masthead {
+    padding: 0 8px;
+  }
+  .tagline {
+    display: none;
   }
   .navFrame {
     position: relative;
     top: auto;
-  }
-  .navFrame::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    inset-inline-end: -4px;
-    bottom: 8px;
-    width: 32px;
-    background: linear-gradient(to right, transparent, var(--mantine-color-body));
-    pointer-events: none;
-    opacity: 0;
-    transition: opacity 120ms ease;
-  }
-  .navFrame[data-more]::after {
-    opacity: 1;
-  }
-  :global([dir='rtl']) .navFrame::after {
-    background: linear-gradient(to left, transparent, var(--mantine-color-body));
+    align-self: stretch;
+    width: 100%;
   }
   .nav {
-    position: static;
     flex-direction: row;
     overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: var(--mantine-color-default-border) transparent;
     gap: 4px;
-    padding: 4px 4px 8px;
-    margin: -4px;
-  }
-  .nav::-webkit-scrollbar {
-    height: 2px;
-  }
-  .nav::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .nav::-webkit-scrollbar-thumb {
-    background: var(--mantine-color-default-border);
-    border-radius: 2px;
-  }
-  @supports selector(::-webkit-scrollbar) {
-    .nav {
-      scrollbar-width: auto;
-      scrollbar-color: auto;
-    }
+    padding: 4px 2px 8px;
+    scrollbar-width: thin;
   }
   .navItem {
+    width: auto;
     flex: none;
+    min-height: 44px;
+    padding: 10px 12px;
   }
   .navHint {
     display: none;
   }
   .navItemActive::before {
-    left: 50%;
     top: auto;
-    bottom: -2px;
-    transform: translateX(-50%);
-    width: 16px;
+    bottom: 0;
+    inset-inline: 12px;
+    width: auto;
     height: 3px;
   }
-  .footer {
-    gap: 16px;
-    flex-wrap: wrap;
+  .content {
+    padding: 24px 16px;
+    border-radius: 12px;
   }
-  .tagline {
-    display: none;
+  .content h2 {
+    font-size: 24px;
+  }
+  .footer {
+    padding: 0 8px;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page *,
+  .page *::after {
+    transition: none !important;
+    animation: none !important;
   }
 }
