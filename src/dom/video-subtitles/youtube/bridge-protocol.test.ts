@@ -75,6 +75,9 @@ describe('YouTube bridge protocol boundary', () => {
     expect(validBridgeRequest({ type: BRIDGE_REQUEST, version: 1, requestId: '', action: 'stop' })).toBe(false);
     const response = { type: BRIDGE_RESPONSE, version: 1, requestId: 'a', snapshot, text: 'caption' };
     expect(validBridgeResponse(response)).toBe(true);
+    expect(validBridgeResponse({ ...response, snapshot: { ...snapshot, domLanguage: 'fr' } })).toBe(true);
+    expect(validBridgeResponse({ ...response, snapshot: { ...snapshot, domLanguage: 42 } })).toBe(false);
+    expect(validBridgeResponse({ ...response, snapshot: { ...snapshot, domLanguage: 'x'.repeat(51) } })).toBe(false);
     expect(validBridgeResponse({ ...response, version: 2 })).toBe(false);
     expect(validBridgeResponse({ ...response, error: 'unknown' })).toBe(false);
     expect(validBridgeResponse({ ...response, snapshot: { ...snapshot, videoId: 'bad' } })).toBe(false);

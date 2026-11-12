@@ -13,6 +13,8 @@ export interface YoutubeTrackInfo {
   kind: 'manual' | 'auto';
 }
 export interface YoutubeSnapshot {
+  /** Language displayed by native captions, independent of the original track. */
+  domLanguage?: string;
   videoId: string;
   title: string;
   ad: boolean;
@@ -96,7 +98,8 @@ export function validBridgeResponse(value: unknown): value is YoutubeBridgeRespo
     !validVideoId(snapshot.videoId) ||
     !boundedString(snapshot.title, 1000, true) ||
     typeof snapshot.ad !== 'boolean' ||
-    typeof snapshot.hasTracks !== 'boolean'
+    typeof snapshot.hasTracks !== 'boolean' ||
+    (snapshot.domLanguage !== undefined && !boundedString(snapshot.domLanguage, 50))
   )
     return false;
   const track = object(snapshot.track);

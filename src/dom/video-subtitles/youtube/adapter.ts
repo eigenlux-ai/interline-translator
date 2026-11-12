@@ -13,7 +13,8 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     disposed = false,
     startedAt = 0,
     trackId = '',
-    rawTrack = '';
+    rawTrack = '',
+    domLanguage: string | undefined;
   let observer: MutationObserver | null = null,
     captionContainer: Element | null = null;
   let hiddenStyle: HTMLStyleElement | null = null;
@@ -144,6 +145,10 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       playbackChanged();
       return;
     }
+    if (domLanguage !== data.snapshot.domLanguage) {
+      domLanguage = data.snapshot.domLanguage;
+      lastText = null;
+    }
     const nextTrackId = data.snapshot.track?.id ?? '';
     if (trackId !== nextTrackId) {
       trackId = nextTrackId;
@@ -156,6 +161,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
         videoId,
         title: data.snapshot.title,
         language: data.snapshot.track?.language ?? 'auto',
+        domLanguage: data.snapshot.domLanguage,
         trackId,
         hasTracks: data.snapshot.hasTracks,
       },
@@ -201,6 +207,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     restoreNative();
     rawTrack = '';
     trackId = '';
+    domLanguage = undefined;
     lastText = null;
   };
   const dispose = () => {

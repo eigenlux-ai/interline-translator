@@ -188,6 +188,54 @@ describe('YouTube subtitle runtime integration', () => {
     complete();
     expect(latest.translation).toBe('你好');
   });
+  it('uses the native display language for DOM fallback and invalidates it independently of the source track', () => {
+    setup(true);
+    vi.advanceTimersByTime(3000);
+    const segment = document.querySelector('.ytp-caption-segment')!;
+    segment.textContent = 'Bonjour';
+    const metadata = (domLanguage: string) => {
+      const request = [...vi.mocked(window.postMessage).mock.calls]
+        .reverse()
+        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: window,
+          origin: location.origin,
+          data: {
+            type: BRIDGE_RESPONSE,
+            version: 1,
+            requestId: request.requestId,
+            error: 'fetch',
+            snapshot: {
+              videoId: 'abcdefghi12',
+              title: '',
+              ad: false,
+              hasTracks: true,
+              domLanguage,
+              track: { id: 'en', language: 'en', kind: 'auto' },
+            },
+          },
+        })
+      );
+    };
+    metadata('fr');
+    vi.advanceTimersByTime(450);
+    expect(windows.at(-1)?.sourceLanguage).toBe('fr');
+    expect(latest.sourceLanguage).toBe('fr');
+    const old = windows.at(-1)!;
+    complete(old, '旧译文');
+    metadata('de');
+    expect(latest.translation).toBe('');
+    vi.advanceTimersByTime(450);
+    expect(windows.at(-1)?.sourceLanguage).toBe('de');
+    expect(windows.at(-1)?.generation).not.toBe(old.generation);
+    complete(old, '迟到的旧译文');
+    expect(latest.translation).toBe('');
+    track();
+    expect(windows.at(-1)?.sourceLanguage).toBe('en');
+    expect(latest.sourceLanguage).toBe('en');
+  });
+
   it('keeps DOM fallback status through caption gaps and repeated track-fetch errors', () => {
     setup(true);
     const fetchFailure = (trackId = 'en') => {
