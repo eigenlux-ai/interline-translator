@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.11 — 2026-11-12
+## 1.1.0 — 2026-11-12
 
 - Add independent YouTube subtitle translation with player controls, bilingual display, configurable appearance, target language and engine, and optional automatic activation.
 - Support watch pages, Shorts and embedded players, with caption-track recovery across SPA navigation, seeking and player replacement. Prefer existing human-created target-language captions when requested.
