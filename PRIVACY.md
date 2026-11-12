@@ -1,6 +1,6 @@
 # Interline privacy policy / 行间隐私说明
 
-**Last updated / 更新日期：2026-09-07**
+**Last updated / 更新日期：2026-11-12**
 
 [English](#english) · [简体中文](#简体中文)
 
@@ -34,6 +34,7 @@ Interline uses this data to provide the translation features described above. Th
 - **Settings and credentials:** provider settings, API keys, language preferences, prompts, glossaries and site rules are stored in the extension's local browser storage (`chrome.storage.local`). Visual preferences are stored locally as well. Interline does not use browser sync storage for these settings.
 - **Authentication:** keys and configured authentication headers are sent to the selected service when needed to authenticate requests. The authentication format depends on the provider. Keys are not confined to local storage during an authenticated service call.
 - **Translation cache:** translated results and cache metadata are stored locally in IndexedDB. Cache keys are hashes of request inputs; API keys are excluded from the key calculation. The background maintenance task is scheduled daily to delete entries older than 30 days and trim the cache to 150,000 entries. Cleanup occurs when that task runs, not necessarily at the exact expiration time.
+- **Subtitle diagnostics:** a bounded in-memory buffer records event categories, anonymous context numbers, timings and retry/cache counters. The background keeps at most 512 recent events; its history is lost when the background process restarts. The subtitle settings page can export these records locally as JSON. They contain no subtitle text, page titles, URLs, cookies or API keys and are not uploaded.
 - **Exports:** exporting settings creates a JSON file **containing API keys**, prompts, glossaries and site rules. Interline does not upload this file. Anyone you share it with may be able to read those values. Importing it stores the configuration on the receiving browser.
 
 ### Network and browser features
@@ -98,6 +99,8 @@ Interline（行间）是一款开源的浏览器双语阅读与翻译扩展。�
 - **调用认证：** 发起需要认证的请求时，会将所需密钥和配置的认证请求头发送至所选服务。认证格式因服务商而异，不能理解为密钥在调用时也绝不离开设备。
 - **译文缓存：** 译文结果与缓存元数据保存在本地 IndexedDB。缓存索引由请求输入计算哈希，不将 API Key 纳入计算。后台维护任务按每天一次安排，清理超过 30 天的条目，并将条目数限制到 150,000；实际清理发生在任务执行时，并非到期瞬间。
 - **导出文件：** 配置导出会生成**包含 API Key**、提示词、术语表和站点规则的 JSON 文件。行间不会上传该文件；收到文件的人可能读到这些内容。导入操作会把配置保存到接收方浏览器。
+
+字幕诊断仅在内存中保存事件类别、匿名上下文编号、耗时及重试／缓存计数。后台最多保留最近 512 条，后台进程重启后历史清空。可在字幕设置页导出本地 JSON 文件；其中不含字幕正文、页面标题、URL、Cookie 或 API key，也不会自动上传。
 
 ### 网络与浏览器功能
 

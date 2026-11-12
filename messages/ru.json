@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "Перевод субтитров…",
 	"video_subtitles_current_language": "Текущий язык субтитров",
 	"video_subtitles_order": "Порядок языков",
-	"video_subtitles_prefer_human": "Предпочитать ручные субтитры на целевом языке"
+	"video_subtitles_prefer_human": "Предпочитать ручные субтитры на целевом языке",
+	"video_subtitles_export_diagnostics": "Экспорт диагностики субтитров"
 }

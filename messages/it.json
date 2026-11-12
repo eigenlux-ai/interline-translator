@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "Traduzione sottotitoli…",
 	"video_subtitles_current_language": "Lingua attuale dei sottotitoli",
 	"video_subtitles_order": "Ordine delle lingue",
-	"video_subtitles_prefer_human": "Preferisci i sottotitoli umani nella lingua di destinazione"
+	"video_subtitles_prefer_human": "Preferisci i sottotitoli umani nella lingua di destinazione",
+	"video_subtitles_export_diagnostics": "Esporta diagnostica dei sottotitoli"
 }

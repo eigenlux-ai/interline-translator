@@ -1,3 +1,5 @@
+import { recordSubtitleDiagnostic as diagnostic } from '@/core/subtitles/diagnostics';
+import { retryDelay } from '@/core/subtitles/retry';
 /** Subtitle business queue. Independent from the page queue; transport owns no queue. */
 import type { Config, ProviderConfig } from '@/data/models';
 import { sharedAdmission } from '@/services/translation/admission';
@@ -308,6 +310,7 @@ export class SubtitleRequestManager {
     try {
       for (const task of batch) {
         const hit = await (this.deps.cacheGet ?? dexieCache.get)(task.key).catch(() => undefined);
+        diagnostic({ event: hit ? 'cache-hit' : 'cache-miss' });
         if (hit) this.finish(task, hit);
         else if (task.consumers.size) pending.push(task);
       }
@@ -384,6 +387,11 @@ export class SubtitleRequestManager {
   }
   private finish(task: Task, text: string): void {
     if (this.tasks.get(task.key) !== task) return;
+    diagnostic({
+      event: 'translation-completed',
+      generation: task.window.generation,
+      durationMs: Date.now() - (task.startedAt ?? Date.now()),
+    });
     for (const c of task.consumers.values()) {
       this.emit(c, 'completed', text);
       this.sessions.get(c.session)?.consumers.delete(c.cue.subscriptionId);
@@ -400,7 +408,8 @@ export class SubtitleRequestManager {
       task.attempts++;
       task.state = 'queued';
       task.abort = undefined;
-      task.readyAt = Date.now() + SUBTITLE_LIMITS.retryBaseMs * 2 ** (task.attempts - 1);
+      task.readyAt = Date.now() + retryDelay(SUBTITLE_LIMITS.retryBaseMs * 2 ** (task.attempts - 1), 30_000);
+      diagnostic({ event: 'retry-scheduled', attempt: task.attempts, delayMs: task.readyAt - Date.now() });
       return;
     }
     for (const c of task.consumers.values()) {

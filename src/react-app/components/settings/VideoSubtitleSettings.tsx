@@ -264,6 +264,27 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
         </Text>
         <Group>
           <Button
+            variant="default"
+            disabled={busy}
+            onClick={() => {
+              void run(async () => {
+                const response = await browser.runtime.sendMessage({ type: 'subtitle:export-diagnostics', version: 1 });
+                if (response?.version !== 1 || !Array.isArray(response.events))
+                  throw new Error('Diagnostics unavailable');
+                const url = URL.createObjectURL(
+                  new Blob([JSON.stringify(response, null, 2)], { type: 'application/json' })
+                );
+                const anchor = document.createElement('a');
+                anchor.href = url;
+                anchor.download = 'interline-subtitle-diagnostics.json';
+                anchor.click();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+              });
+            }}
+          >
+            {m.video_subtitles_export_diagnostics()}
+          </Button>
+          <Button
             variant="light"
             disabled={busy}
             onClick={() => {

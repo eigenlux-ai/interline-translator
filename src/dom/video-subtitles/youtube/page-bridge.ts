@@ -1,5 +1,6 @@
 /** Page-world YouTube adapter: observes only timedtext, never proxies arbitrary requests. */
 import { LiveSubtitleBuffer } from '@/core/subtitles/live';
+import { retryDelay } from '@/core/subtitles/retry';
 import { PROJECT_PREFIX } from '@/constants';
 import {
   BRIDGE_RESPONSE,
@@ -727,6 +728,7 @@ export function installYoutubeBridge(win: Window): () => void {
     }
     channel.selectedTrackId = nextTrackId;
     const requestEpoch = epoch;
+    const requestStarted = Date.now();
     const post = (extra: Partial<YoutubeBridgeResponse> = {}) => {
       if (
         disposed ||
@@ -739,7 +741,15 @@ export function installYoutubeBridge(win: Window): () => void {
         return;
       if (!ad && isAd()) return;
       win.postMessage(
-        { type: BRIDGE_RESPONSE, version: BRIDGE_VERSION, requestId: data.requestId, snapshot, ...extra },
+        {
+          type: BRIDGE_RESPONSE,
+          version: BRIDGE_VERSION,
+          requestId: data.requestId,
+          snapshot,
+          acquisition: 'fetch',
+          durationMs: Math.max(0, Math.min(300_000, Date.now() - requestStarted)),
+          ...extra,
+        },
         win.location.origin
       );
     };
@@ -753,7 +763,7 @@ export function installYoutubeBridge(win: Window): () => void {
       const key = url && trackKey(url);
       const text = key && cache.get(key);
       const liveRevision = key && liveRevisions.get(key);
-      post(text && liveRevision ? { text, liveRevision } : {});
+      post(text && liveRevision ? { text, liveRevision, acquisition: 'live' } : {});
       return;
     }
     if (data.knownTrackId === nextTrackId) {
@@ -769,7 +779,7 @@ export function installYoutubeBridge(win: Window): () => void {
     const key = trackKey(url);
     const cached = cache.get(key);
     if (cached) {
-      post({ text: cached });
+      post({ text: cached, acquisition: 'cache' });
       return;
     }
     const tokenRawUrl = observedUrls.get(key);
@@ -800,7 +810,7 @@ export function installYoutubeBridge(win: Window): () => void {
       budget.retryAt = 0;
     }
     if (Date.now() < endpointRetryAt) {
-      post({ error: 'rateLimit' });
+      post({ error: 'rateLimit', retryDelayMs: endpointRetryAt - Date.now() });
       return;
     }
     if (channel.pending?.key === key) {
@@ -834,13 +844,16 @@ export function installYoutubeBridge(win: Window): () => void {
             );
             const header = res.headers.get('retry-after')?.trim() ?? '';
             const requested = /^\d+(?:\.\d+)?$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now();
-            const delay = Math.min(300_000, Math.max(backoff, Number.isFinite(requested) ? requested : 0));
+            const delay = retryDelay(backoff, 300_000, Number.isFinite(requested) ? Math.max(0, requested) : 0);
             endpointRetryAt = Date.now() + delay;
             // A temporary endpoint refusal must not permanently exhaust this track.
             budget.attempts = 0;
             budget.retryAt = endpointRetryAt;
-          } else budget.retryAt = Date.now() + 10_000;
-          post({ error: res.status === 429 ? 'rateLimit' : 'fetch' });
+          } else budget.retryAt = Date.now() + retryDelay(10_000, 30_000);
+          post({
+            error: res.status === 429 ? 'rateLimit' : 'fetch',
+            retryDelayMs: Math.max(0, budget.retryAt - Date.now()),
+          });
           return;
         }
         if (res.url) {
@@ -860,7 +873,7 @@ export function installYoutubeBridge(win: Window): () => void {
       .catch(() => {
         if (channel.pending?.controller !== controller || requestEpoch !== epoch) return;
         if (!controller.signal.aborted || timedOut) {
-          budget.retryAt = Date.now() + 10_000;
+          budget.retryAt = Date.now() + retryDelay(10_000, 30_000);
           post({ error: 'fetch' });
         }
       })

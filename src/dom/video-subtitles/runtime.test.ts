@@ -166,6 +166,7 @@ function complete(windowValue = windows.at(-1)!, text = '你好') {
   });
 }
 beforeEach(() => {
+  vi.spyOn(Math, 'random').mockReturnValue(0);
   vi.useFakeTimers();
   renderFailure = false;
   window.location.href = 'https://www.youtube.com/watch?v=abcdefghi12';

@@ -50,6 +50,9 @@ export type YoutubeBridgeResponse = {
   snapshot: YoutubeSnapshot;
   text?: string;
   liveRevision?: number;
+  acquisition?: 'cache' | 'fetch' | 'live';
+  durationMs?: number;
+  retryDelayMs?: number;
   error?: 'fetch' | 'rateLimit' | 'unavailable';
 };
 
@@ -105,6 +108,17 @@ export function validBridgeResponse(value: unknown): value is YoutubeBridgeRespo
     return false;
   if (snapshot.track !== null && !snapshot.hasTracks) return false;
   return (
+    (x.acquisition === undefined || ['cache', 'fetch', 'live'].includes(x.acquisition as string)) &&
+    (x.retryDelayMs === undefined ||
+      (typeof x.retryDelayMs === 'number' &&
+        Number.isFinite(x.retryDelayMs) &&
+        x.retryDelayMs >= 0 &&
+        x.retryDelayMs <= Number.MAX_SAFE_INTEGER)) &&
+    (x.durationMs === undefined ||
+      (typeof x.durationMs === 'number' &&
+        Number.isFinite(x.durationMs) &&
+        x.durationMs >= 0 &&
+        x.durationMs <= 300_000)) &&
     (x.liveRevision === undefined ||
       (snapshot.live === true && Number.isSafeInteger(x.liveRevision) && (x.liveRevision as number) > 0)) &&
     (x.text === undefined ||

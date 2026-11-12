@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "جارٍ ترجمة الفيديو…",
 	"video_subtitles_current_language": "لغة الترجمة الحالية",
 	"video_subtitles_order": "ترتيب اللغات",
-	"video_subtitles_prefer_human": "تفضيل الترجمة البشرية باللغة المستهدفة"
+	"video_subtitles_prefer_human": "تفضيل الترجمة البشرية باللغة المستهدفة",
+	"video_subtitles_export_diagnostics": "تصدير تشخيص الترجمة النصية"
 }
