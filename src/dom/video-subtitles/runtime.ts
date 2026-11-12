@@ -44,6 +44,8 @@ export interface VideoSubtitleView {
   settings: VideoSubtitleSettings;
 }
 export interface VideoSubtitleRenderer {
+  /** Recover when the host page removes an injected satellite. */
+  isConnected?(): boolean;
   render(view: VideoSubtitleView): void;
   dispose(): void;
 }
@@ -424,7 +426,7 @@ export function createSubtitleRuntime(
   const tick = () => {
     if (disposed) return;
     let resumeVideo: string | null = null;
-    if (adapter && (!adapter.matches() || !permitted(adapter.id))) {
+    if (adapter && (!adapter.matches() || !permitted(adapter.id) || renderer?.isConnected?.() === false)) {
       if (enabled && permitted(adapter.id)) resumeVideo = adapter.videoId();
       stop();
       detach();

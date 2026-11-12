@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
-import { PROJECT_PREFIX } from '@/constants';
+import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
+import { ActionIcon, Button } from '@mantine/core';
+import { createSatellite } from '@/surface/satellite';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
 import type {
@@ -10,18 +10,9 @@ import type {
 } from '@/dom/video-subtitles/runtime';
 import { getUiLocale } from '@/i18n';
 import { m } from '@/paraglide/messages';
+import classes from './renderer.module.css';
 
 const LANGUAGES = langOptions();
-const styles = `
-:host{all:initial;position:absolute;inset:0;pointer-events:none;z-index:65;font:14px/1.45 system-ui,sans-serif;color:#fff}
-*{box-sizing:border-box}button,select{font:inherit;color:inherit;min-height:34px;border:1px solid #ffffff40;border-radius:7px;background:#272b32;padding:6px 10px}
-button{cursor:pointer}button:hover{background:#3c424c}select{width:100%;color-scheme:dark}button:focus-visible,select:focus-visible{outline:2px solid #99d8ed;outline-offset:3px}
-.tools{position:absolute;inset-inline-end:16px;top:16px;pointer-events:auto;display:flex;gap:6px}.tools button{box-shadow:0 2px 12px #0004;background:#171b23d9}.tools button[aria-pressed=true]{border-color:#c77b5e;background:#753f2f}
-.panel{position:absolute;inset-inline-end:16px;top:58px;width:min(320px,calc(100% - 32px));max-height:calc(100% - 76px);overflow:auto;overscroll-behavior:contain;padding:16px;background:#171b23f5;border:1px solid #ffffff30;border-radius:12px;box-shadow:0 8px 32px #0008;pointer-events:auto;display:grid;gap:12px}
-.panel label{display:grid;gap:5px;font-size:13px}.heading,.actions{display:flex;align-items:center;justify-content:space-between;gap:8px}.heading strong{font-size:14px}.heading button{padding:2px 8px;min-height:28px}.actions{flex-wrap:wrap}.actions button{flex:1;white-space:normal}.subtle{font-size:12px;color:#c6cbd3;overflow-wrap:anywhere}.error{color:#ffb9a9}
-.captions{position:absolute;left:5%;width:90%;text-align:center;white-space:pre-line;line-height:1.45;text-shadow:0 1px 3px #000}.line{display:table;margin:3px auto;padding:2px 8px;border-radius:4px;max-width:100%;overflow-wrap:anywhere}.status{font-size:12px;color:#e1e5eb}
-@media(prefers-reduced-motion:no-preference){button{transition:background .12s}}
-`;
 const statusText = (status: VideoSubtitleView['status']) =>
   ({
     ready: '',
@@ -72,9 +63,11 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const lines = appearance.translationPosition === 'above' ? [translated, original] : [original, translated];
   const retryable = ['fetch-failed', 'translation-failed', 'unavailable'].includes(view.status);
   return (
-    <div dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
-      <div className="tools" onKeyDown={(event) => event.stopPropagation()}>
-        <button
+    <div className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
+      <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>
+        <Button
+          variant="default"
+          size="compact-sm"
           type="button"
           aria-label={m.video_subtitles_toggle()}
           title={m.video_subtitles_toggle()}
@@ -82,8 +75,11 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
           onClick={actions.toggle}
         >
           CC
-        </button>
-        <button
+        </Button>
+        <ActionIcon
+          className={classes.settingsButton}
+          variant="default"
+          size={34}
           ref={settingsButton}
           type="button"
           aria-label={m.video_subtitles_title()}
@@ -106,13 +102,13 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
             <circle cx="13" cy="10" r="2" fill="#272b32" />
             <circle cx="8" cy="15" r="2" fill="#272b32" />
           </svg>
-        </button>
+        </ActionIcon>
       </div>
       {open && (
         <div
           ref={panel}
           id="subtitle-settings"
-          className="panel"
+          className={classes.panel}
           role="dialog"
           aria-label={m.video_subtitles_title()}
           onKeyDown={(event) => {
@@ -123,7 +119,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
             }
           }}
         >
-          <div className="heading">
+          <div className={classes.heading}>
             <strong>{m.video_subtitles_title()}</strong>
             <button type="button" aria-label={m.common_close()} onClick={close}>
               ×
@@ -162,7 +158,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                 </option>
               ))}
             </select>
-            <span className="subtle">{m.video_subtitles_effective({ value: effectiveLanguage })}</span>
+            <span className={classes.subtle}>{m.video_subtitles_effective({ value: effectiveLanguage })}</span>
           </label>
           <label>
             {m.settings_default_provider()}
@@ -188,22 +184,22 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                 <option value={providerSelection.providerId}>{m.video_subtitles_unavailable()}</option>
               )}
             </select>
-            <span className="subtle">
+            <span className={classes.subtle}>
               {m.video_subtitles_effective({ value: effectiveProvider?.label ?? m.video_subtitles_unavailable() })}
             </span>
           </label>
-          <div className="subtle">
+          <div className={classes.subtle}>
             {m.video_subtitles_current_language()}: {view.sourceLanguage || '—'}
           </div>
-          <div className="status" role="status">
+          <div className={classes.status} role="status">
             {statusText(view.status)}
           </div>
           {error && (
-            <div role="alert" className="error">
+            <div role="alert" className={classes.error}>
               {m.video_subtitles_operation_failed()}
             </div>
           )}
-          <div className="actions">
+          <div className={classes.actions}>
             {retryable && (
               <button type="button" onClick={actions.retry}>
                 {m.common_retry()}
@@ -217,20 +213,28 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
       )}
       {view.enabled && (
         <div
-          className="captions"
+          className={classes.captions}
           aria-live="off"
           style={{ bottom: `${appearance.positionPercent}%`, fontSize: `${appearance.fontSize}px` }}
         >
           {lines.map(
             (line, index) =>
               line && (
-                <div key={index} className="line" style={{ background: `rgba(0,0,0,${appearance.backgroundOpacity})` }}>
+                <div
+                  key={index}
+                  className={classes.line}
+                  style={{ background: `rgba(0,0,0,${appearance.backgroundOpacity})` }}
+                >
                   {line}
                 </div>
               )
           )}
           {view.status !== 'ready' && view.status !== 'dom' && (
-            <div className="line status" role="status" style={{ background: 'rgba(0,0,0,.7)' }}>
+            <div
+              className={[classes.line, classes.status].join(' ')}
+              role="status"
+              style={{ background: 'rgba(0,0,0,.7)' }}
+            >
               {statusText(view.status)}
             </div>
           )}
@@ -239,26 +243,33 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
     </div>
   );
 }
+/** A satellite failure must not unmount the shared host surface. */
+class SubtitleBoundary extends Component<{ children: ReactNode; fail(): void }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+  componentDidCatch() {
+    queueMicrotask(this.props.fail);
+  }
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
 export function mountVideoSubtitleRenderer(player: HTMLElement, actions: Actions): VideoSubtitleRenderer {
-  const host = document.createElement(`${PROJECT_PREFIX}-video-subtitles`);
+  const satellite = createSatellite(player, null, { position: 'beforeend' });
+  const host = satellite.hostElement;
   host.setAttribute('translate', 'no');
-  const shadow = host.attachShadow({ mode: 'open' });
-  const style = document.createElement('style');
-  style.textContent = styles;
-  const container = document.createElement('div');
-  shadow.append(style, container);
-  player.append(host);
-  const root = createRoot(container, {
-    // React commits asynchronously; runtime.render's synchronous guard cannot catch these failures.
-    onUncaughtError: () => {
-      queueMicrotask(actions.fail);
-    },
-  });
+  host.dataset.videoSubtitles = '';
   return {
-    render: (view) => root.render(<PlayerSubtitles view={view} actions={actions} />),
-    dispose() {
-      root.unmount();
-      host.remove();
-    },
+    isConnected: () => host.isConnected && host.parentElement === player,
+    render: (view) =>
+      satellite.update(
+        <SubtitleBoundary fail={actions.fail}>
+          <PlayerSubtitles view={view} actions={actions} />
+        </SubtitleBoundary>
+      ),
+    dispose: () => satellite.destroy(),
   };
 }

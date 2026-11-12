@@ -1,0 +1,143 @@
+/* The shared WXT reset uses :host { all: initial !important }.
+ * Override inside the same shadow tree, scoped to the player satellite only.
+ */
+:host([data-video-subtitles]) {
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  z-index: 65 !important;
+}
+
+.root {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font:
+    14px/1.45 system-ui,
+    sans-serif;
+  color: #fff;
+}
+.root * {
+  box-sizing: border-box;
+}
+.root button,
+.root select {
+  font: inherit;
+  color: inherit;
+  min-height: 34px;
+  border: 1px solid #ffffff40;
+  border-radius: 7px;
+  background: #272b32;
+  padding: 6px 10px;
+}
+.root button {
+  cursor: pointer;
+}
+.root button:hover {
+  background: #3c424c;
+}
+.root select {
+  width: 100%;
+  color-scheme: dark;
+}
+.root button:focus-visible,
+.root select:focus-visible {
+  outline: 2px solid #99d8ed;
+  outline-offset: 3px;
+}
+.tools {
+  position: absolute;
+  inset-inline-end: 16px;
+  top: 16px;
+  pointer-events: auto;
+  display: flex;
+  gap: 6px;
+}
+.tools button {
+  box-shadow: 0 2px 12px #0004;
+  background: #171b23d9;
+}
+.tools .settingsButton {
+  padding: 0;
+}
+.tools button[aria-pressed='true'] {
+  border-color: #c77b5e;
+  background: #753f2f;
+}
+.panel {
+  position: absolute;
+  inset-inline-end: 16px;
+  top: 58px;
+  width: min(320px, calc(100% - 32px));
+  max-height: calc(100% - 76px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 16px;
+  background: #171b23f5;
+  border: 1px solid #ffffff30;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px #0008;
+  pointer-events: auto;
+  display: grid;
+  gap: 12px;
+}
+.panel label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+}
+.heading,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.heading strong {
+  font-size: 14px;
+}
+.heading button {
+  padding: 2px 8px;
+  min-height: 28px;
+}
+.actions {
+  flex-wrap: wrap;
+}
+.actions button {
+  flex: 1;
+  white-space: normal;
+}
+.subtle {
+  font-size: 12px;
+  color: #c6cbd3;
+  overflow-wrap: anywhere;
+}
+.error {
+  color: #ffb9a9;
+}
+.captions {
+  position: absolute;
+  left: 5%;
+  width: 90%;
+  text-align: center;
+  white-space: pre-line;
+  line-height: 1.45;
+  text-shadow: 0 1px 3px #000;
+}
+.line {
+  display: table;
+  margin: 3px auto;
+  padding: 2px 8px;
+  border-radius: 4px;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+.status {
+  font-size: 12px;
+  color: #e1e5eb;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .root button {
+    transition: background 0.12s;
+  }
+}

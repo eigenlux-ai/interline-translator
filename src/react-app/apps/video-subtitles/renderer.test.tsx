@@ -1,11 +1,17 @@
 // @vitest-environment happy-dom
-import { act, cleanup, fireEvent, render } from '@testing-library/react';
+import type { ReactElement } from 'react';
+import { MantineProvider } from '@mantine/core';
+import { act, cleanup, fireEvent, render as renderTree } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { SurfaceProvider } from '@/surface/context';
+import { SatelliteOutlet } from '@/surface/satellite';
+import { SATELLITE_TAG } from '@/constants';
 import type { VideoSubtitleView } from '@/dom/video-subtitles/runtime';
 import { m } from '@/paraglide/messages';
 import { defaultVideoSubtitles } from '@/services/config/video-subtitles';
-import { PlayerSubtitles } from './renderer';
+import { mountVideoSubtitleRenderer, PlayerSubtitles } from './renderer';
 
+const render = (node: ReactElement) => renderTree(<MantineProvider>{node}</MantineProvider>);
 afterEach(cleanup);
 function fixture(): VideoSubtitleView {
   return {
@@ -71,4 +77,55 @@ describe('player subtitle controls', () => {
     });
     expect(view.getByRole('alert').textContent).toBe(m.video_subtitles_operation_failed());
   });
+});
+
+it('mounts through the host outlet, shares styles/theme, preserves controls across updates and isolates keys', async () => {
+  const host = document.createElement('div');
+  const shadowRoot = host.attachShadow({ mode: 'open' });
+  const style = document.createElement('style');
+  style.textContent = '.test-shared { color: red; }';
+  const rootElement = document.createElement('div');
+  shadowRoot.append(style, rootElement);
+  const view = render(
+    <SurfaceProvider
+      env={{
+        kind: 'shadow',
+        rootElement,
+        portalTarget: rootElement,
+        shadowRoot,
+        scale: 1,
+        colorSchemeStrategy: 'extension',
+      }}
+    >
+      <MantineProvider forceColorScheme="dark">
+        <SatelliteOutlet />
+        <div data-testid="player" />
+      </MantineProvider>
+    </SurfaceProvider>
+  );
+  const player = view.getByTestId('player');
+  const commands = actions();
+  const renderer = mountVideoSubtitleRenderer(player, commands);
+  await act(async () => renderer.render(fixture()));
+  const satellite = player.querySelector(SATELLITE_TAG)!;
+  const shadow = satellite.shadowRoot!;
+  expect(renderer.isConnected?.()).toBe(true);
+  expect(shadow.querySelector('[data-mantine-color-scheme="dark"]')).toBeTruthy();
+  expect(shadow.adoptedStyleSheets.length).toBeGreaterThan(0);
+  expect(shadow.textContent).toContain('你好');
+  const settings = shadow.querySelector<HTMLButtonElement>(`button[aria-label="${m.video_subtitles_title()}"]`)!;
+  await act(async () => fireEvent.click(settings));
+  expect(shadow.querySelector('[role="dialog"]')).toBeTruthy();
+  await act(async () => renderer.render({ ...fixture(), translation: 'Updated' }));
+  expect(shadow.querySelector('[role="dialog"]')).toBeTruthy();
+  expect(shadow.textContent).toContain('Updated');
+  const key = vi.fn();
+  player.addEventListener('keydown', key);
+  shadow
+    .querySelector('select')!
+    .dispatchEvent(new KeyboardEvent('keydown', { key: 'k', bubbles: true, composed: true }));
+  expect(key).not.toHaveBeenCalled();
+  await act(async () => renderer.dispose());
+  expect(player.querySelector(SATELLITE_TAG)).toBeNull();
+  expect(renderer.isConnected?.()).toBe(false);
 });

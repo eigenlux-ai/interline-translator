@@ -29,7 +29,9 @@ let disconnect: () => void;
 let video: HTMLVideoElement;
 let close = vi.fn<() => void>();
 let renderFailure = false;
+let rendererConnected = true;
 function setup(auto = false) {
+  rendererConnected = true;
   const config = settings();
   config.config.platforms.youtube.autoEnable = auto;
   document.body.innerHTML =
@@ -40,7 +42,9 @@ function setup(auto = false) {
   runtime = createYoutubeSubtitleRuntime(window, config, {
     render: (_player, a) => {
       actions = a;
+      rendererConnected = true;
       return {
+        isConnected: () => rendererConnected,
         render: (value) => {
           if (renderFailure) throw new Error('renderer failed');
           latest = value;
@@ -376,6 +380,18 @@ describe('YouTube subtitle runtime integration', () => {
     video.replaceWith(document.createElement('video'));
     vi.advanceTimersByTime(1000);
     expect(latest.enabled).toBe(true);
+  });
+
+  it('remounts a removed satellite and preserves manual enable on the same player', () => {
+    setup();
+    actions.toggle();
+    track();
+    rendererConnected = false;
+    vi.advanceTimersByTime(1000);
+    expect(rendererConnected).toBe(true);
+    expect(latest.enabled).toBe(true);
+    track();
+    expect(latest.original).toBe('Hello world');
   });
 
   it('supports a registered non-YouTube mock and plans on cue changes rather than every frame', () => {

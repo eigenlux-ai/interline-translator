@@ -11,6 +11,7 @@ import surfaceCss from 'virtual:surface-css';
 import { createShadowSurfaceUi } from '@/surface/shadow';
 import FloatingBallApp from '@/react-app/apps/floating-ball/App';
 import SelectionApp from '@/react-app/apps/selection/App';
+import VideoSubtitleApp from '@/react-app/apps/video-subtitles/App';
 import { renderSurfaceApp } from '@/react-app/bootstrap';
 import { SHADOW_SURFACE_TAG } from '@/constants';
 import '@/react-app/styles/shadow-surface.css';
@@ -36,7 +37,8 @@ export default defineContentScript({
           <>
             <SelectionApp />
             <FloatingBallApp />
-          </>,
+            <VideoSubtitleApp />
+          </>
         ),
       onRemove: (mounted) => {
         void mounted?.then((root) => root.unmount());
