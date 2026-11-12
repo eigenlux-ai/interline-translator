@@ -33,6 +33,18 @@ function fixture(): VideoSubtitleView {
 const actions = () => ({ toggle: vi.fn(), fail: vi.fn(), retry: vi.fn(), more: vi.fn(), patch: vi.fn(async () => {}) });
 
 describe('player subtitle controls', () => {
+  it('only moves focus into the panel when opened from the keyboard', () => {
+    const view = render(<PlayerSubtitles view={fixture()} actions={actions()} />);
+    const trigger = view.getByRole('button', { name: m.video_subtitles_title() });
+    trigger.focus();
+    fireEvent.click(trigger, { detail: 1 });
+    expect(document.activeElement).toBe(trigger);
+    fireEvent.click(trigger, { detail: 1 });
+    fireEvent.click(trigger, { detail: 0 });
+    expect(document.activeElement).toBe(
+      view.getByLabelText(m.display_label(), { selector: 'input:not([type="hidden"])' })
+    );
+  });
   it('saves target inheritance semantics and restores focus on Escape without changing the playback toggle', async () => {
     const commands = actions();
     const data = fixture();

@@ -1,6 +1,7 @@
 import { Component, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
+import { GearIcon } from '@/react-app/components/icons';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
 import type {
@@ -30,6 +31,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const [error, setError] = useState(false);
   const settingsButton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
+  const focusOnOpen = useRef(false);
   const firstControl = useRef<HTMLInputElement>(null);
   const appearance = view.settings.config.appearance;
   const providerSelection = view.settings.config.translation.provider;
@@ -45,7 +47,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   };
   useEffect(() => {
     if (!open) return;
-    firstControl.current?.focus();
+    if (focusOnOpen.current) firstControl.current?.focus();
     const dismiss = (event: PointerEvent) => {
       const path = event.composedPath();
       if (!path.includes(panel.current!) && !path.includes(settingsButton.current!)) setOpen(false);
@@ -55,6 +57,8 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   }, [open]);
   const selectProps = {
     allowDeselect: false,
+    size: 'xs' as const,
+    classNames: { label: classes.label, description: classes.description },
     // Keep menus inside the player's satellite, including in fullscreen.
     comboboxProps: { withinPortal: false, floatingStrategy: 'fixed' as const },
     onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
@@ -78,6 +82,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
         <ActionIcon
           variant={view.enabled ? 'filled' : 'default'}
           size={34}
+          radius="md"
           type="button"
           aria-label={m.video_subtitles_toggle()}
           title={m.video_subtitles_toggle()}
@@ -89,37 +94,28 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
           </Text>
         </ActionIcon>
         <ActionIcon
-          variant="default"
+          variant={open ? 'light' : 'default'}
           size={34}
+          radius="md"
           ref={settingsButton}
           type="button"
           aria-label={m.video_subtitles_title()}
           title={m.video_subtitles_title()}
           aria-expanded={open}
           aria-controls="subtitle-settings"
-          onClick={() => (open ? close() : setOpen(true))}
+          onClick={(event) => {
+            focusOnOpen.current = event.detail === 0;
+            if (open) close();
+            else setOpen(true);
+          }}
         >
-          <svg
-            viewBox="0 0 20 20"
-            width="16"
-            height="16"
-            aria-hidden="true"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          >
-            <path d="M3 5h14M3 10h14M3 15h14" />
-            <circle cx="7" cy="5" r="2" fill="var(--mantine-color-body)" />
-            <circle cx="13" cy="10" r="2" fill="var(--mantine-color-body)" />
-            <circle cx="8" cy="15" r="2" fill="var(--mantine-color-body)" />
-          </svg>
+          <GearIcon width={16} height={16} />
         </ActionIcon>
       </div>
       {open && (
         <Paper
           withBorder
-          shadow="md"
-          p="md"
+          shadow="lg"
           ref={panel}
           id="subtitle-settings"
           className={classes.panel}
@@ -133,88 +129,103 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
             }
           }}
         >
-          <Stack gap="sm">
-            <Group justify="space-between" wrap="nowrap">
-              <Text fw={600} size="sm">
+          <Stack gap={0}>
+            <Group justify="space-between" wrap="nowrap" className={classes.header}>
+              <Text fw={600} fz={18}>
                 {m.video_subtitles_title()}
               </Text>
               <CloseButton size="sm" aria-label={m.common_close()} title={m.common_close()} onClick={close} />
             </Group>
-            <Select
-              {...selectProps}
-              ref={firstControl}
-              label={m.display_label()}
-              value={appearance.displayMode}
-              data={[
-                { value: 'bilingual', label: m.display_bilingual() },
-                { value: 'translation', label: m.display_translation() },
-                { value: 'original', label: m.display_original() },
-              ]}
-              onChange={(value) => {
-                if (value) save({ appearance: { displayMode: value as typeof appearance.displayMode } });
-              }}
-            />
-            <Select
-              {...selectProps}
-              label={m.settings_target_label()}
-              description={m.video_subtitles_effective({ value: effectiveLanguage })}
-              inputWrapperOrder={['label', 'input', 'description', 'error']}
-              value={targetSelection.mode === 'inherit' ? '' : targetSelection.language}
-              data={[{ value: '', label: m.video_subtitles_inherit() }, ...LANGUAGES]}
-              onChange={(value) =>
-                save({
-                  translation: {
-                    target: value ? { mode: 'fixed', language: value } : { mode: 'inherit' },
-                  },
-                })
-              }
-            />
-            <Select
-              {...selectProps}
-              label={m.settings_default_provider()}
-              description={m.video_subtitles_effective({
-                value: effectiveProvider?.label ?? m.video_subtitles_unavailable(),
-              })}
-              inputWrapperOrder={['label', 'input', 'description', 'error']}
-              value={providerSelection.mode === 'inherit' ? '' : providerSelection.providerId}
-              data={[
-                { value: '', label: m.video_subtitles_inherit() },
-                ...view.settings.providers.map((provider) => ({ value: provider.id, label: provider.label })),
-                ...(providerMissing && providerSelection.mode === 'fixed'
-                  ? [{ value: providerSelection.providerId, label: m.video_subtitles_unavailable() }]
-                  : []),
-              ]}
-              onChange={(value) =>
-                save({
-                  translation: {
-                    provider: value ? { mode: 'fixed', providerId: value } : { mode: 'inherit' },
-                  },
-                })
-              }
-            />
-            <Text size="xs" c="dimmed">
-              {m.video_subtitles_current_language()}: {view.sourceLanguage || '—'}
-            </Text>
-            {statusText(view.status) && (
-              <Text size="xs" c="dimmed" role="status">
-                {statusText(view.status)}
-              </Text>
-            )}
-            {error && (
-              <Text size="xs" c="red" role="alert">
-                {m.video_subtitles_operation_failed()}
-              </Text>
-            )}
-            <Group grow wrap="wrap">
-              {retryable && (
-                <Button variant="default" onClick={actions.retry}>
-                  {m.common_retry()}
-                </Button>
+            <Stack gap={16} className={classes.fields}>
+              <Select
+                {...selectProps}
+                ref={firstControl}
+                label={m.display_label()}
+                value={appearance.displayMode}
+                data={[
+                  { value: 'bilingual', label: m.display_bilingual() },
+                  { value: 'translation', label: m.display_translation() },
+                  { value: 'original', label: m.display_original() },
+                ]}
+                onChange={(value) => {
+                  if (value) save({ appearance: { displayMode: value as typeof appearance.displayMode } });
+                }}
+              />
+              <Select
+                {...selectProps}
+                label={m.settings_target_label()}
+                description={m.video_subtitles_effective({ value: effectiveLanguage })}
+                inputWrapperOrder={['label', 'input', 'description', 'error']}
+                value={targetSelection.mode === 'inherit' ? '' : targetSelection.language}
+                data={[{ value: '', label: m.video_subtitles_inherit() }, ...LANGUAGES]}
+                onChange={(value) =>
+                  save({
+                    translation: {
+                      target: value ? { mode: 'fixed', language: value } : { mode: 'inherit' },
+                    },
+                  })
+                }
+              />
+              <Select
+                {...selectProps}
+                label={m.settings_default_provider()}
+                description={m.video_subtitles_effective({
+                  value: effectiveProvider?.label ?? m.video_subtitles_unavailable(),
+                })}
+                inputWrapperOrder={['label', 'input', 'description', 'error']}
+                value={providerSelection.mode === 'inherit' ? '' : providerSelection.providerId}
+                data={[
+                  { value: '', label: m.video_subtitles_inherit() },
+                  ...view.settings.providers.map((provider) => ({ value: provider.id, label: provider.label })),
+                  ...(providerMissing && providerSelection.mode === 'fixed'
+                    ? [{ value: providerSelection.providerId, label: m.video_subtitles_unavailable() }]
+                    : []),
+                ]}
+                onChange={(value) =>
+                  save({
+                    translation: {
+                      provider: value ? { mode: 'fixed', providerId: value } : { mode: 'inherit' },
+                    },
+                  })
+                }
+              />
+            </Stack>
+            <Stack gap={10} className={classes.footer}>
+              <Group justify="space-between" gap="xs">
+                <Text size="xs" c="dimmed">
+                  {m.video_subtitles_current_language()}
+                </Text>
+                <Text size="xs" ff="monospace">
+                  {view.sourceLanguage || '—'}
+                </Text>
+              </Group>
+              {statusText(view.status) && (
+                <Text size="xs" c="dimmed" role="status">
+                  {statusText(view.status)}
+                </Text>
               )}
-              <Button variant="default" onClick={actions.more} styles={{ label: { whiteSpace: 'normal' } }}>
-                {m.video_subtitles_more()}
-              </Button>
-            </Group>
+              {error && (
+                <Text size="xs" c="red" role="alert">
+                  {m.video_subtitles_operation_failed()}
+                </Text>
+              )}
+              <Group justify="flex-end" gap="xs" wrap="wrap">
+                {retryable && (
+                  <Button size="xs" variant="light" onClick={actions.retry}>
+                    {m.common_retry()}
+                  </Button>
+                )}
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  leftSection={<GearIcon width={14} height={14} />}
+                  onClick={actions.more}
+                  styles={{ label: { whiteSpace: 'normal' } }}
+                >
+                  {m.video_subtitles_more()}
+                </Button>
+              </Group>
+            </Stack>
           </Stack>
         </Paper>
       )}
