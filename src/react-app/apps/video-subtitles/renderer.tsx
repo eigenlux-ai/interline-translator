@@ -1,5 +1,5 @@
 import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActionIcon, Button } from '@mantine/core';
+import { ActionIcon, Button, CloseButton, Group, NativeSelect, Paper, Stack, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
@@ -66,7 +66,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
     <div className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
       <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>
         <Button
-          variant="default"
+          variant={view.enabled ? 'filled' : 'default'}
           size="compact-sm"
           type="button"
           aria-label={m.video_subtitles_toggle()}
@@ -77,7 +77,6 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
           CC
         </Button>
         <ActionIcon
-          className={classes.settingsButton}
           variant="default"
           size={34}
           ref={settingsButton}
@@ -98,14 +97,17 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
             strokeWidth="1.6"
           >
             <path d="M3 5h14M3 10h14M3 15h14" />
-            <circle cx="7" cy="5" r="2" fill="#272b32" />
-            <circle cx="13" cy="10" r="2" fill="#272b32" />
-            <circle cx="8" cy="15" r="2" fill="#272b32" />
+            <circle cx="7" cy="5" r="2" fill="var(--mantine-color-body)" />
+            <circle cx="13" cy="10" r="2" fill="var(--mantine-color-body)" />
+            <circle cx="8" cy="15" r="2" fill="var(--mantine-color-body)" />
           </svg>
         </ActionIcon>
       </div>
       {open && (
-        <div
+        <Paper
+          withBorder
+          shadow="md"
+          p="md"
           ref={panel}
           id="subtitle-settings"
           className={classes.panel}
@@ -119,30 +121,32 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
             }
           }}
         >
-          <div className={classes.heading}>
-            <strong>{m.video_subtitles_title()}</strong>
-            <button type="button" aria-label={m.common_close()} onClick={close}>
-              ×
-            </button>
-          </div>
-          <label>
-            {m.display_label()}
-            <select
+          <Stack gap="sm">
+            <Group justify="space-between" wrap="nowrap">
+              <Text fw={600} size="sm">
+                {m.video_subtitles_title()}
+              </Text>
+              <CloseButton size="sm" aria-label={m.common_close()} title={m.common_close()} onClick={close} />
+            </Group>
+            <NativeSelect
               ref={firstControl}
+              label={m.display_label()}
               value={appearance.displayMode}
+              data={[
+                { value: 'bilingual', label: m.display_bilingual() },
+                { value: 'translation', label: m.display_translation() },
+                { value: 'original', label: m.display_original() },
+              ]}
               onChange={(event) =>
                 save({ appearance: { displayMode: event.target.value as typeof appearance.displayMode } })
               }
-            >
-              <option value="bilingual">{m.display_bilingual()}</option>
-              <option value="translation">{m.display_translation()}</option>
-              <option value="original">{m.display_original()}</option>
-            </select>
-          </label>
-          <label>
-            {m.settings_target_label()}
-            <select
+            />
+            <NativeSelect
+              label={m.settings_target_label()}
+              description={m.video_subtitles_effective({ value: effectiveLanguage })}
+              inputWrapperOrder={['label', 'input', 'description', 'error']}
               value={targetSelection.mode === 'inherit' ? '' : targetSelection.language}
+              data={[{ value: '', label: m.video_subtitles_inherit() }, ...LANGUAGES]}
               onChange={(event) =>
                 save({
                   translation: {
@@ -150,20 +154,21 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                   },
                 })
               }
-            >
-              <option value="">{m.video_subtitles_inherit()}</option>
-              {LANGUAGES.map((language) => (
-                <option key={language.value} value={language.value}>
-                  {language.label}
-                </option>
-              ))}
-            </select>
-            <span className={classes.subtle}>{m.video_subtitles_effective({ value: effectiveLanguage })}</span>
-          </label>
-          <label>
-            {m.settings_default_provider()}
-            <select
+            />
+            <NativeSelect
+              label={m.settings_default_provider()}
+              description={m.video_subtitles_effective({
+                value: effectiveProvider?.label ?? m.video_subtitles_unavailable(),
+              })}
+              inputWrapperOrder={['label', 'input', 'description', 'error']}
               value={providerSelection.mode === 'inherit' ? '' : providerSelection.providerId}
+              data={[
+                { value: '', label: m.video_subtitles_inherit() },
+                ...view.settings.providers.map((provider) => ({ value: provider.id, label: provider.label })),
+                ...(providerMissing && providerSelection.mode === 'fixed'
+                  ? [{ value: providerSelection.providerId, label: m.video_subtitles_unavailable() }]
+                  : []),
+              ]}
               onChange={(event) =>
                 save({
                   translation: {
@@ -173,43 +178,32 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                   },
                 })
               }
-            >
-              <option value="">{m.video_subtitles_inherit()}</option>
-              {view.settings.providers.map((provider) => (
-                <option key={provider.id} value={provider.id}>
-                  {provider.label}
-                </option>
-              ))}
-              {providerMissing && providerSelection.mode === 'fixed' && (
-                <option value={providerSelection.providerId}>{m.video_subtitles_unavailable()}</option>
-              )}
-            </select>
-            <span className={classes.subtle}>
-              {m.video_subtitles_effective({ value: effectiveProvider?.label ?? m.video_subtitles_unavailable() })}
-            </span>
-          </label>
-          <div className={classes.subtle}>
-            {m.video_subtitles_current_language()}: {view.sourceLanguage || '—'}
-          </div>
-          <div className={classes.status} role="status">
-            {statusText(view.status)}
-          </div>
-          {error && (
-            <div role="alert" className={classes.error}>
-              {m.video_subtitles_operation_failed()}
-            </div>
-          )}
-          <div className={classes.actions}>
-            {retryable && (
-              <button type="button" onClick={actions.retry}>
-                {m.common_retry()}
-              </button>
+            />
+            <Text size="xs" c="dimmed">
+              {m.video_subtitles_current_language()}: {view.sourceLanguage || '—'}
+            </Text>
+            {statusText(view.status) && (
+              <Text size="xs" c="dimmed" role="status">
+                {statusText(view.status)}
+              </Text>
             )}
-            <button type="button" onClick={actions.more}>
-              {m.video_subtitles_more()}
-            </button>
-          </div>
-        </div>
+            {error && (
+              <Text size="xs" c="red" role="alert">
+                {m.video_subtitles_operation_failed()}
+              </Text>
+            )}
+            <Group grow wrap="wrap">
+              {retryable && (
+                <Button variant="default" onClick={actions.retry}>
+                  {m.common_retry()}
+                </Button>
+              )}
+              <Button variant="default" onClick={actions.more} styles={{ label: { whiteSpace: 'normal' } }}>
+                {m.video_subtitles_more()}
+              </Button>
+            </Group>
+          </Stack>
+        </Paper>
       )}
       {view.enabled && (
         <div
