@@ -104,3 +104,12 @@
     padding: 10px;
   }
 }
+
+/* Embed native CC/settings occupy the top-right row, including in fullscreen. */
+:host([data-video-subtitles-embed]) .tools {
+  top: 56px;
+}
+:host([data-video-subtitles-embed]) .panel {
+  top: 98px;
+  max-height: calc(100% - 106px);
+}

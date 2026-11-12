@@ -3,9 +3,11 @@ import { PROJECT_PREFIX } from '@/constants';
 import {
   BRIDGE_RESPONSE,
   BRIDGE_VERSION,
+  isYoutubeEmbed,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
   validBridgeRequest,
+  validVideoId,
   youtubeVideoId,
   type YoutubeBridgeResponse,
   type YoutubeSnapshot,
@@ -102,6 +104,16 @@ export function installYoutubeBridge(win: Window): () => void {
   // Entrypoint reinjection does not stack wrappers or duplicate listeners.
   const existing = owners.get(win);
   if (existing) return existing;
+  // IFrame API/playlist transitions can reuse both the URL and media element.
+  const pageVideoId = (): string | null => {
+    if (!isYoutubeEmbed(win.location.href)) return youtubeVideoId(win.location.href);
+    try {
+      const id = win.document.querySelector<Player>('#movie_player')?.getPlayerResponse?.().videoDetails?.videoId;
+      return validVideoId(id) ? id : null;
+    } catch {
+      return null;
+    }
+  };
   let active = false;
   let disposed = false;
   let suspended = false;
@@ -152,7 +164,7 @@ export function installYoutubeBridge(win: Window): () => void {
   const captionInteraction = () => {
     if (!receivedRead || ownCaptionToggle) return;
     captionInteractionVersion += 1;
-    userCaptionVideo = youtubeVideoId(win.location.href) ?? '';
+    userCaptionVideo = pageVideoId() ?? '';
     changedCaptions = null;
     expectedCaptionState = null;
   };
@@ -275,7 +287,7 @@ export function installYoutubeBridge(win: Window): () => void {
   };
   const observedUrl = (rawUrl: string): URL | null => {
     if (!active || disposed || suspended || isAd()) return null;
-    const id = youtubeVideoId(win.location.href);
+    const id = pageVideoId();
     const url = id && safeTimedTextUrl(rawUrl, id);
     if (!url) return null;
     const translated = url.searchParams.has('tlang');
@@ -306,7 +318,7 @@ export function installYoutubeBridge(win: Window): () => void {
     )
       return false;
     if (new TextEncoder().encode(text).byteLength > MAX_SUBTITLE_BYTES) return false;
-    const id = youtubeVideoId(win.location.href);
+    const id = pageVideoId();
     const url = id && id === currentVideo && safeTimedTextUrl(rawUrl, id);
     if (!url || url.searchParams.has('tlang')) return false;
     const key = trackKey(url);
@@ -454,7 +466,7 @@ export function installYoutubeBridge(win: Window): () => void {
       const selected = player.getOption?.('captions', 'track');
       if (
         interactionVersion === captionInteractionVersion &&
-        youtubeVideoId(win.location.href) === videoId &&
+        pageVideoId() === videoId &&
         player.isSubtitlesOn?.() &&
         trackId(selected ?? {}) === track
       )
@@ -474,7 +486,23 @@ export function installYoutubeBridge(win: Window): () => void {
     )
       return;
     const data = event.data;
-    if (data.videoId && data.videoId !== youtubeVideoId(win.location.href)) return;
+    if (data.action === 'identify') {
+      if (!isYoutubeEmbed(win.location.href)) return;
+      const videoId = pageVideoId();
+      clearVideo(videoId ?? '');
+      if (videoId)
+        win.postMessage(
+          {
+            type: BRIDGE_RESPONSE,
+            version: BRIDGE_VERSION,
+            requestId: data.requestId,
+            snapshot: { videoId, title: '', ad: isAd(), track: null, hasTracks: false },
+          },
+          win.location.origin
+        );
+      return;
+    }
+    if (data.videoId && data.videoId !== pageVideoId()) return;
     const channel = data.targetLanguage ? targetChannel : sourceChannel;
     if (data.action === 'stop' && data.targetLanguage) {
       cancelChannel(targetChannel);
@@ -493,7 +521,7 @@ export function installYoutubeBridge(win: Window): () => void {
     }
     if (Date.now() - channel.lastRequestAt < 200) return;
     channel.lastRequestAt = Date.now();
-    const videoId = youtubeVideoId(win.location.href);
+    const videoId = pageVideoId();
     if (!videoId) return;
     clearVideo(videoId);
     receivedRead = true;
@@ -532,7 +560,17 @@ export function installYoutubeBridge(win: Window): () => void {
     const audioChanged = audioId !== selectedAudioId;
     if (!data.targetLanguage) selectedAudioId = audioId;
     const tracks = Array.isArray(rawTracks)
-      ? rawTracks.filter((item) => item && typeof item === 'object').slice(0, 100)
+      ? rawTracks
+          .filter((item) => item && typeof item === 'object')
+          .slice(0, 100)
+          .map((item) => ({
+            ...item,
+            // Privacy-enhanced embeds expose same-origin relative timedtext URLs.
+            baseUrl:
+              typeof item.baseUrl === 'string'
+                ? safeTimedTextUrl(item.baseUrl, videoId, win.location.href)?.href
+                : undefined,
+          }))
       : [];
     const nativeAudioCaptions = Array.isArray(currentAudio?.captionTracks) ? currentAudio.captionTracks : [];
     const nativeDefault = nativeAudioCaptions.find((item) => item?.isDefault) ?? nativeAudioCaptions[0];
@@ -618,7 +656,7 @@ export function installYoutubeBridge(win: Window): () => void {
         !active ||
         suspended ||
         requestEpoch !== epoch ||
-        youtubeVideoId(win.location.href) !== videoId ||
+        pageVideoId() !== videoId ||
         channel.selectedTrackId !== nextTrackId
       )
         return;
@@ -653,7 +691,7 @@ export function installYoutubeBridge(win: Window): () => void {
     // Keep the native signature, token and client context together; copying only
     // the token onto the player response URL can create an invalid combination.
     const nativeRawUrl = nativeAudioCaptions.find((item) => trackId(item) === trackId(track))?.url;
-    const nativeUrl = nativeRawUrl && safeTimedTextUrl(nativeRawUrl, videoId);
+    const nativeUrl = nativeRawUrl && safeTimedTextUrl(nativeRawUrl, videoId, win.location.href);
     if (tokenUrl) url = tokenUrl;
     else if (nativeUrl && trackKey(nativeUrl) === key) url = nativeUrl;
     // Native track URLs omit the web player's transport parameters. Preserve any
@@ -725,8 +763,7 @@ export function installYoutubeBridge(win: Window): () => void {
         }
         const text = await boundedSubtitleText(res, controller.signal);
         if (!text) throw new Error('empty');
-        if (controller.signal.aborted || requestEpoch !== epoch || youtubeVideoId(win.location.href) !== videoId)
-          return;
+        if (controller.signal.aborted || requestEpoch !== epoch || pageVideoId() !== videoId) return;
         if (!capture(url.href, text, requestEpoch)) throw new Error('invalid-subtitles');
         if (Date.now() >= endpointRetryAt) {
           endpointRetryAt = 0;
@@ -785,7 +822,7 @@ export function installYoutubeBridge(win: Window): () => void {
   };
   const onNavigateFinish = () => {
     if (disposed || suspended) return;
-    clearVideo(youtubeVideoId(win.location.href) ?? '');
+    clearVideo(pageVideoId() ?? '');
     install();
   };
   owners.set(win, dispose);

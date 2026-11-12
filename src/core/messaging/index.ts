@@ -31,6 +31,8 @@ interface ProtocolMap {
   openOptionsPage(): void;
   /** Content → background: open the independent subtitle preferences. */
   openVideoSubtitleSettings(): void;
+  /** Browser-validated frame and embedding-site policy scope. */
+  getSubtitleContext(): { hosts: string[] } | null;
 }
 
 export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();

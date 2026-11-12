@@ -1,12 +1,18 @@
 /** Background-only, sender-validated subtitle transport. Never exposed to the MAIN world. */
+import { onMessage } from '@/core/messaging';
 import { isSiteEnabled } from '@/services/config/site-control';
 import { getConfig, watchConfig } from '@/services/config/storage';
 import { resolveSubtitleProvider } from '@/services/config/video-subtitles';
 import { clearSubtitleCache } from './cache';
 import { SubtitleRequestManager } from './manager';
 import { isSubtitleWindow, SUBTITLE_PORT_NAME, type SubtitleClientMessage } from './protocol';
+import { subtitleSenderContext } from './sender';
 
 export function registerSubtitleServer(): void {
+  onMessage('getSubtitleContext', ({ sender }) => {
+    const context = subtitleSenderContext(sender, browser.runtime.id);
+    return context ? { hosts: context.hosts } : null;
+  });
   const manager = new SubtitleRequestManager({
     async prepare(_window, owner) {
       const config = await getConfig();
@@ -14,7 +20,9 @@ export function registerSubtitleServer(): void {
       if (
         !config.videoSubtitles.enabled ||
         !config.videoSubtitles.platforms.youtube.enabled ||
-        !isSiteEnabled(config.siteControl, owner.split(':').at(-1) ?? 'www.youtube.com') ||
+        !(JSON.parse(owner.slice(0, owner.lastIndexOf(':'))).hosts as string[]).every((host) =>
+          isSiteEnabled(config.siteControl, host)
+        ) ||
         !provider
       )
         throw new Error('Subtitle provider unavailable');
@@ -25,26 +33,13 @@ export function registerSubtitleServer(): void {
   watchConfig(() => manager.refresh());
   browser.runtime.onConnect.addListener((port) => {
     if (port.name !== SUBTITLE_PORT_NAME) return;
-    const sender = port.sender;
-    let url: URL;
-    try {
-      url = new URL(sender?.url ?? '');
-    } catch {
-      port.disconnect();
-      return;
-    }
-    if (
-      sender?.id !== browser.runtime.id ||
-      !sender.tab?.id ||
-      sender.frameId !== 0 ||
-      url.protocol !== 'https:' ||
-      !['www.youtube.com', 'youtube.com'].includes(url.hostname)
-    ) {
+    const context = subtitleSenderContext(port.sender, browser.runtime.id);
+    if (!context) {
       port.disconnect();
       return;
     }
     const id = crypto.randomUUID();
-    const owner = `${sender.tab.id}:${sender.documentId ?? sender.url}:${url.hostname}`;
+    const owner = context.owner;
     let lastWindow = 0;
     let pendingWindow: import('./protocol').SubtitleWindow | undefined;
     let updateTimer: ReturnType<typeof setTimeout> | undefined;

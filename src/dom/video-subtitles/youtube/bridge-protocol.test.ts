@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BRIDGE_REQUEST,
   BRIDGE_RESPONSE,
+  isYoutubeEmbed,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
   validBridgeRequest,
@@ -37,6 +38,19 @@ describe('YouTube bridge protocol boundary', () => {
       'https://www.youtube.com/api/timedtext/extra?v=video_123',
     ])
       expect(safeTimedTextUrl(url, 'video_123')).toBeNull();
+  });
+
+  it('recognizes supported HTTPS embed paths and bounds privacy-enhanced timedtext', () => {
+    for (const host of ['www.youtube.com', 'youtube.com', 'www.youtube-nocookie.com'])
+      expect(isYoutubeEmbed(`https://${host}/embed/video_123?enablejsapi=1`)).toBe(true);
+    for (const url of [
+      'https://youtube.com.evil.test/embed/video_123',
+      'https://youtube-nocookie.com/watch?v=video_123',
+      'https://youtube.com/embed/video_123/extra',
+      'http://youtube.com/embed/video_123',
+    ])
+      expect(isYoutubeEmbed(url)).toBe(false);
+    expect(safeTimedTextUrl('https://youtube-nocookie.com/api/timedtext?v=video_123', 'video_123')).toBeInstanceOf(URL);
   });
 
   it('validates actions, identity, track metadata and response budgets at runtime', () => {
