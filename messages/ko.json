@@ -311,7 +311,7 @@
 	"video_subtitles_clear": "자막 번역 캐시 삭제",
 	"video_subtitles_clear_desc": "자막 번역만 삭제합니다. 웹페이지 번역은 유지됩니다.",
 	"video_subtitles_saved": "완료",
-	"video_subtitles_operation_failed": "저장하지 못했습니다. 다시 시도하세요.",
+	"video_subtitles_operation_failed": "작업에 실패했습니다. 다시 시도하세요.",
 	"video_subtitles_toggle": "이번 재생에서 자막 번역",
 	"video_subtitles_more": "자막 추가 설정",
 	"video_subtitles_fetching": "자막 가져오는 중…",

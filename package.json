@@ -2,7 +2,7 @@
   "name": "interline",
   "description": "Interline · 行间 — an open-source in-place bilingual reading extension for Chrome",
   "private": true,
-  "version": "1.0.10",
+  "version": "1.0.11",
   "license": "MIT",
   "type": "module",
   "scripts": {

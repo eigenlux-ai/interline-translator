@@ -308,10 +308,10 @@
 	"video_subtitles_chars": "Máximo de caracteres por lote",
 	"video_subtitles_reset_requests": "Repor limites de pedidos",
 	"video_subtitles_reset": "Repor definições de legendas",
-	"video_subtitles_clear": "Limpar traduções de legendas",
+	"video_subtitles_clear": "Limpar cache de traduções de legendas",
 	"video_subtitles_clear_desc": "Apenas as traduções de legendas são eliminadas. As traduções web são mantidas.",
 	"video_subtitles_saved": "Concluído",
-	"video_subtitles_operation_failed": "Não foi possível guardar. Tente novamente.",
+	"video_subtitles_operation_failed": "A operação falhou. Tente novamente.",
 	"video_subtitles_toggle": "Traduzir legendas nesta reprodução",
 	"video_subtitles_more": "Mais definições de legendas",
 	"video_subtitles_fetching": "A obter legendas…",
@@ -322,6 +322,6 @@
 	"video_subtitles_loading": "A traduzir legendas…",
 	"video_subtitles_current_language": "Idioma atual das legendas",
 	"video_subtitles_order": "Ordem dos idiomas",
-	"video_subtitles_prefer_human": "Preferir legendas humanas no idioma de destino",
+	"video_subtitles_prefer_human": "Preferir legendas criadas manualmente no idioma de destino",
 	"video_subtitles_export_diagnostics": "Exportar diagnóstico de legendas"
 }

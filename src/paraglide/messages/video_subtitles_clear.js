@@ -14,7 +14,7 @@ const zh_tw2_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearIn
 };
 
 const en_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Clear subtitle translations`)
+	return /** @type {LocalizedString} */ (`Clear subtitle translation cache`)
 };
 
 const ja_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
@@ -26,37 +26,37 @@ const ko_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs
 };
 
 const fr_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Effacer les traductions des sous-titres`)
+	return /** @type {LocalizedString} */ (`Vider le cache des traductions de sous-titres`)
 };
 
 const de_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Untertitelübersetzungen löschen`)
+	return /** @type {LocalizedString} */ (`Cache für Untertitelübersetzungen löschen`)
 };
 
 const es_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Borrar traducciones de subtítulos`)
+	return /** @type {LocalizedString} */ (`Borrar caché de traducciones de subtítulos`)
 };
 
 const ru_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Очистить переводы субтитров`)
+	return /** @type {LocalizedString} */ (`Очистить кеш переводов субтитров`)
 };
 
 const pt_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Limpar traduções de legendas`)
+	return /** @type {LocalizedString} */ (`Limpar cache de traduções de legendas`)
 };
 
 const it_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Cancella traduzioni sottotitoli`)
+	return /** @type {LocalizedString} */ (`Svuota la cache delle traduzioni dei sottotitoli`)
 };
 
 const ar_video_subtitles_clear = /** @type {(inputs: Video_Subtitles_ClearInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`مسح ترجمات الفيديو المخزنة`)
+	return /** @type {LocalizedString} */ (`مسح ذاكرة التخزين المؤقت لترجمات الفيديو`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Clear subtitle translations" |
+* | "Clear subtitle translation cache" |
 *
 * @param {Video_Subtitles_ClearInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

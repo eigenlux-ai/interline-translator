@@ -10,6 +10,7 @@ import {
   Paper,
   SegmentedControl,
   Select,
+  SimpleGrid,
   Stack,
   Switch,
   Text,
@@ -64,10 +65,12 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
   };
   const previewLocale = resolveUiLang('auto', effectiveTarget);
   const source = (
-    <div key="source">{m.video_subtitles_preview_original({}, { locale: previewLocale === 'en' ? 'zh' : 'en' })}</div>
+    <div key="source" dir="auto">
+      {m.video_subtitles_preview_original({}, { locale: previewLocale === 'en' ? 'zh' : 'en' })}
+    </div>
   );
   const translation = (
-    <div key="translation" style={{ fontWeight: 600 }}>
+    <div key="translation" dir="auto" style={{ fontWeight: 600 }}>
       {m.video_subtitles_preview_translation({}, { locale: previewLocale })}
     </div>
   );
@@ -96,7 +99,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
             </Text>
           </Stack>
         </Paper>
-        <Group grow align="flex-start">
+        <SimpleGrid type="container" cols={{ base: 1, '600px': 2 }}>
           <Select
             label={m.settings_target_label()}
             description={m.video_subtitles_effective({ value: languageName })}
@@ -124,7 +127,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
               })
             }
           />
-        </Group>
+        </SimpleGrid>
         <Switch
           label={m.video_subtitles_prefer_human()}
           checked={preferences.translation.preferHumanCaptions}
@@ -156,7 +159,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
           value={appearance.translationPosition}
           onChange={(v) => v && patch({ appearance: { translationPosition: v as 'above' | 'below' } })}
         />
-        <Group grow align="flex-start">
+        <SimpleGrid type="container" cols={{ base: 1, '720px': 3 }}>
           <NumberInput
             label={m.video_subtitles_font()}
             min={12}
@@ -184,7 +187,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
             value={appearance.backgroundOpacity}
             onChange={(v) => typeof v === 'number' && patch({ appearance: { backgroundOpacity: v } })}
           />
-        </Group>
+        </SimpleGrid>
         <Box
           aria-label={m.video_subtitles_preview()}
           role="img"

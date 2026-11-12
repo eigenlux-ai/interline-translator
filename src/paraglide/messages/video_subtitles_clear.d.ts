@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Clear subtitle translations" |
+* | "Clear subtitle translation cache" |
 *
 * @param {Video_Subtitles_ClearInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.11 — 2026-11-12
+
+- Add independent YouTube subtitle translation with player controls, bilingual display, configurable appearance, target language and engine, and optional automatic activation.
+- Support watch pages, Shorts and embedded players, with caption-track recovery across SPA navigation, seeking and player replacement. Prefer existing human-created target-language captions when requested.
+- Add bounded live subtitle updates and DVR recovery; preserve final sentence growth while earlier translations are pending.
+- Bound retained subtitle track caches, add retry jitter and cooldown handling, reset fetch failure budgets after successful recovery, and provide local subtitle diagnostics and a separate translation-cache clear action.
+- Render player controls through shared Mantine satellite surfaces, bundle Shadow DOM styles without cross-origin extension CSS requests, and refresh the WXT build dependencies.
+- Refine subtitle settings across all 12 interface languages, keep General first in navigation, adapt form columns to available space, and correct preview text direction in RTL interfaces.
+- Add an experimental Safari system-fullscreen subtitle output for local testing; the Chrome ZIP does not include a Safari app.
+
+No new browser permissions. Existing settings and cached translations remain compatible. Automatic subtitle translation is off by default; captions must be available from YouTube.
+
 ## 1.0.10 — 2026-11-11
 
 - Refine the settings workspace with persistent navigation, grouped controls, and side-by-side translation previews.

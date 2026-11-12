@@ -26,7 +26,7 @@ const ko_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs
 };
 
 const fr_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduction en dessous`)
+	return /** @type {LocalizedString} */ (`Traduction en dessous de l’original`)
 };
 
 const de_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs) => LocalizedString} */ () => {
@@ -46,7 +46,7 @@ const pt_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs
 };
 
 const it_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Traduzione sotto originale`)
+	return /** @type {LocalizedString} */ (`Traduzione sotto l’originale`)
 };
 
 const ar_video_subtitles_below = /** @type {(inputs: Video_Subtitles_BelowInputs) => LocalizedString} */ () => {

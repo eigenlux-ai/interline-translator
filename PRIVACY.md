@@ -20,6 +20,7 @@ Translation still involves processing page content. With an online engine, the t
 | --- | --- |
 | Page translation | Text extracted from the page and the source/target languages. Translation can start through your action or a matching automatic site rule. |
 | Selection translation and vocabulary notes | Selected text; AI features can also use the translation, page title and neighboring text to explain context. |
+| YouTube subtitles | Available caption text and source/target languages are sent to the selected translation provider when translation is enabled. Existing human target captions can be used without machine translation. Audio is not transcribed. Automatic activation is off by default. |
 | Input translation | The draft in the supported input/editor when its translation shortcut is triggered, plus the chosen language. |
 | AI styles and glossaries | Applicable prompt instructions, matching glossary entries and relevant context are included in AI requests. The page domain is used locally to select applicable rules. |
 | Whole-page context (optional, off by default) | Up to the first 8,000 characters of page text, potentially including text not yet scrolled into view, is sent to the AI provider to produce context for subsequent translations. |
@@ -34,8 +35,9 @@ Interline uses this data to provide the translation features described above. Th
 - **Settings and credentials:** provider settings, API keys, language preferences, prompts, glossaries and site rules are stored in the extension's local browser storage (`chrome.storage.local`). Visual preferences are stored locally as well. Interline does not use browser sync storage for these settings.
 - **Authentication:** keys and configured authentication headers are sent to the selected service when needed to authenticate requests. The authentication format depends on the provider. Keys are not confined to local storage during an authenticated service call.
 - **Translation cache:** translated results and cache metadata are stored locally in IndexedDB. Cache keys are hashes of request inputs; API keys are excluded from the key calculation. The background maintenance task is scheduled daily to delete entries older than 30 days and trim the cache to 150,000 entries. Cleanup occurs when that task runs, not necessarily at the exact expiration time.
+- **Subtitle caches:** raw caption tracks and live timelines are retained in bounded page memory. Subtitle translations are cached locally; the subtitle settings page can clear them separately from page translations.
 - **Subtitle diagnostics:** a bounded in-memory buffer records event categories, anonymous context numbers, timings and retry/cache counters. The background keeps at most 512 recent events; its history is lost when the background process restarts. The subtitle settings page can export these records locally as JSON. They contain no subtitle text, page titles, URLs, cookies or API keys and are not uploaded.
-- **Exports:** exporting settings creates a JSON file **containing API keys**, prompts, glossaries and site rules. Interline does not upload this file. Anyone you share it with may be able to read those values. Importing it stores the configuration on the receiving browser.
+- **Exports:** exporting settings creates a JSON file containing prompts, glossaries and site rules. API keys are excluded by default; a separate confirmed export includes them in plain text. Interline does not upload this file. Anyone you share it with may be able to read those values. Importing it stores the configuration on the receiving browser.
 
 ### Network and browser features
 
@@ -84,6 +86,7 @@ Interline（行间）是一款开源的浏览器双语阅读与翻译扩展。�
 | --- | --- |
 | 整页翻译 | 从页面提取的文本、源语言和目标语言。可由主动操作或匹配的自动翻译规则触发。 |
 | 划词翻译与词汇释义 | 选中文本；AI 功能还可使用译文、页面标题和相邻文本来理解上下文。 |
+| YouTube 字幕 | 开启翻译后，将可用字幕文本及源语言、目标语言发送给所选翻译服务商。可直接使用目标语言的人工字幕，不必调用机器翻译。不转写音频，自动开启默认关闭。 |
 | 输入框翻译 | 在受支持的输入框或编辑器中触发翻译快捷操作时的草稿，以及目标语言。 |
 | AI 风格与术语表 | 生效的提示词指令、匹配的术语条目与相关上下文会进入 AI 请求。页面域名在本地用于选择规则。 |
 | 通读全文（可选，默认关闭） | 将页面前 8,000 个字符发送给 AI 服务商生成后续翻译所用的上下文，包括尚未滚动到的文本。 |
@@ -98,7 +101,9 @@ Interline（行间）是一款开源的浏览器双语阅读与翻译扩展。�
 - **设置与凭据：** 服务商配置、API Key、语言偏好、提示词、术语表和站点规则保存在扩展的本地浏览器存储（`chrome.storage.local`），外观偏好也保存在本地。行间不使用浏览器同步存储来保存这些设置。
 - **调用认证：** 发起需要认证的请求时，会将所需密钥和配置的认证请求头发送至所选服务。认证格式因服务商而异，不能理解为密钥在调用时也绝不离开设备。
 - **译文缓存：** 译文结果与缓存元数据保存在本地 IndexedDB。缓存索引由请求输入计算哈希，不将 API Key 纳入计算。后台维护任务按每天一次安排，清理超过 30 天的条目，并将条目数限制到 150,000；实际清理发生在任务执行时，并非到期瞬间。
-- **导出文件：** 配置导出会生成**包含 API Key**、提示词、术语表和站点规则的 JSON 文件。行间不会上传该文件；收到文件的人可能读到这些内容。导入操作会把配置保存到接收方浏览器。
+- **导出文件：** 配置导出会生成包含提示词、术语表和站点规则的 JSON 文件。默认不包含 API Key；单独选择并确认包含密钥的导出后，文件才会包含明文密钥。行间不会上传该文件；收到文件的人可能读到这些内容。导入操作会把配置保存到接收方浏览器。
+
+原始字幕轨及直播时间轴保存在有容量限制的页面内存中。字幕译文在本地缓存，可在字幕设置页单独清除，不影响网页译文。
 
 字幕诊断仅在内存中保存事件类别、匿名上下文编号、耗时及重试／缓存计数。后台最多保留最近 512 条，后台进程重启后历史清空。可在字幕设置页导出本地 JSON 文件；其中不含字幕正文、页面标题、URL、Cookie 或 API key，也不会自动上传。
 

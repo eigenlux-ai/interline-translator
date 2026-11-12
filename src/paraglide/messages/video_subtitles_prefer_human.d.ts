@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Prefer human subtitles in the target language" |
+* | "Prefer manually created subtitles in the target language" |
 *
 * @param {Video_Subtitles_Prefer_HumanInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

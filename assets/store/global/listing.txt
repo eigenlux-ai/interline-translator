@@ -1,5 +1,8 @@
 Interline is a fully open-source extension for bilingual reading and translation. Keep the original and its translation on the same page, whether you are reading an article, exploring documentation or joining a discussion.
 
+YOUTUBE SUBTITLES
+Click Interline’s CC button to translate available YouTube captions on watch pages, Shorts, embedded players and live/DVR streams. Choose bilingual display, a subtitle language and an engine separately from page translation. Automatic activation is off by default. Existing human target-language captions can be preferred; no audio transcription is provided.
+
 READ TWO LANGUAGES TOGETHER
 See translations alongside the original, paragraph by paragraph. Switch between bilingual, translation-only and original-only views. Choose from 10 display styles, including highlights, quotation bars and cards. Start with the floating control, the context menu or Alt+T.
 
@@ -28,5 +31,5 @@ Interline requires no account, includes no behavioral tracking or telemetry, and
 
 Browser-restricted pages such as Chrome's internal pages cannot be translated in place. Compatibility may vary across sites and editors. Please report problems through Issues.
 
-AI requests may include relevant page titles, neighboring text and matching glossary entries. Automatic site rules can start translation without another click. Configuration exports contain API keys; keep them private.
+AI requests may include relevant page titles, neighboring text and matching glossary entries. Automatic site rules can start translation without another click. Configuration exports exclude API keys by default; including keys requires separate confirmation. Keep backups private.
 Privacy details: https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md

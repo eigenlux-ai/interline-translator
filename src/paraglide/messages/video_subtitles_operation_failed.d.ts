@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The change could not be saved. Please retry." |
+* | "The operation failed. Please try again." |
 *
 * @param {Video_Subtitles_Operation_FailedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

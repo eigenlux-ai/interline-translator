@@ -21,8 +21,8 @@ type SectionId = 'video-subtitles' | 'general' | 'styles' | 'glossary' | 'provid
 // label/hint are message FUNCTIONS (called in render, so they follow the
 // interface language) — a plain string here would freeze the compile-time locale.
 const NAV: Array<{ id: SectionId; label: () => string; hint: () => string; Icon: typeof GearIcon }> = [
-  { id: 'video-subtitles', label: m.video_subtitles_title, hint: m.video_subtitles_hint, Icon: GlobeIcon },
   { id: 'general', label: m.options_nav_general, hint: m.options_nav_general_hint, Icon: GearIcon },
+  { id: 'video-subtitles', label: m.video_subtitles_title, hint: m.video_subtitles_hint, Icon: GlobeIcon },
   { id: 'styles', label: m.options_nav_styles, hint: m.options_nav_styles_hint, Icon: BrushIcon },
   { id: 'glossary', label: m.options_nav_glossary, hint: m.options_nav_glossary_hint, Icon: BookIcon },
   { id: 'providers', label: m.options_nav_providers, hint: m.options_nav_providers_hint, Icon: EngineIcon },

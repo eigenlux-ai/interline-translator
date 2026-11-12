@@ -308,10 +308,10 @@
 	"video_subtitles_chars": "Máximo de caracteres por lote",
 	"video_subtitles_reset_requests": "Restablecer límites",
 	"video_subtitles_reset": "Restaurar ajustes de subtítulos",
-	"video_subtitles_clear": "Borrar traducciones de subtítulos",
+	"video_subtitles_clear": "Borrar caché de traducciones de subtítulos",
 	"video_subtitles_clear_desc": "Solo se borran las traducciones de subtítulos. Se conservan las traducciones web.",
 	"video_subtitles_saved": "Hecho",
-	"video_subtitles_operation_failed": "No se pudo guardar. Inténtalo de nuevo.",
+	"video_subtitles_operation_failed": "La operación ha fallado. Inténtalo de nuevo.",
 	"video_subtitles_toggle": "Traducir subtítulos en esta reproducción",
 	"video_subtitles_more": "Más ajustes de subtítulos",
 	"video_subtitles_fetching": "Obteniendo subtítulos…",
@@ -322,6 +322,6 @@
 	"video_subtitles_loading": "Traduciendo subtítulos…",
 	"video_subtitles_current_language": "Idioma actual de subtítulos",
 	"video_subtitles_order": "Orden de idiomas",
-	"video_subtitles_prefer_human": "Preferir subtítulos humanos en el idioma de destino",
+	"video_subtitles_prefer_human": "Preferir subtítulos creados manualmente en el idioma de destino",
 	"video_subtitles_export_diagnostics": "Exportar diagnóstico de subtítulos"
 }

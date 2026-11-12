@@ -311,7 +311,7 @@
 	"video_subtitles_clear": "清除字幕译文缓存",
 	"video_subtitles_clear_desc": "仅清除字幕译文，保留网页翻译缓存。",
 	"video_subtitles_saved": "已完成",
-	"video_subtitles_operation_failed": "保存失败，请重试。",
+	"video_subtitles_operation_failed": "操作失败，请重试。",
 	"video_subtitles_toggle": "本次播放翻译字幕",
 	"video_subtitles_more": "更多字幕设置",
 	"video_subtitles_fetching": "正在获取字幕…",

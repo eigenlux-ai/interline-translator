@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Video_Subtitles_Operation_FailedInputs */
 
 const zh_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`保存失败，请重试。`)
+	return /** @type {LocalizedString} */ (`操作失败，请重试。`)
 };
 
 const zh_tw2_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`儲存失敗，請重試。`)
+	return /** @type {LocalizedString} */ (`操作失敗，請重試。`)
 };
 
 const en_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The change could not be saved. Please retry.`)
+	return /** @type {LocalizedString} */ (`The operation failed. Please try again.`)
 };
 
 const ja_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`保存できませんでした。再試行してください。`)
+	return /** @type {LocalizedString} */ (`操作に失敗しました。もう一度お試しください。`)
 };
 
 const ko_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`저장하지 못했습니다. 다시 시도하세요.`)
+	return /** @type {LocalizedString} */ (`작업에 실패했습니다. 다시 시도하세요.`)
 };
 
 const fr_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Enregistrement impossible. Réessayez.`)
+	return /** @type {LocalizedString} */ (`L’opération a échoué. Réessayez.`)
 };
 
 const de_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Speichern fehlgeschlagen. Bitte erneut versuchen.`)
+	return /** @type {LocalizedString} */ (`Der Vorgang ist fehlgeschlagen. Bitte erneut versuchen.`)
 };
 
 const es_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`No se pudo guardar. Inténtalo de nuevo.`)
+	return /** @type {LocalizedString} */ (`La operación ha fallado. Inténtalo de nuevo.`)
 };
 
 const ru_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Не удалось сохранить. Повторите попытку.`)
+	return /** @type {LocalizedString} */ (`Не удалось выполнить операцию. Повторите попытку.`)
 };
 
 const pt_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Não foi possível guardar. Tente novamente.`)
+	return /** @type {LocalizedString} */ (`A operação falhou. Tente novamente.`)
 };
 
 const it_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Salvataggio non riuscito. Riprova.`)
+	return /** @type {LocalizedString} */ (`Operazione non riuscita. Riprova.`)
 };
 
 const ar_video_subtitles_operation_failed = /** @type {(inputs: Video_Subtitles_Operation_FailedInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`تعذر الحفظ. حاول مجددًا.`)
+	return /** @type {LocalizedString} */ (`فشلت العملية. حاول مجددًا.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The change could not be saved. Please retry." |
+* | "The operation failed. Please try again." |
 *
 * @param {Video_Subtitles_Operation_FailedInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

@@ -308,10 +308,10 @@
 	"video_subtitles_chars": "Maximum characters per batch",
 	"video_subtitles_reset_requests": "Reset request budgets",
 	"video_subtitles_reset": "Restore video subtitle settings",
-	"video_subtitles_clear": "Clear subtitle translations",
+	"video_subtitles_clear": "Clear subtitle translation cache",
 	"video_subtitles_clear_desc": "Only subtitle translations are cleared. Web-page translations stay available.",
 	"video_subtitles_saved": "Done",
-	"video_subtitles_operation_failed": "The change could not be saved. Please retry.",
+	"video_subtitles_operation_failed": "The operation failed. Please try again.",
 	"video_subtitles_toggle": "Translate subtitles for this playback",
 	"video_subtitles_more": "More subtitle settings",
 	"video_subtitles_fetching": "Fetching subtitles…",
@@ -322,6 +322,6 @@
 	"video_subtitles_loading": "Translating subtitles…",
 	"video_subtitles_current_language": "Current subtitle language",
 	"video_subtitles_order": "Language order",
-	"video_subtitles_prefer_human": "Prefer human subtitles in the target language",
+	"video_subtitles_prefer_human": "Prefer manually created subtitles in the target language",
 	"video_subtitles_export_diagnostics": "Export subtitle diagnostics"
 }

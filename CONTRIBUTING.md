@@ -14,7 +14,7 @@ Search [existing issues](https://github.com/eigenlux-ai/interline-translator/iss
 - **Feature requests:** describe the task you want to accomplish and what gets in the way. You do not need to propose an implementation.
 - **Pull requests:** keep each change focused and explain the resulting behavior. For a substantial feature or architectural change, opening an issue first can help agree on scope; small fixes and documentation improvements can go straight to a PR.
 
-Do not include API keys, authorization headers, private page content or exported configuration files in public issues, logs or screenshots. Configuration exports contain credentials.
+Do not include API keys, authorization headers, private page content or exported configuration files in public issues, logs or screenshots. Default configuration exports exclude API keys, but explicitly exporting with keys includes credentials; backups can still contain sensitive configuration.
 
 ## Set up a development checkout
 

@@ -14,11 +14,11 @@ const zh_tw2_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_
 };
 
 const en_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Prefer human subtitles in the target language`)
+	return /** @type {LocalizedString} */ (`Prefer manually created subtitles in the target language`)
 };
 
 const ja_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`対象言語の手動字幕を優先`)
+	return /** @type {LocalizedString} */ (`翻訳先の言語の手動字幕を優先`)
 };
 
 const ko_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
@@ -26,7 +26,7 @@ const ko_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Pref
 };
 
 const fr_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Privilégier les sous-titres humains dans la langue cible`)
+	return /** @type {LocalizedString} */ (`Privilégier les sous-titres créés manuellement dans la langue cible`)
 };
 
 const de_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
@@ -34,19 +34,19 @@ const de_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Pref
 };
 
 const es_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preferir subtítulos humanos en el idioma de destino`)
+	return /** @type {LocalizedString} */ (`Preferir subtítulos creados manualmente en el idioma de destino`)
 };
 
 const ru_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Предпочитать ручные субтитры на целевом языке`)
+	return /** @type {LocalizedString} */ (`Предпочитать субтитры, созданные вручную на целевом языке`)
 };
 
 const pt_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preferir legendas humanas no idioma de destino`)
+	return /** @type {LocalizedString} */ (`Preferir legendas criadas manualmente no idioma de destino`)
 };
 
 const it_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Preferisci i sottotitoli umani nella lingua di destinazione`)
+	return /** @type {LocalizedString} */ (`Preferisci i sottotitoli creati manualmente nella lingua di destinazione`)
 };
 
 const ar_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Prefer_HumanInputs) => LocalizedString} */ () => {
@@ -56,7 +56,7 @@ const ar_video_subtitles_prefer_human = /** @type {(inputs: Video_Subtitles_Pref
 /**
 * | output |
 * | --- |
-* | "Prefer human subtitles in the target language" |
+* | "Prefer manually created subtitles in the target language" |
 *
 * @param {Video_Subtitles_Prefer_HumanInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

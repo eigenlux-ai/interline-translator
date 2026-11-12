@@ -311,7 +311,7 @@
 	"video_subtitles_clear": "清除字幕譯文快取",
 	"video_subtitles_clear_desc": "僅清除字幕譯文，保留網頁翻譯快取。",
 	"video_subtitles_saved": "已完成",
-	"video_subtitles_operation_failed": "儲存失敗，請重試。",
+	"video_subtitles_operation_failed": "操作失敗，請重試。",
 	"video_subtitles_toggle": "本次播放翻譯字幕",
 	"video_subtitles_more": "更多字幕設定",
 	"video_subtitles_fetching": "正在取得字幕…",

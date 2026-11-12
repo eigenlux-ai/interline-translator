@@ -308,10 +308,10 @@
 	"video_subtitles_chars": "Максимум символов в пакете",
 	"video_subtitles_reset_requests": "Сбросить лимиты запросов",
 	"video_subtitles_reset": "Сбросить настройки субтитров",
-	"video_subtitles_clear": "Очистить переводы субтитров",
+	"video_subtitles_clear": "Очистить кеш переводов субтитров",
 	"video_subtitles_clear_desc": "Удаляются только переводы субтитров. Переводы веб-страниц сохраняются.",
 	"video_subtitles_saved": "Готово",
-	"video_subtitles_operation_failed": "Не удалось сохранить. Повторите попытку.",
+	"video_subtitles_operation_failed": "Не удалось выполнить операцию. Повторите попытку.",
 	"video_subtitles_toggle": "Переводить субтитры при этом просмотре",
 	"video_subtitles_more": "Другие настройки субтитров",
 	"video_subtitles_fetching": "Загрузка субтитров…",
@@ -322,6 +322,6 @@
 	"video_subtitles_loading": "Перевод субтитров…",
 	"video_subtitles_current_language": "Текущий язык субтитров",
 	"video_subtitles_order": "Порядок языков",
-	"video_subtitles_prefer_human": "Предпочитать ручные субтитры на целевом языке",
+	"video_subtitles_prefer_human": "Предпочитать субтитры, созданные вручную на целевом языке",
 	"video_subtitles_export_diagnostics": "Экспорт диагностики субтитров"
 }

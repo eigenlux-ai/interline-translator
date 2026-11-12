@@ -54,6 +54,12 @@ The built-in Google Translate engine does not need an API key. It uses an online
 
 Chrome's restricted pages, including `chrome://` pages, do not allow in-page translation. Site layouts and editor implementations vary; compatibility with every page is not guaranteed. Firefox build commands are included for development, but the screenshots here were captured in Chromium.
 
+## YouTube subtitles
+
+Click **CC** in Interline's player controls to translate subtitles for the current playback; the adjacent settings button opens display, target-language and engine controls. **Settings → Video subtitles** also provides appearance, request limits, diagnostics export and subtitle translation-cache clearing. Automatic activation is off by default and separate from page translation.
+
+Watch pages, Shorts, embedded players and live/DVR captions are supported when YouTube provides captions. Interline can prefer existing human-created captions in the target language. Otherwise, subtitle text is sent to the selected translation provider; it does not transcribe audio. Caption availability and live updates depend on YouTube. Safari system-fullscreen output is an experimental development target, not part of the Chrome store package.
+
 ## Choose your translation engine
 
 Start with the built-in free engine, or connect your own API key for **OpenAI, Anthropic, Google Gemini, OpenRouter**, or a service compatible with the OpenAI or Anthropic protocol. Compatible endpoints can include local services such as Ollama when configured appropriately.
@@ -69,7 +75,7 @@ For input translation, prefix a draft with `/en` or `en:` to choose English for 
 - **Language:** 12 interface languages, including Arabic with RTL layout. By default the interface follows your reading target; you can choose it separately.
 - **Floating control:** drag it to either edge; its animated panel stays within the viewport and scrolls internally when space is limited. Reduced-motion preferences are respected.
 - **About:** find the version, project links, data/model source explanations and open-source license notices in settings.
-- **Backup:** export and import your settings. **The exported JSON includes API keys**; keep it private.
+- **Backup:** export and import settings. API keys are excluded by default; including them requires a separate confirmed export. Keep backups private because they may contain sensitive configuration.
 
 ## How your data is handled
 
