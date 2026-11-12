@@ -429,6 +429,7 @@ export function createYoutubeAdapter(
     capabilities: { timeline: true, currentText: true, trackSelection: false, adDetection: true, fullscreen: true },
     videoId: () => videoId,
     mount: () => mount,
+    media: () => video,
     matches: () =>
       currentVideoId() === videoId &&
       resolveMount() === mount &&

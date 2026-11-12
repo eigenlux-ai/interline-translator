@@ -33,6 +33,23 @@ For a production build, run `pnpm build` and load `.output/chrome-mv3/` from `ch
 
 A `.env` file is optional. The `WXT_EXTENSION_KEY` field in `.env.example` controls the manifest's public key for a stable extension ID; it is **not an AI API key or a private signing key**. Translation provider keys are configured in the extension's settings, not in build-time environment variables.
 
+## Experimental Safari subtitle testing
+
+On macOS with Xcode installed, run `pnpm build:safari:app`. This builds the Safari extension and generates a locally signed test app at `.output/safari-derived/Build/Products/Debug/Interline.app`. The generated Xcode project and app stay under ignored `.output/`; rerunning the command replaces this generated project. This is a local test build, not an App Store distribution package.
+
+Open the app, enable Interline in Safari, and grant access to YouTube. Local signing may require Safari's Develop → Allow Unsigned Extensions setting. Configure a translation provider in Safari's own extension settings; settings and credentials are not copied from Chrome. Apple's [local testing guide](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension) describes the setup.
+
+The subtitle output uses a removable TextTrack only during Safari's **system video fullscreen**. Normal webpage fullscreen continues to use the satellite. Native fullscreen uses Safari's subtitle styling; extension font, background and size controls apply to the satellite only. The display mode and original/translation order apply to both.
+
+Before marking Safari support verified, test on the target Safari/device:
+
+- Start a captioned YouTube video, enable Interline, and confirm translation inline before entering system video fullscreen. Check bilingual, original-only and translation-only modes.
+- Seek forward/backward, pause/resume, and check subtitle gaps. Old text must disappear immediately on seek and must not persist after a media change.
+- Exit and re-enter fullscreen three times; verify original native caption selection is restored and no duplicate Interline tracks accumulate.
+- Disable translation, switch videos through YouTube SPA navigation, and repeat. Test live/DVR separately because native in-band caption availability can differ from recorded videos.
+
+Desktop Safari native fullscreen and iOS are separate acceptance targets. Automated track-lifecycle tests and a successful Xcode build do not prove either. This experimental target adds a Safari-specific YouTube page bridge because Safari MV2 does not use `world: MAIN`; editor input injection and about:blank-frame behavior have not been validated for Safari. Do not infer general Safari compatibility from subtitle tests.
+
 ## Find the right part of the code
 
 | Area | Location |

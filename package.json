@@ -29,7 +29,9 @@
     "store:check": "node scripts/store/check.mjs",
     "notices": "node scripts/generate-notices.mjs",
     "audit:surface": "node scripts/check-inline-surface-css.mjs .output/chrome-mv3",
-    "audit:surface:firefox": "node scripts/check-inline-surface-css.mjs .output/firefox-mv2"
+    "audit:surface:firefox": "node scripts/check-inline-surface-css.mjs .output/firefox-mv2",
+    "build:safari": "pnpm notices && wxt build -b safari",
+    "build:safari:app": "pnpm build:safari && node scripts/build-safari-app.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.135",

@@ -27,6 +27,7 @@ export interface VideoPlatformAdapter extends Omit<PlatformAdapter<HTMLElement>,
   };
   /** Stable ownership check includes the media element, not just the URL. */
   matches(): boolean;
+  media?(): HTMLVideoElement;
   start(): void;
   stop(): void;
   poll(): void;
