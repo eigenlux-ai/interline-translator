@@ -10,6 +10,7 @@ import {
   type YoutubeBridgeResponse,
   type YoutubeSnapshot,
 } from './bridge-protocol';
+import { parseYouTubeTimedText } from './parser';
 
 type Track = {
   baseUrl?: string;
@@ -18,6 +19,7 @@ type Track = {
   vssId?: string;
   vss_id?: string;
   name?: { simpleText?: string };
+  translationLanguage?: { languageCode?: string };
 };
 type PlayerResponse = {
   videoDetails?: { videoId?: string; title?: string };
@@ -116,6 +118,7 @@ export function installYoutubeBridge(win: Window): () => void {
   const cache = new Map<string, string>();
   // Capture signed URLs independently of bodies: failed native requests can still supply fresh tokens.
   const observedUrls = new Map<string, string>();
+  const domLanguages = new Map<string, string>();
   const observers = new Set<AbortController>();
   const xhrListeners = new Map<XMLHttpRequest, EventListener>();
   const originalFetch = win.fetch;
@@ -236,6 +239,7 @@ export function installYoutubeBridge(win: Window): () => void {
     observers.clear();
     cache.clear();
     observedUrls.clear();
+    domLanguages.clear();
     fetchBudgets.clear();
     selectedTrackId = '';
     currentVideo = videoId;
@@ -248,23 +252,50 @@ export function installYoutubeBridge(win: Window): () => void {
     if (!active || disposed || suspended || isAd()) return null;
     const id = youtubeVideoId(win.location.href);
     const url = id && safeTimedTextUrl(rawUrl, id);
-    if (!url || url.searchParams.has('tlang')) return null;
+    if (!url) return null;
+    const translated = url.searchParams.has('tlang');
+    const domLanguage = url.searchParams.get('tlang') || url.searchParams.get('lang') || 'auto';
+    url.searchParams.delete('tlang');
     clearVideo(id);
     const key = trackKey(url);
     observedUrls.delete(key);
     observedUrls.set(key, url.href);
-    while (observedUrls.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) observedUrls.delete(observedUrls.keys().next().value!);
-    return url;
+    domLanguages.set(key, domLanguage.slice(0, 50));
+    while (observedUrls.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) {
+      const oldest = observedUrls.keys().next().value!;
+      observedUrls.delete(oldest);
+      domLanguages.delete(oldest);
+    }
+    // Preserve the native context, but never treat translated bodies as originals.
+    return translated ? null : url;
   };
-  const capture = (rawUrl: string, text: string, captureEpoch: number) => {
-    if (captureEpoch !== epoch || !text || text.length > MAX_SUBTITLE_BYTES) return;
-    if (new TextEncoder().encode(text).byteLength > MAX_SUBTITLE_BYTES) return;
-    const url = observedUrl(rawUrl);
-    if (!url) return;
+  const capture = (rawUrl: string, text: string, captureEpoch: number): boolean => {
+    if (
+      !active ||
+      disposed ||
+      suspended ||
+      isAd() ||
+      captureEpoch !== epoch ||
+      !text ||
+      text.length > MAX_SUBTITLE_BYTES
+    )
+      return false;
+    if (new TextEncoder().encode(text).byteLength > MAX_SUBTITLE_BYTES) return false;
+    const id = youtubeVideoId(win.location.href);
+    const url = id && id === currentVideo && safeTimedTextUrl(rawUrl, id);
+    if (!url || url.searchParams.has('tlang')) return false;
     const key = trackKey(url);
+    if (cache.get(key) === text) return true;
+    try {
+      if (!parseYouTubeTimedText(text).length) return false;
+    } catch {
+      return false;
+    }
+    // Body completion must not replace newer native tokens or the DOM language.
     cache.delete(key);
     cache.set(key, text);
     while (cache.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) cache.delete(cache.keys().next().value!);
+    return true;
   };
   const wrappedFetch: typeof fetch = function (this: Window, ...args) {
     // Preserve the exact original promise, caller receiver, arguments and synchronous exceptions.
@@ -362,6 +393,7 @@ export function installYoutubeBridge(win: Window): () => void {
     if (dropCache) {
       cache.clear();
       observedUrls.clear();
+      domLanguages.clear();
     }
     releaseCaptionControl();
     if (win.fetch === wrappedFetch) win.fetch = originalFetch;
@@ -475,7 +507,13 @@ export function installYoutubeBridge(win: Window): () => void {
         ? tracks.find((item) => trackId(item) === selectedTrackId)
         : undefined) ??
       tracks[0];
+    const sourceUrl = track?.baseUrl && safeTimedTextUrl(track.baseUrl, videoId);
+    if (sourceUrl) sourceUrl.searchParams.delete('tlang');
+    const observedLanguage = sourceUrl ? domLanguages.get(trackKey(sourceUrl)) : undefined;
+    const domLanguage =
+      selected?.translationLanguage?.languageCode || observedLanguage || selected?.languageCode || 'auto';
     const snapshot: YoutubeSnapshot = {
+      domLanguage: String(domLanguage).slice(0, 50),
       videoId,
       title: typeof response.videoDetails?.title === 'string' ? response.videoDetails.title.slice(0, 1000) : '',
       ad,
@@ -587,7 +625,7 @@ export function installYoutubeBridge(win: Window): () => void {
         if (!text) throw new Error('empty');
         if (controller.signal.aborted || requestEpoch !== epoch || youtubeVideoId(win.location.href) !== videoId)
           return;
-        capture(url.href, text, requestEpoch);
+        if (!capture(url.href, text, requestEpoch)) throw new Error('invalid-subtitles');
         post({ text });
       })
       .catch(() => {

@@ -215,6 +215,68 @@ describe('recoverable YouTube network bridge', () => {
     expect(win.fetch).toBe(fetched);
   });
 
+  it.each(['<html>temporary error</html>', '{"events":', '{"events":[]}'])(
+    'retries an invalid body without retaining it as usable cache: %s',
+    async (invalid) => {
+      fetched.mockResolvedValueOnce(new Response(invalid));
+      dispose = installYoutubeBridge(win);
+      read('invalid');
+      await settle();
+      expect(responses().at(-1)?.error).toBe('fetch');
+      await vi.advanceTimersByTimeAsync(250);
+      read('retry', undefined, false, true);
+      await settle();
+      expect(responses().at(-1)?.text).toBe(body);
+      expect(fetched).toHaveBeenCalledTimes(2);
+      stop();
+      read('healthy-cache');
+      await settle();
+      expect(responses().at(-1)?.text).toBe(body);
+      expect(fetched).toHaveBeenCalledTimes(2);
+    }
+  );
+
+  it('retains auto-translated request context but never caches its translated body as the source', async () => {
+    dispose = installYoutubeBridge(win);
+    fetched.mockResolvedValueOnce(new Response(body.replace('caption', 'translated')));
+    await win.fetch(`${baseUrl}&tlang=fr&pot=fresh-token&signature=fresh-signature&c=WEB`);
+    await settle();
+    read();
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    const requested = new URL(String(fetched.mock.calls[1][0]));
+    expect(requested.searchParams.get('tlang')).toBeNull();
+    expect(requested.searchParams.get('pot')).toBe('fresh-token');
+    expect(requested.searchParams.get('signature')).toBe('fresh-signature');
+    expect(requested.searchParams.get('c')).toBe('WEB');
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(responses().at(-1)?.snapshot.domLanguage).toBe('fr');
+    await vi.advanceTimersByTimeAsync(250);
+    read('after-original-fetch', '.en');
+    expect(responses().at(-1)?.snapshot.domLanguage).toBe('fr');
+  });
+
+  it('does not let an older native body overwrite a newer observed request context', async () => {
+    dispose = installYoutubeBridge(win);
+    let finish!: (response: Response) => void;
+    fetched.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const older = win.fetch(`${baseUrl}&pot=older`);
+    fetched.mockResolvedValueOnce(new Response('', { status: 403 }));
+    await win.fetch(`${baseUrl}&tlang=fr&pot=newer`);
+    finish(new Response('<html>invalid</html>'));
+    await older;
+    await settle();
+    read();
+    await settle();
+    expect(new URL(String(fetched.mock.calls.at(-1)![0])).searchParams.get('pot')).toBe('newer');
+    expect(responses().at(-1)?.snapshot.domLanguage).toBe('fr');
+  });
+
   it('preserves the complete native request context when retrying a failed native response', async () => {
     fetched.mockResolvedValueOnce(new Response('', { status: 403 }));
     dispose = installYoutubeBridge(win);

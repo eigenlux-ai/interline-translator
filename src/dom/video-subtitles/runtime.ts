@@ -188,7 +188,7 @@ export function createSubtitleRuntime(
         enabled,
         original: suppressed ? '' : source,
         translation: suppressed ? '' : translated,
-        sourceLanguage: metadata?.language ?? '',
+        sourceLanguage: (state.track ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? '',
         settings,
         status: settings.providerId || settings.config.appearance.displayMode === 'original' ? status : 'unavailable',
       });
@@ -342,7 +342,9 @@ export function createSubtitleRuntime(
         client.updateWindow({
           generation,
           trackVersion: state.track?.contentVersion ?? `dom:${adapter.videoId()}`,
-          sourceLanguage: (metadata?.language ?? 'auto').slice(0, 40),
+          sourceLanguage: (
+            (state.track ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? 'auto'
+          ).slice(0, 40),
           title: metadata?.title.slice(0, 500),
           subscriptions: bounded,
         });
@@ -358,7 +360,10 @@ export function createSubtitleRuntime(
   const sourceChanged = (value: VideoSubtitleSourceEvent) => {
     if (!enabled || !adapter) return;
     if (value.type === 'metadata') {
-      if (metadata?.trackId !== value.value.trackId) {
+      if (
+        metadata?.trackId !== value.value.trackId ||
+        (!state.track && metadata?.domLanguage !== value.value.domLanguage)
+      ) {
         invalidate();
         state.dispose();
         state = new SubtitleSessionState();
