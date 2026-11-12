@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   BRIDGE_REQUEST,
   BRIDGE_RESPONSE,
+  MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
   validBridgeRequest,
   validBridgeResponse,
@@ -81,6 +82,6 @@ describe('YouTube bridge protocol boundary', () => {
     expect(validBridgeResponse({ ...response, snapshot: { ...snapshot, track: { ...snapshot.track, id: '' } } })).toBe(
       false
     );
-    expect(validBridgeResponse({ ...response, text: '字'.repeat(700_000) })).toBe(false);
+    expect(validBridgeResponse({ ...response, text: '字'.repeat(Math.floor(MAX_SUBTITLE_BYTES / 3) + 1) })).toBe(false);
   });
 });

@@ -1,7 +1,8 @@
+import { SUBTITLE_MAX_RESPONSE_CHARS } from './limits';
 import { createCue, normalizeSubtitleText } from './text';
 import type { SubtitleCue } from './types';
 
-export const SUBTITLE_MAX_RESPONSE_CHARS = 2_000_000;
+export { SUBTITLE_MAX_RESPONSE_CHARS } from './limits';
 export const SUBTITLE_MAX_EVENTS = 30_000;
 export const SUBTITLE_MAX_CUES = 50_000;
 export const SUBTITLE_MAX_CUE_CHARS = 4000;

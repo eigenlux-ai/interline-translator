@@ -1,10 +1,11 @@
 /** Narrow page bridge protocol. Page data is untrusted; extension capabilities never cross this boundary. */
+import { SUBTITLE_MAX_RESPONSE_BYTES } from '@/core/subtitles/limits';
 import { PROJECT_PREFIX } from '@/constants';
 
 export const BRIDGE_REQUEST = `${PROJECT_PREFIX}:youtube-subtitles:request`;
 export const BRIDGE_RESPONSE = `${PROJECT_PREFIX}:youtube-subtitles:response`;
 export const BRIDGE_VERSION = 1;
-export const MAX_SUBTITLE_BYTES = 2_000_000;
+export const MAX_SUBTITLE_BYTES = SUBTITLE_MAX_RESPONSE_BYTES;
 export const MAX_TIMEDTEXT_URL_CHARS = 8192;
 export interface YoutubeTrackInfo {
   id: string;

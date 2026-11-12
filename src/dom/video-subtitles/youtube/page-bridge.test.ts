@@ -1,7 +1,13 @@
 import { Window as HappyWindow } from 'happy-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { PROJECT_PREFIX } from '@/constants';
-import { BRIDGE_REQUEST, BRIDGE_RESPONSE, type YoutubeBridgeResponse } from './bridge-protocol';
+import {
+  BRIDGE_REQUEST,
+  BRIDGE_RESPONSE,
+  MAX_SUBTITLE_BYTES,
+  validBridgeResponse,
+  type YoutubeBridgeResponse,
+} from './bridge-protocol';
 import { boundedSubtitleText, installYoutubeBridge, YOUTUBE_CAPTURE_TIMEOUT_MS } from './page-bridge';
 
 const body = '{"events":[{"tStartMs":0,"dDurationMs":1000,"segs":[{"utf8":"caption"}]}]}';
@@ -79,10 +85,34 @@ describe('bounded subtitle response reader', () => {
     await result;
   });
 
+  it('accepts multi-hour caption payloads through the reader and bridge', async () => {
+    const text = JSON.stringify({ events: [], padding: ' '.repeat(3_600_000) });
+    expect(await boundedSubtitleText(new Response(text))).toBe(text);
+    expect(
+      validBridgeResponse({
+        type: BRIDGE_RESPONSE,
+        version: 1,
+        requestId: 'long-video',
+        text,
+        snapshot: {
+          videoId: 'video_123',
+          title: '',
+          ad: false,
+          hasTracks: true,
+          track: { id: '.en', language: 'en', kind: 'manual' },
+        },
+      })
+    ).toBe(true);
+  });
+
+  it('enforces the streaming byte budget even without content-length', async () => {
+    await expect(boundedSubtitleText(new Response('x'.repeat(MAX_SUBTITLE_BYTES + 1)))).rejects.toThrow('oversize');
+  });
+
   it('rejects oversized bodies and supports explicit abort', async () => {
-    await expect(boundedSubtitleText(new Response('x', { headers: { 'content-length': '2000001' } }))).rejects.toThrow(
-      'oversize'
-    );
+    await expect(
+      boundedSubtitleText(new Response('x', { headers: { 'content-length': String(MAX_SUBTITLE_BYTES + 1) } }))
+    ).rejects.toThrow('oversize');
     const controller = new AbortController();
     const response = new Response(new ReadableStream({ start() {} }));
     const result = expect(boundedSubtitleText(response, controller.signal)).rejects.toThrow('aborted');

@@ -309,6 +309,20 @@ describe('JSON3 timed parsing', () => {
     expect(result.originalEvents[result.cues[0].id]).toEqual([0, 1]);
   });
 
+  it('parses multi-hour JSON3 payloads above the old 2 MB transport limit', () => {
+    const input = JSON.stringify({
+      events: Array.from({ length: 12_000 }, (_, i) => ({
+        tStartMs: i * 1200,
+        dDurationMs: 1200,
+        segs: [{ utf8: `Caption ${i} ` + 'word '.repeat(30) }],
+      })),
+    });
+    expect(input.length).toBeGreaterThan(2_000_000);
+    const cues = parseYouTubeJson3(input);
+    expect(cues).toHaveLength(12_000);
+    expect(cues.at(-1)?.endMs).toBe(14_400_000);
+  });
+
   it('keeps same-start replacements distinct by content and rejects oversized input', () => {
     const first = parseYouTubeJson3({ events: [{ tStartMs: 0, dDurationMs: 1000, segs: [{ utf8: 'first' }] }] });
     const second = parseYouTubeJson3({ events: [{ tStartMs: 0, dDurationMs: 2000, segs: [{ utf8: 'changed' }] }] });
