@@ -37,6 +37,8 @@ A `.env` file is optional. The `WXT_EXTENSION_KEY` field in `.env.example` contr
 
 Reproduce a subtitle issue, then use **Video subtitles → Export subtitle diagnostics** in extension settings. The JSON contains recent source/parse/render/translation events, cache results, retry delays and anonymous context numbers (`0` is the background). It contains no caption text, URL, page title, provider credentials or raw exceptions. This is a best-effort in-memory history, not telemetry: at most 512 events survive in the background, batches are capped at 32 per frame per second, and restarting the background clears the history. Export soon after reproducing a problem. A missing event does not prove an operation never happened.
 
+Ordinary subtitle raw-body caching is limited to 16,000,000 UTF-8 bytes, 100,000 parsed cues in aggregate and three tracks per page bridge. The current source and human target are protected from unrelated passive captures; inactive tracks are evicted by least recent use. Diagnostics include `cache-budget` snapshots (`count`, `bytes`, `cues`). These figures measure retained raw-body cache weights, not browser heap or transient parsing allocations. A valid direct response that cannot be retained remains displayable; cache pressure must not be reported as a network failure.
+
 Retry delay tests inject deterministic random values. Production retries use bounded jitter; valid `Retry-After` values set a minimum even when longer than the local fallback cap. Switching videos or manually retrying must not bypass that minimum.
 
 ## Experimental Safari subtitle testing

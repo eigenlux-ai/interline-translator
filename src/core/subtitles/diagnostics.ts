@@ -13,6 +13,7 @@ export const DIAGNOSTIC_EVENTS = [
   'translation-stale',
   'cache-hit',
   'cache-miss',
+  'cache-budget',
   'retry-scheduled',
   'source-cache',
   'source-fetch',
@@ -32,6 +33,8 @@ export interface SubtitleDiagnostic {
     | 'capacity'
     | 'timeout';
   count?: number;
+  bytes?: number;
+  cues?: number;
   durationMs?: number;
   delayMs?: number;
   attempt?: number;
@@ -53,7 +56,7 @@ export function sanitizeDiagnostic(raw: unknown): SubtitleDiagnostic | null {
     ].includes(value.code as string)
   )
     result.code = value.code as SubtitleDiagnostic['code'];
-  for (const key of ['context', 'generation', 'count', 'durationMs', 'delayMs', 'attempt'] as const) {
+  for (const key of ['context', 'generation', 'count', 'bytes', 'cues', 'durationMs', 'delayMs', 'attempt'] as const) {
     const n = value[key];
     if (typeof n === 'number' && Number.isFinite(n) && n >= 0)
       result[key] = Math.min(Number.MAX_SAFE_INTEGER, Math.round(n));

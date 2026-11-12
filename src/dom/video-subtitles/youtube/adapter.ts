@@ -74,6 +74,7 @@ export function createYoutubeAdapter(
   const custodyId = win.crypto.randomUUID();
   let frameId: number | null = null;
   let lastReadAt = -Infinity;
+  let lastCacheUsage = '';
   let retryTimer: number | null = null;
   let observation = 0,
     lastText: string | null = null;
@@ -256,6 +257,23 @@ export function createYoutubeAdapter(
     )
       return;
     const data = message.data;
+    if (
+      (requests.has(data.requestId) || targetRequests.has(data.requestId)) &&
+      data.snapshot.videoId === videoId &&
+      currentVideoId() === videoId &&
+      data.cacheUsage
+    ) {
+      const usage = JSON.stringify(data.cacheUsage);
+      if (usage !== lastCacheUsage) {
+        lastCacheUsage = usage;
+        diagnostic({
+          event: 'cache-budget',
+          count: data.cacheUsage.entries,
+          bytes: data.cacheUsage.bytes,
+          cues: data.cacheUsage.cues,
+        });
+      }
+    }
     if (targetRequests.has(data.requestId)) {
       if (
         !targetLanguage ||
