@@ -163,6 +163,58 @@ describe('recoverable YouTube network bridge', () => {
     expect(fetched).toHaveBeenCalledTimes(1);
   });
 
+  it('captures SPA navigation captions before a delayed enable and ignores the previous adapter stop', async () => {
+    dispose = installYoutubeBridge(win);
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(win.fetch).toBe(fetched);
+    win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
+    browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
+    const nextUrl = baseUrl.replace('video_123', 'other_123');
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'other_123' },
+        captions: { playerCaptionsTracklistRenderer: { captionTracks: [{ ...track, baseUrl: nextUrl }] } },
+      }),
+    });
+    let resolve!: (response: Response) => void;
+    fetched.mockImplementationOnce(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        })
+    );
+    const native = win.fetch(nextUrl);
+    win.dispatchEvent(
+      new browser.MessageEvent('message', {
+        origin: win.location.origin,
+        source: browser,
+        data: { type: BRIDGE_REQUEST, version: 1, action: 'stop', requestId: 'old-stop', videoId: 'video_123' },
+      }) as unknown as MessageEvent
+    );
+    // Legacy stop messages must not cancel an in-flight navigation capture either.
+    stop();
+    win.document.dispatchEvent(new browser.Event('yt-navigate-finish') as unknown as Event);
+    resolve(new Response(body));
+    await native;
+    await settle();
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(win.fetch).toBe(fetched);
+    fetched.mockResolvedValue(new Response(''));
+    read('enable-new-video');
+    await settle();
+    expect(responses().at(-1)?.snapshot.videoId).toBe('other_123');
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).toHaveBeenCalledTimes(1);
+  });
+
+  it('removes SPA navigation listeners on disposal', () => {
+    dispose = installYoutubeBridge(win);
+    dispose();
+    win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
+    win.document.dispatchEvent(new browser.Event('yt-navigate-finish') as unknown as Event);
+    expect(win.fetch).toBe(fetched);
+  });
+
   it('preserves the complete native request context when retrying a failed native response', async () => {
     fetched.mockResolvedValueOnce(new Response('', { status: 403 }));
     dispose = installYoutubeBridge(win);

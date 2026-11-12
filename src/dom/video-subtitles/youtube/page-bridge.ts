@@ -111,6 +111,8 @@ export function installYoutubeBridge(win: Window): () => void {
   let lastRequestAt = -Infinity;
   const fetchBudgets = new Map<string, { attempts: number; retryAt: number; rateLimitUntil: number }>();
   let receivedRead = false;
+  let captureTimer: ReturnType<typeof setTimeout> | undefined;
+  let navigationCapture = false;
   const cache = new Map<string, string>();
   // Capture signed URLs independently of bodies: failed native requests can still supply fresh tokens.
   const observedUrls = new Map<string, string>();
@@ -237,6 +239,7 @@ export function installYoutubeBridge(win: Window): () => void {
     fetchBudgets.clear();
     selectedTrackId = '';
     currentVideo = videoId;
+    receivedRead = false;
     changedCaptions = null;
     userCaptionVideo = '';
     releaseCaptionControl();
@@ -395,19 +398,29 @@ export function installYoutubeBridge(win: Window): () => void {
     )
       return;
     const data = event.data;
+    if (data.videoId && data.videoId !== youtubeVideoId(win.location.href)) return;
     if (data.action === 'stop') {
       receivedRead = false;
       lastRequestAt = -Infinity;
-      release();
-      restoreCaptions();
+      if (navigationCapture) {
+        // An old adapter can stop while the new player's native response is
+        // still arriving. Keep the bounded navigation capture alive.
+        pending?.controller.abort();
+        pending = null;
+        restoreCaptions();
+        releaseCaptionControl();
+      } else {
+        release();
+        restoreCaptions();
+      }
       return;
     }
     if (Date.now() - lastRequestAt < 200) return;
     lastRequestAt = Date.now();
-    receivedRead = true;
     const videoId = youtubeVideoId(win.location.href);
     if (!videoId) return;
     clearVideo(videoId);
+    receivedRead = true;
     install();
     const player = win.document.querySelector<Player>('#movie_player');
     if (!player) return;
@@ -592,7 +605,7 @@ export function installYoutubeBridge(win: Window): () => void {
   const dispose = () => {
     if (disposed) return;
     disposed = true;
-    clearTimeout(startup);
+    clearTimeout(captureTimer);
     release(true);
     restoreCaptions();
     win.removeEventListener('message', onMessage);
@@ -600,6 +613,8 @@ export function installYoutubeBridge(win: Window): () => void {
     win.document.removeEventListener('keydown', onCaptionKey, true);
     win.removeEventListener('pagehide', onHide);
     win.removeEventListener('pageshow', onShow);
+    win.document.removeEventListener('yt-navigate-start', onNavigateStart);
+    win.document.removeEventListener('yt-navigate-finish', onNavigateFinish);
     owners.delete(win);
   };
   const onHide = (event: PageTransitionEvent) => {
@@ -608,6 +623,8 @@ export function installYoutubeBridge(win: Window): () => void {
       return;
     }
     suspended = true;
+    clearTimeout(captureTimer);
+    navigationCapture = false;
     release();
     restoreCaptions();
   };
@@ -617,11 +634,31 @@ export function installYoutubeBridge(win: Window): () => void {
     lastRequestAt = -Infinity;
     // Remain inert until the resumed content runtime confirms it is enabled.
   };
+  const captureWindow = (navigation = false) => {
+    clearTimeout(captureTimer);
+    navigationCapture = navigation;
+    install();
+    captureTimer = setTimeout(() => {
+      navigationCapture = false;
+      if (!receivedRead) release();
+    }, YOUTUBE_CAPTURE_STARTUP_MS);
+  };
+  const onNavigateStart = () => {
+    if (disposed || suspended) return;
+    receivedRead = false;
+    lastRequestAt = -Infinity;
+    clearVideo('');
+    captureWindow(true);
+  };
+  const onNavigateFinish = () => {
+    if (disposed || suspended) return;
+    clearVideo(youtubeVideoId(win.location.href) ?? '');
+    captureWindow(true);
+  };
   owners.set(win, dispose);
-  install();
-  const startup = setTimeout(() => {
-    if (!receivedRead) release();
-  }, YOUTUBE_CAPTURE_STARTUP_MS);
+  captureWindow();
+  win.document.addEventListener('yt-navigate-start', onNavigateStart);
+  win.document.addEventListener('yt-navigate-finish', onNavigateFinish);
   win.addEventListener('message', onMessage);
   win.document.addEventListener('click', onCaptionClick, true);
   win.document.addEventListener('keydown', onCaptionKey, true);

@@ -63,6 +63,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
         type: BRIDGE_REQUEST,
         version: 1,
         requestId,
+        videoId,
         action,
         enableCaptions: true,
         knownTrackId: rawTrack ? trackId : '',

@@ -23,6 +23,7 @@ export type YoutubeBridgeRequest = {
   type: typeof BRIDGE_REQUEST;
   version: 1;
   requestId: string;
+  videoId?: string;
 } & ({ action: 'stop' } | { action: 'read'; enableCaptions: boolean; knownTrackId?: string; resetRetry?: boolean });
 export type YoutubeBridgeResponse = {
   type: typeof BRIDGE_RESPONSE;
@@ -76,6 +77,7 @@ export function safeTimedTextUrl(value: string, videoId: string): URL | null {
 export function validBridgeRequest(value: unknown): value is YoutubeBridgeRequest {
   const x = object(value);
   if (!x || x.type !== BRIDGE_REQUEST || x.version !== BRIDGE_VERSION || !boundedString(x.requestId, 100)) return false;
+  if (x.videoId !== undefined && !validVideoId(x.videoId)) return false;
   return (
     x.action === 'stop' ||
     (x.action === 'read' &&
