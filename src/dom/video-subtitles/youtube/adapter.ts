@@ -189,7 +189,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     } else if (!rawTrack && (!data.snapshot.hasTracks || data.error))
       emit({
         type: 'unavailable',
-        reason: data.snapshot.hasTracks ? 'fetch-failed' : 'no-captions',
+        reason: !data.snapshot.hasTracks ? 'no-captions' : data.error === 'rateLimit' ? 'rate-limited' : 'fetch-failed',
         retryable: !!data.snapshot.hasTracks,
       });
     readDom();

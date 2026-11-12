@@ -31,6 +31,7 @@ export type VideoSubtitleStatus =
   | 'fetching'
   | 'no-captions'
   | 'fetch-failed'
+  | 'rate-limited'
   | 'translation-failed'
   | 'loading'
   | 'unavailable'

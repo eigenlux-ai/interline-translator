@@ -20,6 +20,7 @@ const statusText = (status: VideoSubtitleView['status']) =>
     fetching: m.video_subtitles_fetching(),
     'no-captions': m.video_subtitles_no_captions(),
     'fetch-failed': m.video_subtitles_fetch_failed(),
+    'rate-limited': m.error_rate_limited(),
     'translation-failed': m.video_subtitles_translation_failed(),
     loading: m.video_subtitles_loading(),
     unavailable: m.video_subtitles_unavailable(),
@@ -75,7 +76,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const original = (appearance.displayMode !== 'translation' || !view.translation) && view.original;
   const translated = appearance.displayMode !== 'original' && view.translation;
   const lines = appearance.translationPosition === 'above' ? [translated, original] : [original, translated];
-  const retryable = ['fetch-failed', 'translation-failed', 'unavailable'].includes(view.status);
+  const retryable = ['fetch-failed', 'rate-limited', 'translation-failed', 'unavailable'].includes(view.status);
   return (
     <div className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
       <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>

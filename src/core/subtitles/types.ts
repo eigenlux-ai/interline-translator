@@ -42,7 +42,7 @@ export interface CurrentTextSnapshot {
 export type SubtitleSourceEvent =
   | { type: 'track'; track: SubtitleTrack; sessionVersion: number }
   | { type: 'currentText'; snapshot: CurrentTextSnapshot }
-  | { type: 'unavailable'; reason: 'no-captions' | 'fetch-failed'; retryable: boolean };
+  | { type: 'unavailable'; reason: 'no-captions' | 'fetch-failed' | 'rate-limited'; retryable: boolean };
 
 export interface SubtitleSource {
   subscribe(listener: (event: SubtitleSourceEvent) => void): () => void;
