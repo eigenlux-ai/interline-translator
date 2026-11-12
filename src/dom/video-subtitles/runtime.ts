@@ -189,7 +189,12 @@ export function createSubtitleRuntime(
         domStable = '';
         domVersion = String(value.contentVersion);
         signature = '';
-      } else if (cached) domTranslation = cached;
+      } else if (cached) {
+        domStable = value.text;
+        domVersion = String(value.contentVersion);
+        domTranslation = cached;
+        signature = '';
+      }
       update();
     },
     onStable(value) {

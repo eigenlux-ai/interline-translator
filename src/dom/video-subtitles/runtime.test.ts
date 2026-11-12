@@ -253,6 +253,26 @@ describe('YouTube subtitle runtime integration', () => {
     expect(latest.translation).toBe('修订后的句子');
   });
 
+  it('does not let a late live prefix overwrite a full cached translation', async () => {
+    setup(true);
+    track('ignored', 'en', true);
+    await vi.advanceTimersByTimeAsync(3000);
+    const caption = document.querySelector('.ytp-caption-segment')!;
+    caption.textContent = 'A full sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    complete(undefined, '完整译文');
+    caption.textContent = 'Another sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    caption.textContent = 'A full';
+    await vi.advanceTimersByTimeAsync(500);
+    const prefix = windows.at(-1)!;
+    caption.textContent = 'A full sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    expect(latest.translation).toBe('完整译文');
+    complete(prefix, '不完整');
+    expect(latest.translation).toBe('完整译文');
+  });
+
   it('evicts old in-band translations after the bounded history fills', async () => {
     setup(true);
     track('ignored', 'en', true);
