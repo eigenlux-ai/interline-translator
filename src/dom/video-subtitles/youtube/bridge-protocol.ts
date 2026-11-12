@@ -5,6 +5,7 @@ import { PROJECT_PREFIX } from '@/constants';
 
 export {
   isYoutubeEmbed,
+  isYoutubeLive,
   isYoutubeShorts,
   safeTimedTextUrl,
   validVideoId,
@@ -48,6 +49,7 @@ export type YoutubeBridgeResponse = {
   requestId: string;
   snapshot: YoutubeSnapshot;
   text?: string;
+  liveRevision?: number;
   error?: 'fetch' | 'rateLimit' | 'unavailable';
 };
 
@@ -103,6 +105,8 @@ export function validBridgeResponse(value: unknown): value is YoutubeBridgeRespo
     return false;
   if (snapshot.track !== null && !snapshot.hasTracks) return false;
   return (
+    (x.liveRevision === undefined ||
+      (snapshot.live === true && Number.isSafeInteger(x.liveRevision) && (x.liveRevision as number) > 0)) &&
     (x.text === undefined ||
       (boundedString(x.text, MAX_SUBTITLE_BYTES, true) &&
         new TextEncoder().encode(x.text).byteLength <= MAX_SUBTITLE_BYTES)) &&

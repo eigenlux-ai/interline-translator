@@ -114,3 +114,18 @@ it('confirms Shorts reuse against route and player, ignoring preload media and l
   browser.location.href = 'https://www.youtube.com/watch?v=video_789';
   expect(identity.videoId()).toBe('video_789');
 });
+
+it('discovers channel live landing pages and confirms explicit live video links', () => {
+  browser.location.href = 'https://www.youtube.com/@channel/live';
+  vi.advanceTimersByTime(250);
+  reply('video_123');
+  expect(identity.videoId()).toBe('video_123');
+  browser.location.href = 'https://www.youtube.com/live/video_456';
+  expect(identity.videoId()).toBeNull();
+  vi.advanceTimersByTime(250);
+  reply('video_123');
+  expect(identity.videoId()).toBeNull();
+  vi.advanceTimersByTime(250);
+  reply('video_456');
+  expect(identity.videoId()).toBe('video_456');
+});

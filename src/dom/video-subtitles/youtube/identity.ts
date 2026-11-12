@@ -1,6 +1,7 @@
 import {
   BRIDGE_REQUEST,
   isYoutubeEmbed,
+  isYoutubeLive,
   isYoutubeShorts,
   validBridgeResponse,
   youtubeVideoId,
@@ -15,18 +16,21 @@ export function observeYoutubeIdentity(win: Window, changed: () => void) {
   let confirmedAt = 0;
   let suspended = false;
   let route = win.location.href;
-  const dynamic = () => isYoutubeEmbed(win.location.href) || isYoutubeShorts(win.location.href);
+  const dynamic = () =>
+    isYoutubeEmbed(win.location.href) || isYoutubeShorts(win.location.href) || isYoutubeLive(win.location.href);
   const videoId = () => {
     if (suspended) return null;
     if (!dynamic()) return youtubeVideoId(win.location.href);
     // Shorts have a route identity: background timer throttling must not detach a
     // confirmed paused session. URL/player/media changes still invalidate it.
     if (
-      (isYoutubeEmbed(win.location.href) && Date.now() - confirmedAt > 1500) ||
+      ((isYoutubeEmbed(win.location.href) ||
+        (isYoutubeLive(win.location.href) && !youtubeVideoId(win.location.href))) &&
+        Date.now() - confirmedAt > 1500) ||
       confirmedPlayer !== youtubePlayer(win)
     )
       return null;
-    return isYoutubeShorts(win.location.href) && id !== youtubeVideoId(win.location.href) ? null : id;
+    return youtubeVideoId(win.location.href) && id !== youtubeVideoId(win.location.href) ? null : id;
   };
   const adopt = (next: string | null, player: HTMLElement | null = null) => {
     if (id === next && confirmedPlayer === player) return;
@@ -70,7 +74,7 @@ export function observeYoutubeIdentity(win: Window, changed: () => void) {
     request = null;
     const snapshot = event.data.snapshot;
     confirmedAt = Date.now();
-    if (snapshot.ad || (isYoutubeShorts(win.location.href) && snapshot.videoId !== youtubeVideoId(win.location.href)))
+    if (snapshot.ad || (youtubeVideoId(win.location.href) && snapshot.videoId !== youtubeVideoId(win.location.href)))
       adopt(null);
     else adopt(snapshot.videoId, player);
   };

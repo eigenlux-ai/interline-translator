@@ -28,12 +28,26 @@ export function isYoutubeShorts(value: string): boolean {
     return false;
   }
 }
+/** Live video links and channel live landing pages use the native player identity. */
+export function isYoutubeLive(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return (
+      value.length <= 8192 &&
+      youtubeHost(url) &&
+      (/^\/live\/[\w-]{6,64}\/?$/.test(url.pathname) || /^\/(?:@[^/]+|channel\/[\w-]+)\/live\/?$/.test(url.pathname))
+    );
+  } catch {
+    return false;
+  }
+}
 export function youtubeVideoId(url: string): string | null {
   if (typeof url !== 'string' || url.length > 8192) return null;
   try {
     const parsed = new URL(url);
     if (!youtubeHost(parsed)) return null;
-    if (isYoutubeShorts(url)) return parsed.pathname.split('/')[2];
+    if (isYoutubeShorts(url) || (isYoutubeLive(url) && parsed.pathname.startsWith('/live/')))
+      return parsed.pathname.split('/')[2];
     if (parsed.pathname !== '/watch') return null;
     const id = parsed.searchParams.get('v');
     return validVideoId(id) ? id : null;

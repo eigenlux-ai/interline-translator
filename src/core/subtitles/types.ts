@@ -40,7 +40,7 @@ export interface CurrentTextSnapshot {
 }
 
 export type SubtitleSourceEvent =
-  | { type: 'track'; track: SubtitleTrack; sessionVersion: number }
+  | { type: 'track'; track: SubtitleTrack; sessionVersion: number; incremental?: boolean }
   | { type: 'currentText'; snapshot: CurrentTextSnapshot }
   | { type: 'unavailable'; reason: 'no-captions' | 'fetch-failed' | 'rate-limited'; retryable: boolean };
 

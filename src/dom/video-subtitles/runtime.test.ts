@@ -98,6 +98,34 @@ function track(text = 'Hello world', trackId = 'en', live = false) {
     })
   );
 }
+function livePacket(revision: number, cues: { start: number; end: number; text: string }[]) {
+  const request = [...vi.mocked(window.postMessage).mock.calls]
+    .reverse()
+    .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read' && !data.targetLanguage)![0];
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      source: window,
+      origin: location.origin,
+      data: {
+        type: BRIDGE_RESPONSE,
+        version: 1,
+        requestId: request.requestId,
+        snapshot: {
+          videoId: 'abcdefghi12',
+          title: 'Live',
+          live: true,
+          ad: false,
+          hasTracks: true,
+          track: { id: 'en', language: 'en', kind: 'auto' },
+        },
+        liveRevision: revision,
+        text: JSON.stringify({
+          events: cues.map((c) => ({ tStartMs: c.start, dDurationMs: c.end - c.start, segs: [{ utf8: c.text }] })),
+        }),
+      },
+    })
+  );
+}
 function targetTrack(
   cues: { tStartMs: number; dDurationMs: number; segs: { utf8: string }[] }[] | null,
   requestId?: string
@@ -150,6 +178,141 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 describe('YouTube subtitle runtime integration', () => {
+  it('appends live packets without losing translations and rejects revised or out-of-order results', () => {
+    setup(true);
+    const first = { start: 0, end: 5000, text: 'First' };
+    livePacket(1, [first]);
+    const originalRequest = windows.at(-1)!;
+    complete(originalRequest, '第一句');
+    const closes = close.mock.calls.length;
+    livePacket(2, [first, { start: 6000, end: 9000, text: 'Second' }]);
+    expect(latest.translation).toBe('第一句');
+    expect(close).toHaveBeenCalledTimes(closes);
+    expect(windows.at(-1)!.generation).toBe(originalRequest.generation);
+    livePacket(3, [{ ...first, text: 'Revised' }]);
+    expect(latest.original).toBe('Revised');
+    expect(latest.translation).toBe('');
+    complete(originalRequest, '迟到的旧句');
+    expect(latest.translation).toBe('');
+    complete(undefined, '修订句');
+    expect(latest.translation).toBe('修订句');
+    livePacket(2, [first]);
+    expect(latest.original).toBe('Revised');
+  });
+
+  it('reuses in-band live translations after DVR seeks but not after configuration changes', async () => {
+    const config = setup(true);
+    track('ignored finite body', 'en', true);
+    await vi.advanceTimersByTimeAsync(3000);
+    const caption = document.querySelector('.ytp-caption-segment')!;
+    caption.textContent = 'First native line';
+    await vi.advanceTimersByTimeAsync(500);
+    complete(undefined, '第一句原生字幕');
+    caption.textContent = 'Second native line';
+    await vi.advanceTimersByTimeAsync(500);
+    complete(undefined, '第二句原生字幕');
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+    Object.defineProperty(video, 'seeking', { configurable: true, value: false });
+    video.dispatchEvent(new Event('seeked'));
+    caption.textContent = 'First native line';
+    await vi.advanceTimersByTimeAsync(500);
+    expect(latest.translation).toBe('第一句原生字幕');
+    video.dispatchEvent(new Event('emptied'));
+    expect(latest.original).toBe('');
+    expect(latest.translation).toBe('');
+    caption.textContent = 'Fresh after reload';
+    await vi.advanceTimersByTimeAsync(500);
+    caption.textContent = 'First native line';
+    await vi.advanceTimersByTimeAsync(500);
+    expect(latest.translation).toBe('');
+    complete(undefined, '重新翻译');
+    expect(latest.translation).toBe('重新翻译');
+    runtime.configure({ ...config, targetLanguage: 'ja' });
+    expect(latest.translation).toBe('');
+  });
+
+  it('lets an in-flight live prefix finish through word growth, but discards corrections', async () => {
+    setup(true);
+    track('ignored', 'en', true);
+    await vi.advanceTimersByTimeAsync(3000);
+    const caption = document.querySelector('.ytp-caption-segment')!;
+    caption.textContent = 'A live sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    const pending = windows.at(-1)!;
+    caption.textContent = 'A live sentence keeps growing';
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(windows.at(-1)?.subscriptions[0]?.subscriptionId).toBe(pending.subscriptions[0].subscriptionId);
+    complete(pending, '直播句子');
+    expect(latest.translation).toBe('直播句子');
+    caption.textContent = 'A corrected sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    complete(pending, '旧前缀');
+    expect(latest.translation).toBe('');
+    complete(undefined, '修订后的句子');
+    expect(latest.translation).toBe('修订后的句子');
+  });
+
+  it('evicts old in-band translations after the bounded history fills', async () => {
+    setup(true);
+    track('ignored', 'en', true);
+    await vi.advanceTimersByTimeAsync(3000);
+    const caption = document.querySelector('.ytp-caption-segment')!;
+    for (let i = 0; i < 257; i += 1) {
+      caption.textContent = `Native ${i}`;
+      await vi.advanceTimersByTimeAsync(500);
+      complete(undefined, `译文 ${i}`);
+    }
+    caption.textContent = 'Native 0';
+    await vi.advanceTimersByTimeAsync(500);
+    expect(latest.translation).toBe('');
+    expect(windows.at(-1)?.subscriptions[0]?.text).toBe('Native 0');
+  });
+
+  it('starts a new live epoch on media reload and ignores the old pending packet', () => {
+    setup(true);
+    livePacket(1, [{ start: 0, end: 5000, text: 'Old stream' }]);
+    const old = windows.at(-1)!;
+    complete(old, '旧流');
+    video.dispatchEvent(new Event('emptied'));
+    expect(latest.original).toBe('');
+    livePacket(2, [{ start: 0, end: 5000, text: 'Stale response' }]);
+    expect(latest.original).toBe('');
+    vi.advanceTimersByTime(1000);
+    livePacket(3, [{ start: 0, end: 5000, text: 'New stream' }]);
+    complete(old, '迟到');
+    expect(latest.original).toBe('New stream');
+    expect(latest.translation).toBe('');
+    complete(undefined, '新流');
+    expect(latest.translation).toBe('新流');
+  });
+
+  it('uses fresh DOM captions in unbuffered DVR ranges and resumes timed live cues', async () => {
+    setup(true);
+    livePacket(1, [{ start: 0, end: 5000, text: 'First' }]);
+    complete(undefined, '第一句');
+    video.currentTime = 100;
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+    expect(latest.original).toBe('');
+    Object.defineProperty(video, 'seeking', { configurable: true, value: false });
+    video.dispatchEvent(new Event('seeked'));
+    document.querySelector('.ytp-caption-segment')!.textContent = 'Fresh DVR caption';
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(latest.original).toBe('Fresh DVR caption');
+    await vi.advanceTimersByTimeAsync(500);
+    expect(windows.at(-1)?.subscriptions[0]?.cueId).toBe('current');
+    complete(undefined, '回看字幕');
+    expect(latest.translation).toBe('回看字幕');
+    livePacket(2, [{ start: 100000, end: 105000, text: 'Timed recovery' }]);
+    expect(latest.original).toBe('Timed recovery');
+    complete(undefined, '时间轴恢复');
+    expect(latest.translation).toBe('时间轴恢复');
+    video.currentTime = 1;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(latest.translation).toBe('第一句');
+  });
+
   it('reuses the opening subtitle after a loop without showing the ending translation', () => {
     setup(true);
     track();

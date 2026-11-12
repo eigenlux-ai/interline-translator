@@ -132,6 +132,20 @@ export function createSubtitleRuntime(
   const identities = new Map<string, SubtitleIdentity>();
   const failures = new Set<string>();
   const desired = new Set<string>();
+  // In-band live captions expose no portable timestamps. Reuse exact translated
+  // text when native DVR playback renders it again; never invent a cue interval.
+  const liveDomTranslations = new Map<string, string>();
+  const rememberLiveDom = (text: string, translation: string) => {
+    if (!metadata?.live || !text || !translation) return;
+    liveDomTranslations.delete(text);
+    liveDomTranslations.set(text, translation);
+    let chars = [...liveDomTranslations].reduce((sum, [key, value]) => sum + key.length + value.length, 0);
+    while (liveDomTranslations.size > 256 || chars > 64_000) {
+      const first = liveDomTranslations.keys().next().value!;
+      chars -= first.length + liveDomTranslations.get(first)!.length;
+      liveDomTranslations.delete(first);
+    }
+  };
   const platformSettings = (id: string) => settings.config.platforms[id as keyof typeof settings.config.platforms];
   const permitted = (id: string) => settings.allowed && settings.config.enabled && !!platformSettings(id)?.enabled;
   const closeClient = () => {
@@ -151,6 +165,7 @@ export function createSubtitleRuntime(
     identities.clear();
     failures.clear();
     desired.clear();
+    liveDomTranslations.clear();
     signature = '';
     original = '';
     domTranslation = '';
@@ -165,17 +180,36 @@ export function createSubtitleRuntime(
     timers: { setTimeout: (cb, ms) => win.setTimeout(cb, ms), clearTimeout: (id) => win.clearTimeout(id as number) },
     onDisplay(value) {
       if (value.text || original || domStable || domTranslation || failures.has('current')) status = 'dom';
-      failures.delete('current');
+      const growingLive = !!metadata?.live && !!domStable && value.text.startsWith(domStable);
       original = value.text;
-      domTranslation = '';
-      domStable = '';
-      domVersion = String(value.contentVersion);
-      signature = '';
+      const cached = metadata?.live ? liveDomTranslations.get(value.text) : undefined;
+      if (!growingLive) {
+        failures.delete('current');
+        domTranslation = cached ?? '';
+        domStable = '';
+        domVersion = String(value.contentVersion);
+        signature = '';
+      } else if (cached) domTranslation = cached;
       update();
     },
     onStable(value) {
-      if (enabled && !state.track && value.sessionVersion === generation) {
-        domStable = value.text;
+      if (enabled && (!state.track || metadata?.live) && value.sessionVersion === generation) {
+        // Do not cancel an in-flight sentence every time another live word arrives.
+        if (
+          metadata?.live &&
+          domStable &&
+          !domTranslation &&
+          !failures.has('current') &&
+          value.text.startsWith(domStable)
+        )
+          return;
+        if (domStable !== value.text) {
+          failures.delete('current');
+          domStable = value.text;
+          domVersion = String(value.contentVersion);
+          domTranslation = metadata?.live ? (liveDomTranslations.get(value.text) ?? '') : '';
+          signature = '';
+        }
         update();
       }
     },
@@ -197,11 +231,12 @@ export function createSubtitleRuntime(
     if (playback) state.updatePlayback(playback);
     const cues = playback ? state.timeline.at(playback.timeMs) : [];
     const suppressed = !enabled || !!playback?.adPlaying || !!playback?.seeking;
-    const source = state.track ? cues.map((cue) => cue.text).join('\n') : original;
+    const timed = !!state.track && (!metadata?.live || cues.length > 0);
+    const source = timed ? cues.map((cue) => cue.text).join('\n') : original;
     const human = playback ? humanAt(playback.timeMs) : '';
     const translated =
       human ||
-      (state.track
+      (timed
         ? cues
             .map((cue) => state.translation(cue) ?? '')
             .filter(Boolean)
@@ -212,7 +247,7 @@ export function createSubtitleRuntime(
         enabled,
         original: suppressed ? '' : source,
         translation: suppressed ? '' : translated,
-        sourceLanguage: (state.track ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? '',
+        sourceLanguage: (timed ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? '',
         settings,
         status: human
           ? 'ready'
@@ -249,14 +284,16 @@ export function createSubtitleRuntime(
       return;
     }
     if (value.type === 'cancelled') return;
-    if (state.track) {
+    if (state.track && value.cueId !== 'current') {
       const identity = identities.get(value.subscriptionId);
       if (!identity || subtitleFingerprint(identity.contentVersion) !== value.contentVersion) return;
       if (value.type === 'completed' && value.text) state.acceptResult(identity, value.text);
       else if (value.type === 'failed') failures.add(value.cueId);
     } else if (value.contentVersion === domVersion && value.cueId === 'current') {
-      if (value.type === 'completed') domTranslation = value.text ?? '';
-      else if (value.type === 'failed') failures.add('current');
+      if (value.type === 'completed') {
+        domTranslation = value.text ?? '';
+        rememberLiveDom(domStable, domTranslation);
+      } else if (value.type === 'failed') failures.add('current');
     }
     signature = '';
     update();
@@ -304,12 +341,13 @@ export function createSubtitleRuntime(
       !playback.adPlaying &&
       !playback.seeking &&
       Date.now() >= targetWaitUntil;
-    if (state.track) {
+    const timed = !!state.track && (!metadata?.live || state.timeline.at(playback.timeMs).length > 0);
+    if (timed) {
       const lookAhead = settings.providerKind.endsWith('-mt')
         ? settings.config.requests.mtLookAheadSeconds
         : settings.config.requests.llmLookAheadSeconds;
       const planned = planSubtitleWindow(state.timeline, playback, { prefetchMs: lookAhead * 1000, maxCues: 100 });
-      original = planned.current.map((cue) => cue.text).join('\n');
+      if (!metadata?.live) original = planned.current.map((cue) => cue.text).join('\n');
       status = planned.current.some((cue) => failures.has(cue.id))
         ? 'translation-failed'
         : planned.current.some((cue) => !state.translation(cue)) && canTranslate
@@ -334,14 +372,14 @@ export function createSubtitleRuntime(
           }
           const identity = state.token(cue);
           if (!identity) return;
-          const subscriptionId = `${generation}:${cue.id}`;
+          const subscriptionId = `${generation}:${cue.id}:${subtitleFingerprint(identity.contentVersion)}`;
           identities.set(subscriptionId, identity);
           subscriptions.push({
             subscriptionId,
             cueId: cue.id,
             contentVersion: subtitleFingerprint(identity.contentVersion),
             text: cue.text,
-            context: state.timeline.context(cue.id),
+            context: metadata?.live ? cue.text : state.timeline.context(cue.id),
             priority,
             distanceMs: Math.max(0, cue.startMs - playback.timeMs),
           });
@@ -384,7 +422,7 @@ export function createSubtitleRuntime(
           generation,
           trackVersion: state.track?.contentVersion ?? `dom:${adapter.videoId()}`,
           sourceLanguage: (
-            (state.track ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? 'auto'
+            (timed ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? 'auto'
           ).slice(0, 40),
           title: metadata?.title.slice(0, 500),
           subscriptions: bounded,
@@ -400,7 +438,12 @@ export function createSubtitleRuntime(
   }
   const sourceChanged = (value: VideoSubtitleSourceEvent) => {
     if (!enabled || !adapter) return;
-    if (value.type === 'targetTrack') {
+    if (value.type === 'reset') {
+      invalidate();
+      state.dispose();
+      state = new SubtitleSessionState();
+      status = 'fetching';
+    } else if (value.type === 'targetTrack') {
       if (
         !settings.config.translation.preferHumanCaptions ||
         value.language !== settings.targetLanguage ||
@@ -414,7 +457,7 @@ export function createSubtitleRuntime(
       if (
         metadata?.trackId !== value.value.trackId ||
         metadata?.live !== value.value.live ||
-        (!state.track && metadata?.domLanguage !== value.value.domLanguage)
+        ((!state.track || metadata?.live) && metadata?.domLanguage !== value.value.domLanguage)
       ) {
         invalidate();
         state.dispose();
@@ -422,15 +465,26 @@ export function createSubtitleRuntime(
         status = 'fetching';
       }
       metadata = value.value;
+      if (metadata.live) targetWaitUntil = 0;
     } else if (value.type === 'track') {
       const playback = adapter.playback.snapshot();
       if (playback.adPlaying || value.track.videoId !== adapter.videoId()) return;
-      invalidate();
-      state.updatePlayback(playback);
-      state.replaceTrack(value.track);
+      if (value.incremental && metadata?.live && state.track?.contentVersion === value.track.contentVersion) {
+        const previous = new Map(state.timeline.cues.map((cue) => [cue.id, JSON.stringify(cue)]));
+        const retained = new Set(
+          value.track.cues.filter((cue) => previous.get(cue.id) === JSON.stringify(cue)).map((cue) => cue.id)
+        );
+        for (const id of failures) if (!retained.has(id)) failures.delete(id);
+        state.updatePlayback(playback);
+        state.updateLiveTrack(value.track);
+      } else {
+        invalidate();
+        state.updatePlayback(playback);
+        state.replaceTrack(value.track);
+      }
       status = 'ready';
     } else if (value.type === 'currentText') {
-      if (!state.track) {
+      if (!state.track || metadata?.live) {
         if (value.snapshot.text) {
           domSourceAvailable = true;
           status = 'dom';
