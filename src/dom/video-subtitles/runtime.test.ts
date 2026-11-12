@@ -67,7 +67,7 @@ function setup(auto = false) {
   });
   return config;
 }
-function track(text = 'Hello world', trackId = 'en') {
+function track(text = 'Hello world', trackId = 'en', live = false) {
   const calls = vi.mocked(window.postMessage).mock.calls;
   const request = [...calls].reverse().find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
   window.dispatchEvent(
@@ -81,6 +81,7 @@ function track(text = 'Hello world', trackId = 'en') {
         snapshot: {
           videoId: 'abcdefghi12',
           title: 'Example',
+          live,
           ad: false,
           hasTracks: true,
           track: { id: trackId, language: 'en', kind: 'manual' },
@@ -188,6 +189,59 @@ describe('YouTube subtitle runtime integration', () => {
     complete();
     expect(latest.translation).toBe('你好');
   });
+  it('drops a complete track when a stream becomes live and keeps observing new DOM captions', async () => {
+    setup(true);
+    track();
+    complete();
+    const old = windows.at(-1)!;
+    vi.advanceTimersByTime(3000);
+    track('Stale complete track', 'en', true);
+    complete(old);
+    expect(latest.original).toBe('');
+    const segment = document.querySelector('.ytp-caption-segment')!;
+    segment.textContent = 'Live first';
+    video.dispatchEvent(new Event('timeupdate'));
+    await vi.advanceTimersByTimeAsync(450);
+    expect(windows.at(-1)?.subscriptions[0].text).toBe('Live first');
+    segment.textContent = 'Live second';
+    video.dispatchEvent(new Event('timeupdate'));
+    await vi.advanceTimersByTimeAsync(450);
+    expect(windows.at(-1)?.subscriptions[0].text).toBe('Live second');
+    expect(latest.original).not.toBe('Stale complete track');
+  });
+
+  it('waits for fresh DOM after seek, including paused seeks and repeated dialogue', async () => {
+    setup(true);
+    vi.advanceTimersByTime(3000);
+    const segment = document.querySelector('.ytp-caption-segment')!;
+    segment.textContent = 'Repeated line';
+    video.dispatchEvent(new Event('timeupdate'));
+    await vi.advanceTimersByTimeAsync(450);
+    complete();
+    const old = windows.at(-1)!;
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+    video.currentTime = 50;
+    Object.defineProperty(video, 'seeking', { configurable: true, value: false });
+    video.dispatchEvent(new Event('seeked'));
+    await vi.advanceTimersByTimeAsync(2000);
+    complete(old);
+    expect(latest.original).toBe('');
+    expect(latest.translation).toBe('');
+    segment.textContent = 'Repeated line';
+    await vi.advanceTimersByTimeAsync(1500);
+    expect(latest.original).toBe('Repeated line');
+    expect(windows.at(-1)?.subscriptions[0].text).toBe('Repeated line');
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+    segment.textContent = 'Updated during seek';
+    await vi.advanceTimersByTimeAsync(10);
+    Object.defineProperty(video, 'seeking', { configurable: true, value: false });
+    video.dispatchEvent(new Event('seeked'));
+    await vi.advanceTimersByTimeAsync(450);
+    expect(latest.original).toBe('Updated during seek');
+  });
+
   it('uses the native display language for DOM fallback and invalidates it independently of the source track', () => {
     setup(true);
     vi.advanceTimersByTime(3000);
@@ -430,12 +484,28 @@ describe('YouTube subtitle runtime integration', () => {
     expect(latest.enabled).toBe(true);
   });
 
+  it('preserves manual enable across a delayed media replacement but not a new video', () => {
+    setup();
+    actions.toggle();
+    video.remove();
+    vi.advanceTimersByTime(2000);
+    document.querySelector('#movie_player')!.prepend(document.createElement('video'));
+    vi.advanceTimersByTime(1000);
+    expect(latest.enabled).toBe(true);
+    window.history.replaceState({}, '', '/watch?v=zyxwvutsr12');
+    vi.advanceTimersByTime(1000);
+    expect(latest.enabled).toBe(false);
+    expect(actions.uiState?.open).toBe(false);
+  });
+
   it('remounts a removed satellite and preserves manual enable on the same player', () => {
     setup();
     actions.toggle();
     track();
+    actions.saveUiState!({ open: true, focusControl: 2 });
     rendererConnected = false;
     vi.advanceTimersByTime(1000);
+    expect(actions.uiState).toEqual({ open: true, focusControl: 2 });
     expect(rendererConnected).toBe(true);
     expect(latest.enabled).toBe(true);
     track();

@@ -45,6 +45,28 @@ describe('player subtitle controls', () => {
       view.getByLabelText(m.display_label(), { selector: 'input:not([type="hidden"])' })
     );
   });
+  it('restores the open panel and focused control after a satellite remount', () => {
+    const uiState = { open: false, focusControl: undefined as number | undefined };
+    const commands = {
+      ...actions(),
+      uiState,
+      saveUiState: (patch: Partial<typeof uiState>) => Object.assign(uiState, patch),
+    };
+    const first = render(<PlayerSubtitles view={fixture()} actions={commands} />);
+    fireEvent.click(first.getByRole('button', { name: m.video_subtitles_title() }), { detail: 1 });
+    const target = first.getByLabelText(m.settings_target_label(), {
+      exact: false,
+      selector: 'input:not([type="hidden"])',
+    });
+    act(() => target.focus());
+    expect(uiState.open).toBe(true);
+    first.unmount();
+    const second = render(<PlayerSubtitles view={fixture()} actions={commands} />);
+    expect(second.getByRole('dialog')).toBeTruthy();
+    expect(document.activeElement).toBe(
+      second.getByLabelText(m.settings_target_label(), { exact: false, selector: 'input:not([type="hidden"])' })
+    );
+  });
   it('saves target inheritance semantics and restores focus on Escape without changing the playback toggle', async () => {
     const commands = actions();
     const data = fixture();
@@ -139,8 +161,13 @@ it('mounts through the host outlet, shares styles/theme, preserves controls acro
     </SurfaceProvider>
   );
   const player = view.getByTestId('player');
-  const commands = actions();
-  const renderer = mountVideoSubtitleRenderer(player, commands);
+  const uiState = { open: false, focusControl: undefined as number | undefined };
+  const commands = {
+    ...actions(),
+    uiState,
+    saveUiState: (patch: Partial<typeof uiState>) => Object.assign(uiState, patch),
+  };
+  let renderer = mountVideoSubtitleRenderer(player, commands);
   await act(async () => renderer.render(fixture()));
   const satellite = player.querySelector(SATELLITE_TAG)!;
   const shadow = satellite.shadowRoot!;
@@ -160,6 +187,15 @@ it('mounts through the host outlet, shares styles/theme, preserves controls acro
     .querySelector('input[role=combobox]')!
     .dispatchEvent(new KeyboardEvent('keydown', { key: 'k', bubbles: true, composed: true }));
   expect(key).not.toHaveBeenCalled();
+  await act(async () => shadow.querySelectorAll<HTMLInputElement>('input:not([type="hidden"])')[1].focus());
+  expect(uiState.focusControl).toBeGreaterThanOrEqual(0);
+  await act(async () => renderer.dispose());
+  renderer = mountVideoSubtitleRenderer(player, commands);
+  await act(async () => renderer.render(fixture()));
+  const replacement = player.querySelector(SATELLITE_TAG)!.shadowRoot!;
+  expect(replacement.querySelector('[role="dialog"]')).toBeTruthy();
+  expect(replacement.activeElement).toBe(replacement.querySelectorAll('input:not([type="hidden"])')[1]);
+
   await act(async () => renderer.dispose());
   expect(player.querySelector(SATELLITE_TAG)).toBeNull();
   expect(renderer.isConnected?.()).toBe(false);

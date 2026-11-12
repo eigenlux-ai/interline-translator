@@ -9,6 +9,8 @@ const state = vi.hoisted(() => ({
   set: vi.fn(async (_key: string, _value: unknown) => {}),
   watch: null as null | ((c: Config) => void),
 }));
+// Revision hashing has dedicated coverage; native crypto completion is not a timer turn.
+vi.mock('./subtitle-revision', () => ({ subtitleTranslationRevision: vi.fn(async () => 'test-revision') }));
 vi.mock('@webext-core/proxy-service', () => ({ registerService: vi.fn(), createProxyService: vi.fn() }));
 vi.mock('./storage', () => ({
   getConfig: state.read,

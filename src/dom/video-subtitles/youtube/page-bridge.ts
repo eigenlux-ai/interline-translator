@@ -11,22 +11,32 @@ import {
   type YoutubeSnapshot,
 } from './bridge-protocol';
 import { parseYouTubeTimedText } from './parser';
+import { audioCaptionIndex, type AudioTrack } from './track-selection';
 
 type Track = {
   baseUrl?: string;
   languageCode?: string;
   kind?: string;
+  isDefault?: boolean;
   vssId?: string;
   vss_id?: string;
   name?: { simpleText?: string };
   translationLanguage?: { languageCode?: string };
 };
 type PlayerResponse = {
-  videoDetails?: { videoId?: string; title?: string };
-  captions?: { playerCaptionsTracklistRenderer?: { captionTracks?: Track[] } };
+  videoDetails?: { videoId?: string; title?: string; isLive?: boolean; isLiveContent?: boolean };
+  microformat?: { playerMicroformatRenderer?: { liveBroadcastDetails?: { isLiveNow?: boolean } } };
+  captions?: {
+    playerCaptionsTracklistRenderer?: {
+      captionTracks?: Track[];
+      audioTracks?: AudioTrack[];
+      defaultAudioTrackIndex?: number;
+    };
+  };
 };
 type Player = HTMLElement & {
   getPlayerResponse?(): PlayerResponse;
+  getAudioTrack?(): (AudioTrack & { captionTracks?: Track[] }) | undefined;
   getOption?(module: string, option: string): Track | undefined;
   isSubtitlesOn?(): boolean;
   toggleSubtitles?(): void;
@@ -112,6 +122,7 @@ export function installYoutubeBridge(win: Window): () => void {
   let lastRequestAt = -Infinity;
   const fetchBudgets = new Map<string, { attempts: number; retryAt: number }>();
   let receivedRead = false;
+  let selectedAudioId = '';
   let endpointRetryAt = 0;
   let endpointRateLimits = 0;
   const cache = new Map<string, string>();
@@ -243,6 +254,7 @@ export function installYoutubeBridge(win: Window): () => void {
     domLanguages.clear();
     fetchBudgets.clear();
     selectedTrackId = '';
+    selectedAudioId = '';
     currentVideo = videoId;
     receivedRead = false;
     changedCaptions = null;
@@ -479,10 +491,36 @@ export function installYoutubeBridge(win: Window): () => void {
     if (!response || response.videoDetails?.videoId !== videoId) return;
     watchCaptionControl(player);
     const ad = isAd();
-    const rawTracks = response.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    const tracklist = response.captions?.playerCaptionsTracklistRenderer;
+    const rawTracks = tracklist?.captionTracks;
+    const live =
+      response.videoDetails?.isLive === true ||
+      response.microformat?.playerMicroformatRenderer?.liveBroadcastDetails?.isLiveNow === true ||
+      player.querySelector('video')?.duration === Infinity;
+    let currentAudio: (AudioTrack & { captionTracks?: Track[] }) | undefined;
+    try {
+      currentAudio = player.getAudioTrack?.();
+    } catch {
+      /* Optional player API. */
+    }
+    const audioTracks = Array.isArray(tracklist?.audioTracks) ? tracklist.audioTracks : [];
+    const audio =
+      (currentAudio?.id
+        ? audioTracks.find((item) => (item?.audioTrackId ?? item?.id) === currentAudio.id)
+        : undefined) ??
+      (currentAudio?.captionTrackIndices ? currentAudio : undefined) ??
+      audioTracks[tracklist?.defaultAudioTrackIndex ?? 0];
+    const audioId = String(currentAudio?.id ?? audio?.id ?? tracklist?.defaultAudioTrackIndex ?? '');
+    const audioChanged = audioId !== selectedAudioId;
+    selectedAudioId = audioId;
     const tracks = Array.isArray(rawTracks)
       ? rawTracks.filter((item) => item && typeof item === 'object').slice(0, 100)
       : [];
+    const nativeAudioCaptions = Array.isArray(currentAudio?.captionTracks) ? currentAudio.captionTracks : [];
+    const nativeDefault = nativeAudioCaptions.find((item) => item?.isDefault) ?? nativeAudioCaptions[0];
+    const nativeDefaultTrack = nativeDefault?.vssId
+      ? tracks.find((item) => item.vssId === nativeDefault.vssId)
+      : undefined;
     let selected: Track | undefined;
     try {
       if (
@@ -517,16 +555,23 @@ export function installYoutubeBridge(win: Window): () => void {
       ) ??
       // Player errors and transient module reloads can temporarily clear the
       // selection. Keep the confirmed source until an explicit choice returns.
-      (!selected?.vssId && !selected?.vss_id && !selected?.languageCode
+      (!audioChanged && !selected?.vssId && !selected?.vss_id && !selected?.languageCode
         ? tracks.find((item) => trackId(item) === selectedTrackId)
         : undefined) ??
+      nativeDefaultTrack ??
+      tracks[audioCaptionIndex(audio, tracks.length) ?? -1] ??
       tracks[0];
     const sourceUrl = track?.baseUrl && safeTimedTextUrl(track.baseUrl, videoId);
     if (sourceUrl) sourceUrl.searchParams.delete('tlang');
     const observedLanguage = sourceUrl ? domLanguages.get(trackKey(sourceUrl)) : undefined;
     const domLanguage =
-      selected?.translationLanguage?.languageCode || observedLanguage || selected?.languageCode || 'auto';
+      selected?.translationLanguage?.languageCode ||
+      observedLanguage ||
+      selected?.languageCode ||
+      track?.languageCode ||
+      'auto';
     const snapshot: YoutubeSnapshot = {
+      live,
       domLanguage: String(domLanguage).slice(0, 50),
       videoId,
       title: typeof response.videoDetails?.title === 'string' ? response.videoDetails.title.slice(0, 1000) : '',
@@ -541,7 +586,7 @@ export function installYoutubeBridge(win: Window): () => void {
         : null,
     };
     const nextTrackId = snapshot.track?.id ?? '';
-    if (selectedTrackId !== nextTrackId || ad) {
+    if (selectedTrackId !== nextTrackId || ad || live) {
       pending?.controller.abort();
       pending = null;
     }
@@ -563,7 +608,7 @@ export function installYoutubeBridge(win: Window): () => void {
         win.location.origin
       );
     };
-    if (ad || !track) {
+    if (ad || live || !track) {
       post();
       return;
     }
