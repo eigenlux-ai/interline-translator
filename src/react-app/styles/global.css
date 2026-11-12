@@ -1,7 +1,7 @@
 /*
  * Shared stylesheet for every surface. Document surfaces load it via the
  * page <head>; shadow surfaces get it injected into the shadow root by WXT
- * (cssInjectionMode: 'ui'); satellites share it via adoptedStyleSheets.
+ * from the bundled virtual:surface-css string; satellites share it via adoptedStyleSheets.
  *
  * `:root, .<prefix>-surface-root` double selector: `:root` matches in document
  * surfaces; `.<prefix>-surface-root` matches the surface root INSIDE shadow

@@ -173,7 +173,7 @@ class SatelliteRegistry {
   /**
    * Rebuild shared sheets from whatever styles live in the host surface's
    * shadow root. This automatically captures the full static CSS injected by
-   * WXT (cssInjectionMode: 'ui') AND the Mantine theme-variables <style>
+   * the bundled entrypoint CSS AND the Mantine theme-variables <style>
    * rendered in-tree — single source of truth, no extra plumbing. Re-run on
    * theme changes (the variables style content is rewritten in place).
    *

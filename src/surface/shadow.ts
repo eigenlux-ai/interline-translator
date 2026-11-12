@@ -22,6 +22,8 @@ type ShadowRootUiCtx = Parameters<typeof createShadowRootUi>[0];
 export interface ShadowSurfaceOptions<TMounted> {
   /** Custom element tag name (must contain a dash), e.g. SHADOW_SURFACE_TAG. */
   name: string;
+  /** Bundled styles for surfaces that avoid fetching extension resources. */
+  css?: string;
   /** Where to insert the host element. Defaults to `body`. */
   anchor?: string | Element;
   /**
@@ -71,6 +73,7 @@ export async function createShadowSurfaceUi<TMounted>(ctx: ShadowRootUiCtx, opti
 
   return createShadowRootUi<TMounted>(ctx, {
     name: options.name,
+    css: options.css?.replaceAll(':root', ':host'),
     position: options.position ?? 'overlay',
     anchor: options.anchor ?? 'body',
     isolateEvents: options.isolateEvents ?? ['keydown', 'keyup', 'keypress'],

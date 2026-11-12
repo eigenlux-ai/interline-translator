@@ -34,13 +34,16 @@ class PinnedRef<T> {
     return this.value;
   }
 }
-const happyDomObserve = MutationObserver.prototype.observe;
-MutationObserver.prototype.observe = function (target: Node, options?: MutationObserverInit): void {
-  const RealWeakRef = globalThis.WeakRef;
-  (globalThis as unknown as { WeakRef: unknown }).WeakRef = PinnedRef;
-  try {
-    happyDomObserve.call(this, target, options as MutationObserverInit);
-  } finally {
-    (globalThis as unknown as { WeakRef: unknown }).WeakRef = RealWeakRef;
-  }
-};
+// Build-plugin tests run in Node without DOM globals.
+if (typeof MutationObserver !== 'undefined') {
+  const happyDomObserve = MutationObserver.prototype.observe;
+  MutationObserver.prototype.observe = function (target: Node, options?: MutationObserverInit): void {
+    const RealWeakRef = globalThis.WeakRef;
+    (globalThis as unknown as { WeakRef: unknown }).WeakRef = PinnedRef;
+    try {
+      happyDomObserve.call(this, target, options as MutationObserverInit);
+    } finally {
+      (globalThis as unknown as { WeakRef: unknown }).WeakRef = RealWeakRef;
+    }
+  };
+}

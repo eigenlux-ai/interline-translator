@@ -27,7 +27,9 @@
     "test:watch": "vitest",
     "store:assets": "node scripts/store/generate.mjs",
     "store:check": "node scripts/store/check.mjs",
-    "notices": "node scripts/generate-notices.mjs"
+    "notices": "node scripts/generate-notices.mjs",
+    "audit:surface": "node scripts/check-inline-surface-css.mjs .output/chrome-mv3",
+    "audit:surface:firefox": "node scripts/check-inline-surface-css.mjs .output/firefox-mv2"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.135",
