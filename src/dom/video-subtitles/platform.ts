@@ -17,6 +17,7 @@ export interface VideoSubtitleMetadata {
 }
 export type VideoSubtitleSourceEvent =
   | SubtitleSourceEvent
+  | { type: 'reset' }
   | { type: 'metadata'; value: VideoSubtitleMetadata }
   | { type: 'targetTrack'; pending?: boolean; track: SubtitleTrack | null; language: string };
 export interface VideoPlatformAdapter extends Omit<PlatformAdapter<HTMLElement>, 'playback' | 'source'> {

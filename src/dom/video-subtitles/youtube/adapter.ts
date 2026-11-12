@@ -1,4 +1,5 @@
 import { subtitleFingerprint, type PlaybackState } from '@/core/subtitles';
+import { LiveSubtitleBuffer } from '@/core/subtitles/live';
 import { PROJECT_PREFIX } from '@/constants';
 import type { VideoPlatformAdapter, VideoSubtitleSourceEvent } from '../platform';
 import {
@@ -28,9 +29,7 @@ export function createYoutubeAdapter(
       const fullscreen = win.document.fullscreenElement;
       const container = player.closest<HTMLElement>('#player-container') ?? player;
       // Shorts fullscreen can target <html>; retain the video's own bounds.
-      return fullscreen?.contains(player) && !fullscreen.contains(container)
-        ? (fullscreen as HTMLElement)
-        : container;
+      return fullscreen?.contains(player) && !fullscreen.contains(container) ? (fullscreen as HTMLElement) : container;
     }
     if (!isYoutubeEmbed(win.location.href)) return player;
     const fullscreen = win.document.fullscreenElement;
@@ -49,6 +48,24 @@ export function createYoutubeAdapter(
   let wasSeeking = false;
   let freshDuringSeek = false;
   let live = false;
+  let liveRevision = 0;
+  let liveEpoch = 0;
+  const liveBuffer = new LiveSubtitleBuffer();
+  const liveFloor = () => (video.seekable.length ? video.seekable.start(0) * 1000 : 0);
+  const publishLive = (info: { id: string; language: string; kind: 'manual' | 'auto' }) => {
+    emit({
+      type: 'track',
+      incremental: true,
+      sessionVersion: 0,
+      track: {
+        videoId,
+        ...info,
+        contentVersion: `live:${liveEpoch}:${trackId}`,
+        cues: liveBuffer.cues,
+      },
+    });
+  };
+  let liveInfo: { id: string; language: string; kind: 'manual' | 'auto' } | null = null;
   let observer: MutationObserver | null = null,
     captionContainer: Element | null = null;
   let hiddenStyle: HTMLStyleElement | null = null;
@@ -143,7 +160,14 @@ export function createYoutubeAdapter(
     if (action === 'read') readTarget(resetRetry);
   };
   const readDom = () => {
-    if (!active || awaitingSeekCaption || rawTrack || Date.now() - startedAt < 2500 || video.seeking || adPlaying())
+    if (
+      !active ||
+      awaitingSeekCaption ||
+      (!live && rawTrack) ||
+      Date.now() - startedAt < 2500 ||
+      video.seeking ||
+      adPlaying()
+    )
       return;
     const text = Array.from(captionContainer?.querySelectorAll('.ytp-caption-segment') ?? [])
       .map((el) => el.textContent ?? '')
@@ -183,8 +207,18 @@ export function createYoutubeAdapter(
     if (active && frameId === null && win.document.visibilityState !== 'hidden' && frameListeners.size)
       frameId = video.requestVideoFrameCallback?.(frame) ?? null;
   };
-  const playbackChanged = () => {
+  const playbackChanged = (event?: Event) => {
     if (!active) return;
+    if (live && (event?.type === 'emptied' || event?.type === 'loadedmetadata')) {
+      liveBuffer.clear();
+      liveRevision = 0;
+      liveEpoch += 1;
+      requests.clear();
+      lastText = null;
+      awaitingSeekCaption = true;
+      observer?.takeRecords();
+      emit({ type: 'reset' });
+    }
     const state = snapshot();
     if (state.seeking || state.adPlaying) {
       lastText = null;
@@ -271,18 +305,32 @@ export function createYoutubeAdapter(
     }
     if (domLanguage !== data.snapshot.domLanguage) {
       domLanguage = data.snapshot.domLanguage;
+      if (live) {
+        liveBuffer.clear();
+        liveRevision = 0;
+        liveEpoch += 1;
+        liveInfo = null;
+      }
       lastText = null;
     }
     if (live !== !!data.snapshot.live) {
       live = !!data.snapshot.live;
       clearTarget();
       rawTrack = '';
+      liveBuffer.clear();
+      liveRevision = 0;
+      liveEpoch += 1;
+      liveInfo = null;
       lastText = null;
     }
     const nextTrackId = data.snapshot.track?.id ?? '';
     if (trackId !== nextTrackId) {
       trackId = nextTrackId;
       rawTrack = '';
+      liveBuffer.clear();
+      liveRevision = 0;
+      liveEpoch += 1;
+      liveInfo = null;
       lastText = null;
     }
     emit({
@@ -297,7 +345,16 @@ export function createYoutubeAdapter(
         hasTracks: data.snapshot.hasTracks,
       },
     });
-    if (!live && data.text && data.text !== rawTrack && data.snapshot.track) {
+    if (live && data.text && data.liveRevision && data.liveRevision > liveRevision && data.snapshot.track) {
+      try {
+        const cues = parseYouTubeTimedText(data.text);
+        liveRevision = data.liveRevision;
+        liveInfo = data.snapshot.track;
+        if (liveBuffer.merge(cues, video.currentTime * 1000, liveFloor())) publishLive(liveInfo);
+      } catch {
+        // Malformed or unsupported live packets must leave native DOM fallback usable.
+      }
+    } else if (!live && data.text && data.text !== rawTrack && data.snapshot.track) {
       try {
         const cues = parseYouTubeTimedText(data.text);
         if (!cues.length) throw new Error('empty');
@@ -325,7 +382,7 @@ export function createYoutubeAdapter(
       });
     readDom();
   };
-  const events = ['timeupdate', 'seeking', 'seeked', 'ratechange', 'play', 'pause', 'loadedmetadata'];
+  const events = ['timeupdate', 'seeking', 'seeked', 'ratechange', 'play', 'pause', 'loadedmetadata', 'emptied'];
   const stop = () => {
     if (!active) return;
     active = false;
@@ -347,6 +404,10 @@ export function createYoutubeAdapter(
     wasSeeking = false;
     freshDuringSeek = false;
     live = false;
+    liveBuffer.clear();
+    liveInfo = null;
+    liveRevision = 0;
+    liveEpoch += 1;
     lastText = null;
   };
   const dispose = () => {
@@ -425,6 +486,7 @@ export function createYoutubeAdapter(
     poll() {
       if (!active) return;
       bindCaptions();
+      if (liveInfo && liveBuffer.merge([], video.currentTime * 1000, liveFloor())) publishLive(liveInfo);
       bridge('read');
       playbackChanged();
     },

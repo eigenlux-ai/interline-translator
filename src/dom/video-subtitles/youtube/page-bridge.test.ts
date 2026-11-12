@@ -1045,3 +1045,78 @@ it('reads only the visible current Short and ignores background watch/preload ca
   expect(responses().some((response) => response.requestId === 'transition')).toBe(false);
   expect(fetched).toHaveBeenCalledTimes(2); // Old player response is not yet the new route's video.
 });
+
+it('publishes native live packets despite knownTrackId and rejects late older responses', async () => {
+  win.document.querySelector('#movie_player')!.append(win.document.createElement('video'));
+  Object.assign(win.document.querySelector('#movie_player')!, {
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_123', isLive: true },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: [track] } },
+    }),
+  });
+  const pending: ((response: Response) => void)[] = [];
+  fetched.mockImplementation(() => new Promise((resolve) => pending.push(resolve)));
+  dispose = installYoutubeBridge(win);
+  read();
+  expect(fetched).not.toHaveBeenCalled();
+  const older = win.fetch(baseUrl);
+  const newer = win.fetch(baseUrl);
+  const revised = body.replace('caption', 'revised caption');
+  pending[1](new Response(revised));
+  await newer;
+  await settle();
+  await vi.advanceTimersByTimeAsync(250);
+  read('newer', '.en');
+  const response = responses().at(-1)!;
+  expect(response.text).toContain('revised caption');
+  expect(response.liveRevision).toBeGreaterThan(0);
+  pending[0](new Response(body));
+  await older;
+  await settle();
+  await vi.advanceTimersByTimeAsync(250);
+  read('older', '.en');
+  expect(responses().at(-1)?.text).toBe(response.text);
+  expect(responses().at(-1)?.liveRevision).toBe(response.liveRevision);
+  const appended = win.fetch(baseUrl);
+  pending[2](new Response('{"events":[{"tStartMs":2000,"dDurationMs":1000,"segs":[{"utf8":"append"}]}]}'));
+  await appended;
+  await settle();
+  await vi.advanceTimersByTimeAsync(250);
+  read('appended', '.en');
+  expect(responses().at(-1)?.text).toContain('revised caption');
+  expect(responses().at(-1)?.text).toContain('append');
+  expect(fetched).toHaveBeenCalledTimes(3); // Only native requests; no finite-track live fetch.
+  const beforeReset = win.fetch(baseUrl);
+  win.document.querySelector('video')!.dispatchEvent(new browser.Event('emptied') as unknown as Event);
+  pending[3](new Response(body));
+  await beforeReset;
+  await settle();
+  read('reset', '.en');
+  expect(responses().at(-1)?.text).toBeUndefined();
+});
+
+it('discovers in-band live caption tracks missing from playerResponse without finite-track fetching', async () => {
+  const player = win.document.querySelector('#movie_player')!;
+  let enabled = false;
+  const native = { vss_id: '.en.live', languageCode: 'en', kind: '' };
+  Object.assign(player, {
+    getPlayerResponse: () => ({ videoDetails: { videoId: 'video_123', isLive: true } }),
+    getOption: (_module: string, key: string) => (key === 'tracklist' ? [native] : native),
+    isSubtitlesOn: () => enabled,
+    toggleSubtitles: () => {
+      enabled = !enabled;
+    },
+  });
+  dispose = installYoutubeBridge(win);
+  read('live', undefined, true);
+  await settle();
+  expect(enabled).toBe(true);
+  expect(responses().at(-1)?.snapshot).toMatchObject({
+    live: true,
+    hasTracks: true,
+    track: { id: '.en.live', language: 'en' },
+  });
+  expect(fetched).not.toHaveBeenCalled();
+  stop();
+  expect(enabled).toBe(false);
+});

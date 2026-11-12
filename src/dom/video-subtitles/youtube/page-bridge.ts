@@ -1,9 +1,11 @@
 /** Page-world YouTube adapter: observes only timedtext, never proxies arbitrary requests. */
+import { LiveSubtitleBuffer } from '@/core/subtitles/live';
 import { PROJECT_PREFIX } from '@/constants';
 import {
   BRIDGE_RESPONSE,
   BRIDGE_VERSION,
   isYoutubeEmbed,
+  isYoutubeLive,
   isYoutubeShorts,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
@@ -43,7 +45,10 @@ type PlayerResponse = {
 type Player = HTMLElement & {
   getPlayerResponse?(): PlayerResponse;
   getAudioTrack?(): (AudioTrack & { captionTracks?: Track[] }) | undefined;
-  getOption?(module: string, option: string): Track | undefined;
+  getOption?: {
+    (module: string, option: 'tracklist'): Track[] | undefined;
+    (module: string, option: string): Track | undefined;
+  };
   isSubtitlesOn?(): boolean;
   toggleSubtitles?(): void;
 };
@@ -108,11 +113,14 @@ export function installYoutubeBridge(win: Window): () => void {
   if (existing) return existing;
   // Embeds and Shorts can reuse a player while its media identity changes.
   const pageVideoId = (): string | null => {
-    if (!isYoutubeEmbed(win.location.href) && !isYoutubeShorts(win.location.href))
+    if (!isYoutubeEmbed(win.location.href) && !isYoutubeShorts(win.location.href) && !isYoutubeLive(win.location.href))
       return youtubeVideoId(win.location.href);
     try {
       const id = (youtubePlayer(win) as Player | null)?.getPlayerResponse?.().videoDetails?.videoId;
-      return validVideoId(id) && (!isYoutubeShorts(win.location.href) || id === youtubeVideoId(win.location.href))
+      return validVideoId(id) &&
+        (!(isYoutubeShorts(win.location.href) || isYoutubeLive(win.location.href)) ||
+          !youtubeVideoId(win.location.href) ||
+          id === youtubeVideoId(win.location.href))
         ? id
         : null;
     } catch {
@@ -155,6 +163,10 @@ export function installYoutubeBridge(win: Window): () => void {
   let endpointRetryAt = 0;
   let endpointRateLimits = 0;
   const cache = new Map<string, string>();
+  const liveRevisions = new Map<string, number>();
+  let captureRevision = 0;
+  let captureLive: boolean | null = null;
+  const liveBuffers = new Map<string, LiveSubtitleBuffer>();
   // Capture signed URLs independently of bodies: failed native requests can still supply fresh tokens.
   const observedUrls = new Map<string, string>();
   const domLanguages = new Map<string, string>();
@@ -279,12 +291,15 @@ export function installYoutubeBridge(win: Window): () => void {
     for (const [xhr, listener] of xhrListeners) xhr.removeEventListener('loadend', listener);
     xhrListeners.clear();
     cache.clear();
+    liveRevisions.clear();
+    liveBuffers.clear();
     observedUrls.clear();
     domLanguages.clear();
     fetchBudgets.clear();
     sourceChannel.selectedTrackId = '';
     selectedAudioId = '';
     currentVideo = videoId;
+    captureLive = null;
     receivedRead = false;
     changedCaptions = null;
     userCaptionVideo = '';
@@ -317,7 +332,7 @@ export function installYoutubeBridge(win: Window): () => void {
     // Preserve the native context, but never treat translated bodies as originals.
     return translated ? null : url;
   };
-  const capture = (rawUrl: string, text: string, captureEpoch: number): boolean => {
+  const capture = (rawUrl: string, text: string, captureEpoch: number, revision = ++captureRevision): boolean => {
     if (
       !active ||
       disposed ||
@@ -333,16 +348,42 @@ export function installYoutubeBridge(win: Window): () => void {
     const url = id && id === currentVideo && safeTimedTextUrl(rawUrl, id);
     if (!url || url.searchParams.has('tlang')) return false;
     const key = trackKey(url);
-    if (cache.get(key) === text) return true;
+    if ((liveRevisions.get(key) ?? 0) > revision) return false;
+    if (cache.get(key) === text) {
+      liveRevisions.set(key, revision);
+      return true;
+    }
     try {
-      if (!parseYouTubeTimedText(text).length) return false;
+      const cues = parseYouTubeTimedText(text);
+      if (!cues.length) return false;
+      if (captureLive) {
+        const video = youtubePlayer(win)?.querySelector('video');
+        if (!video || video.seeking) return false;
+        const buffer = liveBuffers.get(key) ?? new LiveSubtitleBuffer();
+        buffer.merge(cues, video.currentTime * 1000, video.seekable.length ? video.seekable.start(0) * 1000 : 0);
+        liveBuffers.set(key, buffer);
+        text = JSON.stringify({
+          events: buffer.cues.map((cue) => ({
+            tStartMs: cue.startMs,
+            dDurationMs: cue.endMs - cue.startMs,
+            wWinId: cue.id,
+            segs: [{ utf8: cue.text }],
+          })),
+        });
+      }
     } catch {
       return false;
     }
     // Body completion must not replace newer native tokens or the DOM language.
     cache.delete(key);
     cache.set(key, text);
-    while (cache.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) cache.delete(cache.keys().next().value!);
+    liveRevisions.set(key, revision);
+    while (cache.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) {
+      const oldest = cache.keys().next().value!;
+      cache.delete(oldest);
+      liveRevisions.delete(oldest);
+      liveBuffers.delete(oldest);
+    }
     return true;
   };
   const wrappedFetch: typeof fetch = function (this: Window, ...args) {
@@ -355,6 +396,7 @@ export function installYoutubeBridge(win: Window): () => void {
       if (url && observers.size < YOUTUBE_CAPTURE_CACHE_ENTRIES) {
         const observer = new AbortController();
         const captureEpoch = epoch;
+        const revision = ++captureRevision;
         observers.add(observer);
         void result
           .then((response) => {
@@ -362,7 +404,7 @@ export function installYoutubeBridge(win: Window): () => void {
             const finalUrl = response.url || url.href;
             if (!safeTimedTextUrl(finalUrl, currentVideo)) return;
             return boundedSubtitleText(response.clone(), observer.signal).then((text) =>
-              capture(finalUrl, text, captureEpoch)
+              capture(finalUrl, text, captureEpoch, revision)
             );
           })
           .catch(() => {})
@@ -397,12 +439,13 @@ export function installYoutubeBridge(win: Window): () => void {
     }
     if (url && xhrListeners.size < YOUTUBE_CAPTURE_CACHE_ENTRIES) {
       const captureEpoch = epoch;
+      const revision = ++captureRevision;
       const listener = () => {
         xhrListeners.delete(this);
         this.removeEventListener('loadend', listener);
         try {
           if (this.status === 200 && (!this.responseType || this.responseType === 'text'))
-            capture(this.responseURL || url.href, this.responseText, captureEpoch);
+            capture(this.responseURL || url.href, this.responseText, captureEpoch, revision);
         } catch {
           /* The host may make responseText unavailable. */
         }
@@ -453,6 +496,8 @@ export function installYoutubeBridge(win: Window): () => void {
     // These bounded, page-local caches are invalidated on video change/disposal.
     if (dropCache) {
       cache.clear();
+      liveRevisions.clear();
+      liveBuffers.clear();
       observedUrls.clear();
       domLanguages.clear();
     }
@@ -498,7 +543,12 @@ export function installYoutubeBridge(win: Window): () => void {
       return;
     const data = event.data;
     if (data.action === 'identify') {
-      if (!isYoutubeEmbed(win.location.href) && !isYoutubeShorts(win.location.href)) return;
+      if (
+        !isYoutubeEmbed(win.location.href) &&
+        !isYoutubeShorts(win.location.href) &&
+        !isYoutubeLive(win.location.href)
+      )
+        return;
       const videoId = pageVideoId();
       clearVideo(videoId ?? '');
       if (videoId)
@@ -549,7 +599,16 @@ export function installYoutubeBridge(win: Window): () => void {
     if (!data.targetLanguage) watchCaptionControl(player);
     const ad = isAd();
     const tracklist = response.captions?.playerCaptionsTracklistRenderer;
-    const rawTracks = tracklist?.captionTracks;
+    let rawTracks = tracklist?.captionTracks;
+    // In-band live captions may only be advertised by the active caption module.
+    if (!rawTracks?.length) {
+      try {
+        const native = player.getOption?.('captions', 'tracklist');
+        if (Array.isArray(native)) rawTracks = native;
+      } catch {
+        /* Optional player module is not always loaded yet. */
+      }
+    }
     const live =
       response.videoDetails?.isLive === true ||
       response.microformat?.playerMicroformatRenderer?.liveBroadcastDetails?.isLiveNow === true ||
@@ -570,12 +629,19 @@ export function installYoutubeBridge(win: Window): () => void {
     const audioId = String(currentAudio?.id ?? audio?.id ?? tracklist?.defaultAudioTrackIndex ?? '');
     const audioChanged = audioId !== selectedAudioId;
     if (!data.targetLanguage) selectedAudioId = audioId;
+    if (captureLive !== null && captureLive !== live) {
+      cache.clear();
+      liveRevisions.clear();
+      liveBuffers.clear();
+    }
+    captureLive = live;
     const tracks = Array.isArray(rawTracks)
       ? rawTracks
           .filter((item) => item && typeof item === 'object')
           .slice(0, 100)
           .map((item) => ({
             ...item,
+            vssId: item.vssId ?? item.vss_id,
             // Privacy-enhanced embeds expose same-origin relative timedtext URLs.
             baseUrl:
               typeof item.baseUrl === 'string'
@@ -677,8 +743,17 @@ export function installYoutubeBridge(win: Window): () => void {
         win.location.origin
       );
     };
-    if (ad || live || !track) {
+    if (ad || !track) {
       post();
+      return;
+    }
+    if (live) {
+      // Live captions are native incremental packets, never a finite-track fetch.
+      const url = typeof track.baseUrl === 'string' && safeTimedTextUrl(track.baseUrl, videoId);
+      const key = url && trackKey(url);
+      const text = key && cache.get(key);
+      const liveRevision = key && liveRevisions.get(key);
+      post(text && liveRevision ? { text, liveRevision } : {});
       return;
     }
     if (data.knownTrackId === nextTrackId) {
@@ -794,12 +869,27 @@ export function installYoutubeBridge(win: Window): () => void {
         if (channel.pending?.controller === controller) channel.pending = null;
       });
   };
+  const onMediaReset = (event: Event) => {
+    if (!captureLive || event.target !== youtubePlayer(win)?.querySelector('video')) return;
+    epoch += 1;
+    cache.clear();
+    liveBuffers.clear();
+    liveRevisions.clear();
+    cancelChannel(sourceChannel);
+    cancelChannel(targetChannel);
+    for (const observer of observers) observer.abort();
+    observers.clear();
+    for (const [xhr, listener] of xhrListeners) xhr.removeEventListener('loadend', listener);
+    xhrListeners.clear();
+  };
   const dispose = () => {
     if (disposed) return;
     disposed = true;
     release(true);
     restoreCaptions();
     win.removeEventListener('message', onMessage);
+    win.document.removeEventListener('emptied', onMediaReset, true);
+    win.document.removeEventListener('loadedmetadata', onMediaReset, true);
     win.document.removeEventListener('click', onCaptionClick, true);
     win.document.removeEventListener('keydown', onCaptionKey, true);
     win.removeEventListener('pagehide', onHide);
@@ -841,6 +931,8 @@ export function installYoutubeBridge(win: Window): () => void {
   win.document.addEventListener('yt-navigate-start', onNavigateStart);
   win.document.addEventListener('yt-navigate-finish', onNavigateFinish);
   win.addEventListener('message', onMessage);
+  win.document.addEventListener('emptied', onMediaReset, true);
+  win.document.addEventListener('loadedmetadata', onMediaReset, true);
   win.document.addEventListener('click', onCaptionClick, true);
   win.document.addEventListener('keydown', onCaptionKey, true);
   win.addEventListener('pagehide', onHide);

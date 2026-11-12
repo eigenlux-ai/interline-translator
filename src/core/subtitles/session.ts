@@ -33,6 +33,29 @@ export class SubtitleSessionState {
     this.timeline.cues.forEach((cue) => this.byId.set(cue.id, cue));
   }
 
+  /** Same live stream epoch: retain only translations whose exact cue survives. */
+  updateLiveTrack(track: SubtitleTrack): void {
+    if (this.disposed || this.playback.adPlaying) return;
+    if (
+      !this.track ||
+      this.track.videoId !== track.videoId ||
+      this.track.id !== track.id ||
+      this.track.contentVersion !== track.contentVersion
+    ) {
+      this.replaceTrack(track);
+      return;
+    }
+    const timeline = new SubtitleTimeline(track.cues);
+    this.track = { ...track, cues: timeline.cues };
+    this.timeline = timeline;
+    this.byId.clear();
+    for (const cue of timeline.cues) this.byId.set(cue.id, cue);
+    for (const [id, result] of this.results) {
+      const cue = this.byId.get(id);
+      if (!cue || result.version !== cueContentVersion(cue)) this.results.delete(id);
+    }
+  }
+
   updatePlayback(playback: PlaybackState): void {
     if (!this.disposed) this.playback = { ...playback };
   }

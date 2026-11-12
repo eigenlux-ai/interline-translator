@@ -3,6 +3,7 @@ import {
   BRIDGE_REQUEST,
   BRIDGE_RESPONSE,
   isYoutubeEmbed,
+  isYoutubeLive,
   isYoutubeShorts,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
@@ -115,4 +116,24 @@ describe('YouTube bridge protocol boundary', () => {
     );
     expect(validBridgeResponse({ ...response, text: '字'.repeat(Math.floor(MAX_SUBTITLE_BYTES / 3) + 1) })).toBe(false);
   });
+});
+
+it('accepts only bounded live route shapes and source revisions on live snapshots', () => {
+  expect(isYoutubeLive('https://www.youtube.com/@DWNews/live')).toBe(true);
+  expect(isYoutubeLive('https://youtube.com.evil.test/@DWNews/live')).toBe(false);
+  expect(isYoutubeLive('https://www.youtube.com/@DWNews/videos')).toBe(false);
+  const packet = {
+    type: BRIDGE_RESPONSE,
+    version: 1,
+    requestId: 'live',
+    snapshot: { ...snapshot, live: true },
+    liveRevision: 1,
+  };
+  expect(validBridgeResponse(packet)).toBe(true);
+  for (const revision of [-1, 0, 1.5, Infinity, '1', Number.MAX_SAFE_INTEGER + 1])
+    expect(validBridgeResponse({ ...packet, liveRevision: revision })).toBe(false);
+  expect(validBridgeResponse({ ...packet, snapshot })).toBe(false);
+  expect(youtubeVideoId('https://www.youtube.com/live/abcdefghi12')).toBe('abcdefghi12');
+  expect(youtubeVideoId('https://www.youtube.com/live/abcdefghi12/extra')).toBeNull();
+  expect(youtubeVideoId('https://www.youtube-nocookie.com/live/abcdefghi12')).toBeNull();
 });
