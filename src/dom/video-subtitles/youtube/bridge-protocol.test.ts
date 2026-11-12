@@ -3,6 +3,7 @@ import {
   BRIDGE_REQUEST,
   BRIDGE_RESPONSE,
   isYoutubeEmbed,
+  isYoutubeShorts,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
   validBridgeRequest,
@@ -23,7 +24,6 @@ describe('YouTube bridge protocol boundary', () => {
     expect(youtubeVideoId('https://www.youtube.com/watch?v=video_123')).toBe('video_123');
     for (const url of [
       'https://youtube.com.evil.test/watch?v=video_123',
-      'https://www.youtube.com/shorts/video_123',
       'http://youtube.com/watch?v=video_123',
       'https://user@youtube.com/watch?v=video_123',
       'https://youtube.com:444/watch?v=video_123',
@@ -51,6 +51,20 @@ describe('YouTube bridge protocol boundary', () => {
     ])
       expect(isYoutubeEmbed(url)).toBe(false);
     expect(safeTimedTextUrl('https://youtube-nocookie.com/api/timedtext?v=video_123', 'video_123')).toBeInstanceOf(URL);
+  });
+
+  it('accepts exact Shorts paths only on HTTPS YouTube, excluding lookalikes and privacy watch pages', () => {
+    expect(youtubeVideoId('https://www.youtube.com/shorts/video_123?feature=share')).toBe('video_123');
+    for (const value of [
+      'https://youtube.com/shorts/',
+      'https://youtube.com/shorts/video_123/extra',
+      'https://youtube-nocookie.com/shorts/video_123',
+      'https://youtube.com.evil.test/shorts/video_123',
+      'http://youtube.com/shorts/video_123',
+    ]) {
+      expect(youtubeVideoId(value)).toBeNull();
+      expect(isYoutubeShorts(value)).toBe(false);
+    }
   });
 
   it('validates actions, identity, track metadata and response budgets at runtime', () => {

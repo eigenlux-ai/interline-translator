@@ -1,7 +1,15 @@
 import { subtitleFingerprint, type PlaybackState } from '@/core/subtitles';
+import { PROJECT_PREFIX } from '@/constants';
 import type { VideoPlatformAdapter, VideoSubtitleSourceEvent } from '../platform';
-import { BRIDGE_REQUEST, isYoutubeEmbed, validBridgeResponse, youtubeVideoId } from './bridge-protocol';
+import {
+  BRIDGE_REQUEST,
+  isYoutubeEmbed,
+  isYoutubeShorts,
+  validBridgeResponse,
+  youtubeVideoId,
+} from './bridge-protocol';
 import { parseYouTubeTimedText } from './parser';
+import { youtubePlayer } from './player';
 import { captionLanguage } from './target-track';
 
 /** YouTube DOM, native-caption custody and page protocol stay behind the platform boundary. */
@@ -10,12 +18,20 @@ export function createYoutubeAdapter(
   currentVideoId = () => youtubeVideoId(win.location.href)
 ): VideoPlatformAdapter | null {
   const videoId = currentVideoId();
-  const player = win.document.querySelector<HTMLElement>('#movie_player');
+  const player = youtubePlayer(win);
   const video = player?.querySelector<HTMLVideoElement>('video');
   if (!videoId || !player || !video) return null;
   // Modern embeds put their touch-control overlay beside #movie_player in body.
   // Stay above that sibling stacking context and inside element fullscreen.
   const resolveMount = () => {
+    if (isYoutubeShorts(win.location.href)) {
+      const fullscreen = win.document.fullscreenElement;
+      const container = player.closest<HTMLElement>('#player-container') ?? player;
+      // Shorts fullscreen can target <html>; retain the video's own bounds.
+      return fullscreen?.contains(player) && !fullscreen.contains(container)
+        ? (fullscreen as HTMLElement)
+        : container;
+    }
     if (!isYoutubeEmbed(win.location.href)) return player;
     const fullscreen = win.document.fullscreenElement;
     return fullscreen && fullscreen.nodeType === 1 && fullscreen.contains(player)
@@ -36,6 +52,8 @@ export function createYoutubeAdapter(
   let observer: MutationObserver | null = null,
     captionContainer: Element | null = null;
   let hiddenStyle: HTMLStyleElement | null = null;
+  const custodyAttribute = `data-${PROJECT_PREFIX}-subtitle-custody`;
+  const custodyId = win.crypto.randomUUID();
   let frameId: number | null = null;
   let lastReadAt = -Infinity;
   let retryTimer: number | null = null;
@@ -192,6 +210,7 @@ export function createYoutubeAdapter(
   const restoreNative = () => {
     hiddenStyle?.remove();
     hiddenStyle = null;
+    if (player.getAttribute(custodyAttribute) === custodyId) player.removeAttribute(custodyAttribute);
   };
   const onMessage = (message: MessageEvent) => {
     if (
@@ -352,7 +371,7 @@ export function createYoutubeAdapter(
     matches: () =>
       currentVideoId() === videoId &&
       resolveMount() === mount &&
-      win.document.querySelector('#movie_player') === player &&
+      youtubePlayer(win) === player &&
       player.querySelector('video') === video,
     playback: {
       snapshot,
@@ -386,7 +405,8 @@ export function createYoutubeAdapter(
     hideNativeCaptions() {
       if (!hiddenStyle) {
         hiddenStyle = win.document.createElement('style');
-        hiddenStyle.textContent = '#movie_player .ytp-caption-window-container { visibility: hidden !important; }';
+        player.setAttribute(custodyAttribute, custodyId);
+        hiddenStyle.textContent = `[${custodyAttribute}="${custodyId}"] .ytp-caption-window-container { visibility: hidden !important; }`;
         player.append(hiddenStyle);
       }
       return restoreNative;

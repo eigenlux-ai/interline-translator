@@ -1006,3 +1006,42 @@ it('captures relative privacy-enhanced native captions and reuses them without a
   expect(fetched).toHaveBeenCalledTimes(1);
   expect(responses().at(-1)?.text).toBe(body);
 });
+
+it('reads only the visible current Short and ignores background watch/preload captions', async () => {
+  browser.location.href = 'https://www.youtube.com/shorts/video_123';
+  const player = win.document.querySelector<HTMLElement>('#movie_player')!;
+  player.id = 'shorts-player';
+  player.className = 'html5-video-player';
+  player.append(win.document.createElement('video'));
+  player.getBoundingClientRect = () =>
+    ({ top: 0, bottom: 500, left: 0, right: 300, width: 300, height: 500 }) as DOMRect;
+  const reel = win.document.createElement('ytd-reel-video-renderer');
+  reel.innerHTML = '<a href="/shorts/video_123">current</a>';
+  win.document.body.append(reel);
+  reel.append(player);
+  const hiddenWatch = win.document.createElement('div');
+  hiddenWatch.id = 'movie_player';
+  const hiddenResponse = vi.fn();
+  Object.assign(hiddenWatch, { getPlayerResponse: hiddenResponse });
+  win.document.body.prepend(hiddenWatch);
+  dispose = installYoutubeBridge(win);
+  const measure = vi.spyOn(player, 'getBoundingClientRect');
+  await win.fetch('https://www.youtube.com/youtubei/v1/next');
+  expect(measure).not.toHaveBeenCalled();
+  fetched.mockClear();
+  await win.fetch('https://www.youtube.com/api/timedtext?v=video_456&lang=en');
+  await settle();
+  read('current');
+  await settle();
+  expect(responses().at(-1)?.snapshot.videoId).toBe('video_123');
+  expect(responses().at(-1)?.text).toBe(body);
+  expect(hiddenResponse).not.toHaveBeenCalled();
+  expect(fetched).toHaveBeenCalledTimes(2); // A preload response was not cached as the current track.
+  browser.location.href = 'https://www.youtube.com/shorts/video_456';
+  reel.querySelector('a')!.href = '/shorts/video_456';
+  vi.advanceTimersByTime(250);
+  read('transition');
+  await settle();
+  expect(responses().some((response) => response.requestId === 'transition')).toBe(false);
+  expect(fetched).toHaveBeenCalledTimes(2); // Old player response is not yet the new route's video.
+});
