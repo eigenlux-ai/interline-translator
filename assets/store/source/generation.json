@@ -1,0 +1,7 @@
+{
+  "tool": "Built-in image_gen",
+  "prompt": "Use case: ads-marketing. Create a single original cinematic landscape still for a bilingual subtitle browser extension's promotional illustration. Wide 16:9 composition. Scene: an elegant sunlit modern library opening onto a tranquil mountain lake, warm oak bookshelves on the far left and right framing a broad central window, a small open book on a reading table in foreground, mountains and subtle mist beyond. No people. Sophisticated editorial film photography, believable natural light, soft film grain, restrained warm ivory and deep slate blue with a tiny cinnabar accent book spine. Visual metaphor for 'A small step opens a new world.' Beautiful quiet high-end composition, generous darker uncluttered area in lower quarter so two lines of white subtitles can be overlaid later. Image only: absolutely no text, no typography, no subtitles, no UI, no playback controls, no logos, no watermark, no identifiable brands. This is a new wholly fictional original scene, not a recreation of an existing video.",
+  "file": "subtitle-scene.png",
+  "sha256": "96108b420cff7576ba06ed277b11c45994ff94ee7ced2a76d52b980329c0a8ae",
+  "usage": "Original promotional scenery; captions are composed separately and labeled as an illustration."
+}

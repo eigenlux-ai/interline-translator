@@ -5,6 +5,7 @@ import path from 'node:path';
 import { artworkHtml, promoHtml } from './artwork.mjs';
 import { locales } from './copy.mjs';
 import { sampleHtml } from './fixtures.mjs';
+import { subtitleIllustrationHtml } from './subtitle-illustration.mjs';
 
 const root = process.cwd();
 const server = createServer(async (req, res) => {
@@ -14,6 +15,26 @@ const server = createServer(async (req, res) => {
     if (!locales[locale]) {
       res.writeHead(404);
       res.end();
+      return;
+    }
+    if (u.pathname === '/subtitle-scene.png') {
+      res.setHeader('Content-Type', 'image/png');
+      res.end(await readFile(path.join(root, 'assets/store/source/subtitle-scene.png')));
+      return;
+    }
+    if (u.pathname === '/subtitle-illustration') {
+      const ui = locales[locale].ui;
+      const original = JSON.parse(
+        await readFile(path.join(root, 'messages', (ui === 'en' ? 'zh' : 'en') + '.json'), 'utf8')
+      );
+      const translated = JSON.parse(await readFile(path.join(root, 'messages', ui + '.json'), 'utf8'));
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.end(
+        subtitleIllustrationHtml(
+          original.video_subtitles_preview_original,
+          translated.video_subtitles_preview_translation
+        )
+      );
       return;
     }
     if (u.pathname === '/icon.png' || /^\/raw\/[\w-]+\.png$/.test(u.pathname)) {

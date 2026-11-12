@@ -1,4 +1,4 @@
-/** Promotional frames around unmodified production UI screenshots. */
+/** Promotional frames around production captures and the labeled subtitle illustration. */
 export const names = [
   'screenshot-1-bilingual',
   'screenshot-2-selection',

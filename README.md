@@ -26,7 +26,7 @@ Interline is a fully open-source Chrome extension for bilingual reading and tran
 | Make reading comfortable | Switch between bilingual, translation-only and original-only views; choose from 10 display styles and light or dark appearance. |
 | Keep wording consistent | With an AI engine, customize translation styles, prompts and glossaries. Apply preferences to specific sites. |
 
-See the actual [selection card](./assets/store/global/screenshot-2-selection.png), [reading appearance](./assets/store/global/screenshot-3-settings.png), [input translation](./assets/store/global/screenshot-4-input-translation.png) and [video subtitles](./assets/store/global/screenshot-5-subtitles.png). Screenshots show the real extension on original reading/writing samples and a public YouTube video; captions around the captures describe the features.
+See the actual [selection card](./assets/store/global/screenshot-2-selection.png), [reading appearance](./assets/store/global/screenshot-3-settings.png), [input translation](./assets/store/global/screenshot-4-input-translation.png) and [video subtitles](./assets/store/global/screenshot-5-subtitles.png). The first four images show the real extension. The subtitle illustration combines original AI-generated scenery with product sample captions and is labeled as a preview.
 
 ## Get started
 

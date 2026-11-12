@@ -1,6 +1,6 @@
 # Chrome Web Store 发布素材
 
-Interline · 行间 **1.1.0**，2026-11-12 通过 **Ego Lite** 重新实拍。中、英、日、韩四套各含 5 张功能截图、2 张推广图及商店文案。
+Interline · 行间 **1.1.0**，2026-11-12 通过 **Ego Lite** 更新。中、英、日、韩四套各含 4 张真实功能截图、1 张明确标注的字幕效果示意图、2 张推广图及商店文案。
 
 [查看四语言总览](./preview.png)
 
@@ -19,9 +19,9 @@ Interline · 行间 **1.1.0**，2026-11-12 通过 **Ego Lite** 重新实拍。�
 2. `screenshot-2-selection.png`：选中一句后打开真实划词卡片，保留复制与朗读入口。
 3. `screenshot-3-settings.png`：通用设置中的阅读外观，展示真实样式预览和导航。
 4. `screenshot-4-input-translation.png`：连按三次空格后的真实英文结果与撤销入口，右侧保留示例原始草稿。
-5. `screenshot-5-subtitles.png`：YouTube 全屏播放器中的真实双语字幕和 CC／设置按钮。
+5. `screenshot-5-subtitles.png`：原创 AI 图书馆／山湖背景与双语字幕效果示意，使用产品内置示例文案，不冒充实际视频播放或实时翻译截图。
 
-五张截图均为 **1280 × 800、RGB PNG、无透明通道**。另有：
+五张功能展示图均为 **1280 × 800、RGB PNG、无透明通道**。另有：
 
 - `promo-small.png`：440 × 280 品牌推广图。
 - `promo-marquee.png`：1400 × 560 横幅，以等比例缩小的真实双语阅读截图展示产品。
@@ -35,11 +35,11 @@ Interline · 行间 **1.1.0**，2026-11-12 通过 **Ego Lite** 重新实拍。�
 - 扩展：当前源码的 Chrome 生产构建，版本 1.1.0。
 - 浏览器：Ego Lite；原始界面视口 1120 × 600、deviceScaleFactor=1。
 - 原创文章与输入框：`scripts/store/fixtures.mjs`，仅在本机提供。英文读图为法语译入英语，其他三套为英语译入对应语言；输入翻译均译入英语。
-- 字幕示例：[Tim Urban / TED — Inside the Mind of a Master Procrastinator](https://www.youtube.com/watch?v=arj7oStGLkU)，暂停在约 00:38。英文素材展示英语／法语字幕，其他三套展示英语／对应语言字幕。视频画面属于原发布者；这里只展示扩展在真实播放器上的使用，不表示 TED 或 YouTube 为产品背书。
-- 翻译均由内置 Google Translate 免费引擎实际返回；没有替换网络响应、注入伪造译文或重画产品控件。字幕使用机器翻译，未以人工字幕替代演示。
-- 字幕字号 24px、距底部 18%，均通过实际配置设置，避免与视频内文字重叠。
+- 字幕图：使用内置 image_gen 生成的原创虚构图书馆／山湖场景，无第三方人物、视频或品牌。背景原图及完整 prompt 保存在 `source/subtitle-scene.png`、`source/generation.json`；这两个是制作源文件，不需上传商店。
+- 整页、划词和输入翻译由内置 Google Translate 免费引擎实际返回。第五张为明确标注的宣传合成图：字幕文案取自产品内置预览，使用代码排版保证四语言文字准确，不包含伪造的播放器按钮或服务状态。
+- 字幕效果示意按原文／译文两行排版，字号 26px、半透明背景，布局参考产品字幕样式；它不是产品设置页或真实视频截图。
 - 临时语言、外观、翻译设置在拍摄后恢复；个人服务商凭据未导出、未用于演示。
-- 清除了本次任务页面上无关模板扩展的演示浮层。产品截图本身未做修图；宣传画布上的标题、版本标识、边框和阴影在截图外另行排版。
+- 实拍及合成时移除了本次任务页面上无关扩展的浮层。前四张产品截图不修图；第五张为上述原创宣传示意。画布上的标题、版本标识、边框和阴影在内容图之外排版。
 
 `capture-manifest.json` 记录每张原始截图的 SHA-256、最终图片 SHA-256、来源 URL 和版本。原始文件保存在被 Git 忽略的 `.cache/store-capture/raw/`。审阅时检查实际图片，尺寸检查不代替视觉验收。
 
@@ -56,7 +56,7 @@ node scripts/store/ego-server.mjs
 
 1. 加载或重新加载生产扩展，记录需要临时修改的非凭据配置，以便恢复；不要导出完整配置或个人 API keys。
 2. 使用内置免费引擎，依次切换 `global / zh_CN / ja / ko`。页面样例地址为 `/?locale=global`，输入样例追加 `&mode=input`。
-3. 在 1120 × 600 视口操作真实控件。等待译文完成、字体加载和动画结束，再保存为 `.cache/store-capture/raw/<locale>-<screenshot-name>.png`。设置图滚动到阅读外观；字幕图进入真实 YouTube 全屏并等待两行字幕。
+3. 在 1120 × 600 视口操作真实控件，拍摄前四张。等待译文完成、字体加载和动画结束，保存为 `.cache/store-capture/raw/<locale>-<screenshot-name>.png`。设置图滚动到阅读外观。第五张通过 `/subtitle-illustration?locale=<locale>` 渲染原创背景与内置示例文案，保存为同目录的 `<locale>-screenshot-5-subtitles.png`。
 4. 保留来源记录。在同一 TaskSpace 的宣传画布页面调用下列函数合成四语言素材：
 
 ```js

@@ -12,18 +12,7 @@
     "width": 1280,
     "height": 800
   },
-  "translation": "Live Google Translate (free); original local reading/writing samples; actual YouTube captions; no API keys",
-  "video": {
-    "url": "https://www.youtube.com/watch?v=arj7oStGLkU",
-    "timeSeconds": 38,
-    "sourceLanguage": "en",
-    "targets": {
-      "global": "fr",
-      "zh_CN": "zh-CN",
-      "ja": "ja",
-      "ko": "ko"
-    }
-  },
+  "translation": "16 real reading/selection/settings/input captures; reading, selection and input use live Google Translate (free). Four subtitle illustrations use original AI-generated scenery and built-in product sample captions.",
   "evidence": [
     {
       "locale": "global",
@@ -140,30 +129,44 @@
     {
       "locale": "zh_CN",
       "file": "zh_CN/screenshot-5-subtitles.png",
-      "sourceSha256": "423287809ef305e30e80fba89aa12d1cb3ae23a3ed65d8d82a9ab442fd3cd545",
-      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
-      "outputSha256": "8627a32dff252d0b80d8e70d6370ac2ce4a1dbd37a4d2101537cabe0e4e2c156"
+      "sourceSha256": "6d1595f28efebd09901995e771fcf99040706fab0e45b44570f30c46e48335aa",
+      "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=zh_CN",
+      "capturedAt": "2026-11-12T10:47:15.441Z",
+      "outputSha256": "27bee93269258a28e76297576a736fb3dd6dc8111b272dfa285096b4daa1dcdd",
+      "kind": "illustration"
     },
     {
       "locale": "global",
       "file": "global/screenshot-5-subtitles.png",
-      "sourceSha256": "527e82ae25c44ef86bf088ca2c590e7bc5f3d804491595e6eeeab0ba7dcd4954",
-      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
-      "outputSha256": "85b8315477004955f52e1553b75e5a5c0a2124290a8ada32e94391cfeeaab8dd"
+      "sourceSha256": "e33500cbda315b26e894ca791236dc23c1b7584886cc7f4c4359cd267839e1f6",
+      "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=global",
+      "capturedAt": "2026-11-12T10:47:14.745Z",
+      "outputSha256": "4a2d72811d961eff4ea7dbbfbb0a68be2f099420fea12473e741d8b5ccdc92c4",
+      "kind": "illustration"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-5-subtitles.png",
-      "sourceSha256": "3a3998f45e19ce5b7351c4f978276a21a79051dc99add90c11256830727a3f0d",
-      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
-      "outputSha256": "b98957afd000788260a348d3723254446234ccb1fa2595b442db4eed7f5c2012"
+      "sourceSha256": "7880933be38bba0413a80d47847f5fe943f204b22c75207e741e86b1160669ab",
+      "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=ja",
+      "capturedAt": "2026-11-12T10:47:16.132Z",
+      "outputSha256": "e67350e6d444310b42344f5e33ffb9d4fad1b59880e683549f32939106171fbc",
+      "kind": "illustration"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-5-subtitles.png",
-      "sourceSha256": "d611c3dcb1fa52933773367a25af36dc65f7aa706bd28bcddfdcfd55771c3070",
-      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
-      "outputSha256": "6b0e24ab412609b6dead0a4c571ddddc1d308b3218a714dd0bf1c0dd5b7cebb8"
+      "sourceSha256": "ba6c5c7eb3678fca3f3377162ab8984d464c564552495b6720b7b31feda8df14",
+      "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=ko",
+      "capturedAt": "2026-11-12T10:47:16.824Z",
+      "outputSha256": "bf5c2e000fe394d6a76c9573e7b269abdd0a90fe7d60f1bbe454aac09f195c86",
+      "kind": "illustration"
     }
-  ]
+  ],
+  "updatedAt": "2026-11-12T10:47:16.824Z",
+  "subtitleIllustration": {
+    "background": "source/subtitle-scene.png",
+    "generation": "source/generation.json",
+    "content": "Original AI-generated background with localized sample captions from product messages, explicitly labeled as an illustrated preview. Not a real video or live translation capture."
+  }
 }
