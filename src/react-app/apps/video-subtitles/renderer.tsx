@@ -1,5 +1,5 @@
 import { Component, useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Text } from '@mantine/core';
+import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Switch, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
 import { GearIcon } from '@/react-app/components/icons';
 import { langOptions } from '@/data/models';
@@ -233,6 +233,12 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                     },
                   })
                 }
+              />
+              <Switch
+                size="xs"
+                label={m.video_subtitles_prefer_human()}
+                checked={view.settings.config.translation.preferHumanCaptions}
+                onChange={(event) => save({ translation: { preferHumanCaptions: event.currentTarget.checked } })}
               />
             </Stack>
             <Stack gap={10} className={classes.footer}>

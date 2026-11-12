@@ -69,7 +69,9 @@ function setup(auto = false) {
 }
 function track(text = 'Hello world', trackId = 'en', live = false) {
   const calls = vi.mocked(window.postMessage).mock.calls;
-  const request = [...calls].reverse().find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
+  const request = [...calls]
+    .reverse()
+    .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read' && !data.targetLanguage)![0];
   window.dispatchEvent(
     new MessageEvent('message', {
       source: window,
@@ -96,6 +98,34 @@ function track(text = 'Hello world', trackId = 'en', live = false) {
     })
   );
 }
+function targetTrack(
+  cues: { tStartMs: number; dDurationMs: number; segs: { utf8: string }[] }[] | null,
+  requestId?: string
+) {
+  const request = [...vi.mocked(window.postMessage).mock.calls]
+    .reverse()
+    .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read' && data.targetLanguage)![0];
+  window.dispatchEvent(
+    new MessageEvent('message', {
+      source: window,
+      origin: location.origin,
+      data: {
+        type: BRIDGE_RESPONSE,
+        version: 1,
+        requestId: requestId ?? request.requestId,
+        snapshot: {
+          videoId: 'abcdefghi12',
+          title: 'Example',
+          ad: false,
+          hasTracks: true,
+          track: cues ? { id: '.zh-Hans', language: 'zh-Hans', kind: 'manual' } : null,
+        },
+        ...(cues ? { text: JSON.stringify({ events: cues }) } : {}),
+      },
+    })
+  );
+  return request.requestId as string;
+}
 function complete(windowValue = windows.at(-1)!, text = '你好') {
   const sub = windowValue.subscriptions[0];
   emit({
@@ -120,6 +150,67 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 describe('YouTube subtitle runtime integration', () => {
+  it('uses independent human target timings, skips covered requests and translates uncovered intervals', () => {
+    const config = setup();
+    config.config.translation.preferHumanCaptions = true;
+    runtime.configure(config);
+    actions.toggle();
+    track();
+    expect(windows).toHaveLength(0);
+    targetTrack([
+      { tStartMs: 0, dDurationMs: 2000, segs: [{ utf8: '人工第一句' }] },
+      { tStartMs: 2000, dDurationMs: 2000, segs: [{ utf8: '人工第二句' }] },
+      { tStartMs: 6000, dDurationMs: 4000, segs: [{ utf8: '人工下一句' }] },
+    ]);
+    expect(latest.original).toBe('Hello world');
+    expect(latest.translation).toBe('人工第一句');
+    expect(windows).toHaveLength(0);
+    video.currentTime = 2.5;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(latest.original).toBe('Hello world');
+    expect(latest.translation).toBe('人工第二句');
+    video.currentTime = 4.5;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(windows.at(-1)?.subscriptions.map((item) => item.text)).toEqual(['Hello world']);
+    complete(undefined, '机器补空档');
+    expect(latest.translation).toBe('机器补空档');
+    video.currentTime = 2.5;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(latest.translation).toBe('人工第二句');
+    runtime.configure({
+      ...config,
+      config: { ...config.config, translation: { ...config.config.translation, preferHumanCaptions: false } },
+    });
+    expect(latest.translation).toBe('机器补空档');
+  });
+
+  it('does not let a missing or delayed human track block machine fallback or revive after disabling', () => {
+    const config = setup();
+    config.config.translation.preferHumanCaptions = true;
+    runtime.configure(config);
+    actions.toggle();
+    track();
+    const id = targetTrack(null);
+    expect(windows.at(-1)?.subscriptions[0].text).toBe('Hello world');
+    runtime.configure({
+      ...config,
+      config: { ...config.config, translation: { ...config.config.translation, preferHumanCaptions: false } },
+    });
+    targetTrack([{ tStartMs: 0, dDurationMs: 5000, segs: [{ utf8: '过期人工字幕' }] }], id);
+    expect(latest.translation).not.toBe('过期人工字幕');
+  });
+
+  it('bounds the initial human-caption wait when the target request never completes', () => {
+    const config = setup();
+    config.config.translation.preferHumanCaptions = true;
+    runtime.configure(config);
+    actions.toggle();
+    track();
+    expect(windows).toHaveLength(0);
+    vi.advanceTimersByTime(2000);
+    expect(windows.at(-1)?.subscriptions[0].text).toBe('Hello world');
+  });
+
   it('stays manual by default, plans a bounded window and displays individual results', () => {
     setup();
     expect(latest.enabled).toBe(false);
@@ -250,7 +341,7 @@ describe('YouTube subtitle runtime integration', () => {
     const metadata = (domLanguage: string) => {
       const request = [...vi.mocked(window.postMessage).mock.calls]
         .reverse()
-        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
+        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read' && !data.targetLanguage)![0];
       window.dispatchEvent(
         new MessageEvent('message', {
           source: window,
@@ -295,7 +386,7 @@ describe('YouTube subtitle runtime integration', () => {
     const fetchFailure = (trackId = 'en') => {
       const request = [...vi.mocked(window.postMessage).mock.calls]
         .reverse()
-        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
+        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read' && !data.targetLanguage)![0];
       window.dispatchEvent(
         new MessageEvent('message', {
           source: window,

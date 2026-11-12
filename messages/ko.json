@@ -321,5 +321,6 @@
 	"video_subtitles_dom": "현재 자막 번역 중",
 	"video_subtitles_loading": "자막 번역 중…",
 	"video_subtitles_current_language": "현재 자막 언어",
-	"video_subtitles_order": "언어 순서"
+	"video_subtitles_order": "언어 순서",
+	"video_subtitles_prefer_human": "대상 언어의 수동 자막 우선 사용"
 }

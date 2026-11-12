@@ -125,6 +125,11 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
             }
           />
         </Group>
+        <Switch
+          label={m.video_subtitles_prefer_human()}
+          checked={preferences.translation.preferHumanCaptions}
+          onChange={(event) => patch({ translation: { preferHumanCaptions: event.currentTarget.checked } })}
+        />
         {projection.effectiveSubtitleProvider.status === 'unavailable' && (
           <Alert color="yellow">{m.video_subtitles_unavailable()}</Alert>
         )}

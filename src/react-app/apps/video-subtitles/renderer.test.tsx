@@ -33,6 +33,13 @@ function fixture(): VideoSubtitleView {
 const actions = () => ({ toggle: vi.fn(), fail: vi.fn(), retry: vi.fn(), more: vi.fn(), patch: vi.fn(async () => {}) });
 
 describe('player subtitle controls', () => {
+  it('saves the human-caption preference without changing the selected language or provider', async () => {
+    const commands = actions();
+    const view = render(<PlayerSubtitles view={fixture()} actions={commands} />);
+    fireEvent.click(view.getByRole('button', { name: m.video_subtitles_title() }));
+    await act(async () => fireEvent.click(view.getByRole('switch', { name: m.video_subtitles_prefer_human() })));
+    expect(commands.patch).toHaveBeenCalledWith({ translation: { preferHumanCaptions: true } });
+  });
   it('only moves focus into the panel when opened from the keyboard', () => {
     const view = render(<PlayerSubtitles view={fixture()} actions={actions()} />);
     const trigger = view.getByRole('button', { name: m.video_subtitles_title() });
@@ -41,9 +48,7 @@ describe('player subtitle controls', () => {
     expect(document.activeElement).toBe(trigger);
     fireEvent.click(trigger, { detail: 1 });
     fireEvent.click(trigger, { detail: 0 });
-    expect(document.activeElement).toBe(
-      view.getByLabelText(m.display_label(), { selector: 'input:not([type="hidden"])' })
-    );
+    expect(document.activeElement).toBe(view.getByLabelText(m.display_label(), { selector: 'input[role="combobox"]' }));
   });
   it('restores the open panel and focused control after a satellite remount', () => {
     const uiState = { open: false, focusControl: undefined as number | undefined };
@@ -56,7 +61,7 @@ describe('player subtitle controls', () => {
     fireEvent.click(first.getByRole('button', { name: m.video_subtitles_title() }), { detail: 1 });
     const target = first.getByLabelText(m.settings_target_label(), {
       exact: false,
-      selector: 'input:not([type="hidden"])',
+      selector: 'input[role="combobox"]',
     });
     act(() => target.focus());
     expect(uiState.open).toBe(true);
@@ -64,7 +69,7 @@ describe('player subtitle controls', () => {
     const second = render(<PlayerSubtitles view={fixture()} actions={commands} />);
     expect(second.getByRole('dialog')).toBeTruthy();
     expect(document.activeElement).toBe(
-      second.getByLabelText(m.settings_target_label(), { exact: false, selector: 'input:not([type="hidden"])' })
+      second.getByLabelText(m.settings_target_label(), { exact: false, selector: 'input[role="combobox"]' })
     );
   });
   it('saves target inheritance semantics and restores focus on Escape without changing the playback toggle', async () => {
@@ -75,7 +80,7 @@ describe('player subtitle controls', () => {
     fireEvent.click(trigger);
     const target = view.getByLabelText(m.settings_target_label(), {
       exact: false,
-      selector: 'input:not([type="hidden"])',
+      selector: 'input[role="combobox"]',
     });
     fireEvent.click(target);
     await act(async () => {
@@ -117,7 +122,7 @@ describe('player subtitle controls', () => {
       (
         view.getByLabelText(m.settings_default_provider(), {
           exact: false,
-          selector: 'input:not([type="hidden"])',
+          selector: 'input[role="combobox"]',
         }) as HTMLInputElement
       ).value
     ).toBe(m.video_subtitles_unavailable());
@@ -128,7 +133,7 @@ describe('player subtitle controls', () => {
     commands.patch.mockRejectedValueOnce(new Error('disconnected'));
     const view = render(<PlayerSubtitles view={fixture()} actions={commands} />);
     fireEvent.click(view.getByRole('button', { name: m.video_subtitles_title() }));
-    fireEvent.click(view.getByLabelText(m.display_label(), { selector: 'input:not([type="hidden"])' }));
+    fireEvent.click(view.getByLabelText(m.display_label(), { selector: 'input[role="combobox"]' }));
     await act(async () => {
       fireEvent.click(view.getByRole('option', { name: m.display_original() }));
     });

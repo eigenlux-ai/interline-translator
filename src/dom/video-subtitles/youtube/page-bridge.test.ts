@@ -22,12 +22,27 @@ let posted: ReturnType<typeof vi.fn<(message: YoutubeBridgeResponse) => void>>;
 async function settle() {
   for (let index = 0; index < 20; index += 1) await Promise.resolve();
 }
-function read(requestId = 'request', knownTrackId?: string, enableCaptions = false, resetRetry = false) {
+function read(
+  requestId = 'request',
+  knownTrackId?: string,
+  enableCaptions = false,
+  resetRetry = false,
+  targetLanguage?: string
+) {
   win.dispatchEvent(
     new browser.MessageEvent('message', {
       origin: win.location.origin,
       source: browser,
-      data: { type: BRIDGE_REQUEST, version: 1, action: 'read', requestId, enableCaptions, knownTrackId, resetRetry },
+      data: {
+        type: BRIDGE_REQUEST,
+        version: 1,
+        action: 'read',
+        requestId,
+        enableCaptions,
+        knownTrackId,
+        resetRetry,
+        targetLanguage,
+      },
     }) as unknown as MessageEvent
   );
 }
@@ -505,6 +520,89 @@ describe('recoverable YouTube network bridge', () => {
     expect(enabled).toBe(false);
     expect(toggle).toHaveBeenCalledTimes(2);
   });
+  it('loads a manual target independently without changing native selection or cancelling the source', async () => {
+    const target = {
+      ...track,
+      vssId: '.zh-Hans',
+      languageCode: 'zh-Hans',
+      baseUrl: baseUrl.replace('lang=en', 'lang=zh-Hans'),
+    };
+    const toggle = vi.fn();
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      isSubtitlesOn: () => false,
+      toggleSubtitles: toggle,
+      getAudioTrack: () => ({
+        captionTracks: [{ ...target, url: target.baseUrl + '&signature=native-signature&pot=native-context' }],
+      }),
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123' },
+        captions: { playerCaptionsTracklistRenderer: { captionTracks: [track, target] } },
+      }),
+    });
+    dispose = installYoutubeBridge(win);
+    read('source');
+    read('target', undefined, true, false, 'zh-CN');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    expect(responses().find((item) => item.requestId === 'source' && item.text)?.snapshot.track?.id).toBe('.en');
+    expect(responses().find((item) => item.requestId === 'target' && item.text)?.snapshot.track?.id).toBe('.zh-Hans');
+    expect(toggle).not.toHaveBeenCalled();
+    const targetUrl = new URL(String(fetched.mock.calls[1][0]));
+    expect(targetUrl.searchParams.get('signature')).toBe('native-signature');
+    expect(targetUrl.searchParams.get('pot')).toBe('native-context');
+    expect(targetUrl.searchParams.get('c')).toBe('WEB');
+    expect(targetUrl.searchParams.get('xobt')).toBe('3');
+    await vi.advanceTimersByTimeAsync(250);
+    read('known-source', '.en');
+    read('known-target', '.zh-Hans', false, false, 'zh-CN');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+  });
+
+  it('rejects a target redirect to auto-translated content without poisoning its manual cache', async () => {
+    const redirected = new Response(body);
+    Object.defineProperty(redirected, 'url', { value: baseUrl + '&tlang=en' });
+    fetched.mockResolvedValueOnce(redirected);
+    dispose = installYoutubeBridge(win);
+    read('target', undefined, false, false, 'en');
+    await settle();
+    expect(responses().at(-1)?.error).toBe('fetch');
+    expect(responses().some((item) => !!item.text)).toBe(false);
+    await vi.advanceTimersByTimeAsync(250);
+    read('retry-target', undefined, false, true, 'en');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
+  it('keeps a 429 cooldown when a concurrent target succeeds', async () => {
+    const target = { ...track, vssId: '.fr', languageCode: 'fr', baseUrl: baseUrl.replace('lang=en', 'lang=fr') };
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123' },
+        captions: { playerCaptionsTracklistRenderer: { captionTracks: [track, target] } },
+      }),
+    });
+    let completeTarget!: (response: Response) => void;
+    fetched.mockResolvedValueOnce(new Response('', { status: 429 })).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          completeTarget = resolve;
+        })
+    );
+    dispose = installYoutubeBridge(win);
+    read();
+    read('target', undefined, false, false, 'fr');
+    await settle();
+    completeTarget(new Response(body));
+    await settle();
+    await vi.advanceTimersByTimeAsync(250);
+    read('retry-source', undefined, false, true);
+    await settle();
+    expect(responses().at(-1)?.error).toBe('rateLimit');
+    expect(fetched).toHaveBeenCalledTimes(2);
+  });
+
   it('uses audio defaults, retains transient selections and follows explicit manual or ASR choices', async () => {
     const tracks = [
       track,

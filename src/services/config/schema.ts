@@ -101,6 +101,7 @@ export const videoSubtitlesSchema = z
     ),
     translation: z
       .object({
+        preferHumanCaptions: z.boolean().default(false),
         target: z.discriminatedUnion('mode', [
           z.object({ mode: z.literal('inherit') }).strict(),
           z.object({ mode: z.literal('fixed'), language: z.string().min(1).max(35) }).strict(),
@@ -138,7 +139,10 @@ export const videoSubtitlesPatchSchema = videoSubtitlesSchema
     platforms: z
       .record(z.string().regex(/^[a-z][a-z0-9-]{0,31}$/), videoSubtitlesSchema.shape.platforms.valueType.partial())
       .optional(),
-    translation: videoSubtitlesSchema.shape.translation.partial().optional(),
+    translation: videoSubtitlesSchema.shape.translation
+      .partial()
+      .extend({ preferHumanCaptions: z.boolean().optional() })
+      .optional(),
     requests: videoSubtitlesSchema.shape.requests.partial().optional(),
     appearance: videoSubtitlesSchema.shape.appearance.partial().optional(),
   })
