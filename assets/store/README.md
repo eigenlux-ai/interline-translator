@@ -1,8 +1,10 @@
 # Chrome Web Store 发布素材
 
-Interline · 行间。四种语言各含 5 张实拍截图、两种推广图、短简介和完整介绍。所有素材已替换为当前源码构建的真实扩展界面；没有重画插件按钮、捏造服务商连接状态或植入翻译结果。
+Interline · 行间 **1.1.0**，2026-11-12 通过 **Ego Lite** 重新实拍。中、英、日、韩四套各含 5 张功能截图、2 张推广图及商店文案。
 
-## 直接用于商店
+[查看四语言总览](./preview.png)
+
+## 上传文件
 
 | 目录 | 商店语言 |
 | --- | --- |
@@ -11,66 +13,69 @@ Interline · 行间。四种语言各含 5 张实拍截图、两种推广图、�
 | `ja/` | 日本語 |
 | `ko/` | 한국어 |
 
-每个目录包含：
+每个目录按以下顺序上传五张截图：
 
-- `summary.txt`：短简介，已同步到对应 `public/_locales/*/messages.json`，均不超过 132 字符。商店短简介随新版本扩展包里的 manifest 更新。
-- `listing.txt`：可直接复制的完整介绍，含完整 GitHub 地址、功能需求 / Bug 的 Issues 入口、PRs welcome，以及 MIT 许可、第三方服务费用和数据去向说明。
-- `screenshot-1-bilingual.png`：整页双语对照，真实逐段译文与悬浮入口。
-- `screenshot-2-selection.png`：选中句子后打开真实翻译卡片。
-- `screenshot-3-settings.png`：真实引擎设置，内置免费引擎与可添加的服务商。
-- `screenshot-4-input-translation.png`：实际按三次空格后的输入框译文和撤销入口；右侧为示例网页展示的原始草稿。
-- `screenshot-5-dark-mode.png`：真实深色设置与翻译风格选项。
+1. `screenshot-1-bilingual.png`：原创文章的真实逐段双语译文。
+2. `screenshot-2-selection.png`：选中一句后打开真实划词卡片，保留复制与朗读入口。
+3. `screenshot-3-settings.png`：通用设置中的阅读外观，展示真实样式预览和导航。
+4. `screenshot-4-input-translation.png`：连按三次空格后的真实英文结果与撤销入口，右侧保留示例原始草稿。
+5. `screenshot-5-subtitles.png`：YouTube 全屏播放器中的真实双语字幕和 CC／设置按钮。
+
+五张截图均为 **1280 × 800、RGB PNG、无透明通道**。另有：
+
 - `promo-small.png`：440 × 280 品牌推广图。
-- `promo-marquee.png`：1400 × 560 可选横幅推广图。
+- `promo-marquee.png`：1400 × 560 横幅，以等比例缩小的真实双语阅读截图展示产品。
+- `summary.txt`：与对应 manifest locale 一致的短简介。
+- `listing.txt`：完整商店介绍，包含 1.1.0 字幕功能、开源许可、服务费用和数据处理说明。
 
-截图按编号顺序上传，每个语言 5 张；尺寸为 1280 × 800，RGB PNG，无透明通道。推广图分别上传到 small / marquee 字段，不占截图名额。[Chrome 官方图片要求](https://developer.chrome.com/docs/webstore/images)。
+`preview.png` 是审阅总览，不是商店上传截图。推广图分别上传到 small／marquee 字段，不占五张截图名额。扩展 ZIP 与这些素材需分别提交到商店后台。
 
-商店相关链接：
+## 画面来源与验证
 
-- 项目主页：https://github.com/eigenlux-ai/interline-translator
-- 支持与新功能需求：https://github.com/eigenlux-ai/interline-translator/issues
-- 贡献代码：https://github.com/eigenlux-ai/interline-translator/pulls
-- 隐私政策：https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md
+- 扩展：当前源码的 Chrome 生产构建，版本 1.1.0。
+- 浏览器：Ego Lite；原始界面视口 1120 × 600、deviceScaleFactor=1。
+- 原创文章与输入框：`scripts/store/fixtures.mjs`，仅在本机提供。英文读图为法语译入英语，其他三套为英语译入对应语言；输入翻译均译入英语。
+- 字幕示例：[Tim Urban / TED — Inside the Mind of a Master Procrastinator](https://www.youtube.com/watch?v=arj7oStGLkU)，暂停在约 00:38。英文素材展示英语／法语字幕，其他三套展示英语／对应语言字幕。视频画面属于原发布者；这里只展示扩展在真实播放器上的使用，不表示 TED 或 YouTube 为产品背书。
+- 翻译均由内置 Google Translate 免费引擎实际返回；没有替换网络响应、注入伪造译文或重画产品控件。字幕使用机器翻译，未以人工字幕替代演示。
+- 字幕字号 24px、距底部 18%，均通过实际配置设置，避免与视频内文字重叠。
+- 临时语言、外观、翻译设置在拍摄后恢复；个人服务商凭据未导出、未用于演示。
+- 清除了本次任务页面上无关模板扩展的演示浮层。产品截图本身未做修图；宣传画布上的标题、版本标识、边框和阴影在截图外另行排版。
 
-GitHub Release 中的扩展 ZIP 与本目录的商店素材需要分别上传到 Chrome Web Store 后台；发布 GitHub Release 不会自动更新商店。提交商店审核前，请核对以上链接和公开隐私政策内容。
+`capture-manifest.json` 记录每张原始截图的 SHA-256、最终图片 SHA-256、来源 URL 和版本。原始文件保存在被 Git 忽略的 `.cache/store-capture/raw/`。审阅时检查实际图片，尺寸检查不代替视觉验收。
 
-## 截图来源与真实性
+## 更新这套素材（Ego Lite）
 
-`scripts/store/fixtures.mjs` 提供原创、无账号的本地示例文章和输入框。英文素材使用法文原文译入英语；其他三套使用英文原文译入对应语言。输入框演示均把本地语言草稿译成英语。
-
-界面来自 `.output/chrome-mv3` 的生产构建，页面翻译、选区翻译、输入翻译均调用内置 Google Translate 免费引擎。脚本没有替换网络响应，没有注入伪造译文，没有使用个人 API Key。网络服务的可用性和具体措辞可能随时间变化；服务不可用时生成会失败，不会用假结果补图。
-
-实际界面以 1120 × 600、deviceScaleFactor=1 截取，等尺寸放进 1280 × 800 的商店画布。四周的标题、开源标识和仓库地址是宣传层，不属于插件 UI。推广横幅将原始截图等比例缩小，不拉伸。图标来自 `public/icon/128.png`。
-
-`capture-manifest.json` 记录浏览器、版本、原始截图 SHA-256 和视口信息。原始截图保留在被 Git 忽略的 `.cache/store-capture/raw/`。重新生成后请连同最终 PNG 和 manifest 一起审查。
-
-## 更新素材
-
-需要 Node.js 22+、依赖安装完成、支持加载未打包扩展的 Chrome for Testing，以及能访问内置翻译服务的网络。
+先读本机浏览器自动化规则和 `ego-browser skill`。整个拍摄使用同一个 TaskSpace，不使用或关闭用户已有标签页。
 
 ```sh
-pnpm i18n       # 仅在 messages 改动后需要
 pnpm build
-pnpm store:assets
-pnpm store:check
+node scripts/store/ego-server.mjs
 ```
 
-macOS Apple Silicon 会自动找到本机缓存中的 Chrome for Testing；其他环境或自选路径：
+服务器仅监听 `127.0.0.1:9341`，不启动其他浏览器。通过 Ego Lite：
 
-```sh
-STORE_CHROME_BIN='/absolute/path/to/chrome-for-testing' pnpm store:assets
+1. 加载或重新加载生产扩展，记录需要临时修改的非凭据配置，以便恢复；不要导出完整配置或个人 API keys。
+2. 使用内置免费引擎，依次切换 `global / zh_CN / ja / ko`。页面样例地址为 `/?locale=global`，输入样例追加 `&mode=input`。
+3. 在 1120 × 600 视口操作真实控件。等待译文完成、字体加载和动画结束，再保存为 `.cache/store-capture/raw/<locale>-<screenshot-name>.png`。设置图滚动到阅读外观；字幕图进入真实 YouTube 全屏并等待两行字幕。
+4. 保留来源记录。在同一 TaskSpace 的宣传画布页面调用下列函数合成四语言素材：
+
+```js
+const { composeStoreAssets } = await import('/absolute/repo/scripts/store/compose-ego.mjs');
+await composeStoreAssets(page, '/absolute/repo');
 ```
 
-生成器创建独立的临时浏览器 profile，自动识别 Interline 扩展 ID；完成或出错后关闭浏览器并清理该临时 profile。不会连接或修改个人浏览器、个人 API Key 或现有扩展设置。底层 `capture.mjs` 是内部入口，会修改所连接浏览器的扩展演示设置，请始终通过 `pnpm store:assets` 运行。
+`copy.mjs` 保存四语言宣传文案，`artwork.mjs` 保存画布设计。合成函数只移除宣传画布页上的额外扩展浮层，不修改图片内的产品 UI。
 
-翻译验证包括：三个段落得到译文、划词卡片出现朗读按钮、输入框实际输出英语、深色设置实际切换。`store:check` 校验 28 张 PNG 的尺寸与颜色格式、4 套短简介与 manifest 一致、源代码 / Issues / PR 链接和 20 条截图来源记录。
+5. 更新来源 manifest 和总览，检查长标题、边缘裁切、字幕位置及小尺寸推广图。恢复临时配置，结束 TaskSpace，关闭本地服务器。
+6. 运行 `pnpm store:check`，然后将四个语言目录连同 README 和来源 manifest 打包。
 
-## 本次视觉验收
+原有 `pnpm store:assets` 是旧版 Chrome for Testing 全自动流程，会生成旧的引擎／深色设置组合；**不要用它覆盖本次 1.1.0 Ego Lite 素材**。
 
-1. 整页翻译：通过。原文与译文相邻，正文完整可读。首图移除会在小视口里溢出的展开控制面板，保留真实悬浮入口。
-2. 划词翻译：通过。选区与翻译卡片对应，译文加载完成，复制与朗读入口可见。卡片保持产品的真实尺寸。
-3. 引擎设置：通过。只展示实际默认引擎及快捷添加入口，没有虚构已配置密钥、连接成功、延迟或模型状态。修复两处在其他语言下仍显示中文的快捷添加文案。
-4. 输入框翻译：通过。实际触发三次空格，展示原始草稿、英文结果和短暂撤销提示；未点击示例提交按钮。
-5. 深色设置：通过。通过实际外观控件切换主题，展示翻译风格。设置页较长，底部继续内容可滚动，截图不代表全部设置。
+## 商店链接
 
-本次是商店素材核对，不是完整的无障碍审计或所有网站兼容性测试；没有验证付费 AI 服务商连接，也没有据此承诺全站兼容。
+- 项目：https://github.com/eigenlux-ai/interline-translator
+- 支持与需求：https://github.com/eigenlux-ai/interline-translator/issues
+- 贡献：https://github.com/eigenlux-ai/interline-translator/pulls
+- 隐私：https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md
+
+本次验收覆盖四语言排版与上述真实演示流程，不代表所有网站、付费服务商或浏览器的兼容性验收。

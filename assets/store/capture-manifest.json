@@ -1,7 +1,8 @@
 {
-  "capturedAt": "2026-09-07T07:17:49.578Z",
-  "browser": "Chrome/151.0.7922.34",
-  "extensionVersion": "1.0.0",
+  "capturedAt": "2026-11-12T10:39:00.466Z",
+  "browser": "Ego Lite",
+  "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36",
+  "extensionVersion": "1.1.0",
   "viewport": {
     "width": 1120,
     "height": 600,
@@ -11,107 +12,158 @@
     "width": 1280,
     "height": 800
   },
-  "translation": "Live built-in Google Translate (free); original local sample text; no API keys",
+  "translation": "Live Google Translate (free); original local reading/writing samples; actual YouTube captions; no API keys",
+  "video": {
+    "url": "https://www.youtube.com/watch?v=arj7oStGLkU",
+    "timeSeconds": 38,
+    "sourceLanguage": "en",
+    "targets": {
+      "global": "fr",
+      "zh_CN": "zh-CN",
+      "ja": "ja",
+      "ko": "ko"
+    }
+  },
   "evidence": [
-    {
-      "locale": "zh_CN",
-      "file": "zh_CN/screenshot-1-bilingual.png",
-      "sourceSha256": "5e312a2c4c97d72dea0046fbd649d898668bd32e50db55bf267d3ce0923e190a"
-    },
-    {
-      "locale": "zh_CN",
-      "file": "zh_CN/screenshot-2-selection.png",
-      "sourceSha256": "c8739017a4a35a6b43eda372a237ad194147f969b5b144d8f18d2fa86192d7ef"
-    },
-    {
-      "locale": "zh_CN",
-      "file": "zh_CN/screenshot-3-settings.png",
-      "sourceSha256": "2a32d25b519f80d8126758482cc468597ebc57467f43c58fd7e69a0971d6168a"
-    },
-    {
-      "locale": "zh_CN",
-      "file": "zh_CN/screenshot-4-input-translation.png",
-      "sourceSha256": "9933d4b9cb6395c2e08f2eee53c20ed0373171fc8264fa0f6a0e01323801442a"
-    },
-    {
-      "locale": "zh_CN",
-      "file": "zh_CN/screenshot-5-dark-mode.png",
-      "sourceSha256": "07a74aecc18b61a6bda26a681b50b11964c2016d5ae4fa38d68aa26f2a9cff14"
-    },
     {
       "locale": "global",
       "file": "global/screenshot-1-bilingual.png",
-      "sourceSha256": "f51e1492b23928082c2161904a6821a01226d344af3adce6ea59e4667a2d666f"
+      "sourceSha256": "8e5d5eaec53329d9b1ccf7f30bf145d0af52f0b88e428b8a15b5a97e4c7e5bec",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=global",
+      "outputSha256": "ccb2b99f0485fdd87c858ba2369ab759a7eeea78dbfa6d04f3cb0f0aec9ebba5"
     },
     {
       "locale": "global",
       "file": "global/screenshot-2-selection.png",
-      "sourceSha256": "7248e5427ee86bcf65d4f6b8d80d751f6f22dcbcfb2b06daf8a980ab924c3968"
+      "sourceSha256": "282f721a7dec0e1d8784395a7dbe287f6333ac87bf0670ddf505674fdb9714ba",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=global&mode=selection",
+      "outputSha256": "5ae7604e667ff8a1f8a504ce731891d8a1d1e0c973aaf7d5de8134db1bf76b6e"
     },
     {
       "locale": "global",
       "file": "global/screenshot-3-settings.png",
-      "sourceSha256": "ead42d62fdcc97aaaec93546560d3704671632a9fd7699fcdc57e62058329b9b"
+      "sourceSha256": "f749e36051c3f965314e4d4240dc62be68268e0be06b5e49acdd29d16c01ce75",
+      "sourceUrl": "chrome-extension://dkciiigflahclnppaheekaibobnbmlle/options.html#general",
+      "outputSha256": "9a4f02112ee3e0fa7f1dbe3bb08deb6cfdf85423bb12f05b1bdda86703b5560f"
     },
     {
       "locale": "global",
       "file": "global/screenshot-4-input-translation.png",
-      "sourceSha256": "59f43a156f5f5c30d872610054640b1554897a21c11603c37bf224d3ab2de2dd"
+      "sourceSha256": "7b50acc9115b991ccbfc4b0df3ec6cdbc55c30abf26f91c7a6c3e3c6ceb7549c",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=global&mode=input",
+      "outputSha256": "1a59c7dcff6c48cae0b1941ab54c85808089253d0b6bb4498662bce71ef0f13a"
     },
     {
-      "locale": "global",
-      "file": "global/screenshot-5-dark-mode.png",
-      "sourceSha256": "c3700ca9691c3075f145c29f8e55b86cf8fc309312587c71c88eb03ca4ec85a1"
+      "locale": "zh_CN",
+      "file": "zh_CN/screenshot-1-bilingual.png",
+      "sourceSha256": "d38f1f4da69063e6b039bdd40a668fc3bfb34a73a5ceb2f233f2efe7e6667a6b",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=zh_CN",
+      "outputSha256": "c4119c46c87d68e0e07ec09aa6192c92093d2edac59eb3b5032f50583fbbd24d"
+    },
+    {
+      "locale": "zh_CN",
+      "file": "zh_CN/screenshot-2-selection.png",
+      "sourceSha256": "617cd7f1a1d45f39a8abccc196d0571b3e9c265e338f14289aa25529514172cb",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=zh_CN",
+      "outputSha256": "888e036b0d225a653780774df8cc122fa0000b2818b546e2b919cb2443dcaef7"
+    },
+    {
+      "locale": "zh_CN",
+      "file": "zh_CN/screenshot-3-settings.png",
+      "sourceSha256": "dd96440cd14ccc8aeae45c67a100c482c374b91ad88eebcc0933591b990dbd66",
+      "sourceUrl": "chrome-extension://dkciiigflahclnppaheekaibobnbmlle/options.html#general",
+      "outputSha256": "0782018713b50a857fd06c874a7eabd837a5c79ea90dafa7e67e6d06129f0c26"
+    },
+    {
+      "locale": "zh_CN",
+      "file": "zh_CN/screenshot-4-input-translation.png",
+      "sourceSha256": "efdf95f82a4b42efb21bf9b39348cb5f561e358bcfafd3def89c33ce1dcf9cd7",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=zh_CN&mode=input",
+      "outputSha256": "9100ad96606e8031fb511c34b07f4d9d6ea0a02e89c542906186ca15039f0b74"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-1-bilingual.png",
-      "sourceSha256": "c890aea4c337e6cde19aa2d47a0779cfa50fd136ba1dae5c66cf13d4dc34a798"
+      "sourceSha256": "770dc5132a8443ebf12f23c1640b0d07cc9b60d8118f5b5756d7bac5d77af7d0",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ja",
+      "outputSha256": "8252a9483718f2eb2119a837d4f0d7c053b952e7242bcb89d6ba301c0b5119e9"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-2-selection.png",
-      "sourceSha256": "a9481f990ebba1917c53cf15d4e5782ff28922ebef9d1fdc18d9c4ad7bec3534"
+      "sourceSha256": "12f8b1a2a78493da3e0b496ba02ddfe6aaf13a0941f31e0061641c029a83d85f",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ja",
+      "outputSha256": "94a033d2e76555431ce33db776fcfae58ceacf51ad358a4a72ed42a9a3b5c1f2"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-3-settings.png",
-      "sourceSha256": "0c642a9eb4551b6af5b68c98f7194ec10e3b6eae7f91580e0880a912095e8d0d"
+      "sourceSha256": "b4a1ae7c9de0d5ac7e27113edc75806e485d01d7e02eff5b121f2ea5764262f8",
+      "sourceUrl": "chrome-extension://dkciiigflahclnppaheekaibobnbmlle/options.html#general",
+      "outputSha256": "b4345d5ec115d49b9dcf82be30c9e52b291c3b5c6f1e7f11c099eb725db333b2"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-4-input-translation.png",
-      "sourceSha256": "33fe05cd3d8e8ffd48da72b1131c43364911a48e20498592adcdf35451ca3fd1"
-    },
-    {
-      "locale": "ja",
-      "file": "ja/screenshot-5-dark-mode.png",
-      "sourceSha256": "25e2def75300329ee93a534e0c2804c514005f0cd24cf8bd0bf2c44938d04bb1"
+      "sourceSha256": "dcbce6dda0eda3e9a2ef4e9759c74c24e240e2bead0c4db0862610c764c765a2",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ja&mode=input",
+      "outputSha256": "c5ab7a4603231e900eb4b47fee480bd102efb3a35fd024c65f160378342333aa"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-1-bilingual.png",
-      "sourceSha256": "f3a6876ee165828bbdf97a98fa8b30aed21e9a938d1d1e917922f8b6586a6c46"
+      "sourceSha256": "14120019cb7faac5e236ffe7946f01effc4e7ee619bf3ed98a6d94b028ccf3e3",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ko",
+      "outputSha256": "b61b44de2a93a7b0479fb760739fb941a20e4491b6d415c9398118c28e925020"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-2-selection.png",
-      "sourceSha256": "94547e424f649caea9560108e087bac065517d13570aa1db3a639dae838e04f3"
+      "sourceSha256": "0d3c40582d61cd1214cc0a4af315de42e3f7507e1ec0b5858dd08a21464316b9",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ko",
+      "outputSha256": "25e1a3907db17cb819628f61a324cf7f520dd4c8d51396e600ac7e93c328fbf5"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-3-settings.png",
-      "sourceSha256": "7cb3289ec8b4d1b2cd0d3e52fd7e02c887eafaffa5281eed6effad8dbd5ea215"
+      "sourceSha256": "8d737a62069ff352719bd9e729d1a39f341eca84c9648f41e9f312bcb35b7e63",
+      "sourceUrl": "chrome-extension://dkciiigflahclnppaheekaibobnbmlle/options.html#general",
+      "outputSha256": "01d9f08de7a5a9723fa490b3a79eaa5faeb91b6bf1045425ecdf54a33d2ca9a5"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-4-input-translation.png",
-      "sourceSha256": "1409801944eba6ae680ae79fed3f99bad9a3b6300cc9b60496e654decace4d1e"
+      "sourceSha256": "61589dacb7c8693434d9f88a63f0c6cf9ce8ec0e6a338f71a17f085db548e628",
+      "sourceUrl": "http://127.0.0.1:9341/?locale=ko&mode=input",
+      "outputSha256": "edfa8b1b5e41a3aa9819ce59181829bc774dab8d0f39a4669e4fa1de3d019589"
+    },
+    {
+      "locale": "zh_CN",
+      "file": "zh_CN/screenshot-5-subtitles.png",
+      "sourceSha256": "423287809ef305e30e80fba89aa12d1cb3ae23a3ed65d8d82a9ab442fd3cd545",
+      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
+      "outputSha256": "8627a32dff252d0b80d8e70d6370ac2ce4a1dbd37a4d2101537cabe0e4e2c156"
+    },
+    {
+      "locale": "global",
+      "file": "global/screenshot-5-subtitles.png",
+      "sourceSha256": "527e82ae25c44ef86bf088ca2c590e7bc5f3d804491595e6eeeab0ba7dcd4954",
+      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
+      "outputSha256": "85b8315477004955f52e1553b75e5a5c0a2124290a8ada32e94391cfeeaab8dd"
+    },
+    {
+      "locale": "ja",
+      "file": "ja/screenshot-5-subtitles.png",
+      "sourceSha256": "3a3998f45e19ce5b7351c4f978276a21a79051dc99add90c11256830727a3f0d",
+      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
+      "outputSha256": "b98957afd000788260a348d3723254446234ccb1fa2595b442db4eed7f5c2012"
     },
     {
       "locale": "ko",
-      "file": "ko/screenshot-5-dark-mode.png",
-      "sourceSha256": "0be802b2fca90613de71d5c2da2e94501814ba564696ca9c337fb21bb4854923"
+      "file": "ko/screenshot-5-subtitles.png",
+      "sourceSha256": "d611c3dcb1fa52933773367a25af36dc65f7aa706bd28bcddfdcfd55771c3070",
+      "sourceUrl": "https://www.youtube.com/watch?v=arj7oStGLkU",
+      "outputSha256": "6b0e24ab412609b6dead0a4c571ddddc1d308b3218a714dd0bf1c0dd5b7cebb8"
     }
   ]
 }

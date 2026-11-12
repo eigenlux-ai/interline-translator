@@ -26,7 +26,7 @@ Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译
 | 调整阅读体验 | 切换双语、仅译文或仅原文视图，选择 10 种译文样式，以及浅色或深色外观。 |
 | 统一语气和专业术语 | 使用 AI 引擎时，自定义翻译风格、提示词和术语表，并按站点应用。 |
 
-查看实际的[划词卡片](./assets/store/zh_CN/screenshot-2-selection.png)、[引擎设置](./assets/store/zh_CN/screenshot-3-settings.png)、[输入框翻译](./assets/store/zh_CN/screenshot-4-input-translation.png)和[深色设置](./assets/store/zh_CN/screenshot-5-dark-mode.png)。截图使用原创示例内容和真实插件界面，外围标题是功能说明。
+查看实际的[划词卡片](./assets/store/zh_CN/screenshot-2-selection.png)、[阅读外观](./assets/store/zh_CN/screenshot-3-settings.png)、[输入框翻译](./assets/store/zh_CN/screenshot-4-input-translation.png)和[视频字幕](./assets/store/zh_CN/screenshot-5-subtitles.png)。截图展示原创读写示例与公开视频中的真实插件界面，外围标题是功能说明。
 
 ## 开始使用
 

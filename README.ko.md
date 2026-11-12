@@ -26,7 +26,7 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 | 편하게 읽기 | 이중 언어·번역만·원문만 보기를 전환하고, 10가지 표시 스타일과 밝은 화면·다크 모드를 선택하세요. |
 | 어조와 용어 통일하기 | AI 엔진의 번역 스타일, 프롬프트, 용어집을 설정하고 사이트별로 적용하세요. |
 
-실제 [선택 번역 카드](./assets/store/ko/screenshot-2-selection.png), [엔진 설정](./assets/store/ko/screenshot-3-settings.png), [입력창 번역](./assets/store/ko/screenshot-4-input-translation.png), [다크 설정](./assets/store/ko/screenshot-5-dark-mode.png)도 확인하세요. 직접 작성한 예문과 실제 확장 프로그램으로 촬영했으며, 화면 바깥의 문구는 기능 설명입니다.
+실제 [선택 번역 카드](./assets/store/ko/screenshot-2-selection.png), [읽기 표시 설정](./assets/store/ko/screenshot-3-settings.png), [입력창 번역](./assets/store/ko/screenshot-4-input-translation.png), [영상 자막](./assets/store/ko/screenshot-5-subtitles.png)도 확인하세요. 직접 작성한 읽기·쓰기 예문과 공개 YouTube 영상에서 실제 확장 프로그램을 촬영했으며, 화면 바깥의 문구는 기능 설명입니다.
 
 ## 시작하기
 

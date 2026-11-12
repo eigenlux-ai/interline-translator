@@ -26,7 +26,7 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 | 読みやすく整える | 対訳・訳文のみ・原文のみを切り替え、10種類の表示スタイルやライト・ダーク表示を選べます。 |
 | 語調や用語をそろえる | AI エンジンで翻訳スタイル、プロンプト、用語集を設定し、サイトごとに適用できます。 |
 
-実際の[選択翻訳カード](./assets/store/ja/screenshot-2-selection.png)、[エンジン設定](./assets/store/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/ja/screenshot-4-input-translation.png)、[ダーク設定](./assets/store/ja/screenshot-5-dark-mode.png)もご覧ください。画像にはオリジナルのサンプル文章と実際の拡張機能を使用し、外枠に機能説明を添えています。
+実際の[選択翻訳カード](./assets/store/ja/screenshot-2-selection.png)、[読書の表示設定](./assets/store/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/ja/screenshot-4-input-translation.png)、[動画字幕](./assets/store/ja/screenshot-5-subtitles.png)もご覧ください。オリジナルの読み書きサンプルと公開 YouTube 動画で実際の拡張機能を撮影し、外枠に機能説明を添えています。
 
 ## 使い始める
 

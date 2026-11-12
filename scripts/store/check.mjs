@@ -1,5 +1,6 @@
 // Validate upload dimensions, truecolor PNGs and listing/manifest consistency.
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { readdir, readFile } from 'node:fs/promises';
 import { locales } from './fixtures.mjs';
 
@@ -34,4 +35,11 @@ for (const locale of Object.keys(locales)) {
 const manifest = JSON.parse(await readFile('assets/store/capture-manifest.json', 'utf8'));
 assert.equal(manifest.evidence.length, 20, 'capture provenance for all screenshots');
 assert.equal(new Set(manifest.evidence.map((e) => e.file)).size, 20, 'unique capture provenance');
+for (const record of manifest.evidence) {
+  assert.match(record.sourceSha256, /^[a-f0-9]{64}$/, record.file + ': source hash');
+  const bytes = await readFile('assets/store/' + record.file);
+  if (record.outputSha256) {
+    assert.equal(createHash('sha256').update(bytes).digest('hex'), record.outputSha256, record.file + ': output hash');
+  }
+}
 console.log('Store assets validated. Visual inspection is still required after regeneration.');
