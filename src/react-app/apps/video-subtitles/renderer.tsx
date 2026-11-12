@@ -5,6 +5,7 @@ import { isYoutubeEmbed, isYoutubeShorts } from '@/core/subtitles/youtube-url';
 import { GearIcon } from '@/react-app/components/icons';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
+import { createNativeSubtitleRenderer } from '@/dom/video-subtitles/native-renderer';
 import type {
   VideoSubtitleRenderer,
   VideoSubtitleRuntimePorts,
@@ -327,7 +328,12 @@ class SubtitleBoundary extends Component<{ children: ReactNode; fail(): void }, 
   }
 }
 
-export function mountVideoSubtitleRenderer(player: HTMLElement, actions: Actions): VideoSubtitleRenderer {
+export function mountVideoSubtitleRenderer(
+  player: HTMLElement,
+  actions: Actions,
+  media?: HTMLVideoElement
+): VideoSubtitleRenderer {
+  const native = media ? createNativeSubtitleRenderer(media) : null;
   const satellite = createSatellite(player, null, { position: 'beforeend' });
   const host = satellite.hostElement;
   host.setAttribute('translate', 'no');
@@ -336,12 +342,17 @@ export function mountVideoSubtitleRenderer(player: HTMLElement, actions: Actions
     host.dataset.videoSubtitlesTopControls = '';
   return {
     isConnected: () => host.isConnected && host.parentElement === player,
-    render: (view) =>
+    render: (view) => {
+      native?.render(view);
       satellite.update(
         <SubtitleBoundary fail={actions.fail}>
           <PlayerSubtitles view={view} actions={actions} />
         </SubtitleBoundary>
-      ),
-    dispose: () => satellite.destroy(),
+      );
+    },
+    dispose: () => {
+      native?.dispose();
+      satellite.destroy();
+    },
   };
 }

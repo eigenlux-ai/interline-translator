@@ -47,7 +47,17 @@ export default defineConfig({
   },
   // Function-form manifest so it can read env vars: `.env` is not loaded yet
   // when this config module is first evaluated (https://wxt.dev/guide/essentials/config/environment-variables).
-  manifest: () => ({
+  manifest: ({ browser }) => ({
+    ...(browser === 'safari'
+      ? {
+          web_accessible_resources: [
+            {
+              resources: ['youtube-main.js'],
+              matches: ['https://*.youtube.com/*', 'https://*.youtube-nocookie.com/embed/*'],
+            },
+          ],
+        }
+      : {}),
     // The name is a BRAND MARK (identical in every locale), so it stays a
     // literal. Everything the BROWSER paints — this description, the command
     // label, the context-menu row (services/menus) — goes through

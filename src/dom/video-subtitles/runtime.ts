@@ -67,7 +67,8 @@ export interface VideoSubtitleRuntimePorts {
       retry(): void;
       patch(patch: VideoSubtitlesPatch): Promise<void>;
       more(): void;
-    }
+    },
+    media?: HTMLVideoElement
   ): VideoSubtitleRenderer;
   connect(handlers: { onEvent(event: SubtitleTranslationEvent): void; onDisconnect(): void }): {
     updateWindow(window: SubtitleWindow): void;
@@ -568,20 +569,24 @@ export function createSubtitleRuntime(
               uiVideo = adapter.videoId();
               uiState = { open: false };
             }
-            renderer = ports.render(mount, {
-              uiState,
-              saveUiState: (patch) => {
-                uiState = { ...uiState, ...patch };
+            renderer = ports.render(
+              mount,
+              {
+                uiState,
+                saveUiState: (patch) => {
+                  uiState = { ...uiState, ...patch };
+                },
+                toggle: () => {
+                  resumeVideo = null;
+                  return enabled ? stop() : start();
+                },
+                fail,
+                retry,
+                patch: ports.patch,
+                more: ports.more,
               },
-              toggle: () => {
-                resumeVideo = null;
-                return enabled ? stop() : start();
-              },
-              fail,
-              retry,
-              patch: ports.patch,
-              more: ports.more,
-            });
+              adapter.media?.()
+            );
           } catch {
             detach();
             return;
