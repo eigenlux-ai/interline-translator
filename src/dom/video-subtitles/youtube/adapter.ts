@@ -15,6 +15,10 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     trackId = '',
     rawTrack = '',
     domLanguage: string | undefined;
+  let awaitingSeekCaption = false;
+  let wasSeeking = false;
+  let freshDuringSeek = false;
+  let live = false;
   let observer: MutationObserver | null = null,
     captionContainer: Element | null = null;
   let hiddenStyle: HTMLStyleElement | null = null;
@@ -74,7 +78,8 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     );
   };
   const readDom = () => {
-    if (!active || rawTrack || Date.now() - startedAt < 2500 || video.seeking || adPlaying()) return;
+    if (!active || awaitingSeekCaption || rawTrack || Date.now() - startedAt < 2500 || video.seeking || adPlaying())
+      return;
     const text = Array.from(captionContainer?.querySelectorAll('.ytp-caption-segment') ?? [])
       .map((el) => el.textContent ?? '')
       .join(' ');
@@ -88,8 +93,14 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     if (next === captionContainer) return;
     observer?.disconnect();
     captionContainer = next;
+    if (next && !video.seeking) awaitingSeekCaption = false;
     if (next) {
-      observer = new MutationObserver(readDom);
+      observer = new MutationObserver(() => {
+        // Polling cannot establish freshness after a seek; a new DOM observation can.
+        if (video.seeking) freshDuringSeek = true;
+        else awaitingSeekCaption = false;
+        readDom();
+      });
       observer.observe(next, { subtree: true, childList: true, characterData: true });
     }
   };
@@ -110,7 +121,16 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
   const playbackChanged = () => {
     if (!active) return;
     const state = snapshot();
-    if (state.seeking || state.adPlaying) lastText = null;
+    if (state.seeking || state.adPlaying) {
+      lastText = null;
+      if (!wasSeeking) {
+        observer?.takeRecords();
+        freshDuringSeek = false;
+      }
+      awaitingSeekCaption = true;
+    }
+    if (wasSeeking && !state.seeking && freshDuringSeek) awaitingSeekCaption = false;
+    wasSeeking = !!state.seeking;
     playbackListeners.forEach((listener) => listener(state));
     readDom();
     startFrames();
@@ -149,6 +169,11 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       domLanguage = data.snapshot.domLanguage;
       lastText = null;
     }
+    if (live !== !!data.snapshot.live) {
+      live = !!data.snapshot.live;
+      rawTrack = '';
+      lastText = null;
+    }
     const nextTrackId = data.snapshot.track?.id ?? '';
     if (trackId !== nextTrackId) {
       trackId = nextTrackId;
@@ -162,11 +187,12 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
         title: data.snapshot.title,
         language: data.snapshot.track?.language ?? 'auto',
         domLanguage: data.snapshot.domLanguage,
+        live,
         trackId,
         hasTracks: data.snapshot.hasTracks,
       },
     });
-    if (data.text && data.text !== rawTrack && data.snapshot.track) {
+    if (!live && data.text && data.text !== rawTrack && data.snapshot.track) {
       try {
         const cues = parseYouTubeTimedText(data.text);
         if (!cues.length) throw new Error('empty');
@@ -208,6 +234,10 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     rawTrack = '';
     trackId = '';
     domLanguage = undefined;
+    awaitingSeekCaption = false;
+    wasSeeking = false;
+    freshDuringSeek = false;
+    live = false;
     lastText = null;
   };
   const dispose = () => {

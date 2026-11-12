@@ -505,6 +505,103 @@ describe('recoverable YouTube network bridge', () => {
     expect(enabled).toBe(false);
     expect(toggle).toHaveBeenCalledTimes(2);
   });
+  it('uses audio defaults, retains transient selections and follows explicit manual or ASR choices', async () => {
+    const tracks = [
+      track,
+      { ...track, vssId: '.fr', languageCode: 'fr', baseUrl: baseUrl.replace('lang=en', 'lang=fr') },
+      {
+        ...track,
+        vssId: 'a.fr',
+        languageCode: 'fr',
+        kind: 'asr',
+        baseUrl: baseUrl.replace('lang=en', 'lang=fr&kind=asr'),
+      },
+    ];
+    let audioId = 'fr';
+    let selected: { vss_id?: string; languageCode?: string; kind?: string } | undefined;
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getOption: () => selected,
+      getAudioTrack: () => ({ id: audioId }),
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123' },
+        captions: {
+          playerCaptionsTracklistRenderer: {
+            captionTracks: tracks,
+            audioTracks: [
+              { id: 'en', captionTrackIndices: [0], defaultCaptionTrackIndex: 0 },
+              { id: 'fr', captionTrackIndices: [1, 2], defaultCaptionTrackIndex: 1 },
+            ],
+            defaultAudioTrackIndex: 0,
+          },
+        },
+      }),
+    });
+    dispose = installYoutubeBridge(win);
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.fr');
+    await vi.advanceTimersByTimeAsync(250);
+    selected = { vss_id: 'a.fr', languageCode: 'fr', kind: 'asr' };
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('a.fr');
+    await vi.advanceTimersByTimeAsync(250);
+    selected = undefined;
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('a.fr');
+    await vi.advanceTimersByTimeAsync(250);
+    audioId = 'en';
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.en');
+  });
+
+  it('resolves the current audio caption list when its opaque ID cannot match response audio IDs', async () => {
+    const french = { ...track, vssId: '.fr', languageCode: 'fr', baseUrl: baseUrl.replace('lang=en', 'lang=fr') };
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getOption: () => undefined,
+      getAudioTrack: () => ({ id: 'opaque-player-audio', captionTracks: [{ vssId: '.fr', languageCode: 'fr' }] }),
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123' },
+        captions: {
+          playerCaptionsTracklistRenderer: {
+            captionTracks: [track, french],
+            audioTracks: [{ audioTrackId: 'en.4', defaultCaptionTrackIndex: 0 }],
+            defaultAudioTrackIndex: 0,
+          },
+        },
+      }),
+    });
+    dispose = installYoutubeBridge(win);
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.track?.id).toBe('.fr');
+    expect(responses().at(-1)?.snapshot.domLanguage).toBe('fr');
+  });
+
+  it('uses DOM mode for active live streams but fetches completed live replays', async () => {
+    let isLiveNow = true;
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'video_123', isLiveContent: true },
+        microformat: { playerMicroformatRenderer: { liveBroadcastDetails: { isLiveNow } } },
+        captions: { playerCaptionsTracklistRenderer: { captionTracks: [track] } },
+      }),
+    });
+    dispose = installYoutubeBridge(win);
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.live).toBe(true);
+    expect(fetched).not.toHaveBeenCalled();
+    isLiveNow = false;
+    await vi.advanceTimersByTimeAsync(250);
+    read();
+    await settle();
+    expect(responses().at(-1)?.snapshot.live).toBe(false);
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
   it('keeps the confirmed source through an empty player selection, follows explicit changes, and resets on a new video', async () => {
     const player = win.document.querySelector('#movie_player')!;
     let videoId = 'video_123';

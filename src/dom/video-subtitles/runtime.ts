@@ -50,10 +50,16 @@ export interface VideoSubtitleRenderer {
   render(view: VideoSubtitleView): void;
   dispose(): void;
 }
+export interface VideoSubtitleUiState {
+  open: boolean;
+  focusControl?: number;
+}
 export interface VideoSubtitleRuntimePorts {
   render(
     player: HTMLElement,
     actions: {
+      uiState?: VideoSubtitleUiState;
+      saveUiState?(patch: Partial<VideoSubtitleUiState>): void;
       toggle(): void;
       fail(): void;
       retry(): void;
@@ -94,6 +100,9 @@ export function createSubtitleRuntime(
   let renderer: VideoSubtitleRenderer | null = null;
   let state = new SubtitleSessionState();
   let metadata: VideoSubtitleMetadata | null = null;
+  let uiVideo: string | null = null;
+  let resumeVideo: string | null = null;
+  let uiState: VideoSubtitleUiState = { open: false };
   let status: VideoSubtitleStatus = 'fetching';
   let original = '',
     domTranslation = '',
@@ -363,6 +372,7 @@ export function createSubtitleRuntime(
     if (value.type === 'metadata') {
       if (
         metadata?.trackId !== value.value.trackId ||
+        metadata?.live !== value.value.live ||
         (!state.track && metadata?.domLanguage !== value.value.domLanguage)
       ) {
         invalidate();
@@ -431,9 +441,8 @@ export function createSubtitleRuntime(
   };
   const tick = () => {
     if (disposed) return;
-    let resumeVideo: string | null = null;
     if (adapter && (!adapter.matches() || !permitted(adapter.id) || renderer?.isConnected?.() === false)) {
-      if (enabled && permitted(adapter.id)) resumeVideo = adapter.videoId();
+      resumeVideo = enabled && permitted(adapter.id) ? adapter.videoId() : null;
       stop();
       detach();
     }
@@ -451,8 +460,19 @@ export function createSubtitleRuntime(
         const mount = adapter.mount();
         if (mount) {
           try {
+            if (uiVideo !== adapter.videoId()) {
+              uiVideo = adapter.videoId();
+              uiState = { open: false };
+            }
             renderer = ports.render(mount, {
-              toggle: () => (enabled ? stop() : start()),
+              uiState,
+              saveUiState: (patch) => {
+                uiState = { ...uiState, ...patch };
+              },
+              toggle: () => {
+                resumeVideo = null;
+                return enabled ? stop() : start();
+              },
               fail,
               retry,
               patch: ports.patch,
@@ -475,6 +495,7 @@ export function createSubtitleRuntime(
             }),
           ];
           if (resumeVideo === adapter.videoId() || platformSettings(adapter.id)?.autoEnable) start();
+          resumeVideo = null;
         }
       }
     }
@@ -484,6 +505,7 @@ export function createSubtitleRuntime(
     } else paint();
   };
   const onHide = () => {
+    resumeVideo = null;
     stop();
     detach();
   };

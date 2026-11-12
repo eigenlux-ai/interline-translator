@@ -1,4 +1,4 @@
-import { Component, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { Component, useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
 import { GearIcon } from '@/react-app/components/icons';
@@ -28,12 +28,37 @@ const statusText = (status: VideoSubtitleView['status']) =>
   })[status];
 type Actions = Parameters<VideoSubtitleRuntimePorts['render']>[1];
 export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; actions: Actions }) {
-  const [open, setOpen] = useState(false);
+  const [open, updateOpen] = useState(actions.uiState?.open ?? false);
+  const saveUiState = actions.saveUiState;
+  const setOpen = useCallback(
+    (value: boolean) => {
+      saveUiState?.({ open: value, ...(!value ? { focusControl: undefined } : {}) });
+      updateOpen(value);
+    },
+    [saveUiState]
+  );
+  const [boundary, setBoundary] = useState<HTMLDivElement | null>(null);
+  const restoredFocus = useRef(actions.uiState?.focusControl);
+  const [dropdownHeight, setDropdownHeight] = useState(200);
   const [error, setError] = useState(false);
   const settingsButton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
   const focusOnOpen = useRef(false);
   const firstControl = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const element = boundary;
+    if (!element) return;
+    const resize = () => setDropdownHeight(Math.max(60, Math.min(200, element.clientHeight / 2)));
+    resize();
+    const observer = new ResizeObserver(resize);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [boundary]);
+  useEffect(() => {
+    const index = restoredFocus.current;
+    if (index !== undefined)
+      panel.current?.querySelectorAll<HTMLElement>('input:not([type="hidden"]), button')[index]?.focus();
+  }, []);
   const appearance = view.settings.config.appearance;
   const providerSelection = view.settings.config.translation.provider;
   const targetSelection = view.settings.config.translation.target;
@@ -55,13 +80,21 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
     };
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [open]);
+  }, [open, setOpen]);
   const selectProps = {
     allowDeselect: false,
+    maxDropdownHeight: dropdownHeight,
     size: 'xs' as const,
     classNames: { label: classes.label, description: classes.description },
     // Keep menus inside the player's satellite, including in fullscreen.
-    comboboxProps: { withinPortal: false, floatingStrategy: 'fixed' as const },
+    comboboxProps: {
+      withinPortal: false,
+      floatingStrategy: 'fixed' as const,
+      middlewares: {
+        flip: { boundary: boundary ?? undefined, padding: 8 },
+        shift: { boundary: boundary ?? undefined, crossAxis: true, padding: 8 },
+      },
+    },
     onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
       // First Escape dismisses the dropdown; a second closes the settings panel.
       if (event.key === 'Escape' && event.currentTarget.getAttribute('aria-expanded') === 'true')
@@ -78,7 +111,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const lines = appearance.translationPosition === 'above' ? [translated, original] : [original, translated];
   const retryable = ['fetch-failed', 'rate-limited', 'translation-failed', 'unavailable'].includes(view.status);
   return (
-    <div className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
+    <div ref={setBoundary} className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
       <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>
         <ActionIcon
           variant={view.enabled ? 'filled' : 'default'}
@@ -121,6 +154,17 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
           id="subtitle-settings"
           className={classes.panel}
           role="dialog"
+          onFocusCapture={(event) => {
+            saveUiState?.({
+              focusControl: Array.from(
+                panel.current?.querySelectorAll('input:not([type="hidden"]), button') ?? []
+              ).indexOf(event.nativeEvent.composedPath()[0] as Element),
+            });
+          }}
+          onBlurCapture={(event) => {
+            if (event.relatedTarget && !event.currentTarget.contains(event.relatedTarget as Node))
+              saveUiState?.({ focusControl: undefined });
+          }}
           aria-label={m.video_subtitles_title()}
           onKeyDown={(event) => {
             event.stopPropagation();

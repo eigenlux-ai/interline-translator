@@ -15,6 +15,7 @@ export interface YoutubeTrackInfo {
 export interface YoutubeSnapshot {
   /** Language displayed by native captions, independent of the original track. */
   domLanguage?: string;
+  live?: boolean;
   videoId: string;
   title: string;
   ad: boolean;
@@ -99,6 +100,7 @@ export function validBridgeResponse(value: unknown): value is YoutubeBridgeRespo
     !boundedString(snapshot.title, 1000, true) ||
     typeof snapshot.ad !== 'boolean' ||
     typeof snapshot.hasTracks !== 'boolean' ||
+    (snapshot.live !== undefined && typeof snapshot.live !== 'boolean') ||
     (snapshot.domLanguage !== undefined && !boundedString(snapshot.domLanguage, 50))
   )
     return false;

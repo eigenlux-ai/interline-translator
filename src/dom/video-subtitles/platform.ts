@@ -5,6 +5,7 @@ export interface VideoSubtitleMetadata {
   title: string;
   language: string;
   domLanguage?: string;
+  live?: boolean;
   trackId: string;
   hasTracks: boolean;
 }
