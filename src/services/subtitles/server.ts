@@ -1,5 +1,6 @@
 /** Background-only, sender-validated subtitle transport. Never exposed to the MAIN world. */
 import { onMessage } from '@/core/messaging';
+import { createDiagnosticBuffer, observeSubtitleDiagnostics } from '@/core/subtitles/diagnostics';
 import { isSiteEnabled } from '@/services/config/site-control';
 import { getConfig, watchConfig } from '@/services/config/storage';
 import { resolveSubtitleProvider } from '@/services/config/video-subtitles';
@@ -9,6 +10,39 @@ import { isSubtitleWindow, SUBTITLE_PORT_NAME, type SubtitleClientMessage } from
 import { subtitleSenderContext } from './sender';
 
 export function registerSubtitleServer(): void {
+  const diagnostics = createDiagnosticBuffer(512);
+  observeSubtitleDiagnostics((event) => diagnostics.add({ ...event, context: 0 }));
+  const diagnosticOwners = new Map<string, { id: number; last: number }>();
+  let nextDiagnosticOwner = 1;
+  browser.runtime.onMessage.addListener((message, sender) => {
+    if (!message || message.version !== 1) return;
+    if (message.type === 'subtitle:diagnostics') {
+      const context = subtitleSenderContext(sender, browser.runtime.id);
+      if (!context || !Array.isArray(message.events) || message.events.length > 32) return;
+      let owner = diagnosticOwners.get(context.owner);
+      if (!owner) {
+        if (diagnosticOwners.size >= 32) diagnosticOwners.delete(diagnosticOwners.keys().next().value!);
+        owner = { id: nextDiagnosticOwner++, last: -Infinity };
+        diagnosticOwners.set(context.owner, owner);
+      }
+      const now = Date.now();
+      if (now - owner.last < 900) return;
+      owner.last = now;
+      for (const event of message.events) {
+        if (event && typeof event === 'object') diagnostics.add({ ...event, context: owner.id });
+      }
+      return;
+    }
+    if (message.type !== 'subtitle:export-diagnostics') return;
+    const extensionOrigin = browser.runtime.getURL('');
+    if (
+      sender.id !== browser.runtime.id ||
+      !sender.url?.startsWith(extensionOrigin) ||
+      sender.tab?.url?.startsWith('https:')
+    )
+      return;
+    return Promise.resolve({ version: 1, events: diagnostics.snapshot() });
+  });
   onMessage('getSubtitleContext', ({ sender }) => {
     const context = subtitleSenderContext(sender, browser.runtime.id);
     return context ? { hosts: context.hosts } : null;

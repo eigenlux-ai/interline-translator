@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "Untertitel werden übersetzt…",
 	"video_subtitles_current_language": "Aktuelle Untertitelsprache",
 	"video_subtitles_order": "Sprachreihenfolge",
-	"video_subtitles_prefer_human": "Manuelle Untertitel in der Zielsprache bevorzugen"
+	"video_subtitles_prefer_human": "Manuelle Untertitel in der Zielsprache bevorzugen",
+	"video_subtitles_export_diagnostics": "Untertitel-Diagnose exportieren"
 }

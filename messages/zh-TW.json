@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "正在翻譯字幕…",
 	"video_subtitles_current_language": "目前字幕語言",
 	"video_subtitles_order": "語言順序",
-	"video_subtitles_prefer_human": "優先使用目標語言人工字幕"
+	"video_subtitles_prefer_human": "優先使用目標語言人工字幕",
+	"video_subtitles_export_diagnostics": "匯出字幕診斷"
 }

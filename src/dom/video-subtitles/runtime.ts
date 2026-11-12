@@ -8,6 +8,8 @@ import {
   type SubtitleIdentity,
 } from '@/core/subtitles';
 import { coversSubtitleInterval } from '@/core/subtitles/coverage';
+import { recordSubtitleDiagnostic as diagnostic } from '@/core/subtitles/diagnostics';
+import { retryDelay } from '@/core/subtitles/retry';
 import type { VideoSubtitlesConfig, VideoSubtitlesPatch } from '@/data/models/config';
 import type { SubtitleSubscription, SubtitleTranslationEvent, SubtitleWindow } from '@/services/subtitles/protocol';
 import type {
@@ -162,6 +164,7 @@ export function createSubtitleRuntime(
   };
   const invalidate = () => {
     generation += 1;
+    diagnostic({ event: 'session-reset', generation });
     state.invalidate();
     identities.clear();
     failures.clear();
@@ -232,6 +235,7 @@ export function createSubtitleRuntime(
     }
     renderer = null;
   };
+  let diagnosticPaint = '';
   const paint = () => {
     const playback = adapter?.playback.snapshot();
     if (playback) state.updatePlayback(playback);
@@ -261,10 +265,20 @@ export function createSubtitleRuntime(
             ? status
             : 'unavailable',
       });
+      const paintState = `${suppressed}:${!!source}:${!!translated}:${status}`;
+      if (renderer && paintState !== diagnosticPaint) {
+        diagnosticPaint = paintState;
+        diagnostic({
+          event: source && !suppressed ? 'render-ready' : 'render-empty',
+          generation,
+          count: translated && !suppressed ? 1 : 0,
+        });
+      }
       // Take custody only after a successful rendered original; restore through gaps and shutdown.
       if (enabled && !suppressed && source && renderer && adapter) restoreNative ??= adapter.hideNativeCaptions();
       else restore();
     } catch {
+      diagnostic({ event: 'render-failed', generation });
       fail();
     }
   };
@@ -280,8 +294,10 @@ export function createSubtitleRuntime(
       !enabled ||
       value.generation !== generation ||
       value.trackVersion !== (state.track?.contentVersion ?? `dom:${adapter?.videoId()}`)
-    )
+    ) {
+      diagnostic({ event: 'translation-stale', generation });
       return;
+    }
     if (value.type === 'invalidated') {
       if (desired.has(value.subscriptionId)) {
         signature = '';
@@ -292,7 +308,10 @@ export function createSubtitleRuntime(
     if (value.type === 'cancelled') return;
     if (state.track && value.cueId !== 'current') {
       const identity = identities.get(value.subscriptionId);
-      if (!identity || subtitleFingerprint(identity.contentVersion) !== value.contentVersion) return;
+      if (!identity || subtitleFingerprint(identity.contentVersion) !== value.contentVersion) {
+        diagnostic({ event: 'translation-stale', generation });
+        return;
+      }
       if (value.type === 'completed' && value.text) state.acceptResult(identity, value.text);
       else if (value.type === 'failed') failures.add(value.cueId);
     } else if (value.contentVersion === domVersion && value.cueId === 'current') {
@@ -300,7 +319,16 @@ export function createSubtitleRuntime(
         domTranslation = value.text ?? '';
         rememberLiveDom(domStable, domTranslation);
       } else if (value.type === 'failed') failures.add('current');
+    } else {
+      diagnostic({ event: 'translation-stale', generation });
+      return;
     }
+    if (value.type === 'completed' || value.type === 'failed')
+      diagnostic({
+        event: value.type === 'completed' ? 'translation-completed' : 'translation-failed',
+        generation,
+        code: value.error?.code,
+      });
     signature = '';
     update();
   };
@@ -323,13 +351,19 @@ export function createSubtitleRuntime(
           client = null;
           signature = '';
           reconnectAttempts += 1;
-          reconnectAt = Date.now() + Math.min(30_000, 1000 * 2 ** Math.min(reconnectAttempts, 5));
+          reconnectAt = Date.now() + retryDelay(1000 * 2 ** Math.min(reconnectAttempts, 5), 30_000);
+          diagnostic({
+            event: 'retry-scheduled',
+            generation,
+            attempt: reconnectAttempts,
+            delayMs: reconnectAt - Date.now(),
+          });
           status = 'unavailable';
           paint();
         },
       });
     } catch {
-      reconnectAt = Date.now() + 5000;
+      reconnectAt = Date.now() + retryDelay(5000, 30_000);
       status = 'unavailable';
     }
   };
@@ -435,7 +469,7 @@ export function createSubtitleRuntime(
         });
       } catch {
         closeClient();
-        reconnectAt = Date.now() + 1000;
+        reconnectAt = Date.now() + retryDelay(1000, 30_000);
       }
     }
     const live = new Set(bounded.map((item) => item.subscriptionId));
@@ -444,6 +478,9 @@ export function createSubtitleRuntime(
   }
   const sourceChanged = (value: VideoSubtitleSourceEvent) => {
     if (!enabled || !adapter) return;
+    if (value.type === 'track') diagnostic({ event: 'source-track', generation, count: value.track.cues.length });
+    if (value.type === 'unavailable') diagnostic({ event: 'source-error', generation, code: value.reason });
+    if (value.type === 'currentText' && status !== 'dom') diagnostic({ event: 'source-dom', generation });
     if (value.type === 'reset') {
       invalidate();
       state.dispose();

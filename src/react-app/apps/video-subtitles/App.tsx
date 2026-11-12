@@ -9,6 +9,7 @@ import { syncUiLocaleFrom } from '@/i18n';
 import { getConfigService, getPublicConfig, watchPublicConfig, type PublicConfig } from '@/services/config/public';
 import { isSiteEnabled } from '@/services/config/site-control';
 import { createSubtitleTranslationClient } from '@/services/subtitles/client';
+import { relaySubtitleDiagnostics } from '@/services/subtitles/diagnostics';
 
 function settings(config: PublicConfig, hosts: string[]): VideoSubtitleSettings {
   return {
@@ -34,6 +35,8 @@ export default function VideoSubtitleApp() {
     void Promise.all([getPublicConfig(), sendMessage('getSubtitleContext', undefined)])
       .then(([config, context]) => {
         if (disposed || !context) return;
+        const stopDiagnostics = relaySubtitleDiagnostics();
+        cleanup = stopDiagnostics;
         syncUiLocaleFrom(config);
         let current = settings(config, context.hosts);
         // The callback runs after the asynchronous page-world identity reply.
@@ -60,6 +63,7 @@ export default function VideoSubtitleApp() {
           unwatch();
           identity.dispose();
           runtime.dispose();
+          stopDiagnostics();
         };
       })
       .catch((error) => {

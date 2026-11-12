@@ -1,4 +1,5 @@
 import { subtitleFingerprint, type PlaybackState } from '@/core/subtitles';
+import { recordSubtitleDiagnostic as diagnostic } from '@/core/subtitles/diagnostics';
 import { LiveSubtitleBuffer } from '@/core/subtitles/live';
 import { PROJECT_PREFIX } from '@/constants';
 import type { VideoPlatformAdapter, VideoSubtitleSourceEvent } from '../platform';
@@ -299,6 +300,9 @@ export function createYoutubeAdapter(
     }
 
     if (!requests.has(data.requestId) || data.snapshot.videoId !== videoId || currentVideoId() !== videoId) return;
+    if (data.text && data.text !== rawTrack && data.acquisition)
+      diagnostic({ event: `source-${data.acquisition}`, durationMs: data.durationMs });
+    if (data.retryDelayMs) diagnostic({ event: 'retry-scheduled', delayMs: data.retryDelayMs });
     if (data.snapshot.ad || adPlaying()) {
       playbackChanged();
       return;
@@ -372,6 +376,7 @@ export function createYoutubeAdapter(
           },
         });
       } catch {
+        diagnostic({ event: 'parse-failed' });
         emit({ type: 'unavailable', reason: 'fetch-failed', retryable: true });
       }
     } else if (!rawTrack && (!data.snapshot.hasTracks || data.error))

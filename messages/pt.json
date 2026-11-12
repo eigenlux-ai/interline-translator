@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "A traduzir legendas…",
 	"video_subtitles_current_language": "Idioma atual das legendas",
 	"video_subtitles_order": "Ordem dos idiomas",
-	"video_subtitles_prefer_human": "Preferir legendas humanas no idioma de destino"
+	"video_subtitles_prefer_human": "Preferir legendas humanas no idioma de destino",
+	"video_subtitles_export_diagnostics": "Exportar diagnóstico de legendas"
 }

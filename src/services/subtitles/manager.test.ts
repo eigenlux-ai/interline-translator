@@ -53,6 +53,7 @@ function harness(kind = 'google-mt', patch: Partial<Config['videoSubtitles']['re
   return { manager, calls, events, writes, execute, config };
 }
 beforeEach(() => {
+  vi.spyOn(Math, 'random').mockReturnValue(0);
   vi.useFakeTimers();
   admission = new SharedAdmissionController();
   vi.spyOn(sharedAdmission, 'notify').mockImplementation(() => admission.notify());

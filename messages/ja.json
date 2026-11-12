@@ -322,5 +322,6 @@
 	"video_subtitles_loading": "字幕を翻訳中…",
 	"video_subtitles_current_language": "現在の字幕言語",
 	"video_subtitles_order": "言語の順序",
-	"video_subtitles_prefer_human": "対象言語の手動字幕を優先"
+	"video_subtitles_prefer_human": "対象言語の手動字幕を優先",
+	"video_subtitles_export_diagnostics": "字幕の診断情報をエクスポート"
 }

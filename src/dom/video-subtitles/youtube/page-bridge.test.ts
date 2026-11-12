@@ -60,6 +60,7 @@ function responses() {
 }
 
 beforeEach(() => {
+  vi.spyOn(Math, 'random').mockReturnValue(0);
   vi.useFakeTimers();
   browser = new HappyWindow({ url: 'https://www.youtube.com/watch?v=video_123' });
   win = browser as unknown as Window;
@@ -421,38 +422,41 @@ describe('recoverable YouTube network bridge', () => {
     }
   });
 
-  it('retains endpoint cooldown across video changes and recovers after Retry-After without manual retry', async () => {
-    fetched.mockResolvedValueOnce(new Response('', { status: 429, headers: { 'Retry-After': '120' } }));
-    dispose = installYoutubeBridge(win);
-    read();
-    await settle();
-    win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
-    browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
-    Object.assign(win.document.querySelector('#movie_player')!, {
-      getPlayerResponse: () => ({
-        videoDetails: { videoId: 'other_123' },
-        captions: {
-          playerCaptionsTracklistRenderer: {
-            captionTracks: [{ ...track, baseUrl: baseUrl.replace('video_123', 'other_123') }],
+  it.each([120, 600])(
+    'retains a %s-second endpoint cooldown across video changes and recovers without manual retry',
+    async (seconds) => {
+      fetched.mockResolvedValueOnce(new Response('', { status: 429, headers: { 'Retry-After': String(seconds) } }));
+      dispose = installYoutubeBridge(win);
+      read();
+      await settle();
+      win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
+      browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
+      Object.assign(win.document.querySelector('#movie_player')!, {
+        getPlayerResponse: () => ({
+          videoDetails: { videoId: 'other_123' },
+          captions: {
+            playerCaptionsTracklistRenderer: {
+              captionTracks: [{ ...track, baseUrl: baseUrl.replace('video_123', 'other_123') }],
+            },
           },
-        },
-      }),
-    });
-    win.document.dispatchEvent(new browser.Event('yt-navigate-finish') as unknown as Event);
-    read('next-video', undefined, false, true);
-    await settle();
-    expect(responses().at(-1)?.error).toBe('rateLimit');
-    expect(fetched).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(60_000);
-    read('too-early', undefined, false, true);
-    await settle();
-    expect(fetched).toHaveBeenCalledTimes(1);
-    await vi.advanceTimersByTimeAsync(60_000);
-    read('cooldown-over');
-    await settle();
-    expect(fetched).toHaveBeenCalledTimes(2);
-    expect(responses().at(-1)?.text).toBe(body);
-  });
+        }),
+      });
+      win.document.dispatchEvent(new browser.Event('yt-navigate-finish') as unknown as Event);
+      read('next-video', undefined, false, true);
+      await settle();
+      expect(responses().at(-1)?.error).toBe('rateLimit');
+      expect(fetched).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(seconds * 500);
+      read('too-early', undefined, false, true);
+      await settle();
+      expect(fetched).toHaveBeenCalledTimes(1);
+      await vi.advanceTimersByTimeAsync(seconds * 500);
+      read('cooldown-over');
+      await settle();
+      expect(fetched).toHaveBeenCalledTimes(2);
+      expect(responses().at(-1)?.text).toBe(body);
+    }
+  );
 
   it('does not fetch or reuse content during an advertisement', async () => {
     dispose = installYoutubeBridge(win);
