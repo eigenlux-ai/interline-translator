@@ -344,7 +344,7 @@ export function installYoutubeBridge(win: Window): () => void {
     xhrPrototype.open = wrappedOpen;
     xhrPrototype.send = wrappedSend;
   };
-  const release = () => {
+  const release = (dropCache = false) => {
     active = false;
     epoch += 1;
     pending?.controller.abort();
@@ -353,8 +353,13 @@ export function installYoutubeBridge(win: Window): () => void {
     observers.clear();
     for (const [xhr, listener] of xhrListeners) xhr.removeEventListener('loadend', listener);
     xhrListeners.clear();
-    cache.clear();
-    observedUrls.clear();
+    // Turning observation off must not discard the native response captured
+    // during startup. A later user toggle may only receive empty replay bodies.
+    // These bounded, page-local caches are invalidated on video change/disposal.
+    if (dropCache) {
+      cache.clear();
+      observedUrls.clear();
+    }
     releaseCaptionControl();
     if (win.fetch === wrappedFetch) win.fetch = originalFetch;
     if (xhrPrototype.open === wrappedOpen) xhrPrototype.open = originalOpen;
@@ -588,7 +593,7 @@ export function installYoutubeBridge(win: Window): () => void {
     if (disposed) return;
     disposed = true;
     clearTimeout(startup);
-    release();
+    release(true);
     restoreCaptions();
     win.removeEventListener('message', onMessage);
     win.document.removeEventListener('click', onCaptionClick, true);

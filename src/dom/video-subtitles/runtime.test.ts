@@ -184,6 +184,53 @@ describe('YouTube subtitle runtime integration', () => {
     complete();
     expect(latest.translation).toBe('你好');
   });
+  it('keeps DOM fallback status through caption gaps and repeated track-fetch errors', () => {
+    setup(true);
+    const fetchFailure = (trackId = 'en') => {
+      const request = [...vi.mocked(window.postMessage).mock.calls]
+        .reverse()
+        .find(([data]) => data.type === BRIDGE_REQUEST && data.action === 'read')![0];
+      window.dispatchEvent(
+        new MessageEvent('message', {
+          source: window,
+          origin: location.origin,
+          data: {
+            type: BRIDGE_RESPONSE,
+            version: 1,
+            requestId: request.requestId,
+            error: 'fetch',
+            snapshot: {
+              videoId: 'abcdefghi12',
+              title: '',
+              ad: false,
+              hasTracks: true,
+              track: { id: trackId, language: 'en', kind: 'auto' },
+            },
+          },
+        })
+      );
+    };
+    fetchFailure();
+    expect(latest.status).toBe('fetch-failed');
+    vi.advanceTimersByTime(3000);
+    const segment = document.querySelector('.ytp-caption-segment')!;
+    segment.textContent = 'Native captions still work';
+    video.dispatchEvent(new Event('timeupdate'));
+    vi.advanceTimersByTime(450);
+    complete();
+    expect(latest.status).toBe('dom');
+    segment.textContent = '';
+    video.dispatchEvent(new Event('timeupdate'));
+    for (let i = 0; i < 3; i++) {
+      vi.advanceTimersByTime(1000);
+      fetchFailure();
+      expect(latest.status).toBe('dom');
+      expect(latest.original).toBe('');
+    }
+    fetchFailure('new-track');
+    expect(latest.status).toBe('fetch-failed');
+  });
+
   it('surfaces a DOM translation failure, keeps the original, and resubmits from retry', () => {
     setup(true);
     vi.advanceTimersByTime(3000);

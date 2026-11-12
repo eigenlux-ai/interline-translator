@@ -104,6 +104,7 @@ export function createSubtitleRuntime(
   let restoreNative: (() => void) | null = null;
   let scheduleTimer: number | null = null;
   let frameSignature = '';
+  let domSourceAvailable = false;
   let cleanups: (() => void)[] = [];
   const identities = new Map<string, SubtitleIdentity>();
   const failures = new Set<string>();
@@ -132,6 +133,7 @@ export function createSubtitleRuntime(
     domTranslation = '';
     domStable = '';
     domVersion = '';
+    domSourceAvailable = false;
     frameSignature = '';
     stabilizer.reset();
     closeClient();
@@ -305,6 +307,9 @@ export function createSubtitleRuntime(
         planned.upcoming.forEach((cue) => add(cue, 'prefetch'));
       }
     } else {
+      // Native-caption gaps are normal once DOM fallback has supplied text.
+      // Repeated full-track fetch errors must not replace this usable source.
+      if (domSourceAvailable && !domStable) status = 'dom';
       if (domStable)
         status = failures.has('current') ? 'translation-failed' : canTranslate && !domTranslation ? 'loading' : 'dom';
       if (canTranslate && domStable && !domTranslation && !failures.has('current')) {
@@ -367,7 +372,10 @@ export function createSubtitleRuntime(
       status = 'ready';
     } else if (value.type === 'currentText') {
       if (!state.track) {
-        if (value.snapshot.text) status = 'dom';
+        if (value.snapshot.text) {
+          domSourceAvailable = true;
+          status = 'dom';
+        }
         stabilizer.update(value.snapshot.text, generation);
       }
     } else status = value.reason;

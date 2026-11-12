@@ -144,6 +144,25 @@ describe('recoverable YouTube network bridge', () => {
     expect(browser.XMLHttpRequest.prototype.open).toBe(originalOpen);
   });
 
+  it('retains startup captions after observation stops and across a user restart', async () => {
+    dispose = installYoutubeBridge(win);
+    await win.fetch(baseUrl);
+    await settle();
+    await vi.advanceTimersByTimeAsync(6000);
+    expect(win.fetch).toBe(fetched);
+    fetched.mockResolvedValue(new Response(''));
+    read('delayed-enable');
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).toHaveBeenCalledTimes(1);
+    stop();
+    await vi.advanceTimersByTimeAsync(250);
+    read('restart');
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).toHaveBeenCalledTimes(1);
+  });
+
   it('preserves the complete native request context when retrying a failed native response', async () => {
     fetched.mockResolvedValueOnce(new Response('', { status: 403 }));
     dispose = installYoutubeBridge(win);
