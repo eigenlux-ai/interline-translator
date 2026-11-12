@@ -559,6 +559,22 @@ describe('recoverable YouTube network bridge', () => {
     expect(fetched).toHaveBeenCalledTimes(2);
   });
 
+  it('rejects a target redirect to auto-translated content without poisoning its manual cache', async () => {
+    const redirected = new Response(body);
+    Object.defineProperty(redirected, 'url', { value: baseUrl + '&tlang=en' });
+    fetched.mockResolvedValueOnce(redirected);
+    dispose = installYoutubeBridge(win);
+    read('target', undefined, false, false, 'en');
+    await settle();
+    expect(responses().at(-1)?.error).toBe('fetch');
+    expect(responses().some((item) => !!item.text)).toBe(false);
+    await vi.advanceTimersByTimeAsync(250);
+    read('retry-target', undefined, false, true, 'en');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    expect(responses().at(-1)?.text).toBe(body);
+  });
+
   it('keeps a 429 cooldown when a concurrent target succeeds', async () => {
     const target = { ...track, vssId: '.fr', languageCode: 'fr', baseUrl: baseUrl.replace('lang=en', 'lang=fr') };
     Object.assign(win.document.querySelector('#movie_player')!, {

@@ -719,7 +719,10 @@ export function installYoutubeBridge(win: Window): () => void {
           post({ error: res.status === 429 ? 'rateLimit' : 'fetch' });
           return;
         }
-        if (res.url && !safeTimedTextUrl(res.url, videoId)) throw new Error('redirect');
+        if (res.url) {
+          const finalUrl = safeTimedTextUrl(res.url, videoId);
+          if (!finalUrl || trackKey(finalUrl) !== key) throw new Error('redirect');
+        }
         const text = await boundedSubtitleText(res, controller.signal);
         if (!text) throw new Error('empty');
         if (controller.signal.aborted || requestEpoch !== epoch || youtubeVideoId(win.location.href) !== videoId)
