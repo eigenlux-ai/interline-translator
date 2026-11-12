@@ -559,6 +559,7 @@ export function createSubtitleRuntime(
     detach();
   };
   win.addEventListener('pagehide', onHide);
+  win.document.addEventListener('fullscreenchange', tick);
   const interval = win.setInterval(tick, 1000);
   tick();
   return {
@@ -593,6 +594,7 @@ export function createSubtitleRuntime(
       detach();
       stabilizer.dispose();
       win.removeEventListener('pagehide', onHide);
+      win.document.removeEventListener('fullscreenchange', tick);
     },
   };
 }

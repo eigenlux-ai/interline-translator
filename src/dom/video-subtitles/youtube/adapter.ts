@@ -1,15 +1,28 @@
 import { subtitleFingerprint, type PlaybackState } from '@/core/subtitles';
 import type { VideoPlatformAdapter, VideoSubtitleSourceEvent } from '../platform';
-import { BRIDGE_REQUEST, validBridgeResponse, youtubeVideoId } from './bridge-protocol';
+import { BRIDGE_REQUEST, isYoutubeEmbed, validBridgeResponse, youtubeVideoId } from './bridge-protocol';
 import { parseYouTubeTimedText } from './parser';
 import { captionLanguage } from './target-track';
 
 /** YouTube DOM, native-caption custody and page protocol stay behind the platform boundary. */
-export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
-  const videoId = youtubeVideoId(win.location.href);
+export function createYoutubeAdapter(
+  win: Window,
+  currentVideoId = () => youtubeVideoId(win.location.href)
+): VideoPlatformAdapter | null {
+  const videoId = currentVideoId();
   const player = win.document.querySelector<HTMLElement>('#movie_player');
   const video = player?.querySelector<HTMLVideoElement>('video');
   if (!videoId || !player || !video) return null;
+  // Modern embeds put their touch-control overlay beside #movie_player in body.
+  // Stay above that sibling stacking context and inside element fullscreen.
+  const resolveMount = () => {
+    if (!isYoutubeEmbed(win.location.href)) return player;
+    const fullscreen = win.document.fullscreenElement;
+    return fullscreen && fullscreen.nodeType === 1 && fullscreen.contains(player)
+      ? (fullscreen as HTMLElement)
+      : win.document.body;
+  };
+  const mount = resolveMount();
   let active = false,
     disposed = false,
     startedAt = 0,
@@ -193,7 +206,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       if (
         !targetLanguage ||
         data.snapshot.videoId !== videoId ||
-        youtubeVideoId(win.location.href) !== videoId ||
+        currentVideoId() !== videoId ||
         data.snapshot.ad ||
         adPlaying()
       )
@@ -232,12 +245,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       return;
     }
 
-    if (
-      !requests.has(data.requestId) ||
-      data.snapshot.videoId !== videoId ||
-      youtubeVideoId(win.location.href) !== videoId
-    )
-      return;
+    if (!requests.has(data.requestId) || data.snapshot.videoId !== videoId || currentVideoId() !== videoId) return;
     if (data.snapshot.ad || adPlaying()) {
       playbackChanged();
       return;
@@ -340,9 +348,10 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     id: 'youtube',
     capabilities: { timeline: true, currentText: true, trackSelection: false, adDetection: true, fullscreen: true },
     videoId: () => videoId,
-    mount: () => player,
+    mount: () => mount,
     matches: () =>
-      youtubeVideoId(win.location.href) === videoId &&
+      currentVideoId() === videoId &&
+      resolveMount() === mount &&
       win.document.querySelector('#movie_player') === player &&
       player.querySelector('video') === video,
     playback: {

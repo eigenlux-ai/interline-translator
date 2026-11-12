@@ -821,19 +821,22 @@ describe('recoverable YouTube network bridge', () => {
     dispose = installYoutubeBridge(win);
     read('enable', undefined, true);
     await settle();
-    await vi.advanceTimersByTimeAsync(0);
+    // This separate HappyWindow schedules MutationObserver delivery on its own real timer.
+    await new Promise<void>((resolve) => browser.setTimeout(resolve, 0));
     stop();
     expect(enabled).toBe(false); // Own API/observer transition retained custody.
     read('restart', undefined, true);
     await settle();
-    await vi.advanceTimersByTimeAsync(0);
+    // This separate HappyWindow schedules MutationObserver delivery on its own real timer.
+    await new Promise<void>((resolve) => browser.setTimeout(resolve, 0));
     expect(enabled).toBe(true);
     // The native settings menu can change CC internally without calling the public API.
     enabled = false;
     button.setAttribute('aria-pressed', 'false');
     enabled = true;
     button.setAttribute('aria-pressed', 'true');
-    await vi.advanceTimersByTimeAsync(0);
+    // This separate HappyWindow schedules MutationObserver delivery on its own real timer.
+    await new Promise<void>((resolve) => browser.setTimeout(resolve, 0));
     stop();
     expect(enabled).toBe(true);
     expect(toggle).toHaveBeenCalledTimes(3);
@@ -925,4 +928,81 @@ describe('recoverable YouTube network bridge', () => {
     await settle();
     expect(fetched).toHaveBeenCalledTimes(2);
   });
+});
+
+it('discovers embed video changes at a fixed URL without enabling captions or fetching', async () => {
+  browser.location.href = 'https://www.youtube-nocookie.com/embed/video_123';
+  const player = win.document.querySelector('#movie_player')!;
+  const toggle = vi.fn();
+  let videoId = 'video_123';
+  Object.assign(player, { getPlayerResponse: () => ({ videoDetails: { videoId } }), toggleSubtitles: toggle });
+  dispose = installYoutubeBridge(win);
+  const identify = () =>
+    win.dispatchEvent(
+      new browser.MessageEvent('message', {
+        source: browser,
+        origin: win.location.origin,
+        data: { type: BRIDGE_REQUEST, version: 1, action: 'identify', requestId: 'identity' },
+      }) as unknown as MessageEvent
+    );
+  identify();
+  expect(responses().at(-1)?.snapshot.videoId).toBe('video_123');
+  videoId = 'video_456';
+  identify();
+  expect(responses().at(-1)?.snapshot.videoId).toBe('video_456');
+  expect(win.location.pathname).toBe('/embed/video_123');
+  await settle();
+  expect(fetched).not.toHaveBeenCalled();
+  expect(toggle).not.toHaveBeenCalled();
+});
+
+it('aborts old embed requests when the player changes video without URL navigation', async () => {
+  browser.location.href = 'https://www.youtube.com/embed/video_123';
+  let finish: ((response: Response) => void) | undefined;
+  fetched.mockImplementationOnce(
+    () =>
+      new Promise((resolve) => {
+        finish = resolve;
+      })
+  );
+  dispose = installYoutubeBridge(win);
+  read('old');
+  await settle();
+  const nextUrl = 'https://www.youtube.com/api/timedtext?v=video_456&lang=en';
+  const nextTrack = { ...track, baseUrl: nextUrl };
+  Object.assign(win.document.querySelector('#movie_player')!, {
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_456' },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: [nextTrack] } },
+    }),
+    getOption: () => nextTrack,
+  });
+  vi.advanceTimersByTime(250);
+  read('new');
+  await settle();
+  finish?.(new Response(body));
+  await settle();
+  expect(
+    responses()
+      .filter((item) => item.text)
+      .map((item) => [item.requestId, item.snapshot.videoId])
+  ).toEqual([['new', 'video_456']]);
+});
+
+it('captures relative privacy-enhanced native captions and reuses them without a direct request', async () => {
+  browser.location.href = 'https://www.youtube-nocookie.com/embed/video_123';
+  const relative = '/api/timedtext?v=video_123&lang=en';
+  Object.assign(win.document.querySelector('#movie_player')!, {
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_123' },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: [{ ...track, baseUrl: relative }] } },
+    }),
+  });
+  dispose = installYoutubeBridge(win);
+  await win.fetch(relative);
+  await settle();
+  read();
+  await settle();
+  expect(fetched).toHaveBeenCalledTimes(1);
+  expect(responses().at(-1)?.text).toBe(body);
 });

@@ -21,7 +21,7 @@ const leanKB = Number(process.argv[3] ?? 100);
 const uiKB = Number(process.argv[4] ?? 260);
 
 // Content scripts that legitimately bundle the Mantine/React UI (shadow surfaces).
-const UI_SCRIPTS = ['float-ui'];
+const UI_SCRIPTS = ['float-ui', 'youtube-embed'];
 
 const contentDir = join(outDir, 'content-scripts');
 
@@ -43,7 +43,9 @@ function collectJs(dir) {
 
 const files = collectJs(contentDir);
 if (files.length === 0) {
-  console.error(`check-content-bundle-size — no content-script JS under ${contentDir}. Did you run \`pnpm build\` first?`);
+  console.error(
+    `check-content-bundle-size — no content-script JS under ${contentDir}. Did you run \`pnpm build\` first?`
+  );
   process.exit(1);
 }
 
@@ -56,12 +58,14 @@ for (const f of files) {
   const budget = isUi(f) ? uiKB : leanKB;
   const within = gzKB <= budget;
   ok = ok && within;
-  console.log(`  ${within ? '✅' : '❌'} ${gzKB.toFixed(1)}KB / ${budget}KB ${isUi(f) ? '(ui)  ' : '(lean)'}  ${basename(f)}`);
+  console.log(
+    `  ${within ? '✅' : '❌'} ${gzKB.toFixed(1)}KB / ${budget}KB ${isUi(f) ? '(ui)  ' : '(lean)'}  ${basename(f)}`
+  );
 }
 
 console.log(
   ok
     ? '\n✅ every content script within budget (no heavy engine leak).'
-    : '\n❌ a content script is OVER budget — likely ai-sdk/dexie leaked past the contract boundary.',
+    : '\n❌ a content script is OVER budget — likely ai-sdk/dexie leaked past the contract boundary.'
 );
 process.exit(ok ? 0 : 1);
