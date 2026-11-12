@@ -3,7 +3,13 @@ import { SUBTITLE_MAX_RESPONSE_BYTES } from '@/core/subtitles/limits';
 import { validVideoId } from '@/core/subtitles/youtube-url';
 import { PROJECT_PREFIX } from '@/constants';
 
-export { isYoutubeEmbed, safeTimedTextUrl, validVideoId, youtubeVideoId } from '@/core/subtitles/youtube-url';
+export {
+  isYoutubeEmbed,
+  isYoutubeShorts,
+  safeTimedTextUrl,
+  validVideoId,
+  youtubeVideoId,
+} from '@/core/subtitles/youtube-url';
 
 export const BRIDGE_REQUEST = `${PROJECT_PREFIX}:youtube-subtitles:request`;
 export const BRIDGE_RESPONSE = `${PROJECT_PREFIX}:youtube-subtitles:response`;

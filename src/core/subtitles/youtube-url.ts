@@ -20,11 +20,21 @@ export function isYoutubeEmbed(value: string): boolean {
     return false;
   }
 }
+export function isYoutubeShorts(value: string): boolean {
+  try {
+    const url = new URL(value);
+    return value.length <= 8192 && youtubeHost(url) && /^\/shorts\/[\w-]{6,64}\/?$/.test(url.pathname);
+  } catch {
+    return false;
+  }
+}
 export function youtubeVideoId(url: string): string | null {
   if (typeof url !== 'string' || url.length > 8192) return null;
   try {
     const parsed = new URL(url);
-    if (!youtubeHost(parsed) || parsed.pathname !== '/watch') return null;
+    if (!youtubeHost(parsed)) return null;
+    if (isYoutubeShorts(url)) return parsed.pathname.split('/')[2];
+    if (parsed.pathname !== '/watch') return null;
     const id = parsed.searchParams.get('v');
     return validVideoId(id) ? id : null;
   } catch {

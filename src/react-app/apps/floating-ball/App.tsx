@@ -526,8 +526,9 @@ export default function FloatingBallApp() {
       }}
     >
       {/* Invisible hit strip: tucked, only ~17px of seal stays visible — this
-          widens the hover zone 12px into the page (and 10px vertically) so the
-          half-hidden seal is easy to catch, AND stretches outward to the very
+          extends the hover zone 10px vertically so the
+          half-hidden seal is easy to catch without covering controls farther into
+          the page, AND stretches outward to the very
           viewport edge: a pointer resting in the seal↔edge gap must still
           count as hovering, or the tuck starts and the sliding seal re-enters
           the pointer mid-animation — an oscillation loop.
@@ -546,7 +547,7 @@ export default function FloatingBallApp() {
             position: 'absolute',
             top: -10,
             bottom: -10,
-            ...(placement.side === 'right' ? { left: -12, right: -MARGIN } : { right: -12, left: -MARGIN }),
+            ...(placement.side === 'right' ? { left: 0, right: -MARGIN } : { right: 0, left: -MARGIN }),
           }}
         />
       )}

@@ -4,7 +4,7 @@ import { mountVideoSubtitleRenderer } from '@/react-app/apps/video-subtitles/ren
 import { createYoutubeSubtitleRuntime, type VideoSubtitleSettings } from '@/dom/video-subtitles/runtime';
 import { createYoutubeAdapter } from '@/dom/video-subtitles/youtube/adapter';
 import { isYoutubeEmbed } from '@/dom/video-subtitles/youtube/bridge-protocol';
-import { observeEmbedIdentity } from '@/dom/video-subtitles/youtube/embed-identity';
+import { observeYoutubeIdentity } from '@/dom/video-subtitles/youtube/identity';
 import { syncUiLocaleFrom } from '@/i18n';
 import { getConfigService, getPublicConfig, watchPublicConfig, type PublicConfig } from '@/services/config/public';
 import { isSiteEnabled } from '@/services/config/site-control';
@@ -37,7 +37,7 @@ export default function VideoSubtitleApp() {
         syncUiLocaleFrom(config);
         let current = settings(config, context.hosts);
         // The callback runs after the asynchronous page-world identity reply.
-        const identity = embed ? observeEmbedIdentity(window, () => runtime.configure(current)) : null;
+        const identity = observeYoutubeIdentity(window, () => runtime.configure(current));
         const runtime = createYoutubeSubtitleRuntime(
           window,
           current,
@@ -49,7 +49,7 @@ export default function VideoSubtitleApp() {
               void sendMessage('openVideoSubtitleSettings', undefined);
             },
           },
-          identity ? [{ id: 'youtube', create: (win) => createYoutubeAdapter(win, identity.videoId) }] : undefined
+          [{ id: 'youtube', create: (win) => createYoutubeAdapter(win, identity.videoId) }]
         );
         const unwatch = watchPublicConfig((next) => {
           syncUiLocaleFrom(next);
@@ -58,7 +58,7 @@ export default function VideoSubtitleApp() {
         });
         cleanup = () => {
           unwatch();
-          identity?.dispose();
+          identity.dispose();
           runtime.dispose();
         };
       })

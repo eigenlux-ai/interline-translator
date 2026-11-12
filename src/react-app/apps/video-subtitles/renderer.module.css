@@ -105,11 +105,11 @@
   }
 }
 
-/* Embed native CC/settings occupy the top-right row, including in fullscreen. */
-:host([data-video-subtitles-embed]) .tools {
+/* Embed/Shorts native controls occupy the top-right row, including in fullscreen. */
+:host([data-video-subtitles-top-controls]) .tools {
   top: 56px;
 }
-:host([data-video-subtitles-embed]) .panel {
+:host([data-video-subtitles-top-controls]) .panel {
   top: 98px;
   max-height: calc(100% - 106px);
 }

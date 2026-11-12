@@ -4,6 +4,7 @@ import {
   BRIDGE_RESPONSE,
   BRIDGE_VERSION,
   isYoutubeEmbed,
+  isYoutubeShorts,
   MAX_SUBTITLE_BYTES,
   safeTimedTextUrl,
   validBridgeRequest,
@@ -13,6 +14,7 @@ import {
   type YoutubeSnapshot,
 } from './bridge-protocol';
 import { parseYouTubeTimedText } from './parser';
+import { youtubePlayer } from './player';
 import { chooseHumanTarget } from './target-track';
 import { audioCaptionIndex, type AudioTrack } from './track-selection';
 
@@ -104,12 +106,15 @@ export function installYoutubeBridge(win: Window): () => void {
   // Entrypoint reinjection does not stack wrappers or duplicate listeners.
   const existing = owners.get(win);
   if (existing) return existing;
-  // IFrame API/playlist transitions can reuse both the URL and media element.
+  // Embeds and Shorts can reuse a player while its media identity changes.
   const pageVideoId = (): string | null => {
-    if (!isYoutubeEmbed(win.location.href)) return youtubeVideoId(win.location.href);
+    if (!isYoutubeEmbed(win.location.href) && !isYoutubeShorts(win.location.href))
+      return youtubeVideoId(win.location.href);
     try {
-      const id = win.document.querySelector<Player>('#movie_player')?.getPlayerResponse?.().videoDetails?.videoId;
-      return validVideoId(id) ? id : null;
+      const id = (youtubePlayer(win) as Player | null)?.getPlayerResponse?.().videoDetails?.videoId;
+      return validVideoId(id) && (!isYoutubeShorts(win.location.href) || id === youtubeVideoId(win.location.href))
+        ? id
+        : null;
     } catch {
       return null;
     }
@@ -240,7 +245,7 @@ export function installYoutubeBridge(win: Window): () => void {
   };
   const onCaptionClick = (event: MouseEvent) => {
     const target = event.target as Element | null;
-    if (target?.closest?.('#movie_player .ytp-subtitles-button')) captionInteraction();
+    if (target?.closest?.('.ytp-subtitles-button') && youtubePlayer(win)?.contains(target)) captionInteraction();
   };
   const onCaptionKey = (event: KeyboardEvent) => {
     if (
@@ -258,10 +263,10 @@ export function installYoutubeBridge(win: Window): () => void {
         'input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"]'
       );
     });
-    if (!editable && win.document.querySelector('#movie_player')) captionInteraction();
+    if (!editable && youtubePlayer(win)) captionInteraction();
   };
   const isAd = () => {
-    const player = win.document.querySelector('#movie_player');
+    const player = youtubePlayer(win);
     return !!player && (player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting'));
   };
   const clearVideo = (videoId: string) => {
@@ -286,6 +291,12 @@ export function installYoutubeBridge(win: Window): () => void {
     releaseCaptionControl();
   };
   const observedUrl = (rawUrl: string): URL | null => {
+    // Most host requests are unrelated. Avoid measuring Shorts layout for them.
+    try {
+      if (new URL(rawUrl).pathname !== '/api/timedtext') return null;
+    } catch {
+      return null;
+    }
     if (!active || disposed || suspended || isAd()) return null;
     const id = pageVideoId();
     const url = id && safeTimedTextUrl(rawUrl, id);
@@ -487,7 +498,7 @@ export function installYoutubeBridge(win: Window): () => void {
       return;
     const data = event.data;
     if (data.action === 'identify') {
-      if (!isYoutubeEmbed(win.location.href)) return;
+      if (!isYoutubeEmbed(win.location.href) && !isYoutubeShorts(win.location.href)) return;
       const videoId = pageVideoId();
       clearVideo(videoId ?? '');
       if (videoId)
@@ -526,7 +537,7 @@ export function installYoutubeBridge(win: Window): () => void {
     clearVideo(videoId);
     receivedRead = true;
     install();
-    const player = win.document.querySelector<Player>('#movie_player');
+    const player = youtubePlayer(win) as Player | null;
     if (!player) return;
     let response: PlayerResponse | undefined;
     try {

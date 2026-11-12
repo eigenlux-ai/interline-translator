@@ -150,6 +150,23 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 describe('YouTube subtitle runtime integration', () => {
+  it('reuses the opening subtitle after a loop without showing the ending translation', () => {
+    setup(true);
+    track();
+    complete(undefined, '开头');
+    expect(latest.translation).toBe('开头');
+    video.currentTime = 7;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(latest.original).toBe('Next line');
+    complete(undefined, '结尾');
+    expect(latest.translation).toBe('结尾');
+    video.currentTime = 0;
+    video.dispatchEvent(new Event('timeupdate'));
+    expect(latest.original).toBe('Hello world');
+    expect(latest.translation).toBe('开头');
+    expect(latest.enabled).toBe(true);
+  });
+
   it('uses independent human target timings, skips covered requests and translates uncovered intervals', () => {
     const config = setup();
     config.config.translation.preferHumanCaptions = true;

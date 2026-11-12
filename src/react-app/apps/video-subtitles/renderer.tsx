@@ -1,7 +1,7 @@
 import { Component, useCallback, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Switch, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
-import { isYoutubeEmbed } from '@/core/subtitles/youtube-url';
+import { isYoutubeEmbed, isYoutubeShorts } from '@/core/subtitles/youtube-url';
 import { GearIcon } from '@/react-app/components/icons';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
@@ -332,7 +332,8 @@ export function mountVideoSubtitleRenderer(player: HTMLElement, actions: Actions
   const host = satellite.hostElement;
   host.setAttribute('translate', 'no');
   host.dataset.videoSubtitles = '';
-  if (isYoutubeEmbed(player.ownerDocument.location.href)) host.dataset.videoSubtitlesEmbed = '';
+  if (isYoutubeEmbed(player.ownerDocument.location.href) || isYoutubeShorts(player.ownerDocument.location.href))
+    host.dataset.videoSubtitlesTopControls = '';
   return {
     isConnected: () => host.isConnected && host.parentElement === player,
     render: (view) =>

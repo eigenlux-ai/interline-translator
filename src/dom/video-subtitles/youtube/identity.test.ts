@@ -1,11 +1,11 @@
 import { Window as HappyWindow } from 'happy-dom';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import { BRIDGE_RESPONSE } from './bridge-protocol';
-import { observeEmbedIdentity } from './embed-identity';
+import { observeYoutubeIdentity } from './identity';
 
 let browser: HappyWindow;
 let win: Window;
-let identity: ReturnType<typeof observeEmbedIdentity>;
+let identity: ReturnType<typeof observeYoutubeIdentity>;
 let posted: ReturnType<typeof vi.fn<(message: { requestId: string }) => void>>;
 let changed: ReturnType<typeof vi.fn<() => void>>;
 beforeEach(() => {
@@ -17,7 +17,9 @@ beforeEach(() => {
   posted = vi.fn();
   win.postMessage = posted;
   changed = vi.fn();
-  identity = observeEmbedIdentity(win, changed);
+  win.document.body.innerHTML = '<div id="movie_player"><video></video></div>';
+  identity = observeYoutubeIdentity(win, changed);
+  vi.advanceTimersByTime(250);
 });
 afterEach(() => {
   identity.dispose();
@@ -54,8 +56,7 @@ it('discovers reused-player transitions without enabling captions and rejects st
 });
 it('drops identity on media reuse, missing bridge, and pagehide; resumes after pageshow', () => {
   reply('video_123');
-  const video = win.document.createElement('video');
-  win.document.body.append(video);
+  const video = win.document.querySelector('video')!;
   video.dispatchEvent(new browser.Event('emptied') as unknown as Event);
   expect(identity.videoId()).toBeNull();
   reply('video_456');
@@ -73,4 +74,43 @@ it('drops identity on media reuse, missing bridge, and pagehide; resumes after p
   identity.dispose();
   vi.advanceTimersByTime(1000);
   expect(posted).toHaveBeenCalledTimes(calls + 1);
+});
+
+it('confirms Shorts reuse against route and player, ignoring preload media and late replies', () => {
+  browser.location.href = 'https://www.youtube.com/shorts/video_123';
+  win.document.body.innerHTML =
+    '<ytd-reel-video-renderer><div class="html5-video-player"><video></video></div><a href="/shorts/video_123">short</a></ytd-reel-video-renderer><video id="preload"></video>';
+  const player = win.document.querySelector<HTMLElement>('.html5-video-player')!;
+  player.getBoundingClientRect = () =>
+    ({ top: 0, bottom: 500, left: 0, right: 300, width: 300, height: 500 }) as DOMRect;
+  vi.advanceTimersByTime(250);
+  reply('video_123');
+  expect(identity.videoId()).toBe('video_123');
+  const calls = posted.mock.calls.length;
+  win.document.querySelector('#preload')!.dispatchEvent(new browser.Event('loadedmetadata') as unknown as Event);
+  expect(posted).toHaveBeenCalledTimes(calls);
+  expect(identity.videoId()).toBe('video_123');
+  vi.advanceTimersByTime(250);
+  const oldRequest = posted.mock.lastCall![0].requestId;
+  browser.location.href = 'https://www.youtube.com/shorts/video_456';
+  win.document.querySelector('a')!.href = '/shorts/video_456';
+  expect(identity.videoId()).toBeNull();
+  reply('video_123', oldRequest);
+  expect(identity.videoId()).toBeNull();
+  vi.advanceTimersByTime(250);
+  reply('video_123');
+  expect(identity.videoId()).toBeNull();
+  vi.advanceTimersByTime(250);
+  reply('video_456');
+  expect(identity.videoId()).toBe('video_456');
+  vi.advanceTimersByTime(5000);
+  expect(identity.videoId()).toBe('video_456'); // Background throttling does not discard a confirmed route.
+  const video = player.querySelector('video')!;
+  video.currentTime = 47;
+  video.dispatchEvent(new browser.Event('timeupdate') as unknown as Event);
+  video.currentTime = 0;
+  video.dispatchEvent(new browser.Event('timeupdate') as unknown as Event);
+  expect(identity.videoId()).toBe('video_456');
+  browser.location.href = 'https://www.youtube.com/watch?v=video_789';
+  expect(identity.videoId()).toBe('video_789');
 });
