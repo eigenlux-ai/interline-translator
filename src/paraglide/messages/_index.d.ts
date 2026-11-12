@@ -320,4 +320,5 @@ export * from "./video_subtitles_dom.js";
 export * from "./video_subtitles_loading.js";
 export * from "./video_subtitles_current_language.js";
 export * from "./video_subtitles_order.js";
+export * from "./video_subtitles_prefer_human.js";
 export type LocalizedString = import("../runtime.js").LocalizedString;

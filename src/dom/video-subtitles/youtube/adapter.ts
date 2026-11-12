@@ -2,6 +2,7 @@ import { subtitleFingerprint, type PlaybackState } from '@/core/subtitles';
 import type { VideoPlatformAdapter, VideoSubtitleSourceEvent } from '../platform';
 import { BRIDGE_REQUEST, validBridgeResponse, youtubeVideoId } from './bridge-protocol';
 import { parseYouTubeTimedText } from './parser';
+import { captionLanguage } from './target-track';
 
 /** YouTube DOM, native-caption custody and page protocol stay behind the platform boundary. */
 export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
@@ -31,6 +32,38 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
   const playbackListeners = new Set<(state: PlaybackState) => void>();
   const frameListeners = new Set<() => void>();
   const requests = new Map<string, number>();
+  const targetRequests = new Map<string, number>();
+  let targetLanguage = '',
+    targetTrackId = '',
+    rawTarget = '';
+  let lastTargetReadAt = -Infinity;
+  const clearTarget = () => {
+    targetTrackId = '';
+    rawTarget = '';
+    targetRequests.clear();
+    emit({ type: 'targetTrack', track: null, language: targetLanguage, pending: !!targetLanguage && !live });
+  };
+  const readTarget = (resetRetry = false) => {
+    if (!active || !targetLanguage || live || Date.now() - lastTargetReadAt < 200) return;
+    lastTargetReadAt = Date.now();
+    const requestId = win.crypto.randomUUID();
+    targetRequests.set(requestId, Date.now());
+    for (const [id, time] of targetRequests) if (Date.now() - time > 15_000) targetRequests.delete(id);
+    win.postMessage(
+      {
+        type: BRIDGE_REQUEST,
+        version: 1,
+        requestId,
+        videoId,
+        action: 'read',
+        enableCaptions: false,
+        targetLanguage,
+        knownTrackId: rawTarget ? targetTrackId : '',
+        resetRetry,
+      },
+      win.location.origin
+    );
+  };
   const adPlaying = () => player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting');
   const snapshot = (): PlaybackState => ({
     timeMs: video.currentTime * 1000,
@@ -76,6 +109,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       },
       win.location.origin
     );
+    if (action === 'read') readTarget(resetRetry);
   };
   const readDom = () => {
     if (!active || awaitingSeekCaption || rawTrack || Date.now() - startedAt < 2500 || video.seeking || adPlaying())
@@ -155,6 +189,49 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     )
       return;
     const data = message.data;
+    if (targetRequests.has(data.requestId)) {
+      if (
+        !targetLanguage ||
+        data.snapshot.videoId !== videoId ||
+        youtubeVideoId(win.location.href) !== videoId ||
+        data.snapshot.ad ||
+        adPlaying()
+      )
+        return;
+      const target = data.snapshot.track;
+      if (
+        data.snapshot.live ||
+        !target ||
+        target.kind !== 'manual' ||
+        captionLanguage(target.language) !== captionLanguage(targetLanguage)
+      ) {
+        clearTarget();
+        emit({ type: 'targetTrack', track: null, language: targetLanguage });
+        return;
+      }
+      if (targetTrackId !== target.id) {
+        rawTarget = '';
+        targetTrackId = target.id;
+        emit({ type: 'targetTrack', track: null, language: targetLanguage, pending: !data.error });
+      }
+      if (data.error) emit({ type: 'targetTrack', track: null, language: targetLanguage });
+      if (data.text && data.text !== rawTarget) {
+        try {
+          const cues = parseYouTubeTimedText(data.text);
+          if (!cues.length) return;
+          rawTarget = data.text;
+          emit({
+            type: 'targetTrack',
+            language: targetLanguage,
+            track: { videoId, ...target, contentVersion: subtitleFingerprint(`${targetTrackId}:${rawTarget}`), cues },
+          });
+        } catch {
+          /* Invalid target data falls back to the existing translation path. */
+        }
+      }
+      return;
+    }
+
     if (
       !requests.has(data.requestId) ||
       data.snapshot.videoId !== videoId ||
@@ -171,6 +248,7 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     }
     if (live !== !!data.snapshot.live) {
       live = !!data.snapshot.live;
+      clearTarget();
       rawTrack = '';
       lastText = null;
     }
@@ -226,6 +304,10 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
     active = false;
     bridge('stop');
     requests.clear();
+    targetRequests.clear();
+    rawTarget = '';
+    targetTrackId = '';
+    lastTargetReadAt = -Infinity;
     observer?.disconnect();
     observer = null;
     captionContainer = null;
@@ -316,6 +398,25 @@ export function createYoutubeAdapter(win: Window): VideoPlatformAdapter | null {
       bindCaptions();
       bridge('read');
       playbackChanged();
+    },
+    setTargetLanguage(language = '') {
+      if (language === targetLanguage) return;
+      if (targetLanguage)
+        win.postMessage(
+          {
+            type: BRIDGE_REQUEST,
+            version: 1,
+            requestId: win.crypto.randomUUID(),
+            videoId,
+            action: 'stop',
+            targetLanguage,
+          },
+          win.location.origin
+        );
+      targetLanguage = language;
+      lastTargetReadAt = -Infinity;
+      clearTarget();
+      readTarget();
     },
     retry() {
       if (active) {

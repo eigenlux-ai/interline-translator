@@ -321,5 +321,6 @@
 	"video_subtitles_dom": "Traduction des sous-titres actuels",
 	"video_subtitles_loading": "Traduction des sous-titres…",
 	"video_subtitles_current_language": "Langue actuelle des sous-titres",
-	"video_subtitles_order": "Ordre des langues"
+	"video_subtitles_order": "Ordre des langues",
+	"video_subtitles_prefer_human": "Privilégier les sous-titres humains dans la langue cible"
 }

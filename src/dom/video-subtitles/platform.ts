@@ -1,4 +1,10 @@
-import type { PlatformAdapter, PlaybackPort, SubtitleSource, SubtitleSourceEvent } from '@/core/subtitles';
+import type {
+  PlatformAdapter,
+  PlaybackPort,
+  SubtitleSource,
+  SubtitleSourceEvent,
+  SubtitleTrack,
+} from '@/core/subtitles';
 
 export interface VideoSubtitleMetadata {
   videoId: string;
@@ -9,7 +15,10 @@ export interface VideoSubtitleMetadata {
   trackId: string;
   hasTracks: boolean;
 }
-export type VideoSubtitleSourceEvent = SubtitleSourceEvent | { type: 'metadata'; value: VideoSubtitleMetadata };
+export type VideoSubtitleSourceEvent =
+  | SubtitleSourceEvent
+  | { type: 'metadata'; value: VideoSubtitleMetadata }
+  | { type: 'targetTrack'; pending?: boolean; track: SubtitleTrack | null; language: string };
 export interface VideoPlatformAdapter extends Omit<PlatformAdapter<HTMLElement>, 'playback' | 'source'> {
   playback: PlaybackPort & { subscribeFrames(listener: () => void): () => void };
   source: Omit<SubtitleSource, 'subscribe'> & {
@@ -21,6 +30,7 @@ export interface VideoPlatformAdapter extends Omit<PlatformAdapter<HTMLElement>,
   stop(): void;
   poll(): void;
   retry(): void;
+  setTargetLanguage?(language?: string): void;
 }
 export interface VideoPlatformDefinition {
   id: string;

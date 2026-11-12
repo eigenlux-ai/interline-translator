@@ -25,6 +25,14 @@ describe('video subtitle preferences', () => {
     expect(migrate(old).videoSubtitles).toEqual(defaultVideoSubtitles());
     expect(defaultVideoSubtitles().platforms.youtube.autoEnable).toBe(false);
   });
+  it('defaults old preferences off without injecting that default into unrelated patches', () => {
+    const old = defaultVideoSubtitles();
+    Reflect.deleteProperty(old.translation, 'preferHumanCaptions');
+    expect(videoSubtitlesSchema.parse(old).translation.preferHumanCaptions).toBe(false);
+    expect(
+      videoSubtitlesPatchSchema.parse({ translation: { target: { mode: 'fixed', language: 'ja' } } }).translation
+    ).not.toHaveProperty('preferHumanCaptions');
+  });
   it('validates independent rate/concurrency and bounded budgets, rejecting arbitrary keys', () => {
     expect(
       videoSubtitlesPatchSchema.safeParse({ requests: { maxConcurrent: 2, requestsPerSecond: 0.5 } }).success

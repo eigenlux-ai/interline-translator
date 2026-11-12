@@ -3,9 +3,11 @@ import {
   planSubtitleWindow,
   subtitleFingerprint,
   SubtitleSessionState,
+  SubtitleTimeline,
   type SubtitleCue,
   type SubtitleIdentity,
 } from '@/core/subtitles';
+import { coversSubtitleInterval } from '@/core/subtitles/coverage';
 import type { VideoSubtitlesConfig, VideoSubtitlesPatch } from '@/data/models/config';
 import type { SubtitleSubscription, SubtitleTranslationEvent, SubtitleWindow } from '@/services/subtitles/protocol';
 import type {
@@ -100,6 +102,15 @@ export function createSubtitleRuntime(
   let renderer: VideoSubtitleRenderer | null = null;
   let state = new SubtitleSessionState();
   let metadata: VideoSubtitleMetadata | null = null;
+  let targetTimeline = new SubtitleTimeline([]);
+  let targetWaitUntil = 0;
+  const humanAt = (timeMs: number) =>
+    settings.config.translation.preferHumanCaptions && !metadata?.live
+      ? targetTimeline
+          .at(timeMs)
+          .map((cue) => cue.text)
+          .join('\n')
+      : '';
   let uiVideo: string | null = null;
   let resumeVideo: string | null = null;
   let uiState: VideoSubtitleUiState = { open: false };
@@ -187,12 +198,15 @@ export function createSubtitleRuntime(
     const cues = playback ? state.timeline.at(playback.timeMs) : [];
     const suppressed = !enabled || !!playback?.adPlaying || !!playback?.seeking;
     const source = state.track ? cues.map((cue) => cue.text).join('\n') : original;
-    const translated = state.track
-      ? cues
-          .map((cue) => state.translation(cue) ?? '')
-          .filter(Boolean)
-          .join('\n')
-      : domTranslation;
+    const human = playback ? humanAt(playback.timeMs) : '';
+    const translated =
+      human ||
+      (state.track
+        ? cues
+            .map((cue) => state.translation(cue) ?? '')
+            .filter(Boolean)
+            .join('\n')
+        : domTranslation);
     try {
       renderer?.render({
         enabled,
@@ -200,7 +214,11 @@ export function createSubtitleRuntime(
         translation: suppressed ? '' : translated,
         sourceLanguage: (state.track ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? '',
         settings,
-        status: settings.providerId || settings.config.appearance.displayMode === 'original' ? status : 'unavailable',
+        status: human
+          ? 'ready'
+          : settings.providerId || settings.config.appearance.displayMode === 'original'
+            ? status
+            : 'unavailable',
       });
       // Take custody only after a successful rendered original; restore through gaps and shutdown.
       if (enabled && !suppressed && source && renderer && adapter) restoreNative ??= adapter.hideNativeCaptions();
@@ -280,8 +298,12 @@ export function createSubtitleRuntime(
     const playback = adapter.playback.snapshot();
     state.updatePlayback(playback);
     const subscriptions: SubtitleSubscription[] = [];
+    const human = humanAt(playback.timeMs);
     const canTranslate =
-      settings.config.appearance.displayMode !== 'original' && !playback.adPlaying && !playback.seeking;
+      settings.config.appearance.displayMode !== 'original' &&
+      !playback.adPlaying &&
+      !playback.seeking &&
+      Date.now() >= targetWaitUntil;
     if (state.track) {
       const lookAhead = settings.providerKind.endsWith('-mt')
         ? settings.config.requests.mtLookAheadSeconds
@@ -293,10 +315,19 @@ export function createSubtitleRuntime(
         : planned.current.some((cue) => !state.translation(cue)) && canTranslate
           ? 'loading'
           : 'ready';
-      frameSignature = planned.current.map((cue) => cue.id).join('|');
+      frameSignature = `${planned.current.map((cue) => cue.id).join('|')}::${targetTimeline
+        .at(playback.timeMs)
+        .map((cue) => cue.id)
+        .join('|')}`;
       if (canTranslate) {
         const add = (cue: SubtitleCue, priority: 'current' | 'prefetch') => {
-          if (state.translation(cue) || failures.has(cue.id)) return;
+          if (
+            (priority === 'current' && human) ||
+            coversSubtitleInterval(targetTimeline, cue.startMs, cue.endMs) ||
+            state.translation(cue) ||
+            failures.has(cue.id)
+          )
+            return;
           if (cue.text.length > 4000) {
             failures.add(cue.id);
             return;
@@ -324,7 +355,7 @@ export function createSubtitleRuntime(
       if (domSourceAvailable && !domStable) status = 'dom';
       if (domStable)
         status = failures.has('current') ? 'translation-failed' : canTranslate && !domTranslation ? 'loading' : 'dom';
-      if (canTranslate && domStable && !domTranslation && !failures.has('current')) {
+      if (canTranslate && !human && domStable && !domTranslation && !failures.has('current')) {
         subscriptions.push({
           subscriptionId: `${generation}:dom:${domVersion}`,
           cueId: 'current',
@@ -369,7 +400,17 @@ export function createSubtitleRuntime(
   }
   const sourceChanged = (value: VideoSubtitleSourceEvent) => {
     if (!enabled || !adapter) return;
-    if (value.type === 'metadata') {
+    if (value.type === 'targetTrack') {
+      if (
+        !settings.config.translation.preferHumanCaptions ||
+        value.language !== settings.targetLanguage ||
+        (value.track && value.track.videoId !== adapter.videoId())
+      )
+        return;
+      targetTimeline = new SubtitleTimeline(value.track?.cues ?? []);
+      if (!value.pending) targetWaitUntil = 0;
+      signature = '';
+    } else if (value.type === 'metadata') {
       if (
         metadata?.trackId !== value.value.trackId ||
         metadata?.live !== value.value.live ||
@@ -409,6 +450,8 @@ export function createSubtitleRuntime(
     state.dispose();
     state = new SubtitleSessionState();
     metadata = null;
+    targetTimeline = new SubtitleTimeline([]);
+    targetWaitUntil = 0;
     paint();
   };
   const start = () => {
@@ -417,6 +460,8 @@ export function createSubtitleRuntime(
     status = 'fetching';
     reconnectAt = 0;
     reconnectAttempts = 0;
+    targetWaitUntil = settings.config.translation.preferHumanCaptions ? Date.now() + 1500 : 0;
+    adapter.setTargetLanguage?.(settings.config.translation.preferHumanCaptions ? settings.targetLanguage : undefined);
     adapter.start();
     update();
   };
@@ -491,7 +536,11 @@ export function createSubtitleRuntime(
                 .at(state.playback.timeMs)
                 .map((cue) => cue.id)
                 .join('|');
-              if (current !== frameSignature) queuePlan();
+              const target = targetTimeline
+                .at(state.playback.timeMs)
+                .map((cue) => cue.id)
+                .join('|');
+              if (`${current}::${target}` !== frameSignature) queuePlan();
             }),
           ];
           if (resumeVideo === adapter.videoId() || platformSettings(adapter.id)?.autoEnable) start();
@@ -519,7 +568,16 @@ export function createSubtitleRuntime(
         settings.targetLanguage !== next.targetLanguage ||
         settings.providerKind !== next.providerKind ||
         settings.translationRevision !== next.translationRevision;
+      const targetChanged =
+        settings.targetLanguage !== next.targetLanguage ||
+        settings.config.translation.preferHumanCaptions !== next.config.translation.preferHumanCaptions;
       settings = next;
+      if (targetChanged) {
+        targetTimeline = new SubtitleTimeline([]);
+        targetWaitUntil = enabled && next.config.translation.preferHumanCaptions ? Date.now() + 1500 : 0;
+        adapter?.setTargetLanguage?.(next.config.translation.preferHumanCaptions ? next.targetLanguage : undefined);
+        signature = '';
+      }
       if (changed) {
         invalidate();
         adapter?.retry();

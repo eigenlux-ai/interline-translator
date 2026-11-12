@@ -198,6 +198,7 @@ export interface VideoSubtitlesConfig {
   enabled: boolean;
   platforms: Record<string, { enabled: boolean; autoEnable: boolean }>;
   translation: {
+    preferHumanCaptions: boolean;
     target: { mode: 'inherit' } | { mode: 'fixed'; language: LangCode };
     provider: { mode: 'inherit' } | { mode: 'fixed'; providerId: string };
   };

@@ -14,7 +14,7 @@ export function defaultVideoSubtitles(): VideoSubtitlesConfig {
   return {
     enabled: true,
     platforms: { youtube: { enabled: true, autoEnable: false } },
-    translation: { target: { mode: 'inherit' }, provider: { mode: 'inherit' } },
+    translation: { preferHumanCaptions: false, target: { mode: 'inherit' }, provider: { mode: 'inherit' } },
     requests: {
       maxConcurrent: 3,
       requestsPerSecond: 2,
