@@ -1,5 +1,6 @@
 /** Narrow page bridge protocol. Page data is untrusted; extension capabilities never cross this boundary. */
 import { SUBTITLE_MAX_RESPONSE_BYTES } from '@/core/subtitles/limits';
+import { TRACK_CACHE_MAX_BYTES, TRACK_CACHE_MAX_CUES, TRACK_CACHE_MAX_ENTRIES } from '@/core/subtitles/track-cache';
 import { validVideoId } from '@/core/subtitles/youtube-url';
 import { PROJECT_PREFIX } from '@/constants';
 
@@ -53,6 +54,7 @@ export type YoutubeBridgeResponse = {
   acquisition?: 'cache' | 'fetch' | 'live';
   durationMs?: number;
   retryDelayMs?: number;
+  cacheUsage?: { entries: number; bytes: number; cues: number };
   error?: 'fetch' | 'rateLimit' | 'unavailable';
 };
 
@@ -107,6 +109,21 @@ export function validBridgeResponse(value: unknown): value is YoutubeBridgeRespo
   )
     return false;
   if (snapshot.track !== null && !snapshot.hasTracks) return false;
+  const usage = object(x.cacheUsage);
+  if (
+    x.cacheUsage !== undefined &&
+    (!usage ||
+      !Number.isSafeInteger(usage.entries) ||
+      (usage.entries as number) < 0 ||
+      (usage.entries as number) > TRACK_CACHE_MAX_ENTRIES ||
+      !Number.isSafeInteger(usage.bytes) ||
+      (usage.bytes as number) < 0 ||
+      (usage.bytes as number) > TRACK_CACHE_MAX_BYTES ||
+      !Number.isSafeInteger(usage.cues) ||
+      (usage.cues as number) < 0 ||
+      (usage.cues as number) > TRACK_CACHE_MAX_CUES)
+  )
+    return false;
   return (
     (x.acquisition === undefined || ['cache', 'fetch', 'live'].includes(x.acquisition as string)) &&
     (x.retryDelayMs === undefined ||

@@ -1124,3 +1124,62 @@ it('discovers in-band live caption tracks missing from playerResponse without fi
   stop();
   expect(enabled).toBe(false);
 });
+
+it('protects active source/target bodies from passive UTF-8 cache pressure and refetches an evicted track', async () => {
+  const large = JSON.stringify({
+    events: [{ tStartMs: 0, dDurationMs: 1000, segs: [{ utf8: 'caption' }] }],
+    padding: '汉'.repeat(2_000_000),
+  });
+  expect(new TextEncoder().encode(large).byteLength).toBeGreaterThan(6_000_000);
+  const french = { ...track, vssId: '.fr', languageCode: 'fr', baseUrl: baseUrl.replace('lang=en', 'lang=fr') };
+  const german = { ...track, vssId: '.de', languageCode: 'de', baseUrl: baseUrl.replace('lang=en', 'lang=de') };
+  let selected = track;
+  Object.assign(win.document.querySelector('#movie_player')!, {
+    getOption: () => selected,
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_123' },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: [track, french, german] } },
+    }),
+  });
+  fetched.mockImplementation(async () => new Response(large));
+  dispose = installYoutubeBridge(win);
+  read('source');
+  await settle();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(responses().find((r) => r.requestId === 'source' && r.text)?.text?.length).toBe(large.length);
+  read('target', undefined, false, false, 'fr');
+  await settle();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(responses().find((r) => r.requestId === 'target' && r.text)?.text?.length).toBe(large.length);
+  await win.fetch(german.baseUrl);
+  await settle();
+  await vi.advanceTimersByTimeAsync(0);
+  await vi.advanceTimersByTimeAsync(250);
+  read('source-retained');
+  read('target-retained', undefined, false, false, 'fr');
+  await settle();
+  expect(fetched).toHaveBeenCalledTimes(3);
+  expect(responses().find((r) => r.requestId === 'source-retained')?.acquisition).toBe('cache');
+  expect(responses().find((r) => r.requestId === 'target-retained')?.acquisition).toBe('cache');
+  selected = german;
+  await vi.advanceTimersByTimeAsync(250);
+  read('switch');
+  await settle();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(fetched).toHaveBeenCalledTimes(4); // Passive German did not displace either active body.
+  expect(responses().find((r) => r.requestId === 'switch' && r.text)?.text?.length).toBe(large.length);
+  selected = track;
+  await vi.advanceTimersByTimeAsync(250);
+  read('back');
+  await settle();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(fetched).toHaveBeenCalledTimes(5); // Previous source was evicted when German became active.
+  read('target-still-retained', undefined, false, false, 'fr');
+  await settle();
+  expect(responses().find((r) => r.requestId === 'target-still-retained')?.acquisition).toBe('cache');
+  const usage = responses().at(-1)?.cacheUsage;
+  expect(usage?.entries).toBe(2);
+  expect(usage?.bytes).toBeGreaterThan(12_000_000);
+  expect(usage?.bytes).toBeLessThanOrEqual(16_000_000);
+  expect(usage?.cues).toBe(2);
+});

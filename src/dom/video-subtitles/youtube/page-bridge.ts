@@ -1,6 +1,7 @@
 /** Page-world YouTube adapter: observes only timedtext, never proxies arbitrary requests. */
 import { LiveSubtitleBuffer } from '@/core/subtitles/live';
 import { retryDelay } from '@/core/subtitles/retry';
+import { SubtitleTrackCache, TRACK_CACHE_MAX_ENTRIES } from '@/core/subtitles/track-cache';
 import { PROJECT_PREFIX } from '@/constants';
 import {
   BRIDGE_RESPONSE,
@@ -55,7 +56,7 @@ type Player = HTMLElement & {
 };
 
 export const YOUTUBE_CAPTURE_TIMEOUT_MS = 8000;
-export const YOUTUBE_CAPTURE_CACHE_ENTRIES = 3;
+export const YOUTUBE_CAPTURE_CACHE_ENTRIES = TRACK_CACHE_MAX_ENTRIES;
 export const YOUTUBE_FETCH_MAX_ATTEMPTS = 3;
 export const YOUTUBE_FETCH_RATE_LIMIT_COOLDOWN_MS = 60_000;
 export const YOUTUBE_FETCH_MAX_TRACK_BUDGETS = 100;
@@ -135,6 +136,7 @@ export function installYoutubeBridge(win: Window): () => void {
   let currentVideo = '';
   const makeChannel = () => ({
     selectedTrackId: '',
+    cacheKey: '',
     pending: null as { controller: AbortController; key: string } | null,
     lastRequestAt: -Infinity,
   });
@@ -144,6 +146,7 @@ export function installYoutubeBridge(win: Window): () => void {
     channel.pending?.controller.abort();
     channel.pending = null;
     channel.selectedTrackId = '';
+    channel.cacheKey = '';
     channel.lastRequestAt = -Infinity;
   };
   let changedCaptions: { player: Player; videoId: string; track: string; interactionVersion: number } | null = null;
@@ -163,11 +166,17 @@ export function installYoutubeBridge(win: Window): () => void {
   let selectedAudioId = '';
   let endpointRetryAt = 0;
   let endpointRateLimits = 0;
-  const cache = new Map<string, string>();
   const liveRevisions = new Map<string, number>();
   let captureRevision = 0;
   let captureLive: boolean | null = null;
   const liveBuffers = new Map<string, LiveSubtitleBuffer>();
+  const cache = new SubtitleTrackCache(
+    () => new Set([sourceChannel.cacheKey, targetChannel.cacheKey]),
+    (key) => {
+      liveRevisions.delete(key);
+      liveBuffers.delete(key);
+    }
+  );
   // Capture signed URLs independently of bodies: failed native requests can still supply fresh tokens.
   const observedUrls = new Map<string, string>();
   const domLanguages = new Map<string, string>();
@@ -344,18 +353,21 @@ export function installYoutubeBridge(win: Window): () => void {
       text.length > MAX_SUBTITLE_BYTES
     )
       return false;
-    if (new TextEncoder().encode(text).byteLength > MAX_SUBTITLE_BYTES) return false;
     const id = pageVideoId();
     const url = id && id === currentVideo && safeTimedTextUrl(rawUrl, id);
     if (!url || url.searchParams.has('tlang')) return false;
     const key = trackKey(url);
     if ((liveRevisions.get(key) ?? 0) > revision) return false;
-    if (cache.get(key) === text) {
+    if (cache.peek(key) === text) {
       liveRevisions.set(key, revision);
       return true;
     }
+    let bytes = new TextEncoder().encode(text).byteLength;
+    if (bytes > MAX_SUBTITLE_BYTES) return false;
+    let cueCount: number;
     try {
       const cues = parseYouTubeTimedText(text);
+      cueCount = cues.length;
       if (!cues.length) return false;
       if (captureLive) {
         const video = youtubePlayer(win)?.querySelector('video');
@@ -363,6 +375,7 @@ export function installYoutubeBridge(win: Window): () => void {
         const buffer = liveBuffers.get(key) ?? new LiveSubtitleBuffer();
         buffer.merge(cues, video.currentTime * 1000, video.seekable.length ? video.seekable.start(0) * 1000 : 0);
         liveBuffers.set(key, buffer);
+        cueCount = buffer.cues.length;
         text = JSON.stringify({
           events: buffer.cues.map((cue) => ({
             tStartMs: cue.startMs,
@@ -371,19 +384,20 @@ export function installYoutubeBridge(win: Window): () => void {
             segs: [{ utf8: cue.text }],
           })),
         });
+        bytes = new TextEncoder().encode(text).byteLength;
       }
     } catch {
       return false;
     }
     // Body completion must not replace newer native tokens or the DOM language.
-    cache.delete(key);
-    cache.set(key, text);
-    liveRevisions.set(key, revision);
-    while (cache.size > YOUTUBE_CAPTURE_CACHE_ENTRIES) {
-      const oldest = cache.keys().next().value!;
-      cache.delete(oldest);
-      liveRevisions.delete(oldest);
-      liveBuffers.delete(oldest);
+    if (cache.set(key, text, bytes, cueCount)) {
+      liveRevisions.set(key, revision);
+    } else {
+      // Admission pressure is not a fetch/parse failure. Direct callers may still
+      // display this validated body without retaining an extra raw cache entry.
+      cache.discard(key);
+      liveRevisions.delete(key);
+      liveBuffers.delete(key);
     }
     return true;
   };
@@ -699,6 +713,7 @@ export function installYoutubeBridge(win: Window): () => void {
     const track = data.targetLanguage ? chooseHumanTarget(tracks, data.targetLanguage) : sourceTrack;
     const sourceUrl = track?.baseUrl && safeTimedTextUrl(track.baseUrl, videoId);
     if (sourceUrl) sourceUrl.searchParams.delete('tlang');
+    channel.cacheKey = sourceUrl ? trackKey(sourceUrl) : '';
     const observedLanguage = sourceUrl ? domLanguages.get(trackKey(sourceUrl)) : undefined;
     const domLanguage =
       selected?.translationLanguage?.languageCode ||
@@ -746,6 +761,7 @@ export function installYoutubeBridge(win: Window): () => void {
           version: BRIDGE_VERSION,
           requestId: data.requestId,
           snapshot,
+          cacheUsage: cache.snapshot(),
           acquisition: 'fetch',
           durationMs: Math.max(0, Math.min(300_000, Date.now() - requestStarted)),
           ...extra,
