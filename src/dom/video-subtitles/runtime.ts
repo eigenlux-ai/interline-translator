@@ -123,6 +123,8 @@ export function createSubtitleRuntime(
     domStable = '',
     domVersion = '',
     signature = '';
+  let deferredDom: { text: string; contentVersion: number } | null = null;
+  let domPrefixTranslation = '';
   let reconnectAt = 0,
     reconnectAttempts = 0,
     connectionEpoch = 0;
@@ -175,6 +177,8 @@ export function createSubtitleRuntime(
     domTranslation = '';
     domStable = '';
     domVersion = '';
+    deferredDom = null;
+    domPrefixTranslation = '';
     domSourceAvailable = false;
     frameSignature = '';
     stabilizer.reset();
@@ -183,17 +187,20 @@ export function createSubtitleRuntime(
   const stabilizer = new DomTextStabilizer({
     timers: { setTimeout: (cb, ms) => win.setTimeout(cb, ms), clearTimeout: (id) => win.clearTimeout(id as number) },
     onDisplay(value) {
+      deferredDom = null;
       if (value.text || original || domStable || domTranslation || failures.has('current')) status = 'dom';
       const growingLive = !!metadata?.live && !!domStable && value.text.startsWith(domStable);
       original = value.text;
       const cached = metadata?.live ? liveDomTranslations.get(value.text) : undefined;
       if (!growingLive) {
+        domPrefixTranslation = '';
         failures.delete('current');
         domTranslation = cached ?? '';
         domStable = '';
         domVersion = String(value.contentVersion);
         signature = '';
       } else if (cached) {
+        domPrefixTranslation = '';
         domStable = value.text;
         domVersion = String(value.contentVersion);
         domTranslation = cached;
@@ -210,10 +217,13 @@ export function createSubtitleRuntime(
           !domTranslation &&
           !failures.has('current') &&
           value.text.startsWith(domStable)
-        )
+        ) {
+          deferredDom = value;
           return;
+        }
         if (domStable !== value.text) {
           failures.delete('current');
+          domPrefixTranslation = metadata?.live ? domTranslation || domPrefixTranslation : '';
           domStable = value.text;
           domVersion = String(value.contentVersion);
           domTranslation = metadata?.live ? (liveDomTranslations.get(value.text) ?? '') : '';
@@ -251,7 +261,7 @@ export function createSubtitleRuntime(
             .map((cue) => state.translation(cue) ?? '')
             .filter(Boolean)
             .join('\n')
-        : domTranslation);
+        : domTranslation || domPrefixTranslation);
     try {
       renderer?.render({
         enabled,
@@ -319,6 +329,16 @@ export function createSubtitleRuntime(
         domTranslation = value.text ?? '';
         rememberLiveDom(domStable, domTranslation);
       } else if (value.type === 'failed') failures.add('current');
+      // The stabilizer has already emitted the final growing sentence. Drain it
+      // after this prefix settles, even if the native caption never changes again.
+      if (deferredDom && deferredDom.text !== domStable) {
+        domPrefixTranslation = domTranslation || domPrefixTranslation;
+        domStable = deferredDom.text;
+        domVersion = String(deferredDom.contentVersion);
+        domTranslation = '';
+        failures.delete('current');
+        deferredDom = null;
+      }
     } else {
       diagnostic({ event: 'translation-stale', generation });
       return;
@@ -448,6 +468,8 @@ export function createSubtitleRuntime(
       domTranslation = '';
       domStable = '';
       domVersion = '';
+      deferredDom = null;
+      domPrefixTranslation = '';
       stabilizer.reset();
     }
     const bounded = boundedSubscriptions(subscriptions);

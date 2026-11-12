@@ -908,3 +908,61 @@ describe('YouTube subtitle runtime integration', () => {
     expect(vi.mocked(window.postMessage).mock.calls.some(([data]) => data.resetRetry === true)).toBe(false);
   });
 });
+
+it.each(['completed', 'failed'] as const)(
+  'submits the latest stable live sentence after its prefix %s',
+  async (outcome) => {
+    setup(true);
+    track('ignored', 'en', true);
+    await vi.advanceTimersByTimeAsync(3000);
+    const caption = document.querySelector('.ytp-caption-segment')!;
+    caption.textContent = 'A live sentence';
+    await vi.advanceTimersByTimeAsync(500);
+    const pending = windows.at(-1)!;
+    caption.textContent = 'A live sentence keeps';
+    await vi.advanceTimersByTimeAsync(500);
+    caption.textContent = 'A live sentence keeps growing';
+    await vi.advanceTimersByTimeAsync(1600);
+    expect(windows.at(-1)?.subscriptions[0]?.text).toBe('A live sentence');
+    if (outcome === 'completed') complete(pending, '直播句子');
+    else
+      emit({
+        version: 1,
+        type: 'failed',
+        generation: pending.generation,
+        trackVersion: pending.trackVersion,
+        ...pending.subscriptions[0],
+        error: { code: 'translation-failed', retryable: true },
+      });
+    const full = windows.at(-1)!;
+    expect(full.subscriptions[0]?.text).toBe('A live sentence keeps growing');
+    expect(latest.translation).toBe(outcome === 'completed' ? '直播句子' : '');
+    expect(windows.some((w) => w.subscriptions.some((s) => s.text === 'A live sentence keeps'))).toBe(false);
+    complete(full, '直播句子还在增长');
+    complete(pending, '迟到的前缀');
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(latest.translation).toBe('直播句子还在增长');
+  }
+);
+
+it.each(['correction', 'seek', 'config'] as const)('discards deferred live growth on %s', async (change) => {
+  const config = setup(true);
+  track('ignored', 'en', true);
+  await vi.advanceTimersByTimeAsync(3000);
+  const caption = document.querySelector('.ytp-caption-segment')!;
+  caption.textContent = 'A live sentence';
+  await vi.advanceTimersByTimeAsync(500);
+  const pending = windows.at(-1)!;
+  caption.textContent = 'A live sentence keeps growing';
+  await vi.advanceTimersByTimeAsync(1600);
+  if (change === 'correction') {
+    caption.textContent = 'Corrected sentence';
+    await vi.advanceTimersByTimeAsync(500);
+  } else if (change === 'seek') {
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+  } else runtime.configure({ ...config, targetLanguage: 'ja' });
+  complete(pending, '旧前缀');
+  expect(windows.some((w) => w.subscriptions.some((s) => s.text === 'A live sentence keeps growing'))).toBe(false);
+  expect(latest.translation).toBe('');
+});

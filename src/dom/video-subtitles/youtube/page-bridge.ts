@@ -880,6 +880,9 @@ export function installYoutubeBridge(win: Window): () => void {
         if (!text) throw new Error('empty');
         if (controller.signal.aborted || requestEpoch !== epoch || pageVideoId() !== videoId) return;
         if (!capture(url.href, text, requestEpoch)) throw new Error('invalid-subtitles');
+        // Count consecutive acquisition failures, not successful cache refetches.
+        budget.attempts = 0;
+        budget.retryAt = 0;
         if (Date.now() >= endpointRetryAt) {
           endpointRetryAt = 0;
           endpointRateLimits = 0;

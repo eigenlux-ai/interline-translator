@@ -1183,3 +1183,32 @@ it('protects active source/target bodies from passive UTF-8 cache pressure and r
   expect(usage?.bytes).toBeLessThanOrEqual(16_000_000);
   expect(usage?.cues).toBe(2);
 });
+
+it('successful cache refetches do not exhaust the failure retry budget', async () => {
+  const tracks = ['en', 'fr', 'de', 'ja'].map((lang) => ({
+    vssId: '.' + lang,
+    languageCode: lang,
+    baseUrl: 'https://www.youtube.com/api/timedtext?v=video_123&lang=' + lang,
+  }));
+  let selected = tracks[0];
+  Object.assign(win.document.querySelector('#movie_player')!, {
+    getPlayerResponse: () => ({
+      videoDetails: { videoId: 'video_123', title: 'Example' },
+      captions: { playerCaptionsTracklistRenderer: { captionTracks: tracks } },
+    }),
+    getOption: () => selected,
+  });
+  dispose = installYoutubeBridge(win);
+  for (let i = 0; i < 13; i++) {
+    selected = tracks[i % 4];
+    await vi.advanceTimersByTimeAsync(250);
+    read('cycle-' + i);
+    await settle();
+    expect(
+      responses()
+        .filter((r) => r.requestId === 'cycle-' + i)
+        .at(-1)?.text,
+      'successful fetch ' + i
+    ).toBe(body);
+  }
+});
