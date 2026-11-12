@@ -129,41 +129,41 @@
     {
       "locale": "zh_CN",
       "file": "zh_CN/screenshot-5-subtitles.png",
-      "sourceSha256": "6d1595f28efebd09901995e771fcf99040706fab0e45b44570f30c46e48335aa",
+      "sourceSha256": "9790ae6ab0ddc4434e06df11d56c8f2316405ba64e73679dfa4ebea34ce1adc1",
       "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=zh_CN",
-      "capturedAt": "2026-11-12T10:47:15.441Z",
-      "outputSha256": "27bee93269258a28e76297576a736fb3dd6dc8111b272dfa285096b4daa1dcdd",
+      "capturedAt": "2026-11-12T10:51:05.850Z",
+      "outputSha256": "fa00b84e4a96441243bd99d1c7e7a8527690cb56294b37b8c36f5817e98446a1",
       "kind": "illustration"
     },
     {
       "locale": "global",
       "file": "global/screenshot-5-subtitles.png",
-      "sourceSha256": "e33500cbda315b26e894ca791236dc23c1b7584886cc7f4c4359cd267839e1f6",
+      "sourceSha256": "a7ddbb98a13c13a2f165095ecc08eaa732607a87d6d7aa8c5368ef1cf96ff8f2",
       "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=global",
-      "capturedAt": "2026-11-12T10:47:14.745Z",
-      "outputSha256": "4a2d72811d961eff4ea7dbbfbb0a68be2f099420fea12473e741d8b5ccdc92c4",
+      "capturedAt": "2026-11-12T10:51:05.138Z",
+      "outputSha256": "3dc5c9971bbb071542314f36c88d1ec71af2d9dcfd391f6f33dda2c40ac01e2d",
       "kind": "illustration"
     },
     {
       "locale": "ja",
       "file": "ja/screenshot-5-subtitles.png",
-      "sourceSha256": "7880933be38bba0413a80d47847f5fe943f204b22c75207e741e86b1160669ab",
+      "sourceSha256": "c49c8748d37ff452aaa97011c09aa0e47c3593c1cd59c5367577c1fa69cff3bc",
       "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=ja",
-      "capturedAt": "2026-11-12T10:47:16.132Z",
-      "outputSha256": "e67350e6d444310b42344f5e33ffb9d4fad1b59880e683549f32939106171fbc",
+      "capturedAt": "2026-11-12T10:51:06.568Z",
+      "outputSha256": "3698d20696de7956f1b2d20df8629e988b9229dc6090aa40d80e74086bb189c7",
       "kind": "illustration"
     },
     {
       "locale": "ko",
       "file": "ko/screenshot-5-subtitles.png",
-      "sourceSha256": "ba6c5c7eb3678fca3f3377162ab8984d464c564552495b6720b7b31feda8df14",
+      "sourceSha256": "23421ca34c837a69071973919cef555774dfc5f16990b4295d0244c8f8dadc07",
       "sourceUrl": "http://127.0.0.1:9341/subtitle-illustration?locale=ko",
-      "capturedAt": "2026-11-12T10:47:16.824Z",
-      "outputSha256": "bf5c2e000fe394d6a76c9573e7b269abdd0a90fe7d60f1bbe454aac09f195c86",
+      "capturedAt": "2026-11-12T10:51:07.269Z",
+      "outputSha256": "317dab1c0fb36b14acae265a5d3ccaef6dde4d96b0a1ed4df80ed29b1263d109",
       "kind": "illustration"
     }
   ],
-  "updatedAt": "2026-11-12T10:47:16.824Z",
+  "updatedAt": "2026-11-12T10:51:07.269Z",
   "subtitleIllustration": {
     "background": "source/subtitle-scene.png",
     "generation": "source/generation.json",

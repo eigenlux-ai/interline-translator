@@ -17,6 +17,11 @@ const server = createServer(async (req, res) => {
       res.end();
       return;
     }
+    if (u.pathname === '/mantine.css') {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+      res.end(await readFile(path.join(root, 'node_modules/@mantine/core/styles.css')));
+      return;
+    }
     if (u.pathname === '/subtitle-scene.png') {
       res.setHeader('Content-Type', 'image/png');
       res.end(await readFile(path.join(root, 'assets/store/source/subtitle-scene.png')));
@@ -32,7 +37,8 @@ const server = createServer(async (req, res) => {
       res.end(
         subtitleIllustrationHtml(
           original.video_subtitles_preview_original,
-          translated.video_subtitles_preview_translation
+          translated.video_subtitles_preview_translation,
+          { toggle: translated.video_subtitles_toggle, settings: translated.video_subtitles_title }
         )
       );
       return;
