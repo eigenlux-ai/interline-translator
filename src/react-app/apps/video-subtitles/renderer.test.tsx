@@ -11,7 +11,7 @@ import { m } from '@/paraglide/messages';
 import { defaultVideoSubtitles } from '@/services/config/video-subtitles';
 import { mountVideoSubtitleRenderer, PlayerSubtitles } from './renderer';
 
-const render = (node: ReactElement) => renderTree(<MantineProvider>{node}</MantineProvider>);
+const render = (node: ReactElement) => renderTree(<MantineProvider env="test">{node}</MantineProvider>);
 afterEach(cleanup);
 function fixture(): VideoSubtitleView {
   return {
@@ -35,18 +35,35 @@ const actions = () => ({ toggle: vi.fn(), fail: vi.fn(), retry: vi.fn(), more: v
 describe('player subtitle controls', () => {
   it('saves target inheritance semantics and restores focus on Escape without changing the playback toggle', async () => {
     const commands = actions();
-    const view = render(<PlayerSubtitles view={fixture()} actions={commands} />);
+    const data = fixture();
+    const view = render(<PlayerSubtitles view={data} actions={commands} />);
     const trigger = view.getByRole('button', { name: m.video_subtitles_title() });
     fireEvent.click(trigger);
-    const target = view.getByLabelText(m.settings_target_label(), { exact: false });
+    const target = view.getByLabelText(m.settings_target_label(), {
+      exact: false,
+      selector: 'input:not([type="hidden"])',
+    });
+    fireEvent.click(target);
     await act(async () => {
-      fireEvent.change(target, { target: { value: 'ja' } });
+      fireEvent.click(view.getByRole('option', { name: '日本語' }));
     });
     expect(commands.patch).toHaveBeenLastCalledWith({ translation: { target: { mode: 'fixed', language: 'ja' } } });
+    data.settings.config.translation.target = { mode: 'fixed', language: 'ja' };
+    view.rerender(
+      <MantineProvider env="test">
+        <PlayerSubtitles view={data} actions={commands} />
+      </MantineProvider>
+    );
+    fireEvent.click(target);
     await act(async () => {
-      fireEvent.change(target, { target: { value: '' } });
+      fireEvent.click(view.getByRole('option', { name: m.video_subtitles_inherit() }));
     });
     expect(commands.patch).toHaveBeenLastCalledWith({ translation: { target: { mode: 'inherit' } } });
+    fireEvent.click(target);
+    expect(target.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.keyDown(target, { key: 'Escape' });
+    expect(target.getAttribute('aria-expanded')).toBe('false');
+    expect(view.queryByRole('dialog')).not.toBeNull();
     fireEvent.keyDown(target, { key: 'Escape' });
     expect(view.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -62,9 +79,14 @@ describe('player subtitle controls', () => {
     const view = render(<PlayerSubtitles view={data} actions={actions()} />);
     expect(view.getByText('Hello')).toBeTruthy();
     fireEvent.click(view.getByRole('button', { name: m.video_subtitles_title() }));
-    expect((view.getByLabelText(m.settings_default_provider(), { exact: false }) as HTMLSelectElement).value).toBe(
-      'deleted'
-    );
+    expect(
+      (
+        view.getByLabelText(m.settings_default_provider(), {
+          exact: false,
+          selector: 'input:not([type="hidden"])',
+        }) as HTMLInputElement
+      ).value
+    ).toBe(m.video_subtitles_unavailable());
     expect(view.getByRole('button', { name: m.common_retry() })).toBeTruthy();
   });
   it('shows an actionable error when a preference write fails', async () => {
@@ -72,8 +94,9 @@ describe('player subtitle controls', () => {
     commands.patch.mockRejectedValueOnce(new Error('disconnected'));
     const view = render(<PlayerSubtitles view={fixture()} actions={commands} />);
     fireEvent.click(view.getByRole('button', { name: m.video_subtitles_title() }));
+    fireEvent.click(view.getByLabelText(m.display_label(), { selector: 'input:not([type="hidden"])' }));
     await act(async () => {
-      fireEvent.change(view.getByLabelText(m.display_label()), { target: { value: 'original' } });
+      fireEvent.click(view.getByRole('option', { name: m.display_original() }));
     });
     expect(view.getByRole('alert').textContent).toBe(m.video_subtitles_operation_failed());
   });
@@ -122,7 +145,7 @@ it('mounts through the host outlet, shares styles/theme, preserves controls acro
   const key = vi.fn();
   player.addEventListener('keydown', key);
   shadow
-    .querySelector('select')!
+    .querySelector('input[role=combobox]')!
     .dispatchEvent(new KeyboardEvent('keydown', { key: 'k', bubbles: true, composed: true }));
   expect(key).not.toHaveBeenCalled();
   await act(async () => renderer.dispose());

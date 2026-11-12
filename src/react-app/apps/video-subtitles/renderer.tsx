@@ -1,5 +1,5 @@
-import { Component, useEffect, useRef, useState, type ReactNode } from 'react';
-import { ActionIcon, Button, CloseButton, Group, NativeSelect, Paper, Stack, Text } from '@mantine/core';
+import { Component, useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { ActionIcon, Button, CloseButton, Group, Paper, Select, Stack, Text } from '@mantine/core';
 import { createSatellite } from '@/surface/satellite';
 import { langOptions } from '@/data/models';
 import { RTL_UI_LANGS } from '@/data/models/lang';
@@ -30,7 +30,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const [error, setError] = useState(false);
   const settingsButton = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLDivElement>(null);
-  const firstControl = useRef<HTMLSelectElement>(null);
+  const firstControl = useRef<HTMLInputElement>(null);
   const appearance = view.settings.config.appearance;
   const providerSelection = view.settings.config.translation.provider;
   const targetSelection = view.settings.config.translation.target;
@@ -53,6 +53,16 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
     document.addEventListener('pointerdown', dismiss, true);
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [open]);
+  const selectProps = {
+    allowDeselect: false,
+    // Keep menus inside the player's satellite, including in fullscreen.
+    comboboxProps: { withinPortal: false, floatingStrategy: 'fixed' as const },
+    onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => {
+      // First Escape dismisses the dropdown; a second closes the settings panel.
+      if (event.key === 'Escape' && event.currentTarget.getAttribute('aria-expanded') === 'true')
+        event.stopPropagation();
+    },
+  };
   const save = (patch: Parameters<Actions['patch']>[0]) => {
     setError(false);
     void actions.patch(patch).catch(() => setError(true));
@@ -65,17 +75,19 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   return (
     <div className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
       <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>
-        <Button
+        <ActionIcon
           variant={view.enabled ? 'filled' : 'default'}
-          size="compact-sm"
+          size={34}
           type="button"
           aria-label={m.video_subtitles_toggle()}
           title={m.video_subtitles_toggle()}
           aria-pressed={view.enabled}
           onClick={actions.toggle}
         >
-          CC
-        </Button>
+          <Text component="span" size="xs" fw={600}>
+            CC
+          </Text>
+        </ActionIcon>
         <ActionIcon
           variant="default"
           size={34}
@@ -128,7 +140,8 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
               </Text>
               <CloseButton size="sm" aria-label={m.common_close()} title={m.common_close()} onClick={close} />
             </Group>
-            <NativeSelect
+            <Select
+              {...selectProps}
               ref={firstControl}
               label={m.display_label()}
               value={appearance.displayMode}
@@ -137,25 +150,27 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                 { value: 'translation', label: m.display_translation() },
                 { value: 'original', label: m.display_original() },
               ]}
-              onChange={(event) =>
-                save({ appearance: { displayMode: event.target.value as typeof appearance.displayMode } })
-              }
+              onChange={(value) => {
+                if (value) save({ appearance: { displayMode: value as typeof appearance.displayMode } });
+              }}
             />
-            <NativeSelect
+            <Select
+              {...selectProps}
               label={m.settings_target_label()}
               description={m.video_subtitles_effective({ value: effectiveLanguage })}
               inputWrapperOrder={['label', 'input', 'description', 'error']}
               value={targetSelection.mode === 'inherit' ? '' : targetSelection.language}
               data={[{ value: '', label: m.video_subtitles_inherit() }, ...LANGUAGES]}
-              onChange={(event) =>
+              onChange={(value) =>
                 save({
                   translation: {
-                    target: event.target.value ? { mode: 'fixed', language: event.target.value } : { mode: 'inherit' },
+                    target: value ? { mode: 'fixed', language: value } : { mode: 'inherit' },
                   },
                 })
               }
             />
-            <NativeSelect
+            <Select
+              {...selectProps}
               label={m.settings_default_provider()}
               description={m.video_subtitles_effective({
                 value: effectiveProvider?.label ?? m.video_subtitles_unavailable(),
@@ -169,12 +184,10 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
                   ? [{ value: providerSelection.providerId, label: m.video_subtitles_unavailable() }]
                   : []),
               ]}
-              onChange={(event) =>
+              onChange={(value) =>
                 save({
                   translation: {
-                    provider: event.target.value
-                      ? { mode: 'fixed', providerId: event.target.value }
-                      : { mode: 'inherit' },
+                    provider: value ? { mode: 'fixed', providerId: value } : { mode: 'inherit' },
                   },
                 })
               }
