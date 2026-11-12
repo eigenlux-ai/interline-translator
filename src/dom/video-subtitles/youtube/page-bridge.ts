@@ -34,7 +34,6 @@ type Player = HTMLElement & {
 
 export const YOUTUBE_CAPTURE_TIMEOUT_MS = 8000;
 export const YOUTUBE_CAPTURE_CACHE_ENTRIES = 3;
-export const YOUTUBE_CAPTURE_STARTUP_MS = 5000;
 export const YOUTUBE_FETCH_MAX_ATTEMPTS = 3;
 export const YOUTUBE_FETCH_RATE_LIMIT_COOLDOWN_MS = 60_000;
 export const YOUTUBE_FETCH_MAX_TRACK_BUDGETS = 100;
@@ -111,10 +110,10 @@ export function installYoutubeBridge(win: Window): () => void {
     wrapped: NonNullable<Player['toggleSubtitles']>;
   } | null = null;
   let lastRequestAt = -Infinity;
-  const fetchBudgets = new Map<string, { attempts: number; retryAt: number; rateLimitUntil: number }>();
+  const fetchBudgets = new Map<string, { attempts: number; retryAt: number }>();
   let receivedRead = false;
-  let captureTimer: ReturnType<typeof setTimeout> | undefined;
-  let navigationCapture = false;
+  let endpointRetryAt = 0;
+  let endpointRateLimits = 0;
   const cache = new Map<string, string>();
   // Capture signed URLs independently of bodies: failed native requests can still supply fresh tokens.
   const observedUrls = new Map<string, string>();
@@ -237,6 +236,8 @@ export function installYoutubeBridge(win: Window): () => void {
     pending = null;
     for (const observer of observers) observer.abort();
     observers.clear();
+    for (const [xhr, listener] of xhrListeners) xhr.removeEventListener('loadend', listener);
+    xhrListeners.clear();
     cache.clear();
     observedUrls.clear();
     domLanguages.clear();
@@ -371,12 +372,25 @@ export function installYoutubeBridge(win: Window): () => void {
       throw error;
     }
   };
+  const tryHostChange = (change: () => void) => {
+    try {
+      change();
+    } catch {
+      /* A locked host method must not disable other capture channels. */
+    }
+  };
   const install = () => {
     if (disposed || suspended || active) return;
     active = true;
-    win.fetch = wrappedFetch;
-    xhrPrototype.open = wrappedOpen;
-    xhrPrototype.send = wrappedSend;
+    tryHostChange(() => {
+      win.fetch = wrappedFetch;
+    });
+    tryHostChange(() => {
+      xhrPrototype.open = wrappedOpen;
+    });
+    tryHostChange(() => {
+      xhrPrototype.send = wrappedSend;
+    });
   };
   const release = (dropCache = false) => {
     active = false;
@@ -396,9 +410,15 @@ export function installYoutubeBridge(win: Window): () => void {
       domLanguages.clear();
     }
     releaseCaptionControl();
-    if (win.fetch === wrappedFetch) win.fetch = originalFetch;
-    if (xhrPrototype.open === wrappedOpen) xhrPrototype.open = originalOpen;
-    if (xhrPrototype.send === wrappedSend) xhrPrototype.send = originalSend;
+    tryHostChange(() => {
+      if (win.fetch === wrappedFetch) win.fetch = originalFetch;
+    });
+    tryHostChange(() => {
+      if (xhrPrototype.open === wrappedOpen) xhrPrototype.open = originalOpen;
+    });
+    tryHostChange(() => {
+      if (xhrPrototype.send === wrappedSend) xhrPrototype.send = originalSend;
+    });
   };
   const restoreCaptions = () => {
     const owned = changedCaptions;
@@ -434,17 +454,11 @@ export function installYoutubeBridge(win: Window): () => void {
     if (data.action === 'stop') {
       receivedRead = false;
       lastRequestAt = -Infinity;
-      if (navigationCapture) {
-        // An old adapter can stop while the new player's native response is
-        // still arriving. Keep the bounded navigation capture alive.
-        pending?.controller.abort();
-        pending = null;
-        restoreCaptions();
-        releaseCaptionControl();
-      } else {
-        release();
-        restoreCaptions();
-      }
+      pending?.controller.abort();
+      pending = null;
+      restoreCaptions();
+      releaseCaptionControl();
+      // Stop active work, but retain bounded passive capture of native responses.
       return;
     }
     if (Date.now() - lastRequestAt < 200) return;
@@ -581,14 +595,14 @@ export function installYoutubeBridge(win: Window): () => void {
         post({ error: 'unavailable' });
         return;
       }
-      budget = { attempts: 0, retryAt: 0, rateLimitUntil: 0 };
+      budget = { attempts: 0, retryAt: 0 };
       fetchBudgets.set(key, budget);
     }
     if (data.resetRetry) {
       budget.attempts = 0;
       budget.retryAt = 0;
     }
-    if (Date.now() < budget.rateLimitUntil) {
+    if (Date.now() < endpointRetryAt) {
       post({ error: 'rateLimit' });
       return;
     }
@@ -615,8 +629,20 @@ export function installYoutubeBridge(win: Window): () => void {
       .then(async (res) => {
         if (pending?.controller !== controller || controller.signal.aborted || requestEpoch !== epoch) return;
         if (!res.ok) {
-          budget.retryAt = Date.now() + (res.status === 429 ? YOUTUBE_FETCH_RATE_LIMIT_COOLDOWN_MS : 10_000);
-          if (res.status === 429) budget.rateLimitUntil = Math.max(budget.rateLimitUntil, budget.retryAt);
+          if (res.status === 429) {
+            endpointRateLimits += 1;
+            const backoff = Math.min(
+              300_000,
+              YOUTUBE_FETCH_RATE_LIMIT_COOLDOWN_MS * 2 ** Math.min(3, endpointRateLimits - 1)
+            );
+            const header = res.headers.get('retry-after')?.trim() ?? '';
+            const requested = /^\d+(?:\.\d+)?$/.test(header) ? Number(header) * 1000 : Date.parse(header) - Date.now();
+            const delay = Math.min(300_000, Math.max(backoff, Number.isFinite(requested) ? requested : 0));
+            endpointRetryAt = Date.now() + delay;
+            // A temporary endpoint refusal must not permanently exhaust this track.
+            budget.attempts = 0;
+            budget.retryAt = endpointRetryAt;
+          } else budget.retryAt = Date.now() + 10_000;
           post({ error: res.status === 429 ? 'rateLimit' : 'fetch' });
           return;
         }
@@ -626,6 +652,8 @@ export function installYoutubeBridge(win: Window): () => void {
         if (controller.signal.aborted || requestEpoch !== epoch || youtubeVideoId(win.location.href) !== videoId)
           return;
         if (!capture(url.href, text, requestEpoch)) throw new Error('invalid-subtitles');
+        endpointRetryAt = 0;
+        endpointRateLimits = 0;
         post({ text });
       })
       .catch(() => {
@@ -643,7 +671,6 @@ export function installYoutubeBridge(win: Window): () => void {
   const dispose = () => {
     if (disposed) return;
     disposed = true;
-    clearTimeout(captureTimer);
     release(true);
     restoreCaptions();
     win.removeEventListener('message', onMessage);
@@ -661,8 +688,6 @@ export function installYoutubeBridge(win: Window): () => void {
       return;
     }
     suspended = true;
-    clearTimeout(captureTimer);
-    navigationCapture = false;
     release();
     restoreCaptions();
   };
@@ -670,31 +695,23 @@ export function installYoutubeBridge(win: Window): () => void {
     if (!suspended || disposed) return;
     suspended = false;
     lastRequestAt = -Infinity;
-    // Remain inert until the resumed content runtime confirms it is enabled.
-  };
-  const captureWindow = (navigation = false) => {
-    clearTimeout(captureTimer);
-    navigationCapture = navigation;
+    // Re-arm passive observation; only a read request can start active work.
     install();
-    captureTimer = setTimeout(() => {
-      navigationCapture = false;
-      if (!receivedRead) release();
-    }, YOUTUBE_CAPTURE_STARTUP_MS);
   };
   const onNavigateStart = () => {
     if (disposed || suspended) return;
     receivedRead = false;
     lastRequestAt = -Infinity;
     clearVideo('');
-    captureWindow(true);
+    install();
   };
   const onNavigateFinish = () => {
     if (disposed || suspended) return;
     clearVideo(youtubeVideoId(win.location.href) ?? '');
-    captureWindow(true);
+    install();
   };
   owners.set(win, dispose);
-  captureWindow();
+  install();
   win.document.addEventListener('yt-navigate-start', onNavigateStart);
   win.document.addEventListener('yt-navigate-finish', onNavigateFinish);
   win.addEventListener('message', onMessage);

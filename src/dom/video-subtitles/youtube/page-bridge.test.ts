@@ -140,16 +140,18 @@ describe('recoverable YouTube network bridge', () => {
     await settle();
     expect(responses().at(-1)).not.toHaveProperty('text');
     stop();
+    expect(win.fetch).not.toBe(fetched);
+    dispose();
     expect(win.fetch).toBe(fetched);
     expect(browser.XMLHttpRequest.prototype.open).toBe(originalOpen);
   });
 
-  it('retains startup captions after observation stops and across a user restart', async () => {
+  it('retains native captions across delayed enable and a user restart', async () => {
     dispose = installYoutubeBridge(win);
     await win.fetch(baseUrl);
     await settle();
     await vi.advanceTimersByTimeAsync(6000);
-    expect(win.fetch).toBe(fetched);
+    expect(win.fetch).not.toBe(fetched);
     fetched.mockResolvedValue(new Response(''));
     read('delayed-enable');
     await settle();
@@ -166,7 +168,7 @@ describe('recoverable YouTube network bridge', () => {
   it('captures SPA navigation captions before a delayed enable and ignores the previous adapter stop', async () => {
     dispose = installYoutubeBridge(win);
     await vi.advanceTimersByTimeAsync(6000);
-    expect(win.fetch).toBe(fetched);
+    expect(win.fetch).not.toBe(fetched);
     win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
     browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
     const nextUrl = baseUrl.replace('video_123', 'other_123');
@@ -198,7 +200,7 @@ describe('recoverable YouTube network bridge', () => {
     await native;
     await settle();
     await vi.advanceTimersByTimeAsync(6000);
-    expect(win.fetch).toBe(fetched);
+    expect(win.fetch).not.toBe(fetched);
     fetched.mockResolvedValue(new Response(''));
     read('enable-new-video');
     await settle();
@@ -295,16 +297,16 @@ describe('recoverable YouTube network bridge', () => {
     expect(responses().at(-1)?.text).toBe(body);
   });
 
-  it('reinstalls after the startup budget and after explicit stop without stacked wrappers', async () => {
+  it('keeps passive capture after delayed enable and explicit stop without stacked wrappers', async () => {
     dispose = installYoutubeBridge(win);
     const wrapper = win.fetch;
     await vi.advanceTimersByTimeAsync(5000);
-    expect(win.fetch).toBe(fetched);
+    expect(win.fetch).toBe(wrapper);
     read();
     await settle();
     expect(win.fetch).toBe(wrapper);
     stop();
-    expect(win.fetch).toBe(fetched);
+    expect(win.fetch).toBe(wrapper);
     read('restart');
     await settle();
     expect(win.fetch).toBe(wrapper);
@@ -324,6 +326,117 @@ describe('recoverable YouTube network bridge', () => {
     await settle();
     expect(responses().at(-1)?.text).toBe(body);
     expect(win.fetch).not.toBe(fetched);
+  });
+
+  it('captures native captions after a long ad without initiating requests while disabled', async () => {
+    dispose = installYoutubeBridge(win);
+    const player = win.document.querySelector('#movie_player')!;
+    player.classList.add('ad-showing');
+    await vi.advanceTimersByTimeAsync(30_000);
+    expect(fetched).not.toHaveBeenCalled();
+    player.classList.remove('ad-showing');
+    await win.fetch(baseUrl);
+    await settle();
+    await vi.advanceTimersByTimeAsync(30_000);
+    read('late-enable');
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).toHaveBeenCalledTimes(1);
+  });
+
+  it('stopping active work preserves an in-flight passive native capture', async () => {
+    dispose = installYoutubeBridge(win);
+    let finish!: (value: Response) => void;
+    fetched.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const native = win.fetch(baseUrl);
+    stop();
+    finish(new Response(body));
+    await native;
+    await settle();
+    read();
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).toHaveBeenCalledTimes(1);
+  });
+
+  it('still captures XHR when the host fetch slot is read-only', async () => {
+    Object.defineProperty(win, 'fetch', { value: fetched, writable: false, configurable: true });
+    vi.spyOn(browser.XMLHttpRequest.prototype, 'send').mockImplementation(() => {});
+    expect(() => {
+      dispose = installYoutubeBridge(win);
+    }).not.toThrow();
+    const xhr = new browser.XMLHttpRequest();
+    xhr.open('GET', baseUrl);
+    xhr.send();
+    Object.defineProperties(xhr, {
+      status: { value: 200 },
+      responseText: { value: body },
+      responseURL: { value: baseUrl },
+    });
+    xhr.dispatchEvent(new browser.Event('loadend'));
+    read();
+    await settle();
+    expect(responses().at(-1)?.text).toBe(body);
+    expect(fetched).not.toHaveBeenCalled();
+    expect(() => dispose?.()).not.toThrow();
+  });
+
+  it('keeps fetch capture and safe disposal when XHR methods are locked', async () => {
+    const proto = browser.XMLHttpRequest.prototype;
+    const descriptor = Object.getOwnPropertyDescriptor(proto, 'open');
+    Object.defineProperty(proto, 'open', { value: proto.open, writable: false, configurable: true });
+    try {
+      dispose = installYoutubeBridge(win);
+      await win.fetch(baseUrl);
+      await settle();
+      read();
+      await settle();
+      expect(responses().at(-1)?.text).toBe(body);
+      // A host can also lock a wrapper after installation.
+      Object.defineProperty(win, 'fetch', { value: win.fetch, writable: false, configurable: true });
+      expect(() => dispose?.()).not.toThrow();
+    } finally {
+      if (descriptor) Object.defineProperty(proto, 'open', descriptor);
+      else Reflect.deleteProperty(proto, 'open');
+    }
+  });
+
+  it('retains endpoint cooldown across video changes and recovers after Retry-After without manual retry', async () => {
+    fetched.mockResolvedValueOnce(new Response('', { status: 429, headers: { 'Retry-After': '120' } }));
+    dispose = installYoutubeBridge(win);
+    read();
+    await settle();
+    win.document.dispatchEvent(new browser.Event('yt-navigate-start') as unknown as Event);
+    browser.happyDOM.setURL('https://www.youtube.com/watch?v=other_123');
+    Object.assign(win.document.querySelector('#movie_player')!, {
+      getPlayerResponse: () => ({
+        videoDetails: { videoId: 'other_123' },
+        captions: {
+          playerCaptionsTracklistRenderer: {
+            captionTracks: [{ ...track, baseUrl: baseUrl.replace('video_123', 'other_123') }],
+          },
+        },
+      }),
+    });
+    win.document.dispatchEvent(new browser.Event('yt-navigate-finish') as unknown as Event);
+    read('next-video', undefined, false, true);
+    await settle();
+    expect(responses().at(-1)?.error).toBe('rateLimit');
+    expect(fetched).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60_000);
+    read('too-early', undefined, false, true);
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60_000);
+    read('cooldown-over');
+    await settle();
+    expect(fetched).toHaveBeenCalledTimes(2);
+    expect(responses().at(-1)?.text).toBe(body);
   });
 
   it('does not fetch or reuse content during an advertisement', async () => {
