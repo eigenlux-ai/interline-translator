@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <!-- Verify Interline's floating controls, host-theme following and keyboard
+       isolation against strict CSP. The harness itself uses same-origin files. -->
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'none'; img-src 'self' data:; font-src 'self'; connect-src 'self'; base-uri 'none'; object-src 'none'"
+    />
+    <title>Strict-CSP hostile host page</title>
+    <link rel="stylesheet" href="./csp-strict-host.css" />
+  </head>
+  <body>
+    <h1>Strict-CSP host page</h1>
+    <p class="note">
+      CSP: <code>default-src 'self'; script-src 'self'; style-src 'self'; style-src-attr 'none'</code> — no
+      <code>unsafe-inline</code>. This page's own script/style are external (same-origin) because its CSP would block
+      inline ones. Interline should render its floating controls with complete styling.
+    </p>
+
+    <button id="theme-btn" type="button">Toggle host theme</button>
+    <div id="hotkey-log" class="log">hotkey log: (none)</div>
+
+    <p>Paragraph one — satellite anchor target.</p>
+    <p>Paragraph two — satellite anchor target.</p>
+    <p id="removable">Paragraph three — click the button below to remove me and test satellite lifecycle custody.</p>
+    <button id="remove-btn" type="button">remove paragraph three</button>
+
+    <!-- External, same-origin: allowed by script-src 'self'. Inline would be blocked. -->
+    <script src="./csp-strict-host.js"></script>
+  </body>
+</html>

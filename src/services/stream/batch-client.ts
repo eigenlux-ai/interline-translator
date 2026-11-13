@@ -11,8 +11,8 @@
  * sequence to `for await` over.
  */
 
-import type { BatchStreamServerMessage, BatchStreamStart, TranslateRequest } from '@/data/models';
 import { randomId } from '@/core/uid';
+import type { BatchStreamServerMessage, BatchStreamStart, TranslateRequest } from '@/data/models';
 import { connectKeepAlive } from '@/services/keep-alive';
 import { STREAM_PORT_NAME } from './index';
 

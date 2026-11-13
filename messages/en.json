@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "Current subtitle language",
 	"video_subtitles_order": "Language order",
 	"video_subtitles_prefer_human": "Prefer manually created subtitles in the target language",
-	"video_subtitles_export_diagnostics": "Export subtitle diagnostics"
+	"video_subtitles_export_diagnostics": "Export subtitle diagnostics",
+	"video_subtitles_slow": "Subtitle translation is falling behind. Pause to prepare upcoming translations?",
+	"video_subtitles_slow_live": "Subtitle translation is falling behind. Try a faster translation engine.",
+	"video_subtitles_buffer_ready": "Upcoming translations are ready.",
+	"video_subtitles_buffer_stalled": "Translation buffering is taking longer. You can continue playing or change engines.",
+	"video_subtitles_buffering": "Preparing upcoming translations…",
+	"video_subtitles_buffer_progress": "Translated {completed} / {total} captions",
+	"video_subtitles_buffer_action": "Pause and buffer",
+	"video_subtitles_resume": "Continue playing",
+	"video_subtitles_change_engine": "Change engine",
+	"video_subtitles_dismiss_slow": "Not now"
 }

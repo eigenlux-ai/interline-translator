@@ -1,4 +1,4 @@
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { afterEach, expect, it, vi } from 'vitest';
 import { registerSubtitleServer } from './server';
 

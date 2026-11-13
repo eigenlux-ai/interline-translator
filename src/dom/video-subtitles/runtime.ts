@@ -9,6 +9,7 @@ import {
 } from '@/core/subtitles';
 import { coversSubtitleInterval } from '@/core/subtitles/coverage';
 import { recordSubtitleDiagnostic as diagnostic } from '@/core/subtitles/diagnostics';
+import { SubtitleLagMonitor } from '@/core/subtitles/lag';
 import { retryDelay } from '@/core/subtitles/retry';
 import type { VideoSubtitlesConfig, VideoSubtitlesPatch } from '@/data/models/config';
 import type { SubtitleSubscription, SubtitleTranslationEvent, SubtitleWindow } from '@/services/subtitles/protocol';
@@ -47,6 +48,12 @@ export interface VideoSubtitleView {
   status: VideoSubtitleStatus;
   sourceLanguage: string;
   settings: VideoSubtitleSettings;
+  assistance?: {
+    kind: 'slow' | 'buffering' | 'buffer-ready' | 'buffer-stalled';
+    canBuffer: boolean;
+    completed: number;
+    total: number;
+  };
 }
 export interface VideoSubtitleRenderer {
   /** Recover when the host page removes an injected satellite. */
@@ -67,6 +74,9 @@ export interface VideoSubtitleRuntimePorts {
       toggle(): void;
       fail(): void;
       retry(): void;
+      buffer?(): void;
+      resume?(): Promise<void>;
+      dismissAssistance?(): void;
       patch(patch: VideoSubtitlesPatch): Promise<void>;
       more(): void;
     },
@@ -103,7 +113,10 @@ export function createSubtitleRuntime(
     generation = 0;
   let adapter: VideoPlatformAdapter | null = null;
   let renderer: VideoSubtitleRenderer | null = null;
+  let rendererMount: HTMLElement | null = null;
   let state = new SubtitleSessionState();
+  const lag = new SubtitleLagMonitor();
+  let buffering: { timeMs: number; cues: SubtitleCue[]; completed: number; progressAt: number } | null = null;
   let metadata: VideoSubtitleMetadata | null = null;
   let targetTimeline = new SubtitleTimeline([]);
   let targetWaitUntil = 0;
@@ -165,6 +178,8 @@ export function createSubtitleRuntime(
     restoreNative = null;
   };
   const invalidate = () => {
+    buffering = null;
+    lag.reset();
     generation += 1;
     diagnostic({ event: 'session-reset', generation });
     state.invalidate();
@@ -262,6 +277,48 @@ export function createSubtitleRuntime(
             .filter(Boolean)
             .join('\n')
         : domTranslation || domPrefixTranslation);
+    const translationEnabled = !!settings.providerId && settings.config.appearance.displayMode !== 'original';
+    const canBuffer = !!metadata && !metadata.live && !!state.track && !!adapter?.media?.();
+    if (
+      buffering &&
+      (!translationEnabled ||
+        !canBuffer ||
+        suppressed ||
+        !playback?.paused ||
+        Math.abs(playback.timeMs - buffering.timeMs) > 250)
+    ) {
+      buffering = null;
+      lag.dismiss(Date.now());
+    }
+    const slow =
+      playback &&
+      lag.observe(
+        Date.now(),
+        playback,
+        !suppressed &&
+          translationEnabled &&
+          !!source &&
+          !human &&
+          !(timed ? cues.some((cue) => failures.has(cue.id)) : failures.has('current')),
+        timed ? cues.some((cue) => !state.translation(cue)) : !domTranslation
+      );
+    let assistance: VideoSubtitleView['assistance'];
+    if (buffering) {
+      const completed = buffering.cues.filter(
+        (cue) => !!state.translation(cue) || coversSubtitleInterval(targetTimeline, cue.startMs, cue.endMs)
+      ).length;
+      if (completed !== buffering.completed) {
+        buffering.completed = completed;
+        buffering.progressAt = Date.now();
+      }
+      const stalled = Date.now() - buffering.progressAt >= 30_000 || buffering.cues.some((cue) => failures.has(cue.id));
+      assistance = {
+        kind: completed === buffering.cues.length ? 'buffer-ready' : stalled ? 'buffer-stalled' : 'buffering',
+        canBuffer,
+        completed,
+        total: buffering.cues.length,
+      };
+    } else if (slow) assistance = { kind: 'slow', canBuffer, completed: 0, total: 0 };
     try {
       renderer?.render({
         enabled,
@@ -269,6 +326,7 @@ export function createSubtitleRuntime(
         translation: suppressed ? '' : translated,
         sourceLanguage: (timed ? metadata?.language : (metadata?.domLanguage ?? metadata?.language)) ?? '',
         settings,
+        assistance,
         status: human
           ? 'ready'
           : settings.providerId || settings.config.appearance.displayMode === 'original'
@@ -407,6 +465,12 @@ export function createSubtitleRuntime(
         ? settings.config.requests.mtLookAheadSeconds
         : settings.config.requests.llmLookAheadSeconds;
       const planned = planSubtitleWindow(state.timeline, playback, { prefetchMs: lookAhead * 1000, maxCues: 100 });
+      // The progress denominator and requested cues stay identical even if the
+      // user edits look-ahead/rate settings while the video is paused.
+      if (buffering) {
+        const currentIds = new Set(planned.current.map((cue) => cue.id));
+        planned.upcoming = buffering.cues.filter((cue) => !currentIds.has(cue.id));
+      }
       if (!metadata?.live) original = planned.current.map((cue) => cue.text).join('\n');
       status = planned.current.some((cue) => failures.has(cue.id))
         ? 'translation-failed'
@@ -588,27 +652,117 @@ export function createSubtitleRuntime(
     failures.clear();
     reconnectAt = 0;
     signature = '';
-    adapter?.retry();
+    if (buffering) {
+      // Retry translation only: reacquiring the source would invalidate the
+      // frozen buffer target. Keep completed results and cancel stale callbacks.
+      buffering.progressAt = Date.now();
+      closeClient();
+    } else adapter?.retry();
     update();
   };
-  const detach = () => {
-    cleanups.forEach((cleanup) => cleanup());
-    cleanups = [];
-    adapter?.dispose();
-    adapter = null;
+  const buffer = () => {
+    const media = adapter?.media?.();
+    const playback = adapter?.playback.snapshot();
+    if (
+      !enabled ||
+      !media ||
+      !metadata ||
+      metadata.live ||
+      !state.track ||
+      !settings.providerId ||
+      settings.config.appearance.displayMode === 'original' ||
+      !playback ||
+      playback.adPlaying ||
+      playback.seeking
+    )
+      return;
+    const lookAhead = settings.providerKind.endsWith('-mt')
+      ? settings.config.requests.mtLookAheadSeconds
+      : settings.config.requests.llmLookAheadSeconds;
+    const planned = planSubtitleWindow(state.timeline, playback, {
+      prefetchMs: Math.max(10, lookAhead) * 1000,
+      maxCues: 100,
+    });
+    const cues = [...planned.current, ...planned.upcoming];
+    if (!cues.length) return;
+    media.pause();
+    buffering = { timeMs: playback.timeMs, cues, completed: 0, progressAt: Date.now() };
+    lag.dismiss(Date.now());
+    update();
+  };
+  const resume = async () => {
+    if (!buffering || !adapter || !enabled) return;
+    // Remain actionable if play() is rejected; never resume from a timer/result.
+    await adapter.media?.()?.play();
+    buffering = null;
+    lag.dismiss(Date.now());
+    update();
+  };
+  const disposeRenderer = () => {
     try {
       renderer?.dispose();
     } catch {
       /* A failed view cannot retain caption custody. */
     }
     renderer = null;
+    rendererMount = null;
+  };
+  const detach = () => {
+    cleanups.forEach((cleanup) => cleanup());
+    cleanups = [];
+    adapter?.dispose();
+    adapter = null;
+    disposeRenderer();
+  };
+  const mountRenderer = (mount: HTMLElement) => {
+    if (!adapter) return;
+    if (uiVideo !== adapter.videoId()) {
+      uiVideo = adapter.videoId();
+      uiState = { open: false };
+    }
+    renderer = ports.render(
+      mount,
+      {
+        uiState,
+        saveUiState: (patch) => {
+          uiState = { ...uiState, ...patch };
+        },
+        toggle: () => {
+          resumeVideo = null;
+          return enabled ? stop() : start();
+        },
+        fail,
+        retry,
+        buffer,
+        resume,
+        dismissAssistance: () => {
+          lag.dismiss(Date.now());
+          paint();
+        },
+        patch: ports.patch,
+        more: ports.more,
+      },
+      adapter.media?.()
+    );
+    rendererMount = mount;
   };
   const tick = () => {
     if (disposed) return;
-    if (adapter && (!adapter.matches() || !permitted(adapter.id) || renderer?.isConnected?.() === false)) {
+    if (adapter && (!adapter.matches() || !permitted(adapter.id))) {
       resumeVideo = enabled && permitted(adapter.id) ? adapter.videoId() : null;
       stop();
       detach();
+    }
+    if (adapter && (adapter.mount() !== rendererMount || renderer?.isConnected?.() === false)) {
+      // Fullscreen/reparenting changes the output surface, not the media session.
+      const mount = adapter.mount();
+      disposeRenderer();
+      try {
+        if (mount) mountRenderer(mount);
+      } catch {
+        fail();
+        return;
+      }
     }
     if (!adapter) {
       for (const platform of platforms) {
@@ -624,28 +778,7 @@ export function createSubtitleRuntime(
         const mount = adapter.mount();
         if (mount) {
           try {
-            if (uiVideo !== adapter.videoId()) {
-              uiVideo = adapter.videoId();
-              uiState = { open: false };
-            }
-            renderer = ports.render(
-              mount,
-              {
-                uiState,
-                saveUiState: (patch) => {
-                  uiState = { ...uiState, ...patch };
-                },
-                toggle: () => {
-                  resumeVideo = null;
-                  return enabled ? stop() : start();
-                },
-                fail,
-                retry,
-                patch: ports.patch,
-                more: ports.more,
-              },
-              adapter.media?.()
-            );
+            mountRenderer(mount);
           } catch {
             detach();
             return;

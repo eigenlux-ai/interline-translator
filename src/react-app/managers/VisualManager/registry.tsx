@@ -4,11 +4,10 @@
  * Orchestrator of the visual subsystem: owns React state for visual
  * preferences, persists them to WXT storage, and keeps every surface in
  * sync by watching the same storage items (color scheme syncs through the
- * colorSchemeManager; primary color is watched here). Text direction is NOT a
- * preference — it follows the UI locale, resolved in MantineRegistry.
+ * colorSchemeManager; primary color is watched here). Direction follows the UI locale.
  */
 
-import { useEffect, useState, type PropsWithChildren } from 'react';
+import { useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import MantineRegistry from './components/MantineRegistry';
 import VisualContextProvider from './context';
@@ -39,10 +38,15 @@ function VisualStateBridge({ children, ...props }: VisualStateBridgeProps) {
   // custom implementation.)
   const { setColorScheme: mantineSetColorScheme } = useMantineColorScheme({ keepTransitions: true });
   const activeColorScheme = useComputedColorScheme('light');
-
   const setColorScheme = (colorScheme: VisualColorScheme) => {
     props.onColorSchemeChange(colorScheme);
-    mantineSetColorScheme(colorScheme); // → colorSchemeManager.set → storage
+    // The preference is extension-global, so persist it here: Mantine's setter
+    // is a no-op (no colorSchemeManager.set) while this surface has a forced or
+    // external scheme. Otherwise it also writes the same value, harmlessly.
+    visualColorSchemeStorage.setValue(colorScheme).catch((error) => {
+      console.warn('[VisualManager] failed to persist color scheme', error);
+    });
+    mantineSetColorScheme(colorScheme);
   };
 
   return (
@@ -68,17 +72,51 @@ export interface VisualManagerRegistryProps extends PropsWithChildren {
   persistentState: VisualPersistentState;
 }
 
+type VisualKey = keyof VisualPersistentState;
+
 const VisualManagerRegistry = ({ persistentState, children }: VisualManagerRegistryProps) => {
   const [state, setState] = useState(persistentState);
+  // Per preference: bumped by every newer value (watch event, local change)
+  // so a catch-up read cannot overwrite it.
+  const revisions = useRef<Record<VisualKey, number>>({ colorScheme: 0, primaryColor: 0 });
+  const update = <K extends VisualKey>(key: K, value: VisualPersistentState[K]) => {
+    revisions.current[key]++;
+    setState((s) => (s[key] === value ? s : { ...s, [key]: value }));
+  };
 
   // Cross-surface sync: another surface (popup, sidepanel, in-page UI)
   // changed a preference → storage watch fires here → this surface follows.
+  // `persistentState` was read before this subscription existed, so read once
+  // more after subscribing to catch a change made in between.
   useEffect(() => {
+    let active = true;
+    const follow = <K extends VisualKey>(
+      key: K,
+      item: {
+        watch: (callback: (value: VisualPersistentState[K]) => void) => () => void;
+        getValue: () => Promise<VisualPersistentState[K]>;
+      }
+    ) => {
+      const unwatch = item.watch((value) => update(key, value));
+      const readRevision = revisions.current[key];
+      item
+        .getValue()
+        .then((value) => {
+          if (active && revisions.current[key] === readRevision) update(key, value);
+        })
+        .catch((error) => {
+          console.warn(`[VisualManager] failed to read ${key}`, error);
+        });
+      return unwatch;
+    };
     const unwatchers = [
-      visualColorSchemeStorage.watch((colorScheme) => setState((s) => ({ ...s, colorScheme }))),
-      visualPrimaryColorStorage.watch((primaryColor) => setState((s) => ({ ...s, primaryColor }))),
+      follow('colorScheme', visualColorSchemeStorage),
+      follow('primaryColor', visualPrimaryColorStorage),
     ];
-    return () => unwatchers.forEach((unwatch) => unwatch());
+    return () => {
+      active = false;
+      unwatchers.forEach((unwatch) => unwatch());
+    };
   }, []);
 
   return (
@@ -86,8 +124,8 @@ const VisualManagerRegistry = ({ persistentState, children }: VisualManagerRegis
       <VisualStateBridge
         colorScheme={state.colorScheme}
         primaryColor={state.primaryColor}
-        onColorSchemeChange={(colorScheme) => setState((s) => ({ ...s, colorScheme }))}
-        onPrimaryColorChange={(primaryColor) => setState((s) => ({ ...s, primaryColor }))}
+        onColorSchemeChange={(colorScheme) => update('colorScheme', colorScheme)}
+        onPrimaryColorChange={(primaryColor) => update('primaryColor', primaryColor)}
       >
         {children}
       </VisualStateBridge>

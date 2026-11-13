@@ -1,4 +1,4 @@
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { describe, expect, it } from 'vitest';
 import { registerConfigGateway } from './gateway';
 import { mergeConfigEdits } from './merge';
@@ -14,7 +14,11 @@ const edit = async (
   base: ReturnType<typeof defaultConfig>,
   sender = trusted()
 ) => {
-  const results = await fakeBrowser.runtime.onMessage.trigger({ type: CONFIG_EDIT_MESSAGE, next, base }, sender);
+  const results = await fakeBrowser.runtime.onMessage.trigger(
+    { type: CONFIG_EDIT_MESSAGE, next, base },
+    sender,
+    () => {}
+  );
   return results.find((r) => r !== undefined);
 };
 

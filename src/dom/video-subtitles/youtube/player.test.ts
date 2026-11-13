@@ -73,7 +73,7 @@ it('returns to the ordinary watch player after leaving Shorts', () => {
   expect(youtubePlayer(window)).toBe(document.querySelector('#movie_player'));
 });
 
-it('keeps video bounds in document fullscreen and remounts for player-only fullscreen', () => {
+it('keeps media ownership while changing the output mount for player-only fullscreen', () => {
   const active = reel('video_123');
   const adapter = createYoutubeAdapter(window)!;
   const fullscreen = vi.fn();
@@ -82,9 +82,7 @@ it('keeps video bounds in document fullscreen and remounts for player-only fulls
   expect(adapter.matches()).toBe(true);
   expect(adapter.mount()).toBe(active.player.parentElement);
   fullscreen.mockReturnValue(active.player);
-  expect(adapter.matches()).toBe(false);
-  const replacement = createYoutubeAdapter(window)!;
-  expect(replacement.mount()).toBe(active.player);
-  replacement.dispose();
+  expect(adapter.matches()).toBe(true);
+  expect(adapter.mount()).toBe(active.player);
   adapter.dispose();
 });

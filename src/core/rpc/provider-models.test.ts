@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fetchJson } from '@/services/request';
 import { ModelsService } from './provider-models';
 
 vi.mock('@/services/request', () => ({ fetchJson: vi.fn() }));
-import { fetchJson } from '@/services/request';
 
 const mockFetch = fetchJson as unknown as ReturnType<typeof vi.fn>;
 const svc = new ModelsService();

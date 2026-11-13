@@ -85,13 +85,48 @@
   font-size: 12px;
   color: #e1e5eb;
 }
+.assistance {
+  position: absolute;
+  top: 58px;
+  inset-inline-end: 16px;
+  width: min(360px, calc(100% - 32px));
+  max-height: calc(100% - 76px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  z-index: 2;
+  pointer-events: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--mantine-color-body);
+  border: 1px solid var(--mantine-color-default-border);
+  box-shadow: var(--mantine-shadow-md);
+}
+.assistance button {
+  height: auto;
+  min-height: 30px;
+  padding-block: 5px;
+}
+.assistance button span {
+  white-space: normal;
+}
+.bufferProgress {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 12px;
+}
+.bufferProgress progress {
+  width: 100%;
+  accent-color: var(--mantine-primary-color-filled);
+}
 
 @container (max-height: 360px) {
   .tools {
     top: 8px;
     inset-inline-end: 8px;
   }
-  .panel {
+  .panel,
+  .assistance {
     top: 48px;
     inset-inline-end: 8px;
     width: min(328px, calc(100% - 16px));
@@ -109,7 +144,8 @@
 :host([data-video-subtitles-top-controls]) .tools {
   top: 56px;
 }
-:host([data-video-subtitles-top-controls]) .panel {
+:host([data-video-subtitles-top-controls]) .panel,
+:host([data-video-subtitles-top-controls]) .assistance {
   top: 98px;
   max-height: calc(100% - 106px);
 }

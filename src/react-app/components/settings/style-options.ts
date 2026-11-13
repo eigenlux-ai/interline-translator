@@ -7,8 +7,8 @@
  */
 
 import type { PromptConfig } from '@/data/models';
-import { BUILTIN_STYLES } from '@/services/translation/prompts/builtin-styles';
 import { m } from '@/paraglide/messages.js';
+import { BUILTIN_STYLES } from '@/services/translation/prompts/builtin-styles';
 
 /** Sentinel Select value for "no style" — Config stores it as undefined. */
 export const PLAIN_STYLE = '';
@@ -40,7 +40,10 @@ export function styleDisplayName(prompt: PromptConfig, id: string | undefined): 
 }
 
 /** Mantine Select data over the whole style universe. */
-export function styleSelectData(prompt: PromptConfig, opts?: { includePlain?: boolean }): Array<{ value: string; label: string }> {
+export function styleSelectData(
+  prompt: PromptConfig,
+  opts?: { includePlain?: boolean }
+): Array<{ value: string; label: string }> {
   return [
     ...(opts?.includePlain === false ? [] : [{ value: PLAIN_STYLE, label: m.style_plain_name() }]),
     ...BUILTIN_STYLES.map((s) => ({ value: s.id, label: builtinCopy[s.id]?.name() ?? s.name })),

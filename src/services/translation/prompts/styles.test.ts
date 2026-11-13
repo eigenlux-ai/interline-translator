@@ -5,7 +5,18 @@ import { describe, expect, it } from 'vitest';
 import type { PromptConfig, PromptStyle } from '@/data/models';
 import { buildBatchPrompt } from '../batch/protocol';
 import { BUILTIN_STYLES, findStyle, isBuiltinStyleId } from './builtin-styles';
-import { buildAnnotatePrompt, buildReference, buildSummaryPrompt, buildTranslatePrompt, expertDivergesBatchCache, fillTemplate, isLexicalUnit, resolvePromptStyle, styleBlock, validateExpertTemplates } from './index';
+import {
+  buildAnnotatePrompt,
+  buildReference,
+  buildSummaryPrompt,
+  buildTranslatePrompt,
+  expertDivergesBatchCache,
+  fillTemplate,
+  isLexicalUnit,
+  resolvePromptStyle,
+  styleBlock,
+  validateExpertTemplates,
+} from './index';
 
 const SALT = 'a1b2c3';
 const academic = BUILTIN_STYLES.find((s) => s.id === 'builtin:academic')!;
@@ -34,7 +45,11 @@ describe('styleBlock injection (single pipeline)', () => {
   });
 
   it('blank directives inject nothing', () => {
-    const { system } = buildTranslatePrompt('Hi', 'auto', 'zh-CN', bare, undefined, { id: 'x', name: 'x', directives: '  ' });
+    const { system } = buildTranslatePrompt('Hi', 'auto', 'zh-CN', bare, undefined, {
+      id: 'x',
+      name: 'x',
+      directives: '  ',
+    });
     expect(system).not.toContain('Style directives');
   });
 });
@@ -55,7 +70,11 @@ describe('expert single override', () => {
   });
 
   it('a user template WITHOUT {text} is ignored at runtime (imported-config guard)', () => {
-    const cfg: PromptConfig = { styles: [], siteRules: [], expert: { single: { system: 'S', user: 'no placeholder' } } };
+    const cfg: PromptConfig = {
+      styles: [],
+      siteRules: [],
+      expert: { single: { system: 'S', user: 'no placeholder' } },
+    };
     const { prompt } = buildTranslatePrompt('Hello', 'auto', 'zh-CN', cfg);
     expect(prompt).toBe('Hello');
   });
@@ -78,7 +97,9 @@ describe('batch pipeline + styles', () => {
     const { system } = buildBatchPrompt(['a'], 'auto', 'zh-CN', cfg, undefined, SALT, userStyle);
     // The ~n token rule is PROTOCOL and rides along even under a full expert
     // takeover (items are encoded unconditionally — see buildBatchPrompt).
-    expect(system).toBe(`CUSTOM. Echo [[${SALT}#N]] markers. Target Simplified Chinese.\nThe token [[${SALT}~n]] inside a segment represents a paragraph break. Keep each [[${SALT}~n]] token in the translation at the corresponding position, unchanged. It never ends the segment — translate ALL text after it.`);
+    expect(system).toBe(
+      `CUSTOM. Echo [[${SALT}#N]] markers. Target Simplified Chinese.\nThe token [[${SALT}~n]] inside a segment represents a paragraph break. Keep each [[${SALT}~n]] token in the translation at the corresponding position, unchanged. It never ends the segment — translate ALL text after it.`
+    );
   });
 
   it('an INVALID expert batch template (marker token lost) falls back to the skeleton', () => {
@@ -129,7 +150,9 @@ describe('validateExpertTemplates', () => {
   });
   it('accepts valid templates and empty experts', () => {
     expect(validateExpertTemplates({})).toBeNull();
-    expect(validateExpertTemplates({ batch: { system: 'keep [[{salt}#N]]' }, single: { user: 'T: {text}' } })).toBeNull();
+    expect(
+      validateExpertTemplates({ batch: { system: 'keep [[{salt}#N]]' }, single: { user: 'T: {text}' } })
+    ).toBeNull();
   });
 });
 
@@ -181,7 +204,11 @@ describe('expert templates — independence and placeholder safety', () => {
   });
 
   it('one-pass fill: a page title containing literal {text} cannot smuggle the source text into the title slot', () => {
-    const cfg: PromptConfig = { styles: [], siteRules: [], expert: { single: { system: 'S', user: 'T: {title} | {text}' } } };
+    const cfg: PromptConfig = {
+      styles: [],
+      siteRules: [],
+      expert: { single: { system: 'S', user: 'T: {title} | {text}' } },
+    };
     const { prompt } = buildTranslatePrompt('SECRET', 'auto', 'zh-CN', cfg, { title: 'About {text} interpolation' });
     expect(prompt).toBe('T: About {text} interpolation | SECRET'); // title's braces stay literal
   });
@@ -197,7 +224,9 @@ describe('expert templates — independence and placeholder safety', () => {
       expert: { batch: { system: 'Keep [[{salt}#N]]. Page {title}, from {source}, into {target}.' } },
     };
     const { system } = buildBatchPrompt(['a'], 'en', 'zh-CN', cfg, { title: 'Docs' }, SALT);
-    expect(system).toBe(`Keep [[${SALT}#N]]. Page Docs, from English, into Simplified Chinese.\nThe token [[${SALT}~n]] inside a segment represents a paragraph break. Keep each [[${SALT}~n]] token in the translation at the corresponding position, unchanged. It never ends the segment — translate ALL text after it.`);
+    expect(system).toBe(
+      `Keep [[${SALT}#N]]. Page Docs, from English, into Simplified Chinese.\nThe token [[${SALT}~n]] inside a segment represents a paragraph break. Keep each [[${SALT}~n]] token in the translation at the corresponding position, unchanged. It never ends the segment — translate ALL text after it.`
+    );
   });
 
   it('styleBlock is ONE implementation — the batch skeleton reuses it with its own rules noun', () => {
@@ -210,10 +239,16 @@ describe('expert templates — independence and placeholder safety', () => {
 
   it('expertDivergesBatchCache: single.system or a USABLE batch template diverges; user-only or invalid batch does not', () => {
     expect(expertDivergesBatchCache({ styles: [], siteRules: [] })).toBe(false);
-    expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { single: { user: 'X {text}' } } })).toBe(false);
+    expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { single: { user: 'X {text}' } } })).toBe(
+      false
+    );
     expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { single: { system: 'S' } } })).toBe(true);
-    expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { batch: { system: 'no marker' } } })).toBe(false);
-    expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { batch: { system: 'has [[{salt}#N]]' } } })).toBe(true);
+    expect(expertDivergesBatchCache({ styles: [], siteRules: [], expert: { batch: { system: 'no marker' } } })).toBe(
+      false
+    );
+    expect(
+      expertDivergesBatchCache({ styles: [], siteRules: [], expert: { batch: { system: 'has [[{salt}#N]]' } } })
+    ).toBe(true);
   });
 });
 

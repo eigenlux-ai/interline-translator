@@ -57,7 +57,10 @@ export function resolveGlossary(sets: readonly GlossarySet[], host: string | und
  * Merge resolved glossary entries into a request context (request-provided
  * entries keep priority by coming first — buildReference lists them earlier).
  */
-export function withGlossary(context: TranslateContext | undefined, resolved: GlossaryEntry[]): TranslateContext | undefined {
+export function withGlossary(
+  context: TranslateContext | undefined,
+  resolved: GlossaryEntry[]
+): TranslateContext | undefined {
   if (resolved.length === 0) return context;
   return { ...context, glossary: [...(context?.glossary ?? []), ...resolved] };
 }

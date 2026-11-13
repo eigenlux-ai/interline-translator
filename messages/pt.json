@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "Idioma atual das legendas",
 	"video_subtitles_order": "Ordem dos idiomas",
 	"video_subtitles_prefer_human": "Preferir legendas criadas manualmente no idioma de destino",
-	"video_subtitles_export_diagnostics": "Exportar diagnóstico de legendas"
+	"video_subtitles_export_diagnostics": "Exportar diagnóstico de legendas",
+	"video_subtitles_slow": "A tradução das legendas está atrasada. Pausar para preparar as próximas traduções?",
+	"video_subtitles_slow_live": "A tradução das legendas está atrasada. Experimente um mecanismo de tradução mais rápido.",
+	"video_subtitles_buffer_ready": "As próximas traduções estão prontas.",
+	"video_subtitles_buffer_stalled": "A preparação está demorando. Você pode continuar a reprodução ou trocar o mecanismo.",
+	"video_subtitles_buffering": "Preparando as próximas traduções…",
+	"video_subtitles_buffer_progress": "{completed} / {total} legendas traduzidas",
+	"video_subtitles_buffer_action": "Pausar e preparar",
+	"video_subtitles_resume": "Continuar reprodução",
+	"video_subtitles_change_engine": "Trocar mecanismo",
+	"video_subtitles_dismiss_slow": "Agora não"
 }

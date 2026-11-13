@@ -1,4 +1,4 @@
-import { WxtVitest } from 'wxt/testing';
+import { WxtVitest } from 'wxt/testing/vitest-plugin';
 import { defineConfig } from 'vitest/config';
 
 // WxtVitest wires the `@`/`~` path aliases and a fake `#imports` (browser /

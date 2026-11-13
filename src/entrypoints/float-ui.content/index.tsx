@@ -14,6 +14,7 @@ import SelectionApp from '@/react-app/apps/selection/App';
 import VideoSubtitleApp from '@/react-app/apps/video-subtitles/App';
 import { renderSurfaceApp } from '@/react-app/bootstrap';
 import { SHADOW_SURFACE_TAG } from '@/constants';
+import { hostColorSchemeSource } from '@/dom/host-scheme';
 import '@/react-app/styles/shadow-surface.css';
 
 export default defineContentScript({
@@ -29,9 +30,9 @@ export default defineContentScript({
       // system over a light page would render them as charcoal islands. LIVE
       // (not a one-shot sample) — the host flipping its own theme switch
       // re-skins the mounted surface (see dom/host-scheme).
-      colorSchemeStrategy: 'follow-host',
-      onMount: (container, env) =>
-        renderSurfaceApp(
+      colorSchemeStrategy: hostColorSchemeSource,
+      onMount: (container, env) => {
+        const app = renderSurfaceApp(
           container,
           env,
           <>
@@ -39,9 +40,15 @@ export default defineContentScript({
             <FloatingBallApp />
             <VideoSubtitleApp />
           </>
-        ),
+        );
+        app.catch((error) => console.warn('[float-ui] failed to render the surface', error));
+        return app;
+      },
       onRemove: (mounted) => {
-        void mounted?.then((root) => root.unmount());
+        void mounted?.then(
+          (root) => root.unmount(),
+          () => {}
+        );
       },
     });
     ui.mount();

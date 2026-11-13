@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "現在の字幕言語",
 	"video_subtitles_order": "言語の順序",
 	"video_subtitles_prefer_human": "翻訳先の言語の手動字幕を優先",
-	"video_subtitles_export_diagnostics": "字幕の診断情報をエクスポート"
+	"video_subtitles_export_diagnostics": "字幕の診断情報をエクスポート",
+	"video_subtitles_slow": "字幕の翻訳が再生に追いついていません。一時停止して翻訳を準備しますか？",
+	"video_subtitles_slow_live": "字幕の翻訳が再生に追いついていません。より速い翻訳エンジンをお試しください。",
+	"video_subtitles_buffer_ready": "次の字幕の翻訳が準備できました。",
+	"video_subtitles_buffer_stalled": "翻訳の準備に時間がかかっています。再生を続けるか、エンジンを変更できます。",
+	"video_subtitles_buffering": "次の字幕を翻訳しています…",
+	"video_subtitles_buffer_progress": "翻訳済み {completed} / {total} 字幕",
+	"video_subtitles_buffer_action": "一時停止して準備",
+	"video_subtitles_resume": "再生を続ける",
+	"video_subtitles_change_engine": "エンジンを変更",
+	"video_subtitles_dismiss_slow": "今はしない"
 }

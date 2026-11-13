@@ -47,6 +47,8 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const panel = useRef<HTMLDivElement>(null);
   const focusOnOpen = useRef(false);
   const firstControl = useRef<HTMLInputElement>(null);
+  const providerControl = useRef<HTMLInputElement>(null);
+  const focusProvider = useRef(false);
   useEffect(() => {
     const element = boundary;
     if (!element) return;
@@ -75,7 +77,10 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   };
   useEffect(() => {
     if (!open) return;
-    if (focusOnOpen.current) firstControl.current?.focus();
+    if (focusProvider.current) {
+      providerControl.current?.focus();
+      focusProvider.current = false;
+    } else if (focusOnOpen.current) firstControl.current?.focus();
     const dismiss = (event: PointerEvent) => {
       const path = event.composedPath();
       if (!path.includes(panel.current!) && !path.includes(settingsButton.current!)) setOpen(false);
@@ -112,6 +117,18 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
   const translated = appearance.displayMode !== 'original' && view.translation;
   const lines = appearance.translationPosition === 'above' ? [translated, original] : [original, translated];
   const retryable = ['fetch-failed', 'rate-limited', 'translation-failed', 'unavailable'].includes(view.status);
+  const assistance = view.enabled ? view.assistance : undefined;
+  const assistanceText = !assistance
+    ? ''
+    : assistance.kind === 'slow'
+      ? assistance.canBuffer
+        ? m.video_subtitles_slow()
+        : m.video_subtitles_slow_live()
+      : assistance.kind === 'buffer-ready'
+        ? m.video_subtitles_buffer_ready()
+        : assistance.kind === 'buffer-stalled'
+          ? m.video_subtitles_buffer_stalled()
+          : m.video_subtitles_buffering();
   return (
     <div ref={setBoundary} className={classes.root} dir={RTL_UI_LANGS[getUiLocale()] ? 'rtl' : 'ltr'}>
       <div className={classes.tools} onKeyDown={(event) => event.stopPropagation()}>
@@ -148,6 +165,75 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
           <GearIcon width={16} height={16} />
         </ActionIcon>
       </div>
+      {!open && (
+        <div className={classes.assistance} hidden={!assistance} onKeyDown={(event) => event.stopPropagation()}>
+          <Text size="sm" role="status">
+            {assistanceText}
+          </Text>
+          {assistance && (
+            <>
+              {assistance.kind !== 'slow' && (
+                <label className={classes.bufferProgress}>
+                  <span>
+                    {m.video_subtitles_buffer_progress({ completed: assistance.completed, total: assistance.total })}
+                  </span>
+                  <progress max={Math.max(1, assistance.total)} value={assistance.completed} />
+                </label>
+              )}
+              <Group gap="xs" mt="xs">
+                {assistance.kind === 'slow' && assistance.canBuffer && (
+                  <Button size="xs" onClick={actions.buffer}>
+                    {m.video_subtitles_buffer_action()}
+                  </Button>
+                )}
+                {assistance.kind !== 'slow' && (
+                  <Button
+                    size="xs"
+                    onClick={() => {
+                      setError(false);
+                      void actions.resume?.().catch(() => setError(true));
+                    }}
+                  >
+                    {m.video_subtitles_resume()}
+                  </Button>
+                )}
+                <Button
+                  size="xs"
+                  variant="default"
+                  onClick={() => {
+                    focusProvider.current = true;
+                    setOpen(true);
+                  }}
+                >
+                  {m.video_subtitles_change_engine()}
+                </Button>
+                {assistance.kind === 'slow' && (
+                  <Button
+                    size="xs"
+                    variant="subtle"
+                    onClick={() => {
+                      actions.dismissAssistance?.();
+                      settingsButton.current?.focus();
+                    }}
+                  >
+                    {m.video_subtitles_dismiss_slow()}
+                  </Button>
+                )}
+                {assistance.kind === 'buffer-stalled' && (
+                  <Button size="xs" variant="subtle" onClick={actions.retry}>
+                    {m.common_retry()}
+                  </Button>
+                )}
+              </Group>
+              {error && (
+                <Text size="xs" c="red" role="alert">
+                  {m.video_subtitles_operation_failed()}
+                </Text>
+              )}
+            </>
+          )}
+        </div>
+      )}
       {open && (
         <Paper
           withBorder
@@ -215,6 +301,7 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
               />
               <Select
                 {...selectProps}
+                ref={providerControl}
                 label={m.settings_default_provider()}
                 description={m.video_subtitles_effective({
                   value: effectiveProvider?.label ?? m.video_subtitles_unavailable(),
@@ -316,14 +403,14 @@ export function PlayerSubtitles({ view, actions }: { view: VideoSubtitleView; ac
 }
 /** A satellite failure must not unmount the shared host surface. */
 class SubtitleBoundary extends Component<{ children: ReactNode; fail(): void }, { failed: boolean }> {
-  state = { failed: false };
+  override state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
   }
-  componentDidCatch() {
+  override componentDidCatch() {
     queueMicrotask(this.props.fail);
   }
-  render() {
+  override render() {
     return this.state.failed ? null : this.props.children;
   }
 }

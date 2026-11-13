@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { MantineProvider } from '@mantine/core';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -37,7 +37,7 @@ describe('video subtitle settings', () => {
     expect(gateway.resetVideoSubtitles).toHaveBeenCalledOnce();
   });
   it('reports cache clearing only after the targeted backend operation succeeds', async () => {
-    const request = vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockResolvedValue({ ok: false });
+    const request = vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(async () => ({ ok: false }));
     const view = render(
       <MantineProvider>
         <VideoSubtitleSettings config={defaultConfig()} />
@@ -48,7 +48,7 @@ describe('video subtitle settings', () => {
     });
     expect(request).toHaveBeenCalledWith({ type: 'subtitle:clear-cache', version: 1 });
     expect(view.getByRole('status').textContent).toBe(m.video_subtitles_operation_failed());
-    request.mockResolvedValueOnce({ ok: true });
+    request.mockImplementationOnce(async () => ({ ok: true }));
     await act(async () => {
       fireEvent.click(view.getByRole('button', { name: m.video_subtitles_clear() }));
     });

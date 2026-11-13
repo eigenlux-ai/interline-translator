@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "Текущий язык субтитров",
 	"video_subtitles_order": "Порядок языков",
 	"video_subtitles_prefer_human": "Предпочитать субтитры, созданные вручную на целевом языке",
-	"video_subtitles_export_diagnostics": "Экспорт диагностики субтитров"
+	"video_subtitles_export_diagnostics": "Экспорт диагностики субтитров",
+	"video_subtitles_slow": "Перевод субтитров отстаёт. Приостановить видео, чтобы подготовить следующие переводы?",
+	"video_subtitles_slow_live": "Перевод субтитров отстаёт. Попробуйте более быстрый движок перевода.",
+	"video_subtitles_buffer_ready": "Следующие переводы готовы.",
+	"video_subtitles_buffer_stalled": "Подготовка перевода затягивается. Можно продолжить воспроизведение или сменить движок.",
+	"video_subtitles_buffering": "Подготовка следующих переводов…",
+	"video_subtitles_buffer_progress": "Переведено {completed} / {total} субтитров",
+	"video_subtitles_buffer_action": "Приостановить и подготовить",
+	"video_subtitles_resume": "Продолжить воспроизведение",
+	"video_subtitles_change_engine": "Сменить движок",
+	"video_subtitles_dismiss_slow": "Не сейчас"
 }

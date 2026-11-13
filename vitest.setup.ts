@@ -1,4 +1,4 @@
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { beforeEach } from 'vitest';
 
 // Reset the in-memory extension APIs (storage, etc.) between tests so storage

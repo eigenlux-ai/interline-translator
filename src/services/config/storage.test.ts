@@ -1,4 +1,4 @@
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { describe, expect, it } from 'vitest';
 import { PROJECT_PREFIX } from '@/constants';
 import { defaultConfig, FREE_MT_PROVIDER_ID } from './schema';

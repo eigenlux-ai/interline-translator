@@ -323,4 +323,34 @@ describe('pending paste selection safety', () => {
     expect(selection.anchorOffset).toBe(3);
     expect(el.textContent).toBe('original draft');
   });
+
+  it('accepts an editor-normalized whole-document selection before pasting', async () => {
+    const { el, selection, writing } = start();
+    // ProseMirror rewrites DIV boundary points to text-node boundary points
+    // while synchronizing the same whole-document selection with its model.
+    const range = document.createRange();
+    range.selectNodeContents(el.firstChild!);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    el.addEventListener('paste', (event) => {
+      el.textContent = (event as ClipboardEvent).clipboardData!.getData('text/plain');
+    });
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(true);
+    expect(el.textContent).toBe('translated draft');
+  });
+
+  it('restores the caret before user typing even after editor selection normalization', async () => {
+    const { el, selection, writing } = start();
+    const range = document.createRange();
+    range.selectNodeContents(el.firstChild!);
+    selection.removeAllRanges();
+    selection.addRange(range);
+    el.dispatchEvent(new Event('beforeinput'));
+    expect(selection.isCollapsed).toBe(true);
+    expect(selection.anchorOffset).toBe(14);
+    await vi.runAllTimersAsync();
+    expect(await writing).toBe(false);
+    expect(el.textContent).toBe('original draft');
+  });
 });

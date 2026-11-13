@@ -7,8 +7,8 @@
  * (the page-side consumer only marks errors in its catch branch).
  */
 
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fakeBrowser } from 'wxt/testing';
 import type { BatchStreamServerMessage, BatchStreamStart } from '@/data/models';
 import { streamBatchTranslate } from './batch-client';
 import { STREAM_PORT_NAME } from './index';

@@ -8,7 +8,7 @@ import { createSatellite } from './satellite';
  * and microtasks, which effectively cover the DOM behaviors: cleaning up orphans,
  * re-attaching when anchors move (B3), and repairing adjacency based on position.
  * Note that styling and React portals (e.g., adoptedStyleSheets) are NOT covered
- * in these tests and require verification in a real browser.
+ * in these tests and require a real browser (see CONTRIBUTING.md for verification).
  */
 
 // Flush MutationObserver callback → queued sweep microtask → DOM settle.
@@ -74,5 +74,31 @@ describe('satellite lifecycle', () => {
     expect(sat(anchor.previousElementSibling)).toBe(false);
     await sweep();
     expect(sat(anchor.previousElementSibling)).toBe(true);
+  });
+
+  it('settles when several satellites share one anchor and position', async () => {
+    const anchor = document.createElement('p');
+    const tail = document.createElement('span');
+    document.body.append(anchor, tail);
+    const first = createSatellite(anchor, null);
+    const second = createSatellite(anchor, null);
+    let moves = 0;
+    const observer = new MutationObserver((records) => {
+      moves += records.filter((record) => record.addedNodes.length > 0).length;
+    });
+    observer.observe(document.body, { childList: true });
+    for (let round = 0; round < 5; round++) await sweep();
+    expect(moves).toBe(0);
+    // Both stay adjacent as one run directly after the anchor.
+    const run = [anchor.nextElementSibling, anchor.nextElementSibling?.nextElementSibling];
+    expect(new Set(run)).toEqual(new Set([first.hostElement, second.hostElement]));
+
+    // A node inserted into the run is repaired once, then it settles again.
+    anchor.after(document.createElement('i'));
+    for (let round = 0; round < 5; round++) await sweep();
+    observer.disconnect();
+    expect(sat(anchor.nextElementSibling)).toBe(true);
+    expect(sat(anchor.nextElementSibling!.nextElementSibling)).toBe(true);
+    expect(moves).toBeLessThanOrEqual(3);
   });
 });

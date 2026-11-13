@@ -18,7 +18,7 @@ Do not include API keys, authorization headers, private page content or exported
 
 ## Set up a development checkout
 
-Use Node.js 22+ and pnpm 10.7.1, matching `package.json` and the Node 22 CI environment.
+Use Node.js 22.12+ and pnpm 10.7.1, matching `package.json` and the Node 22 CI environment.
 
 ```sh
 git clone https://github.com/eigenlux-ai/interline-translator.git
@@ -76,6 +76,17 @@ Desktop Safari native fullscreen and iOS are separate acceptance targets. Automa
 
 The project uses WXT, React, Mantine and TypeScript, with [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) as its foundation.
 
+## Sync the foundation
+
+The shared infrastructure tracks template **v2.0.0**, commit `c067e00a6612a22f78e4b1e05453e6c95f067103`.
+[.template-sync.json](./.template-sync.json) records the baseline and application adaptations. The repositories have independent histories: compare subsequent template commits and port the relevant changes, preserving Interline's entrypoints, theme, locale-owned direction, services and bundle limits.
+
+WXT 0.21 uses `@webext-core/isolated-element` 3.0.0 in the lockfile. Its container is a div directly inside the shadow root. Surface CSS is bundled through `virtual:surface-css` and adopted once by the host and satellites; `surface-css/` contains audit copies excluded from ZIP packages. Keep the Chrome and Firefox CSS audits in CI. Satellites capture dynamic theme styles only while needed, and release them when the last satellite is destroyed.
+
+`bridgeFocus` keeps Mantine's focus traps and focus return working behind keyboard isolation. It patches only the content script's own document wrapper. Do not move it into the page's MAIN world. ARIA ID references cannot cross sibling shadow roots: keep Select/Combobox triggers and their accessibility-related floating content in the same root. Test Tab/Shift+Tab, focus return, host keyboard isolation and strict CSP in a real browser after changing these surfaces.
+
+The application's existing host detector supplies `hostColorSchemeSource`; direction follows the UI locale rather than a new stored preference. `tsconfig.json` retains the previous `noUncheckedIndexedAccess: false` policy to keep a full indexed-access migration separate from template updates. WXT's other strict defaults stay enabled.
+
 ## Keep the page and translation layers separate
 
 - Put floating extension UI in the existing Shadow DOM surface. Page translations intentionally sit beside source content in the host DOM; preserve links, formatting and interactions where supported, and check that turning translation off removes the extension's additions.
@@ -116,8 +127,13 @@ pnpm lint
 pnpm test
 pnpm build
 pnpm audit:css
+pnpm audit:surface
 pnpm audit:ascii
 pnpm audit:bundle
+pnpm build:firefox
+pnpm audit:css:firefox
+pnpm audit:surface:firefox
+pnpm audit:ascii:firefox
 ```
 
 The audits check CSS variable scoping, ASCII build output and content-script gzip budgets. They do not replace behavior checks on a real page. Use the applicable cases in `test-pages/` for changes involving host styles, selections, input events or editor integration.

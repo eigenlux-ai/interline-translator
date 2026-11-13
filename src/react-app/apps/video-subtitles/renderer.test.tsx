@@ -33,6 +33,51 @@ function fixture(): VideoSubtitleView {
 const actions = () => ({ toggle: vi.fn(), fail: vi.fn(), retry: vi.fn(), more: vi.fn(), patch: vi.fn(async () => {}) });
 
 describe('player subtitle controls', () => {
+  it('offers retry for a stalled buffer even when the current caption is ready', () => {
+    const data = fixture();
+    data.assistance = { kind: 'buffer-stalled', canBuffer: true, completed: 1, total: 2 };
+    const commands = actions();
+    const view = render(<PlayerSubtitles view={data} actions={commands} />);
+    fireEvent.click(view.getByRole('button', { name: m.common_retry() }));
+    expect(commands.retry).toHaveBeenCalledOnce();
+  });
+  it('offers buffering only for VOD and opens the engine control directly', () => {
+    const data = fixture();
+    data.assistance = { kind: 'slow', canBuffer: true, completed: 0, total: 0 };
+    const commands = { ...actions(), buffer: vi.fn(), dismissAssistance: vi.fn() };
+    const view = render(<PlayerSubtitles view={data} actions={commands} />);
+    fireEvent.click(view.getByRole('button', { name: m.video_subtitles_buffer_action() }));
+    expect(commands.buffer).toHaveBeenCalledOnce();
+    fireEvent.click(view.getByRole('button', { name: m.video_subtitles_change_engine() }));
+    expect(document.activeElement).toBe(
+      view.getByLabelText(m.settings_default_provider(), { exact: false, selector: 'input[role="combobox"]' })
+    );
+    fireEvent.keyDown(document.activeElement!, { key: 'Escape' });
+    data.assistance = { ...data.assistance, canBuffer: false };
+    view.rerender(
+      <MantineProvider env="test">
+        <PlayerSubtitles view={data} actions={commands} />
+      </MantineProvider>
+    );
+    expect(view.queryByRole('button', { name: m.video_subtitles_buffer_action() })).toBeNull();
+    expect(view.getByText(m.video_subtitles_slow_live())).toBeTruthy();
+    fireEvent.click(view.getByRole('button', { name: m.video_subtitles_dismiss_slow() }));
+    expect(commands.dismissAssistance).toHaveBeenCalledOnce();
+  });
+  it('labels buffer progress and keeps playback rejection actionable', async () => {
+    const data = fixture();
+    data.assistance = { kind: 'buffering', canBuffer: true, completed: 2, total: 5 };
+    const commands = { ...actions(), resume: vi.fn().mockRejectedValue(new Error('Blocked')) };
+    const view = render(<PlayerSubtitles view={data} actions={commands} />);
+    const progress = view.getByRole('progressbar', {
+      name: m.video_subtitles_buffer_progress({ completed: 2, total: 5 }),
+    });
+    expect(progress.getAttribute('value')).toBe('2');
+    expect(progress.getAttribute('max')).toBe('5');
+    await act(async () => fireEvent.click(view.getByRole('button', { name: m.video_subtitles_resume() })));
+    expect(view.getByRole('alert').textContent).toBe(m.video_subtitles_operation_failed());
+    expect(view.getByRole('button', { name: m.video_subtitles_resume() })).toBeTruthy();
+  });
   it('saves the human-caption preference without changing the selected language or provider', async () => {
     const commands = actions();
     const view = render(<PlayerSubtitles view={fixture()} actions={commands} />);

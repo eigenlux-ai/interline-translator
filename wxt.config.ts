@@ -2,7 +2,7 @@ import path from 'node:path';
 import { defineConfig, type WxtViteConfig } from 'wxt';
 import tailwindcss from '@tailwindcss/vite';
 import checkPrefixSync from './vite-plugins/check-prefix-sync';
-import inlineSurfaceCss from './vite-plugins/inline-surface-css';
+import inlineSurfaceCss, { SURFACE_CSS_DIR } from './vite-plugins/inline-surface-css';
 import toUtf8 from './vite-plugins/to-utf8';
 
 // See https://wxt.dev/api/config.html
@@ -34,6 +34,10 @@ export default defineConfig({
     eslintrc: {
       enabled: 9,
     },
+  },
+  zip: {
+    // Audit copies are embedded in content scripts and never loaded as resources.
+    exclude: [`${SURFACE_CSS_DIR}/**`],
   },
   dev: {
     server: {

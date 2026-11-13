@@ -27,7 +27,6 @@
  */
 
 import type { LangCode, PromptConfig, PromptStyle, SourceLang, TranslateContext } from '@/data/models';
-import { NL_TOKEN_LENIENT_RE } from './nl-token';
 import {
   buildReference,
   fillTemplate,
@@ -36,6 +35,7 @@ import {
   styleBlock,
   templateValues,
 } from '../prompts';
+import { NL_TOKEN_LENIENT_RE } from './nl-token';
 
 /** A streamed parser event: text appended to (or completion of) one segment. */
 export interface SegEvent {
@@ -220,4 +220,3 @@ export function createBatchParser(salt: string) {
 
   return { push, flush };
 }
-

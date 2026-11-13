@@ -1,10 +1,10 @@
 // Audit: enumerate EVERY custom-property declaration in the built
-// content-script CSS and classify its selector against the iron law —
+// surface CSS and classify its selector against the iron law —
 // "all root-level plugin CSS variables are anchored on .<prefix>-surface-root".
 //
 // Usage: node scripts/audit-css-vars.mjs <file.css | dir> [...more] [--allow-empty]
 //   - a DIRECTORY expands to every *.css inside it (so e.g. content.css AND
-//     float-ui.content.css are both audited — never miss a new content-script's
+//     float-ui.css are both audited — never miss a new content-script's
 //     stylesheet as surfaces are added).
 //   - one or more FILE paths audit exactly those.
 //   - --allow-empty accepts finding NO css at all (see the exit below).
@@ -73,7 +73,7 @@ function auditFile(file) {
     rootCompliant: [], // design tokens on root AND includes .<prefix>-surface-root → GOOD
     rootViolation: [], // design tokens on root but MISSING .<prefix>-surface-root  → VIOLATION
     schemeStatic: [], // :root[data-mantine-color-scheme],:host([...]) static defaults — inert in shadow, runtime <style> on .<prefix>-surface-root supplies real values (NOT visible to this static audit)
-    twTransient: [], // `*`-scoped --<prefix>-tw-* per-element fallback (@property-backed, namespaced) — not a design token
+    twTransient: [], // `*`-scoped --<prefix>-tw-* per-element fallback (initial values, namespaced) — not a design token
     scoped: new Map(), // component/utility selectors (local scope, out of law)
   };
 
@@ -97,7 +97,7 @@ function auditFile(file) {
     }
   });
 
-  // @property at-rules (global registration; renamed to --<prefix>-tw-* on purpose)
+  // @property rules are stripped from bundled shadow CSS; remaining declarations must be namespaced.
   let propertyCount = 0;
   const propertyNames = new Set();
   root.walkAtRules('property', (at) => {
@@ -114,10 +114,10 @@ function auditFile(file) {
   console.log(`\n=== Mantine color-scheme STATIC defaults (inert in shadow; real values via runtime <style> on ${SURFACE} — verify at runtime): ${buckets.schemeStatic.length} ===`);
   for (const e of buckets.schemeStatic) console.log(`  ~ "${e.selector.slice(0, 70)}" (${e.count} vars)`);
 
-  console.log(`\n=== Tailwind ${TW_PREFIX}* per-element transient fallback (@property-backed, namespaced): ${buckets.twTransient.length} rule(s) ===`);
+  console.log(`\n=== Tailwind ${TW_PREFIX}* per-element transient fallback (initial values, namespaced): ${buckets.twTransient.length} rule(s) ===`);
   for (const e of buckets.twTransient) console.log(`  ~ [${e.chain ? e.chain.slice(0, 40) + '…' : 'top'}] "${e.selector}" (${e.count} vars)`);
 
-  console.log(`\n=== @property registrations (global by design): ${propertyCount} ===`);
+  console.log(`\n=== @property registrations (must be namespaced if present): ${propertyCount} ===`);
   const unprefixed = [...propertyNames].filter((n) => n.startsWith('--tw-'));
   const prefixed = [...propertyNames].filter((n) => n.startsWith(TW_PREFIX));
   const otherProp = [...propertyNames].filter((n) => !n.startsWith('--tw-') && !n.startsWith(TW_PREFIX));

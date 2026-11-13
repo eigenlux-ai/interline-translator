@@ -5,6 +5,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Config, ProviderConfig, TranslateRequest } from '@/data/models';
+import { makeTestConfig } from '@/test-utils/config';
+import { handleStart } from './server';
 
 // ── mocks ────────────────────────────────────────────────────────────────────
 const streamTextMock = vi.fn();
@@ -35,12 +37,14 @@ vi.mock('./limiter', async (importOriginal) => {
   const orig = await importOriginal<typeof import('./limiter')>();
   return {
     ...orig,
-    makeWatchdog: (signal: AbortSignal) => ({ signal, timedOut: () => watchdogTimedOut, beat: () => {}, done: () => {} }),
+    makeWatchdog: (signal: AbortSignal) => ({
+      signal,
+      timedOut: () => watchdogTimedOut,
+      beat: () => {},
+      done: () => {},
+    }),
   };
 });
-
-import { handleStart } from './server';
-import { makeTestConfig } from '@/test-utils/config';
 
 const llmProvider: ProviderConfig = { id: 'oai', kind: 'openai', apiKeys: ['sk-test'], model: 'gpt-x', enabled: true };
 
@@ -161,7 +165,12 @@ describe('handleStart — error/abort semantics', () => {
     const c = makeClient();
     await c.start('a', req('hello'));
     expect(c.posted.some((m) => m.type === 'done')).toBe(true);
-    expect(c.posted.filter((m) => m.type === 'chunk').map((m) => m.delta).join('')).toBe('<think> 是推理标签');
+    expect(
+      c.posted
+        .filter((m) => m.type === 'chunk')
+        .map((m) => m.delta)
+        .join('')
+    ).toBe('<think> 是推理标签');
   });
 
   it('output cap (finishReason "length") → error, and the half completion is not cached', async () => {

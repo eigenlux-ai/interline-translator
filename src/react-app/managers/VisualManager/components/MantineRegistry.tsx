@@ -8,15 +8,15 @@
  * - cssVariablesSelector / getRootElement → theme root inside the shadow
  * - Portal defaultProps target            → floating layers stay in-shadow
  * - theme.scale                            → rem compensation
- * - forceColorScheme                       → colorSchemeStrategy (follow-host
- *   subscribes to the host's painted scheme and re-pins live)
+ * - forceColorScheme                       → colorSchemeStrategy (external sources
+ *   subscribe to the host's painted scheme and re-pin live)
  * - dir attribute + direction context      → the UI locale (rtl for Arabic),
  *   written on OUR root, never on the host's <html>
  *
  * Internal component; application code renders ManagersRegistry instead.
  */
 
-import { useEffect, useMemo, useState, useSyncExternalStore, type PropsWithChildren } from 'react';
+import { useLayoutEffect, useMemo, useState, useSyncExternalStore, type PropsWithChildren } from 'react';
 import {
   Combobox,
   createTheme,
@@ -37,7 +37,6 @@ import { Notifications } from '@mantine/notifications';
 import { useSurface } from '@/surface/context';
 import { SURFACE_ROOT_CLASS, Z_INDEX } from '@/constants';
 import { RTL_UI_LANGS } from '@/data/models/lang';
-import { getHostColorScheme, subscribeHostColorScheme } from '@/dom/host-scheme';
 import { getUiLocale, subscribeUiLocale } from '@/i18n';
 import { isCustomPrimaryColor, useGeneratedPrimaryRamp } from '../color-generation';
 import { extStorageColorSchemeManager } from '../colorSchemeManager';
@@ -117,7 +116,6 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
       components: {
         ...(isShadow
           ? {
-              Portal: { defaultProps: { target: env.portalTarget } },
               // lockScroll mutates the HOST page (react-remove-scroll sets
               // overflow:hidden + rewrites body padding + data attributes on
               // document.body) — never acceptable from an injected surface.
@@ -159,27 +157,32 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
           : {}),
       },
     };
-    return mergeThemeOverrides(baseTheme, createTheme(overrides));
+    const merged = mergeThemeOverrides(baseTheme, createTheme(overrides));
+    if (isShadow) {
+      // DOM nodes must not pass through Mantine's recursive theme merge.
+      const portal = merged.components?.Portal;
+      merged.components = {
+        ...merged.components,
+        Portal: { ...portal, defaultProps: { ...portal?.defaultProps, target: env.portalTarget } },
+      };
+    }
+    return merged;
   }, [env, isShadow, colors, baseColorIndex, primaryColor]);
 
-  // follow-host: pin to the HOST page's painted scheme and keep tracking it —
-  // a host theme switch must re-skin the mounted surface, not strand it as an
-  // inverted island. Snapshot reads the watcher's cache (no style recalc per
-  // render); Mantine reacts to a forceColorScheme change with one attribute
-  // write on OUR rootElement, never touching the host document.
-  const followHost = env.colorSchemeStrategy === 'follow-host';
-  const hostScheme = useSyncExternalStore(
-    followHost ? subscribeHostColorScheme : noopSubscribe,
-    followHost ? getHostColorScheme : lightSnapshot
+  // Host detection is supplied by the content entry, keeping the surface core generic.
+  const source = typeof env.colorSchemeStrategy === 'object' ? env.colorSchemeStrategy : undefined;
+  const externalScheme = useSyncExternalStore(
+    source?.subscribe ?? noopSubscribe,
+    source?.getSnapshot ?? lightSnapshot,
+    source?.getSnapshot ?? lightSnapshot
   );
-  const forceColorScheme =
-    env.colorSchemeStrategy === 'force-light'
+  const forceColorScheme = source
+    ? externalScheme
+    : env.colorSchemeStrategy === 'force-light'
       ? 'light'
       : env.colorSchemeStrategy === 'force-dark'
         ? 'dark'
-        : followHost
-          ? hostScheme
-          : undefined;
+        : undefined;
 
   // The interface's writing direction belongs to the UI LOCALE: an `ar` UI is
   // rtl, and it must flip the moment the locale switches (the locale follows
@@ -195,8 +198,14 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
   // portal (portalTarget is that root, or a descendant of it) inherit it.
   const uiLocale = useSyncExternalStore(subscribeUiLocale, getUiLocale);
   const dir: Direction = RTL_UI_LANGS[uiLocale] ? 'rtl' : 'ltr';
-  useEffect(() => {
-    env.rootElement.setAttribute('dir', dir);
+  useLayoutEffect(() => {
+    const root = env.rootElement;
+    const previous = root.getAttribute('dir');
+    root.setAttribute('dir', dir);
+    return () => {
+      if (previous === null) root.removeAttribute('dir');
+      else root.setAttribute('dir', previous);
+    };
   }, [env.rootElement, dir]);
   const direction = useMemo(() => ({ dir, setDirection: noopSetDirection, toggleDirection: noopSetDirection }), [dir]);
 

@@ -16,7 +16,14 @@
  * echoed. The user message must be NOTHING but the text to translate.
  */
 
-import type { LangCode, PromptConfig, PromptExpertConfig, PromptStyle, SourceLang, TranslateContext } from '@/data/models';
+import type {
+  LangCode,
+  PromptConfig,
+  PromptExpertConfig,
+  PromptStyle,
+  SourceLang,
+  TranslateContext,
+} from '@/data/models';
 import { mostSpecificMatch } from '@/services/config/site-control';
 import { findStyle } from './builtin-styles';
 
@@ -94,7 +101,10 @@ export function styleBlock(style: PromptStyle | undefined, rulesNoun = 'output-f
  * absent from `values` stay as literal braces (e.g. `{salt}` in a single
  * template is not this function's business).
  */
-export function fillTemplate(template: string, values: Partial<Record<'target' | 'source' | 'title' | 'text' | 'salt', string>>): string {
+export function fillTemplate(
+  template: string,
+  values: Partial<Record<'target' | 'source' | 'title' | 'text' | 'salt', string>>
+): string {
   return template.replace(/\{(target|source|title|text|salt)\}/g, (whole, key: keyof typeof values) =>
     values[key] !== undefined ? (values[key] as string) : whole
   );
@@ -119,9 +129,7 @@ export function buildReference(source: SourceLang, context?: TranslateContext): 
   if (context?.title) lines.push(`Page title: ${context.title}`);
   if (context?.summary) lines.push(`Page overview (translate consistently with it):\n${context.summary}`);
   if (context?.glossary?.length) {
-    const g = context.glossary
-      .map((x) => `- ${x.source} → ${x.target}${x.note ? ` (${x.note})` : ''}`)
-      .join('\n');
+    const g = context.glossary.map((x) => `- ${x.source} → ${x.target}${x.note ? ` (${x.note})` : ''}`).join('\n');
     lines.push(`Glossary (use these exact translations):\n${g}`);
   }
   if (context?.neighbors?.length) lines.push(`Surrounding text:\n${context.neighbors.join('\n')}`);

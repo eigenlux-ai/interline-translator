@@ -17,6 +17,12 @@
  * consumers trigger one read, not N). Until the first read resolves, the
  * snapshot is the item's `fallback`.
  *
+ * Writes are optimistic: `setValue` updates the snapshot synchronously, so a
+ * controlled input re-renders with what was typed and keeps its caret. While
+ * this context has writes in flight, watch events (echoes of its own earlier,
+ * now stale values) are ignored; once the last write settles, one fresh read
+ * reconciles with anything another surface wrote meanwhile.
+ *
  * Scope note: this is the business-agnostic primitive. Mantine's color scheme
  * keeps its own `MantineColorSchemeManager` (a different, library-mandated
  * shape) — see colorSchemeManager.ts.
@@ -44,6 +50,7 @@ export interface ReactiveStorageItem<T> {
 interface SnapshotStore<T> {
   value: T;
   subscribe: (listener: () => void) => () => void;
+  write: (value: T) => void;
 }
 
 const stores = new WeakMap<object, SnapshotStore<unknown>>();
@@ -53,31 +60,37 @@ function getStore<T>(item: ReactiveStorageItem<T>): SnapshotStore<T> {
   if (existing) return existing as SnapshotStore<T>;
   const listeners = new Set<() => void>();
   let revision = 0;
+  let pendingWrites = 0;
   let unwatch: (() => void) | undefined;
   const publish = (value: T) => {
+    if (Object.is(store.value, value)) return;
     store.value = value;
     for (const listener of listeners) listener();
+  };
+  const read = () => {
+    const readRevision = ++revision;
+    void item
+      .getValue()
+      .then((value) => {
+        if (revision === readRevision && pendingWrites === 0) publish(value);
+      })
+      .catch((error) => {
+        if (revision === readRevision) console.warn('[useExtStorage] failed to read value', error);
+      });
   };
   const store: SnapshotStore<T> = {
     value: item.fallback,
     subscribe(listener) {
       listeners.add(listener);
       if (listeners.size === 1) {
-        const readRevision = ++revision;
         // Subscribe before reading; one watcher/read per item, shared by all
         // consumers. A watch event or final unsubscribe invalidates the read.
         unwatch = item.watch((value) => {
+          if (pendingWrites > 0) return;
           revision++;
           publish(value);
         });
-        void item
-          .getValue()
-          .then((value) => {
-            if (revision === readRevision) publish(value);
-          })
-          .catch((error) => {
-            if (revision === readRevision) console.warn('[useExtStorage] failed to read value', error);
-          });
+        read();
       }
       return () => {
         listeners.delete(listener);
@@ -87,6 +100,22 @@ function getStore<T>(item: ReactiveStorageItem<T>): SnapshotStore<T> {
           unwatch = undefined;
         }
       };
+    },
+    write(value) {
+      pendingWrites++;
+      revision++; // a pending read must not overwrite the local value
+      publish(value);
+      item
+        .setValue(value)
+        .catch((error) => {
+          console.warn('[useExtStorage] failed to persist value', error);
+        })
+        .finally(() => {
+          // Storage applies writes in order, so once the last one settles a
+          // read returns this value or a newer one from another surface (and
+          // corrects the optimistic value if the write failed).
+          if (--pendingWrites === 0 && listeners.size > 0) read();
+        });
     },
   };
   stores.set(item, store as SnapshotStore<unknown>);
@@ -98,17 +127,7 @@ export function useExtStorage<T>(item: ReactiveStorageItem<T>): readonly [T, (va
   const getSnapshot = useCallback(() => store.value, [store]);
   const value = useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 
-  const setValue = useCallback(
-    (next: T) => {
-      // Persist; the value flows back to the UI via watch (no optimistic local
-      // mutation). On failure the UI simply doesn't update — surface that
-      // instead of swallowing it silently (cf. colorSchemeManager).
-      item.setValue(next).catch((error) => {
-        console.warn('[useExtStorage] failed to persist value', error);
-      });
-    },
-    [item]
-  );
+  const setValue = useCallback((next: T) => store.write(next), [store]);
 
   return [value, setValue] as const;
 }

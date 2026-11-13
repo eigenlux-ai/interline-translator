@@ -4,7 +4,7 @@
  * "Translate this page" on a zh_CN-default install.
  */
 
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PROJECT_PREFIX } from '@/constants';
 import { registerMenusAndCommands } from './menus';
@@ -30,7 +30,7 @@ beforeEach(() => {
 describe('registerMenusAndCommands', () => {
   it('titles the context menu through browser.i18n, not a literal', async () => {
     registerMenusAndCommands();
-    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install', temporary: false });
+    await fakeBrowser.runtime.onInstalled.trigger({ reason: 'install' });
     // create() runs inside removeAll().then(…) — let that microtask settle.
     await Promise.resolve();
 

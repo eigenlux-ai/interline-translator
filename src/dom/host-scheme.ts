@@ -16,6 +16,8 @@
  * real paint.
  */
 
+import type { ColorSchemeSource } from '@/surface/defs';
+
 interface Rgba {
   r: number;
   g: number;
@@ -259,3 +261,9 @@ export function subscribeHostColorScheme(listener: SchemeListener): () => void {
 export function getHostColorScheme(): HostColorScheme {
   return cached ?? detectHostColorScheme();
 }
+
+/** Opt-in surface source, sharing the detector with the input hint. */
+export const hostColorSchemeSource: ColorSchemeSource = {
+  getSnapshot: getHostColorScheme,
+  subscribe: subscribeHostColorScheme,
+};

@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "Aktuelle Untertitelsprache",
 	"video_subtitles_order": "Sprachreihenfolge",
 	"video_subtitles_prefer_human": "Manuelle Untertitel in der Zielsprache bevorzugen",
-	"video_subtitles_export_diagnostics": "Untertitel-Diagnose exportieren"
+	"video_subtitles_export_diagnostics": "Untertitel-Diagnose exportieren",
+	"video_subtitles_slow": "Die Untertitelübersetzung kommt nicht mit. Pausieren, um weitere Übersetzungen vorzubereiten?",
+	"video_subtitles_slow_live": "Die Untertitelübersetzung kommt nicht mit. Versuchen Sie eine schnellere Übersetzungsengine.",
+	"video_subtitles_buffer_ready": "Die nächsten Übersetzungen sind bereit.",
+	"video_subtitles_buffer_stalled": "Die Vorbereitung dauert länger. Sie können weiterschauen oder die Engine wechseln.",
+	"video_subtitles_buffering": "Nächste Übersetzungen werden vorbereitet…",
+	"video_subtitles_buffer_progress": "{completed} / {total} Untertitel übersetzt",
+	"video_subtitles_buffer_action": "Pausieren und vorbereiten",
+	"video_subtitles_resume": "Wiedergabe fortsetzen",
+	"video_subtitles_change_engine": "Engine wechseln",
+	"video_subtitles_dismiss_slow": "Jetzt nicht"
 }

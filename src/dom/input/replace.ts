@@ -97,15 +97,29 @@ async function preparePasteSelection(el: HTMLElement, signal?: AbortSignal) {
   const snapshot = readEditableText(el);
   let interrupted = false;
   let owned: Range | null = null;
+  // Editors such as ProseMirror normalize a DIV-wide selection to its first
+  // and last text nodes. Lift boundary points without crossing any content so
+  // equivalent selections still belong to us; a moved caret/partial selection
+  // must continue to abort the write.
+  const boundary = (node: Node, offset: number): [Node, number] => {
+    while (node !== el && el.contains(node) && node.parentNode) {
+      const length = node.nodeType === Node.TEXT_NODE ? (node.textContent?.length ?? 0) : node.childNodes.length;
+      if (offset !== 0 && offset !== length) break;
+      const parent = node.parentNode;
+      const index = Array.prototype.indexOf.call(parent.childNodes, node) as number;
+      offset = index + (offset === 0 ? 0 : 1);
+      node = parent;
+    }
+    return [node, offset];
+  };
   const ownsSelection = () => {
     if (!owned || !selection?.rangeCount) return false;
     const current = selection.getRangeAt(0);
-    return (
-      current.startContainer === owned.startContainer &&
-      current.startOffset === owned.startOffset &&
-      current.endContainer === owned.endContainer &&
-      current.endOffset === owned.endOffset
-    );
+    const [start, startOffset] = boundary(current.startContainer, current.startOffset);
+    const [end, endOffset] = boundary(current.endContainer, current.endOffset);
+    const [ownedStart, ownedStartOffset] = boundary(owned.startContainer, owned.startOffset);
+    const [ownedEnd, ownedEndOffset] = boundary(owned.endContainer, owned.endOffset);
+    return start === ownedStart && startOffset === ownedStartOffset && end === ownedEnd && endOffset === ownedEndOffset;
   };
   const restore = () => {
     if (!ownsSelection() || !selection) return;

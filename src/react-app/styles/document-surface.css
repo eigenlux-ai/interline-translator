@@ -18,3 +18,13 @@
 :root {
   scrollbar-gutter: stable;
 }
+
+/* Mantine retains its autosize measurement textarea after a dialog unmounts.
+   A stale desktop width extends past the RTL scroll origin on narrow screens.
+   Collapse only its rendered footprint; scrollHeight and layout width must stay
+   intact for subsequent autosize measurements. Inline !important positioning
+   belongs to Mantine, so overriding position/insets cannot fix this clone. */
+body > textarea[aria-hidden='true'][aria-label='autosize measurement'] {
+  transform: scale(0);
+  transform-origin: top right;
+}

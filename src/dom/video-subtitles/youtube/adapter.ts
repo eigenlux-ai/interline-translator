@@ -38,7 +38,6 @@ export function createYoutubeAdapter(
       ? (fullscreen as HTMLElement)
       : win.document.body;
   };
-  const mount = resolveMount();
   let active = false,
     disposed = false,
     startedAt = 0,
@@ -451,13 +450,10 @@ export function createYoutubeAdapter(
     id: 'youtube',
     capabilities: { timeline: true, currentText: true, trackSelection: false, adDetection: true, fullscreen: true },
     videoId: () => videoId,
-    mount: () => mount,
+    mount: resolveMount,
     media: () => video,
     matches: () =>
-      currentVideoId() === videoId &&
-      resolveMount() === mount &&
-      youtubePlayer(win) === player &&
-      player.querySelector('video') === video,
+      currentVideoId() === videoId && youtubePlayer(win) === player && player.querySelector('video') === video,
     playback: {
       snapshot,
       subscribe(listener) {

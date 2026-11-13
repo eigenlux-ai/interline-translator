@@ -13,8 +13,7 @@
  * caller owns the position it is handed back.
  */
 
-import { useRef, useState } from 'react';
-import type { PointerEvent as ReactPointerEvent } from 'react';
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 
 export interface DragPoint {
   x: number;

@@ -85,7 +85,10 @@ function sendPointer(
   x: number,
   y: number
 ) {
-  fireEvent(target, new PointerEvent(type, { bubbles: true, composed: true, button: 0, pointerId: 1, clientX: x, clientY: y }));
+  fireEvent(
+    target,
+    new PointerEvent(type, { bubbles: true, composed: true, button: 0, pointerId: 1, clientX: x, clientY: y })
+  );
 }
 
 /** Click 译 and wait for the streamed card — the handle only exists when open. */

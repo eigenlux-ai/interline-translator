@@ -10,6 +10,7 @@ import {
   type VideoSubtitleSettings,
   type VideoSubtitleView,
 } from './runtime';
+import { createYoutubeAdapter } from './youtube/adapter';
 import { BRIDGE_REQUEST, BRIDGE_RESPONSE } from './youtube/bridge-protocol';
 
 const settings = (): VideoSubtitleSettings => ({
@@ -30,7 +31,10 @@ let video: HTMLVideoElement;
 let close = vi.fn<() => void>();
 let renderFailure = false;
 let rendererConnected = true;
-function setup(auto = false) {
+let mounts: HTMLElement[];
+function setup(auto = false, embed = false) {
+  if (embed) window.location.href = 'https://www.youtube.com/embed/abcdefghi12';
+  mounts = [];
   rendererConnected = true;
   const config = settings();
   config.config.platforms.youtube.autoEnable = auto;
@@ -39,35 +43,41 @@ function setup(auto = false) {
   video = document.querySelector('video')!;
   windows = [];
   close = vi.fn();
-  runtime = createYoutubeSubtitleRuntime(window, config, {
-    render: (_player, a) => {
-      actions = a;
-      rendererConnected = true;
-      return {
-        isConnected: () => rendererConnected,
-        render: (value) => {
-          if (renderFailure) throw new Error('renderer failed');
-          latest = value;
-        },
-        dispose: vi.fn(),
-      };
+  runtime = createYoutubeSubtitleRuntime(
+    window,
+    config,
+    {
+      render: (_player, a) => {
+        mounts.push(_player);
+        actions = a;
+        rendererConnected = true;
+        return {
+          isConnected: () => rendererConnected,
+          render: (value) => {
+            if (renderFailure) throw new Error('renderer failed');
+            latest = value;
+          },
+          dispose: vi.fn(),
+        };
+      },
+      connect: (handlers) => {
+        emit = handlers.onEvent;
+        disconnect = handlers.onDisconnect;
+        return {
+          updateWindow: (value) => {
+            windows.push(value);
+          },
+          close,
+        };
+      },
+      patch: vi.fn().mockResolvedValue(undefined),
+      more: vi.fn(),
     },
-    connect: (handlers) => {
-      emit = handlers.onEvent;
-      disconnect = handlers.onDisconnect;
-      return {
-        updateWindow: (value) => {
-          windows.push(value);
-        },
-        close,
-      };
-    },
-    patch: vi.fn().mockResolvedValue(undefined),
-    more: vi.fn(),
-  });
+    embed ? [{ id: 'youtube', create: (win) => createYoutubeAdapter(win, () => 'abcdefghi12') }] : undefined
+  );
   return config;
 }
-function track(text = 'Hello world', trackId = 'en', live = false) {
+function track(text = 'Hello world', trackId = 'en', live = false, duration = 5000) {
   const calls = vi.mocked(window.postMessage).mock.calls;
   const request = [...calls]
     .reverse()
@@ -90,8 +100,8 @@ function track(text = 'Hello world', trackId = 'en', live = false) {
         },
         text: JSON.stringify({
           events: [
-            { tStartMs: 0, dDurationMs: 5000, segs: [{ utf8: text }] },
-            { tStartMs: 6000, dDurationMs: 4000, segs: [{ utf8: 'Next line' }] },
+            { tStartMs: 0, dDurationMs: duration, segs: [{ utf8: text }] },
+            { tStartMs: duration + 1000, dDurationMs: 4000, segs: [{ utf8: 'Next line' }] },
           ],
         }),
       },
@@ -179,6 +189,176 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 describe('YouTube subtitle runtime integration', () => {
+  it('retries a failed upcoming cue without losing the buffer or retranslating completed cues', () => {
+    setup(true);
+    playing();
+    track();
+    actions.buffer!();
+    complete();
+    const pending = windows.at(-1)!;
+    emit({
+      version: 1,
+      type: 'failed',
+      generation: pending.generation,
+      trackVersion: pending.trackVersion,
+      ...pending.subscriptions[0],
+      error: { code: 'translation-failed', retryable: true },
+    });
+    expect(latest.status).toBe('ready');
+    expect(latest.assistance).toMatchObject({ kind: 'buffer-stalled', completed: 1, total: 2 });
+    const reads = vi.mocked(window.postMessage).mock.calls.length;
+    const staleEmit = emit;
+    actions.retry();
+    vi.advanceTimersByTime(250);
+    expect(vi.mocked(window.postMessage).mock.calls.length).toBe(reads);
+    expect(latest.assistance).toMatchObject({ kind: 'buffering', completed: 1, total: 2 });
+    expect(windows.at(-1)?.subscriptions.map((s) => s.text)).toEqual(['Next line']);
+    expect(windows.at(-1)?.generation).toBe(pending.generation);
+    staleEmit({
+      version: 1,
+      type: 'completed',
+      generation: pending.generation,
+      trackVersion: pending.trackVersion,
+      ...pending.subscriptions[0],
+      text: 'Stale retry result',
+    });
+    expect(latest.assistance?.completed).toBe(1);
+    complete(undefined, '下一句');
+    expect(latest.assistance?.kind).toBe('buffer-ready');
+    expect(video.paused).toBe(true);
+  });
+  it('preserves the buffer and in-flight results across embed fullscreen entry and exit', () => {
+    const config = setup(true, true);
+    config.config.requests.mtLookAheadSeconds = 0;
+    runtime.configure(config);
+    const media = playing();
+    track();
+    actions.buffer!();
+    complete();
+    const pending = windows.at(-1)!;
+    const originalEmit = emit;
+    const previousMounts = mounts.length;
+    const player = document.querySelector<HTMLElement>('#movie_player')!;
+    try {
+      Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: player });
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(mounts.length).toBe(previousMounts + 1);
+      expect(mounts.at(-1)).toBe(player);
+      expect(close).not.toHaveBeenCalled();
+      expect(latest.assistance).toMatchObject({ kind: 'buffering', completed: 1, total: 2 });
+      originalEmit({
+        version: 1,
+        type: 'completed',
+        generation: pending.generation,
+        trackVersion: pending.trackVersion,
+        ...pending.subscriptions[0],
+        text: '下一句',
+      });
+      expect(latest.assistance?.kind).toBe('buffer-ready');
+      Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null });
+      document.dispatchEvent(new Event('fullscreenchange'));
+      expect(mounts.at(-1)).toBe(document.body);
+      expect(latest.assistance).toMatchObject({ kind: 'buffer-ready', completed: 2, total: 2 });
+      expect(video.paused).toBe(true);
+      expect(media.play).not.toHaveBeenCalled();
+    } finally {
+      Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null });
+    }
+  });
+  it('keeps a buffer after satellite removal but discards it when the media is replaced', () => {
+    setup(true);
+    playing();
+    track();
+    actions.buffer!();
+    complete();
+    rendererConnected = false;
+    vi.advanceTimersByTime(1000);
+    expect(latest.assistance).toMatchObject({ kind: 'buffering', completed: 1, total: 2 });
+    expect(close).not.toHaveBeenCalled();
+    video.replaceWith(document.createElement('video'));
+    vi.advanceTimersByTime(1000);
+    expect(latest.assistance).toBeUndefined();
+    expect(close).toHaveBeenCalled();
+  });
+  function playing() {
+    let paused = false;
+    Object.defineProperty(video, 'paused', { configurable: true, get: () => paused });
+    const pause = vi.spyOn(video, 'pause').mockImplementation(() => {
+      paused = true;
+      video.dispatchEvent(new Event('pause'));
+    });
+    const play = vi.spyOn(video, 'play').mockImplementation(async () => {
+      paused = false;
+      video.dispatchEvent(new Event('play'));
+    });
+    return { pause, play };
+  }
+  async function advancePlayback() {
+    for (let index = 0; index < 16; index++) {
+      video.currentTime = index * 0.5;
+      video.dispatchEvent(new Event('timeupdate'));
+      await vi.advanceTimersByTimeAsync(500);
+    }
+  }
+  it('offers a pause only after sustained lag, buffers upcoming cues and resumes only on request', async () => {
+    const config = setup(true);
+    const media = playing();
+    track('Long first caption', 'en', false, 10000);
+    await advancePlayback();
+    expect(latest.assistance?.kind).toBe('slow');
+    expect(latest.assistance?.canBuffer).toBe(true);
+    expect(media.pause).not.toHaveBeenCalled();
+    actions.buffer!();
+    expect(media.pause).toHaveBeenCalledTimes(1);
+    expect(latest.assistance).toMatchObject({ kind: 'buffering', total: 2, completed: 0 });
+    runtime.configure({
+      ...config,
+      config: { ...config.config, requests: { ...config.config.requests, mtLookAheadSeconds: 0 } },
+    });
+    expect(windows.at(-1)!.subscriptions).toHaveLength(2);
+    complete();
+    expect(latest.assistance?.completed).toBe(1);
+    complete();
+    expect(latest.assistance?.kind).toBe('buffer-ready');
+    expect(media.play).not.toHaveBeenCalled();
+    media.play.mockRejectedValueOnce(new Error('Playback rejected'));
+    await expect(actions.resume!()).rejects.toThrow('Playback rejected');
+    expect(latest.assistance?.kind).toBe('buffer-ready');
+    await actions.resume!();
+    expect(latest.assistance).toBeUndefined();
+    expect(video.paused).toBe(false);
+  });
+  it('shows a stalled buffer and cancels it on seeking, settings changes and shutdown without resuming', async () => {
+    const config = setup(true);
+    const media = playing();
+    track();
+    actions.buffer!();
+    await vi.advanceTimersByTimeAsync(31000);
+    expect(latest.assistance?.kind).toBe('buffer-stalled');
+    Object.defineProperty(video, 'seeking', { configurable: true, value: true });
+    video.dispatchEvent(new Event('seeking'));
+    expect(latest.assistance).toBeUndefined();
+    Object.defineProperty(video, 'seeking', { configurable: true, value: false });
+    video.dispatchEvent(new Event('seeked'));
+    actions.buffer!();
+    runtime.configure({ ...config, targetLanguage: 'ja' });
+    expect(latest.assistance).toBeUndefined();
+    actions.buffer!();
+    actions.toggle();
+    expect(latest.assistance).toBeUndefined();
+    expect(media.play).not.toHaveBeenCalled();
+  });
+  it('offers only engine advice for a slow live stream and never pauses it', async () => {
+    setup(true);
+    const media = playing();
+    livePacket(1, [{ start: 0, end: 60000, text: 'Live caption' }]);
+    await advancePlayback();
+    expect(latest.assistance).toMatchObject({ kind: 'slow', canBuffer: false });
+    actions.buffer!();
+    expect(media.pause).not.toHaveBeenCalled();
+    actions.dismissAssistance!();
+    expect(latest.assistance).toBeUndefined();
+  });
   it('appends live packets without losing translations and rejects revised or out-of-order results', () => {
     setup(true);
     const first = { start: 0, end: 5000, text: 'First' };

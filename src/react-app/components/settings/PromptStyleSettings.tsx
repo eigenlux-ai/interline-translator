@@ -157,6 +157,7 @@ export default function PromptStyleSettings({ config, onSave }: PromptStyleSetti
             : m.styles_editor_title_new()
         }
         lockScroll={false}
+        closeButtonProps={{ 'aria-label': m.common_close() }}
         size="lg"
       >
         {editing && (

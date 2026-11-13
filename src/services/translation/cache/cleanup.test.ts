@@ -1,4 +1,4 @@
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { PROJECT_PREFIX } from '@/constants';
 import { registerCacheCleanup } from './cleanup';

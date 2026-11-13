@@ -6,7 +6,6 @@ import {
   Box,
   Button,
   Group,
-  NumberInput,
   Paper,
   SegmentedControl,
   Select,
@@ -21,6 +20,7 @@ import { resolveUiLang } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import { getConfigService, toPublicConfig } from '@/services/config/public';
 import { defaultVideoSubtitles, SUBTITLE_REQUEST_LIMITS } from '@/services/config/video-subtitles';
+import PreferenceNumberInput from './PreferenceNumberInput';
 import SettingsSection from './SettingsSection';
 
 const LANGUAGES = langOptions();
@@ -160,32 +160,29 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
           onChange={(v) => v && patch({ appearance: { translationPosition: v as 'above' | 'below' } })}
         />
         <SimpleGrid type="container" cols={{ base: 1, '720px': 3 }}>
-          <NumberInput
+          <PreferenceNumberInput
             label={m.video_subtitles_font()}
             min={12}
             max={64}
-            clampBehavior="strict"
             allowDecimal={false}
             value={appearance.fontSize}
-            onChange={(v) => typeof v === 'number' && patch({ appearance: { fontSize: v } })}
+            onCommit={(fontSize) => patch({ appearance: { fontSize } })}
           />
-          <NumberInput
+          <PreferenceNumberInput
             label={m.video_subtitles_position()}
             min={0}
             max={60}
-            clampBehavior="strict"
             value={appearance.positionPercent}
-            onChange={(v) => typeof v === 'number' && patch({ appearance: { positionPercent: v } })}
+            onCommit={(positionPercent) => patch({ appearance: { positionPercent } })}
           />
-          <NumberInput
+          <PreferenceNumberInput
             label={m.video_subtitles_opacity()}
             min={0}
             max={1}
             step={0.05}
             decimalScale={2}
-            clampBehavior="strict"
             value={appearance.backgroundOpacity}
-            onChange={(v) => typeof v === 'number' && patch({ appearance: { backgroundOpacity: v } })}
+            onCommit={(backgroundOpacity) => patch({ appearance: { backgroundOpacity } })}
           />
         </SimpleGrid>
         <Box
@@ -239,16 +236,15 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
                   {m.video_subtitles_requests_desc()}
                 </Text>
                 {(Object.keys(SUBTITLE_REQUEST_LIMITS) as Array<keyof typeof SUBTITLE_REQUEST_LIMITS>).map((key) => (
-                  <NumberInput
+                  <PreferenceNumberInput
                     key={key}
                     label={requestLabels[key]()}
                     value={preferences.requests[key]}
                     min={SUBTITLE_REQUEST_LIMITS[key][0]}
                     max={SUBTITLE_REQUEST_LIMITS[key][1]}
-                    clampBehavior="strict"
                     allowDecimal={key === 'requestsPerSecond'}
                     step={key === 'requestsPerSecond' ? 0.1 : 1}
-                    onChange={(value) => typeof value === 'number' && patch({ requests: { [key]: value } })}
+                    onCommit={(value) => patch({ requests: { [key]: value } })}
                   />
                 ))}
                 <Button

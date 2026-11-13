@@ -2,6 +2,9 @@
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "allowImportingTsExtensions": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    // Preserve the application's indexed-access policy across WXT 0.21.
+    // Enabling this requires a separate audit of translation and subtitle code.
+    "noUncheckedIndexedAccess": false
   }
 }

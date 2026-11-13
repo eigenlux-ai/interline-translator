@@ -4,6 +4,7 @@ import { createShadowSurfaceUi } from '@/surface/shadow';
 import VideoSubtitleApp from '@/react-app/apps/video-subtitles/App';
 import { renderSurfaceApp } from '@/react-app/bootstrap';
 import { SHADOW_SURFACE_TAG } from '@/constants';
+import { hostColorSchemeSource } from '@/dom/host-scheme';
 import '@/react-app/styles/shadow-surface.css';
 
 export default defineContentScript({
@@ -17,10 +18,17 @@ export default defineContentScript({
       name: SHADOW_SURFACE_TAG,
       css: surfaceCss,
       position: 'overlay',
-      colorSchemeStrategy: 'follow-host',
-      onMount: (container, env) => renderSurfaceApp(container, env, <VideoSubtitleApp />),
+      colorSchemeStrategy: hostColorSchemeSource,
+      onMount: (container, env) => {
+        const app = renderSurfaceApp(container, env, <VideoSubtitleApp />);
+        app.catch((error) => console.warn('[youtube-embed] failed to render the surface', error));
+        return app;
+      },
       onRemove: (mounted) => {
-        void mounted?.then((root) => root.unmount());
+        void mounted?.then(
+          (root) => root.unmount(),
+          () => {}
+        );
       },
     });
     ui.mount();

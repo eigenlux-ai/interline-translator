@@ -323,5 +323,15 @@
 	"video_subtitles_current_language": "目前字幕語言",
 	"video_subtitles_order": "語言順序",
 	"video_subtitles_prefer_human": "優先使用目標語言人工字幕",
-	"video_subtitles_export_diagnostics": "匯出字幕診斷"
+	"video_subtitles_export_diagnostics": "匯出字幕診斷",
+	"video_subtitles_slow": "字幕翻譯跟不上播放，是否暫停並緩衝譯文？",
+	"video_subtitles_slow_live": "字幕翻譯跟不上播放，建議嘗試更快的翻譯引擎。",
+	"video_subtitles_buffer_ready": "接下來的譯文已準備好。",
+	"video_subtitles_buffer_stalled": "翻譯緩衝較慢，可以繼續播放或更換引擎。",
+	"video_subtitles_buffering": "正在準備接下來的譯文…",
+	"video_subtitles_buffer_progress": "已翻譯 {completed} / {total} 條字幕",
+	"video_subtitles_buffer_action": "暫停並緩衝",
+	"video_subtitles_resume": "繼續播放",
+	"video_subtitles_change_engine": "更換引擎",
+	"video_subtitles_dismiss_slow": "暫不處理"
 }

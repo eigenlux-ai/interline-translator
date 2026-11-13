@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { fakeBrowser } from 'wxt/testing';
+import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerConfigGateway } from '@/services/config/gateway';
@@ -17,10 +17,14 @@ describe('useConfig', () => {
   beforeEach(() => {
     registerConfigGateway();
     vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(async (message: unknown) => {
-      const responses = await fakeBrowser.runtime.onMessage.trigger(message, {
-        id: fakeBrowser.runtime.id,
-        url: fakeBrowser.runtime.getURL('options.html'),
-      });
+      const responses = await fakeBrowser.runtime.onMessage.trigger(
+        message,
+        {
+          id: fakeBrowser.runtime.id,
+          url: fakeBrowser.runtime.getURL('options.html'),
+        },
+        () => {}
+      );
       return responses.find((r) => r !== undefined);
     });
   });

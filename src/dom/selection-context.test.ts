@@ -7,7 +7,7 @@ function selectIn(el: Element, start = 0, end?: number): Selection {
   const node = el.firstChild!;
   const r = document.createRange();
   r.setStart(node, start);
-  r.setEnd(node, end ?? (node.textContent?.length ?? 0));
+  r.setEnd(node, end ?? node.textContent?.length ?? 0);
   const sel = window.getSelection()!;
   sel.removeAllRanges();
   sel.addRange(r);
@@ -32,8 +32,7 @@ describe('selectionNeighbors', () => {
   });
 
   it('strips our injected 译文 from neighbor text (translated pages must not feed 译文 back)', () => {
-    document.body.innerHTML =
-      `<p>Original neighbor.<span ${DATA_OMNI.translated}="1">邻居译文</span></p><p id="b">Sel.</p>`;
+    document.body.innerHTML = `<p>Original neighbor.<span ${DATA_OMNI.translated}="1">邻居译文</span></p><p id="b">Sel.</p>`;
     expect(selectionNeighbors(selectIn(document.getElementById('b')!))).toEqual(['Original neighbor.']);
   });
 

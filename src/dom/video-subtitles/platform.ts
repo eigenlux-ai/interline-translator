@@ -25,7 +25,9 @@ export interface VideoPlatformAdapter extends Omit<PlatformAdapter<HTMLElement>,
   source: Omit<SubtitleSource, 'subscribe'> & {
     subscribe(listener: (event: VideoSubtitleSourceEvent) => void): () => void;
   };
-  /** Stable ownership check includes the media element, not just the URL. */
+  /** Current renderer parent; may change during fullscreen without changing ownership. */
+  mount(): HTMLElement | null;
+  /** Stable media ownership, independent of the renderer's fullscreen mount. */
   matches(): boolean;
   media?(): HTMLVideoElement;
   start(): void;

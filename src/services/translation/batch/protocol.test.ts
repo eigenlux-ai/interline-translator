@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { buildBatchPrompt, createBatchParser, decodeNewlineTokens, type SegEvent } from './protocol';
-import { sweepNewlineTokensForDisplay } from './nl-token';
 import type { PromptConfig } from '@/data/models';
+import { sweepNewlineTokensForDisplay } from './nl-token';
+import { buildBatchPrompt, createBatchParser, decodeNewlineTokens, type SegEvent } from './protocol';
 
 const CFG: PromptConfig = { styles: [], siteRules: [] };
 
@@ -103,8 +103,18 @@ describe('createBatchParser — repeated markers (model self-correction)', () =>
     const events = [];
     for (const ch of whole) events.push(...p.push(ch));
     events.push(...p.flush());
-    expect(events.filter((e) => e.index === 1).map((e) => e.delta).join('')).toBe('一');
-    expect(events.filter((e) => e.index === 2).map((e) => e.delta).join('')).toBe('二');
+    expect(
+      events
+        .filter((e) => e.index === 1)
+        .map((e) => e.delta)
+        .join('')
+    ).toBe('一');
+    expect(
+      events
+        .filter((e) => e.index === 2)
+        .map((e) => e.delta)
+        .join('')
+    ).toBe('二');
   });
 });
 

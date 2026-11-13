@@ -36,7 +36,7 @@ Open the store page and click **Add to Chrome**. After installing, open an artic
 
 ### Build from source
 
-You need Git, Node.js 22+ and pnpm 10.7.1 (the version pinned in `package.json`).
+You need Git, Node.js 22.12+ and pnpm 10.7.1 (the version pinned in `package.json`).
 
 ```sh
 git clone https://github.com/eigenlux-ai/interline-translator.git
@@ -59,6 +59,8 @@ Chrome's restricted pages, including `chrome://` pages, do not allow in-page tra
 Click **CC** in Interline's player controls to translate subtitles for the current playback; the adjacent settings button opens display, target-language and engine controls. **Settings → Video subtitles** also provides appearance, request limits, diagnostics export and subtitle translation-cache clearing. Automatic activation is off by default and separate from page translation.
 
 Watch pages, Shorts, embedded players and live/DVR captions are supported when YouTube provides captions. Interline can prefer existing human-created captions in the target language. Otherwise, subtitle text is sent to the selected translation provider; it does not transcribe audio. Caption availability and live updates depend on YouTube. Safari system-fullscreen output is an experimental development target, not part of the Chrome store package.
+
+If subtitle translation repeatedly falls behind playback, Interline offers **Pause and buffer** for videos with a subtitle timeline. Upcoming captions continue translating while paused, with progress and a **Continue playing** control; playback never resumes automatically. Live captions instead suggest trying a faster engine. Buffering provides a head start, not a guarantee that a slow engine can sustain playback.
 
 ## Choose your translation engine
 

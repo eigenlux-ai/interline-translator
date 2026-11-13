@@ -10,6 +10,9 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BatchStreamStart, Config, ProviderConfig } from '@/data/models';
+import { dexieCache } from '@/services/translation/cache/db';
+import { makeTestConfig } from '@/test-utils/config';
+import { handleBatchStart } from './batch-server';
 
 // ── mocks ────────────────────────────────────────────────────────────────────
 const streamTextMock = vi.fn();
@@ -42,13 +45,14 @@ vi.mock('./limiter', async (importOriginal) => {
   return {
     ...orig,
     withStreamSlot: (fn: () => Promise<unknown>) => fn(),
-    makeWatchdog: (signal: AbortSignal) => ({ signal, timedOut: () => watchdogTimedOut, beat: () => {}, done: () => {} }),
+    makeWatchdog: (signal: AbortSignal) => ({
+      signal,
+      timedOut: () => watchdogTimedOut,
+      beat: () => {},
+      done: () => {},
+    }),
   };
 });
-
-import { dexieCache } from '@/services/translation/cache/db';
-import { handleBatchStart } from './batch-server';
-import { makeTestConfig } from '@/test-utils/config';
 
 // ── fixtures ─────────────────────────────────────────────────────────────────
 const llmProvider: ProviderConfig = { id: 'oai', kind: 'openai', apiKeys: ['sk-test'], model: 'gpt-x', enabled: true };
@@ -84,19 +88,24 @@ function startMsg(items: string[]): BatchStreamStart {
  * 'stop' unless a test is pinning a cap/filter stop.
  */
 function scriptStream(
-  script: (salt: string, opts: { onError?: (e: { error: unknown }) => void; prompt: string; abortSignal: AbortSignal }) => string[],
+  script: (
+    salt: string,
+    opts: { onError?: (e: { error: unknown }) => void; prompt: string; abortSignal: AbortSignal }
+  ) => string[],
   finishReason: string = 'stop'
 ) {
-  streamTextMock.mockImplementation((opts: { prompt: string; onError?: (e: { error: unknown }) => void; abortSignal: AbortSignal }) => {
-    const salt = /\[\[([0-9a-f]{6})#/.exec(opts.prompt)?.[1] ?? 'nosalt';
-    const deltas = script(salt, opts);
-    return {
-      textStream: (async function* () {
-        for (const d of deltas) yield d;
-      })(),
-      finishReason: Promise.resolve(finishReason),
-    };
-  });
+  streamTextMock.mockImplementation(
+    (opts: { prompt: string; onError?: (e: { error: unknown }) => void; abortSignal: AbortSignal }) => {
+      const salt = /\[\[([0-9a-f]{6})#/.exec(opts.prompt)?.[1] ?? 'nosalt';
+      const deltas = script(salt, opts);
+      return {
+        textStream: (async function* () {
+          for (const d of deltas) yield d;
+        })(),
+        finishReason: Promise.resolve(finishReason),
+      };
+    }
+  );
 }
 
 beforeEach(() => {
@@ -283,7 +292,9 @@ describe('handleBatchStart — cache/prompt consistency', () => {
     const { port, posted } = makePort();
     await handleBatchStart(port, startMsg(['hello']), new Map());
 
-    expect(posted.filter((m) => m.type === 'segDone')).toEqual([{ type: 'segDone', requestId: 'r1', index: 1, text: '新译文' }]);
+    expect(posted.filter((m) => m.type === 'segDone')).toEqual([
+      { type: 'segDone', requestId: 'r1', index: 1, text: '新译文' },
+    ]);
     expect(cacheStore.size).toBe(1); // only the seed — the streamed result was NOT written
     expect(dexieCache.get).not.toHaveBeenCalled(); // and nothing was read
   });

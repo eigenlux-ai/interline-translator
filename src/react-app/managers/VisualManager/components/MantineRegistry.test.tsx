@@ -5,12 +5,17 @@
    host document. The assertions need direct host access to prove that. */
 import { generateColorsMap } from '@mantine/colors-generator';
 import { useDirection, useMantineTheme, type MantineTheme } from '@mantine/core';
-import { act, cleanup, render, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { act, cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createColorSchemeSource } from '@/surface/color-scheme';
 import { SurfaceProvider } from '@/surface/context';
 import type { SurfaceEnv } from '@/surface/defs';
 import { SURFACE_ROOT_CLASS } from '@/constants';
+import { hostColorSchemeSource } from '@/dom/host-scheme';
 import { syncUiLocale } from '@/i18n';
+import { useVisual } from '../context';
+import VisualManagerRegistry from '../registry';
+import { visualColorSchemeStorage, visualPrimaryColorStorage } from '../storages';
 import MantineRegistry from './MantineRegistry';
 
 /**
@@ -25,7 +30,13 @@ function makeShadowEnv(): SurfaceEnv {
   const rootElement = document.createElement('div');
   rootElement.className = SURFACE_ROOT_CLASS;
   document.body.appendChild(rootElement);
-  return { kind: 'shadow', rootElement, portalTarget: rootElement, scale: 1, colorSchemeStrategy: 'follow-host' };
+  return {
+    kind: 'shadow',
+    rootElement,
+    portalTarget: rootElement,
+    scale: 1,
+    colorSchemeStrategy: hostColorSchemeSource,
+  };
 }
 
 const settle = async () => {
@@ -35,6 +46,7 @@ const settle = async () => {
 
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   document.body.style.backgroundColor = '';
   document.documentElement.removeAttribute('dir');
   document.querySelectorAll(`.${SURFACE_ROOT_CLASS}`).forEach((el) => el.remove());
@@ -166,4 +178,109 @@ describe('MantineRegistry custom primary color', () => {
     expect(probeTheme?.colors.primary).toEqual(expected.colors.map((color) => color.hex()));
     expect(probeTheme?.primaryShade).toBe(expected.baseColorIndex);
   });
+});
+
+it('updates external schemes and cleans up when the source changes or unmounts', () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  const first = createColorSchemeSource('light');
+  const second = createColorSchemeSource('dark');
+  const off = vi.fn();
+  const subscribe = first.subscribe;
+  first.subscribe = vi.fn((listener) => {
+    const stop = subscribe(listener);
+    return () => {
+      off();
+      stop();
+    };
+  });
+  const app = (strategy: SurfaceEnv['colorSchemeStrategy']) => (
+    <SurfaceProvider env={{ ...env, colorSchemeStrategy: strategy }}>
+      <MantineRegistry colorScheme="auto" primaryColor="blue" />
+    </SurfaceProvider>
+  );
+  const view = render(app(first), { container: env.rootElement });
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('light');
+  act(() => first.set('dark'));
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark');
+  view.rerender(app(second));
+  expect(off).toHaveBeenCalledTimes(1);
+  act(() => first.set('light'));
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark');
+  view.rerender(app('force-light'));
+  act(() => second.set('light'));
+  act(() => second.set('dark'));
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('light');
+  view.rerender(app(first));
+  view.unmount();
+  expect(off).toHaveBeenCalledTimes(2);
+});
+
+it.each([
+  ['force-dark', 'dark'],
+  ['external source', 'light'],
+] as const)('persists the color scheme preference while the surface is %s', async (_mode, visible) => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  const strategy = _mode === 'force-dark' ? 'force-dark' : createColorSchemeSource('light');
+  await visualColorSchemeStorage.setValue('light');
+  function SchemeButton() {
+    const visual = useVisual();
+    return <button onClick={() => visual.setColorScheme('dark')}>dark preference</button>;
+  }
+  const view = render(
+    <SurfaceProvider env={{ ...env, colorSchemeStrategy: strategy }}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+        <SchemeButton />
+      </VisualManagerRegistry>
+    </SurfaceProvider>,
+    { container: env.rootElement }
+  );
+  fireEvent.click(view.getByText('dark preference'));
+  await waitFor(async () => expect(await visualColorSchemeStorage.getValue()).toBe('dark'));
+  // The surface keeps showing its forced/external scheme.
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe(visible);
+});
+
+it('catches up on preferences changed between the initial read and mount', async () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  // bootstrap read light/ltr/blue; another surface then changed all three.
+  await visualColorSchemeStorage.setValue('dark');
+  await visualPrimaryColorStorage.setValue('red');
+  function Probe() {
+    const visual = useVisual();
+    return <span data-testid="primary">{visual.primaryColor}</span>;
+  }
+  const view = render(
+    <SurfaceProvider env={env}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+        <Probe />
+      </VisualManagerRegistry>
+    </SurfaceProvider>,
+    { container: env.rootElement }
+  );
+  await waitFor(() => expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark'));
+  expect(view.getByTestId('primary').textContent).toBe('red');
+});
+
+it('a local change during the catch-up read wins over the read', async () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  let finish: (value: 'blue') => void = () => {};
+  const read = vi
+    .spyOn(visualPrimaryColorStorage, 'getValue')
+    .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+  function Toggle() {
+    const visual = useVisual();
+    return <button onClick={() => visual.setPrimaryColor('red')}>{visual.primaryColor}</button>;
+  }
+  const view = render(
+    <SurfaceProvider env={env}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+        <Toggle />
+      </VisualManagerRegistry>
+    </SurfaceProvider>,
+    { container: env.rootElement }
+  );
+  fireEvent.click(view.getByText('blue'));
+  await act(async () => finish('blue'));
+  expect(view.getByRole('button').textContent).toBe('red');
+  read.mockRestore();
 });

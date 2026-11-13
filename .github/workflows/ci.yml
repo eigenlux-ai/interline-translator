@@ -33,3 +33,7 @@ jobs:
       - run: pnpm audit:surface
       - run: pnpm audit:ascii
       - run: pnpm audit:bundle
+      - run: pnpm build:firefox
+      - run: pnpm audit:css:firefox
+      - run: pnpm audit:surface:firefox
+      - run: pnpm audit:ascii:firefox

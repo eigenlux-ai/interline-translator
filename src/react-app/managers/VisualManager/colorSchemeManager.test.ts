@@ -65,4 +65,61 @@ describe('extStorageColorSchemeManager', () => {
 
     expect(onUpdate).not.toHaveBeenCalled();
   });
+
+  it('subscribe catches up on a change made after the initial read', async () => {
+    const mgr = extStorageColorSchemeManager('light'); // seeded from an earlier read
+    await visualColorSchemeStorage.setValue('dark'); // before anyone subscribed
+    const onUpdate = vi.fn();
+    mgr.subscribe(onUpdate);
+    await flush();
+    expect(onUpdate).toHaveBeenCalledWith('dark');
+    expect(mgr.get('light')).toBe('dark');
+  });
+
+  it('a local set during the catch-up read wins over the read', async () => {
+    let finish: (value: 'light') => void = () => {};
+    const read = vi
+      .spyOn(visualColorSchemeStorage, 'getValue')
+      .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+    const mgr = extStorageColorSchemeManager('light');
+    const onUpdate = vi.fn();
+    mgr.subscribe(onUpdate);
+    mgr.set('dark');
+    finish('light');
+    await flush();
+    expect(onUpdate).not.toHaveBeenCalledWith('light');
+    expect(mgr.get('light')).toBe('dark');
+    read.mockRestore();
+  });
+
+  it('clear during the catch-up read wins over the read', async () => {
+    let finish: (value: 'dark') => void = () => {};
+    const read = vi
+      .spyOn(visualColorSchemeStorage, 'getValue')
+      .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
+    const mgr = extStorageColorSchemeManager('dark');
+    const onUpdate = vi.fn();
+    mgr.subscribe(onUpdate);
+    mgr.clear();
+    finish('dark');
+    await flush();
+    expect(onUpdate).not.toHaveBeenCalled();
+    expect(mgr.get('light')).toBe('light');
+    read.mockRestore();
+  });
+
+  it('does not write values received from storage back (no echo loop between surfaces)', async () => {
+    const write = vi.spyOn(visualColorSchemeStorage, 'setValue');
+    // Mantine subscribes with its own setter, which calls manager.set.
+    const surfaces = [extStorageColorSchemeManager('light'), extStorageColorSchemeManager('light')];
+    for (const mgr of surfaces) mgr.subscribe((value) => mgr.set(value));
+    await flush();
+    surfaces[0]!.set('dark');
+    surfaces[0]!.set('light'); // two changes before the first echo lands
+    for (let i = 0; i < 10; i++) await flush();
+    expect(write).toHaveBeenCalledTimes(2);
+    expect(await visualColorSchemeStorage.getValue()).toBe('light');
+    expect(surfaces.map((mgr) => mgr.get('dark'))).toEqual(['light', 'light']);
+    write.mockRestore();
+  });
 });

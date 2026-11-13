@@ -1,23 +1,12 @@
-import { MantineProvider, createTheme } from '@mantine/core';
+import { createTheme, MantineProvider } from '@mantine/core';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import { SURFACE_ROOT_CLASS } from '@/constants';
 import { SurfaceProvider } from '@/surface/context';
 import type { SurfaceEnv } from '@/surface/defs';
-import { createSatellite, SatelliteOutlet, type SatelliteHandle } from './satellite';
+import { SURFACE_ROOT_CLASS } from '@/constants';
+import { createSatellite, releaseSatellites, SatelliteOutlet, type SatelliteHandle } from './satellite';
 
-/**
- * Stale dev-mode stylesheet fetches (port of upstream 00e7406, adapted to the
- * on-demand capture): when the surface styles arrive through `<link>` (dev
- * only — the build inlines them), two refreshes can race and the OLDER fetch
- * can finish last. It must not overwrite the newer sheets, or theme changes
- * would silently revert. The registry keeps a refresh token and drops any
- * capture that is no longer the latest.
- *
- * Difference from upstream's version: capture is deferred until the first
- * satellite exists (the memory optimisation), so the race is reproduced with
- * the satellite alive rather than at outlet mount.
- */
+/** Bundled CSS is shared directly; satellites never fetch host-page resources. */
 
 const themeA = createTheme({ defaultRadius: 'sm' });
 const themeB = createTheme({ defaultRadius: 'md' });
@@ -28,9 +17,6 @@ interface Fixture {
 }
 
 function makeShadowEnv(css = ':host{--test-theme:red}'): Fixture {
-  // Deliberately DETACHED from the document: happy-dom auto-loads stylesheet
-  // links of attached trees with its own fetch (real network), which would
-  // bypass the stubbed fetch this test needs to control.
   const host = document.createElement('div');
   const shadowRoot = host.attachShadow({ mode: 'open' });
   const styleEl = document.createElement('style');
@@ -58,16 +44,11 @@ const cssOf = (root: ShadowRoot) =>
 // Flush MutationObserver callback → queued sweep microtask → DOM settle.
 const sweep = () => new Promise((resolve) => setTimeout(resolve, 0));
 
-let pending: Array<(response: Response) => void> = [];
-let replaceSync: ReturnType<typeof vi.spyOn>;
-
 beforeEach(() => {
-  pending = [];
   vi.stubGlobal(
     'fetch',
-    vi.fn(() => new Promise<Response>((resolve) => pending.push(resolve)))
+    vi.fn(() => Promise.reject(new Error('surface CSS must be bundled')))
   );
-  replaceSync = vi.spyOn(CSSStyleSheet.prototype, 'replaceSync');
 });
 
 afterEach(async () => {
@@ -88,27 +69,24 @@ function view(env: SurfaceEnv, theme = themeA) {
   );
 }
 
-it('drops an older dev stylesheet fetch that finishes after a newer refresh', async () => {
+it('shares the host static sheet, refreshes only dynamic styles, and never fetches links', async () => {
   const { env, styleEl } = makeShadowEnv();
+  const staticSheet = new CSSStyleSheet();
+  staticSheet.replaceSync('.static-sheet{color:green}');
+  env.shadowRoot!.adoptedStyleSheets = [staticSheet];
+  const replaceSync = vi.spyOn(CSSStyleSheet.prototype, 'replaceSync');
   const out = view(env);
-  await act(async () => {}); // flush mount effects
-
-  // On-demand: zero satellites → no capture and no fetch at mount.
-  expect(pending).toHaveLength(0);
-
   const anchor = document.createElement('p');
   document.body.append(anchor);
   let satellite!: SatelliteHandle;
   await act(async () => {
     satellite = createSatellite(anchor, null);
   });
-  // First satellite → refresh #1 is waiting on the dev <link> fetch.
-  expect(pending).toHaveLength(1);
-  const older = pending.splice(0);
+  const root = satellite.hostElement.shadowRoot!;
+  expect(root.adoptedStyleSheets[1]).toBe(staticSheet);
+  expect(replaceSync).toHaveBeenCalledTimes(1);
 
-  // A theme change rewrites the variables style and starts refresh #2.
-  const nextCss = ':host{--test-theme:blue}';
-  styleEl.textContent = nextCss;
+  styleEl.textContent = ':host{--test-theme:blue}';
   out.rerender(
     <SurfaceProvider env={env}>
       <MantineProvider theme={themeB}>
@@ -116,62 +94,37 @@ it('drops an older dev stylesheet fetch that finishes after a newer refresh', as
       </MantineProvider>
     </SurfaceProvider>
   );
-  await act(async () => {});
-  expect(pending).toHaveLength(1);
-
-  // The NEWER fetch completes first and publishes.
-  await act(async () => pending.shift()!(new Response('.new-sheet{color:blue}')));
-  const root = satellite.hostElement.shadowRoot as ShadowRoot;
   expect(cssOf(root)).toContain('--test-theme: blue');
-  expect(cssOf(root)).toContain('.new-sheet');
-
-  // The OLDER fetch lands late — it must be ignored, not overwrite.
-  await act(async () => {
-    for (const resolve of older) resolve(new Response('.old-sheet{color:red}'));
-  });
-  expect(cssOf(root)).toContain('--test-theme: blue');
-  expect(cssOf(root)).not.toContain('.old-sheet');
-
-  // The cached sheets stay current for satellites created later.
-  const nextAnchor = document.createElement('p');
-  document.body.append(nextAnchor);
-  let later!: SatelliteHandle;
-  await act(async () => {
-    later = createSatellite(nextAnchor, null);
-  });
-  expect(cssOf(later.hostElement.shadowRoot as ShadowRoot)).toContain('--test-theme: blue');
+  expect(root.adoptedStyleSheets[1]).toBe(staticSheet);
+  expect(replaceSync).toHaveBeenCalledTimes(2);
+  expect(fetch).not.toHaveBeenCalled();
 });
 
-it('does not publish an in-flight capture after the last satellite left', async () => {
-  const { env, styleEl } = makeShadowEnv();
-  view(env);
+it('does not retain a released surface when a later surface takes its place', async () => {
+  const first = makeShadowEnv(':host{--old-source:red}');
+  const out = view(first.env);
   const anchor = document.createElement('p');
   document.body.append(anchor);
-  let satellite!: SatelliteHandle;
+  let previous!: SatelliteHandle;
   await act(async () => {
-    satellite = createSatellite(anchor, null);
+    previous = createSatellite(anchor, null);
   });
-  expect(pending).toHaveLength(1);
-  expect(replaceSync).not.toHaveBeenCalled(); // publishing waits on the fetch
-
-  // Destroying the last satellite releases the sheets while the fetch is still
-  // in flight — the late result must not rebuild (and re-hold) the CSSOM.
-  await act(async () => satellite.destroy());
-  styleEl.textContent = ':host{--test-theme:blue}';
+  await act(async () => releaseSatellites(first.env.shadowRoot!));
+  expect(previous.hostElement.isConnected).toBe(false);
+  const next = makeShadowEnv(':host{--new-source:blue}');
+  out.rerender(
+    <SurfaceProvider env={next.env}>
+      <MantineProvider theme={themeB}>
+        <SatelliteOutlet />
+      </MantineProvider>
+    </SurfaceProvider>
+  );
+  let current!: SatelliteHandle;
   await act(async () => {
-    for (const resolve of pending.splice(0)) resolve(new Response('.late-sheet{color:blue}'));
+    current = createSatellite(anchor, null);
   });
-  expect(replaceSync).not.toHaveBeenCalled();
-
-  // A returning satellite captures fresh (one-time cost of the release) —
-  // still subject to the dev <link> fetch.
-  await act(async () => {
-    createSatellite(anchor, null);
-  });
-  expect(pending).toHaveLength(1);
-  await act(async () => {
-    for (const resolve of pending.splice(0)) resolve(new Response('.fresh-sheet{color:blue}'));
-  });
-  // One sheet per source: the inline <style> + the inlined dev <link>.
-  expect(replaceSync).toHaveBeenCalledTimes(2);
+  const css = cssOf(current.hostElement.shadowRoot!);
+  expect(css).toContain('--new-source: blue');
+  expect(css).not.toContain('--old-source');
+  expect(fetch).not.toHaveBeenCalled();
 });

@@ -1,9 +1,9 @@
-import { MantineProvider, createTheme } from '@mantine/core';
+import { createTheme, MantineProvider } from '@mantine/core';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SURFACE_ROOT_CLASS } from '@/constants';
 import { SurfaceProvider } from '@/surface/context';
 import type { SurfaceEnv } from '@/surface/defs';
+import { SURFACE_ROOT_CLASS } from '@/constants';
 import { createSatellite, SatelliteOutlet, type SatelliteHandle } from './satellite';
 
 /**

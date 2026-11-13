@@ -1,0 +1,13 @@
+{
+  "repository": "https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template",
+  "ref": "v2.0.0",
+  "commit": "c067e00a6612a22f78e4b1e05453e6c95f067103",
+  "strategy": "Port shared infrastructure; preserve application-specific behavior.",
+  "adaptations": [
+    "Interline theme, lazy color generation, locale-owned direction, and per-component shadow CSS are retained.",
+    "The existing host-scheme detector implements ColorSchemeSource; template demo UI and its optional detector are not copied.",
+    "Satellite styles remain lazy and are released when the last satellite is destroyed.",
+    "Application permissions, services, entrypoints, tests, and bundle boundaries are retained.",
+    "noUncheckedIndexedAccess keeps the previous application policy; other WXT strict defaults remain enabled."
+  ]
+}

@@ -1,6 +1,6 @@
 /*
  * Shared stylesheet for every surface. Document surfaces load it via the
- * page <head>; shadow surfaces get it injected into the shadow root by WXT
+ * page <head>; shadow surfaces get it adopted into the shadow root by the surface
  * from the bundled virtual:surface-css string; satellites share it via adoptedStyleSheets.
  *
  * `:root, .<prefix>-surface-root` double selector: `:root` matches in document
@@ -46,11 +46,9 @@
   --sb-thumb-hover: rgba(124, 106, 82, 0.48);
   --sb-size: 6px;
 
-  /* Glacier-white daylight surfaces; dark surfaces are overridden below. */
-  --mantine-color-default: #ffffff;
-  --mantine-color-default-color: #2c241f;
-  --mantine-color-default-border: rgba(81, 55, 31, 0.12);
-  --mantine-color-default-hover: rgba(81, 55, 31, 0.04);
+  /* Theme colors come from interlineCssVariables. Static adopted sheets
+     cascade after in-tree styles, so duplicating those tokens here would
+     override the user's live theme. */
 
   /* Error/destructive = the COOL `danger` ramp, not the warm brand 朱. One
      declaration suffices: `danger` is a Mantine virtualColor, so
@@ -60,20 +58,10 @@
   --mantine-color-error: var(--mantine-color-danger-6);
 }
 
-:root[data-mantine-color-scheme='light'],
-.aie-omt-surface-root[data-mantine-color-scheme='light'] {
-  --mantine-color-body: #fcfaf7;
-}
-
 :root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *),
 .aie-omt-surface-root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *) {
   --sb-thumb-color: rgba(245, 222, 185, 0.22);
   --sb-thumb-hover: rgba(245, 222, 185, 0.38);
-  --mantine-color-body: var(--mantine-color-dark-8);
-  --mantine-color-default: var(--mantine-color-dark-7);
-  --mantine-color-default-color: #f5ebdd;
-  --mantine-color-default-border: rgba(245, 222, 185, 0.14);
-  --mantine-color-default-hover: rgba(245, 222, 185, 0.05);
 }
 
 ::-webkit-scrollbar {
