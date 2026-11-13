@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.1 — 2026-11-13
+
+- Detect subtitle translation falling behind playback and offer an explicit pause to prepare upcoming translations for ordinary videos. Live streams suggest switching to a faster engine.
+- Preserve completed translations when retrying a stalled buffer and keep subtitle buffering intact across embedded-player fullscreen transitions. Playback resumes only on request.
+- Refine buffering prompts and progress labels across all 12 interface languages.
+- Sync the upstream surface template to v2.0.0 and update the build dependencies. Fix focus-listener cleanup, editor selection boundaries, numeric settings drafts, modal accessibility labels and RTL text measurement.
+
+No new browser permissions. Existing settings and cached translations remain compatible. Buffering remains limited by the selected translation engine's throughput.
+
 ## 1.1.0 — 2026-11-12
 
 - Add independent YouTube subtitle translation with player controls, bilingual display, configurable appearance, target language and engine, and optional automatic activation.

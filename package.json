@@ -2,7 +2,7 @@
   "name": "interline",
   "description": "Interline \u00b7 \u884c\u95f4 \u2014 an open-source in-place bilingual reading extension for Chrome",
   "private": true,
-  "version": "1.1.0",
+  "version": "1.1.1",
   "license": "MIT",
   "type": "module",
   "scripts": {
