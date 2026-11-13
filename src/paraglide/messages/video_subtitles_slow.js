@@ -50,7 +50,7 @@ const it_video_subtitles_slow = /** @type {(inputs: Video_Subtitles_SlowInputs) 
 };
 
 const ar_video_subtitles_slow = /** @type {(inputs: Video_Subtitles_SlowInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ترجمة الترجمة النصية متأخرة عن التشغيل. هل تريد الإيقاف مؤقتًا لتحضير الترجمات التالية؟`)
+	return /** @type {LocalizedString} */ (`تتأخر ترجمة النصوص المصاحبة عن التشغيل. هل تريد إيقاف الفيديو مؤقتًا لتحضير الترجمات التالية؟`)
 };
 
 /**

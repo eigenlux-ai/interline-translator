@@ -42,7 +42,7 @@ const ru_video_subtitles_buffer_stalled = /** @type {(inputs: Video_Subtitles_Bu
 };
 
 const pt_video_subtitles_buffer_stalled = /** @type {(inputs: Video_Subtitles_Buffer_StalledInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A preparação está demorando. Você pode continuar a reprodução ou trocar o mecanismo.`)
+	return /** @type {LocalizedString} */ (`A preparação está demorando. Pode continuar a reprodução ou trocar de motor.`)
 };
 
 const it_video_subtitles_buffer_stalled = /** @type {(inputs: Video_Subtitles_Buffer_StalledInputs) => LocalizedString} */ () => {

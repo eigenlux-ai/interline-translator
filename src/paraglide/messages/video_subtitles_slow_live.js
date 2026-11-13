@@ -42,7 +42,7 @@ const ru_video_subtitles_slow_live = /** @type {(inputs: Video_Subtitles_Slow_Li
 };
 
 const pt_video_subtitles_slow_live = /** @type {(inputs: Video_Subtitles_Slow_LiveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`A tradução das legendas está atrasada. Experimente um mecanismo de tradução mais rápido.`)
+	return /** @type {LocalizedString} */ (`A tradução das legendas está atrasada. Experimente um motor de tradução mais rápido.`)
 };
 
 const it_video_subtitles_slow_live = /** @type {(inputs: Video_Subtitles_Slow_LiveInputs) => LocalizedString} */ () => {
@@ -50,7 +50,7 @@ const it_video_subtitles_slow_live = /** @type {(inputs: Video_Subtitles_Slow_Li
 };
 
 const ar_video_subtitles_slow_live = /** @type {(inputs: Video_Subtitles_Slow_LiveInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`ترجمة الترجمة النصية متأخرة عن التشغيل. جرّب محرك ترجمة أسرع.`)
+	return /** @type {LocalizedString} */ (`تتأخر ترجمة النصوص المصاحبة عن التشغيل. جرّب محرك ترجمة أسرع.`)
 };
 
 /**

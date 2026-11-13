@@ -331,7 +331,7 @@
 	"video_subtitles_buffering": "Preparazione delle prossime traduzioni…",
 	"video_subtitles_buffer_progress": "{completed} / {total} sottotitoli tradotti",
 	"video_subtitles_buffer_action": "Pausa e prepara",
-	"video_subtitles_resume": "Continua riproduzione",
+	"video_subtitles_resume": "Continua la riproduzione",
 	"video_subtitles_change_engine": "Cambia motore",
 	"video_subtitles_dismiss_slow": "Non ora"
 }

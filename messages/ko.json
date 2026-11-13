@@ -329,7 +329,7 @@
 	"video_subtitles_buffer_ready": "다음 자막 번역이 준비되었습니다.",
 	"video_subtitles_buffer_stalled": "번역 준비가 오래 걸립니다. 계속 재생하거나 엔진을 변경할 수 있습니다.",
 	"video_subtitles_buffering": "다음 자막을 번역하는 중…",
-	"video_subtitles_buffer_progress": "번역 완료 {completed} / {total}개 자막",
+	"video_subtitles_buffer_progress": "자막 {total}개 중 {completed}개 번역 완료",
 	"video_subtitles_buffer_action": "일시 정지하고 준비",
 	"video_subtitles_resume": "계속 재생",
 	"video_subtitles_change_engine": "엔진 변경",

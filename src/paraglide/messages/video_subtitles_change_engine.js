@@ -42,7 +42,7 @@ const ru_video_subtitles_change_engine = /** @type {(inputs: Video_Subtitles_Cha
 };
 
 const pt_video_subtitles_change_engine = /** @type {(inputs: Video_Subtitles_Change_EngineInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Trocar mecanismo`)
+	return /** @type {LocalizedString} */ (`Trocar motor`)
 };
 
 const it_video_subtitles_change_engine = /** @type {(inputs: Video_Subtitles_Change_EngineInputs) => LocalizedString} */ () => {

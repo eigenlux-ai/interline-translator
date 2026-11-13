@@ -42,11 +42,11 @@ const ru_video_subtitles_resume = /** @type {(inputs: Video_Subtitles_ResumeInpu
 };
 
 const pt_video_subtitles_resume = /** @type {(inputs: Video_Subtitles_ResumeInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Continuar reprodução`)
+	return /** @type {LocalizedString} */ (`Continuar a reprodução`)
 };
 
 const it_video_subtitles_resume = /** @type {(inputs: Video_Subtitles_ResumeInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Continua riproduzione`)
+	return /** @type {LocalizedString} */ (`Continua la riproduzione`)
 };
 
 const ar_video_subtitles_resume = /** @type {(inputs: Video_Subtitles_ResumeInputs) => LocalizedString} */ () => {

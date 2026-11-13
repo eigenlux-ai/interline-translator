@@ -18,11 +18,11 @@ const en_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_B
 };
 
 const ja_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_Buffer_ProgressInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`翻訳済み ${i?.completed} / ${i?.total} 字幕`)
+	return /** @type {LocalizedString} */ (`${i?.completed} / ${i?.total} 件の字幕を翻訳済み`)
 };
 
 const ko_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_Buffer_ProgressInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`번역 완료 ${i?.completed} / ${i?.total}개 자막`)
+	return /** @type {LocalizedString} */ (`자막 ${i?.total}개 중 ${i?.completed}개 번역 완료`)
 };
 
 const fr_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_Buffer_ProgressInputs) => LocalizedString} */ (i) => {
@@ -50,7 +50,7 @@ const it_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_B
 };
 
 const ar_video_subtitles_buffer_progress = /** @type {(inputs: Video_Subtitles_Buffer_ProgressInputs) => LocalizedString} */ (i) => {
-	return /** @type {LocalizedString} */ (`تمت ترجمة ${i?.completed} / ${i?.total} مقطعًا`)
+	return /** @type {LocalizedString} */ (`المقاطع المترجمة: ${i?.completed} من ${i?.total}`)
 };
 
 /**

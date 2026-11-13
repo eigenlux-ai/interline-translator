@@ -18,7 +18,7 @@ const en_video_subtitles_buffer_ready = /** @type {(inputs: Video_Subtitles_Buff
 };
 
 const ja_video_subtitles_buffer_ready = /** @type {(inputs: Video_Subtitles_Buffer_ReadyInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`次の字幕の翻訳が準備できました。`)
+	return /** @type {LocalizedString} */ (`次の字幕の翻訳が完了しました。`)
 };
 
 const ko_video_subtitles_buffer_ready = /** @type {(inputs: Video_Subtitles_Buffer_ReadyInputs) => LocalizedString} */ () => {
