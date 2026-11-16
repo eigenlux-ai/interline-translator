@@ -12,6 +12,9 @@ import { INJECT_ACK, INJECT_BYE, INJECT_HELLO, INJECT_PING, INJECT_PONG, INJECT_
 const STATE_SLOT = `__${PROJECT_PREFIX.replace(/-(\w)/g, (_, c: string) => c.toUpperCase())}InjectorChannel`;
 const HELLO_TIMEOUT_MS = 400;
 const CACHED_PORT_PROBE_MS = 150;
+/** A timer this overdue means the shared main thread was blocked, not the port. */
+const BLOCKED_THREAD_MS = 20;
+const BLOCKED_THREAD_GRACE_MS = 60;
 
 interface ChannelState {
   port?: MessagePort;
@@ -92,6 +95,7 @@ function probe(current: ChannelState, port: MessagePort, timeoutMs: number): Pro
   if (timeoutMs <= 0) return Promise.resolve(false);
   return new Promise((resolve) => {
     const id = randomId();
+    const started = Date.now();
     const finish = (alive: boolean) => {
       clearTimeout(timer);
       port.removeEventListener('message', onMessage);
@@ -102,7 +106,14 @@ function probe(current: ChannelState, port: MessagePort, timeoutMs: number): Pro
     const onMessage = (e: MessageEvent) => {
       if (e.data?.__omni === INJECT_PONG && e.data.id === id) finish(true);
     };
-    const timer = setTimeout(cancel, timeoutMs);
+    // PING and PONG are two tasks on the page's main thread. When an editor's
+    // own key handling blocks that thread, the expired timer can run between
+    // them and condemn a healthy port. Let already-queued replies drain first.
+    const expire = () => {
+      const blocked = Date.now() - started - timeoutMs > BLOCKED_THREAD_MS;
+      timer = setTimeout(cancel, blocked ? BLOCKED_THREAD_GRACE_MS : 0);
+    };
+    let timer = setTimeout(expire, timeoutMs);
     current.cancel = cancel;
     port.addEventListener('message', onMessage);
     try {

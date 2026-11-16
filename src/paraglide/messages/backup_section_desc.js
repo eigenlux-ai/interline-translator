@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Section_DescInputs */
 
 const zh_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`将设置导出为 JSON 文件，默认不包含 API Key 和自定义请求头；也可从文件恢复设置。`)
+	return /** @type {LocalizedString} */ (`将设置导出为 JSON 文件，默认不包含 API 密钥和自定义请求头；也可从文件恢复设置。`)
 };
 
 const zh_tw2_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`將設定匯出為 JSON 檔案，預設不包含 API Key 和自訂請求標頭；也可從檔案還原設定。`)
+	return /** @type {LocalizedString} */ (`將設定匯出為 JSON 檔案，預設不包含 API 金鑰和自訂請求標頭；也可從檔案還原設定。`)
 };
 
 const en_backup_section_desc = /** @type {(inputs: Backup_Section_DescInputs) => LocalizedString} */ () => {

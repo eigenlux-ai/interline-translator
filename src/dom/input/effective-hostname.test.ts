@@ -21,6 +21,12 @@ describe('effectiveHostname', () => {
     expect(effectiveHostname(frame(url, frame('about:blank', parent)))).toBe('private.example.test');
   });
 
+  it('inherits the opener origin in a top-level blank window', () => {
+    const popup = Object.assign(frame('about:blank'), { origin: 'https://mail.example.test' });
+    expect(effectiveHostname(popup)).toBe('mail.example.test');
+    expect(effectiveHostname(Object.assign(frame('about:blank'), { origin: 'null' }))).toBe('');
+  });
+
   it('uses the browser-provided origin when a parent cannot be read', () => {
     const parent = {
       get location() {

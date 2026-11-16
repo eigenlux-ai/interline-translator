@@ -148,6 +148,19 @@ class TranslationServiceImpl implements TranslationService {
   }
 }
 
+/**
+ * The messaging transport serializes every own property, the stack and the
+ * cause chain of a rejection. Provider errors carry the request body (prompt,
+ * glossary), response body and endpoint URL; a content script gets the name
+ * and message only.
+ */
+function replyError(error: unknown): Error {
+  const reply = new Error(error instanceof Error ? error.message : String(error));
+  if (error instanceof Error) reply.name = error.name;
+  reply.stack = '';
+  return reply;
+}
+
 /** Call exactly once from the background entrypoint. */
 export function registerTranslationService() {
   const service = new TranslationServiceImpl();
@@ -156,7 +169,9 @@ export function registerTranslationService() {
     if (!req || typeof req.text !== 'string' || req.text.length > 100_000 || typeof req.source !== 'string')
       throw new Error('Invalid translation request');
     const owner = `${sender.tab?.id ?? 'extension'}:${sender.documentId ?? sender.url ?? ''}`;
-    return service.translate(req, { owner, kind: 'interactive' });
+    return service.translate(req, { owner, kind: 'interactive' }).catch((error: unknown) => {
+      throw replyError(error);
+    });
   });
   return registerService(TRANSLATION_SERVICE_KEY, service);
 }

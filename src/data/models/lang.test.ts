@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { languageName } from '@/services/translation/prompts';
 import { langOptions, normalizeLanguageCode, pairGlyphs } from './lang';
 
@@ -13,6 +13,15 @@ it.each([
   ['not a locale', null],
 ])('normalizes %s to %s', (locale, expected) => {
   expect(normalizeLanguageCode(locale)).toBe(expected);
+});
+
+it('treats an engine that reports no language subtag as undetermined', () => {
+  // Node 22 and the Chromium builds of its era return undefined for `und`.
+  const stub = vi.spyOn(Intl, 'Locale').mockImplementation(function () {
+    return { language: undefined };
+  } as unknown as typeof Intl.Locale);
+  expect(normalizeLanguageCode('und')).toBeNull();
+  stub.mockRestore();
 });
 
 it('names non-common languages in pickers and LLM prompts, preserving custom codes', () => {

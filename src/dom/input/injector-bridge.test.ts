@@ -100,6 +100,19 @@ describe('injectViaMainWorld', () => {
     expect(responder.served).toHaveLength(1);
     expect(responder.served[0]).toMatchObject({ op: 'apply', text: 'Once only' });
   });
+  it('keeps the channel after one unanswered request', async () => {
+    const responder = fakeResponder(false);
+    responder.offer();
+    const el = mountEditor();
+    expect(await injectViaMainWorld(el, 'Slow editor', { timeoutMs: 40 })).toBe('miss');
+    const hello = watchPageWorld();
+    expect(await injectViaMainWorld(el, 'Next gesture', { timeoutMs: 40 })).toBe('miss');
+    hello.stop();
+    // The second request reused the same port: no reconnect was requested.
+    expect(responder.served).toHaveLength(2);
+    expect(hello.seen).toEqual([]);
+  });
+
   it('does not broadcast the translation through window messages', async () => {
     const el = mountEditor();
     const responder = fakeResponder();

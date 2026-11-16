@@ -6,11 +6,11 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Export_Keys_Confirm_TextInputs */
 
 const zh_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`导出的 JSON 文件会包含明文 API Key 和自定义请求头。仅用于在你自己的可信设备间迁移，请勿分享或上传此文件。`)
+	return /** @type {LocalizedString} */ (`导出的 JSON 文件会包含明文 API 密钥和自定义请求头。仅用于在你自己的可信设备间迁移，请勿分享或上传此文件。`)
 };
 
 const zh_tw2_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案會包含明文 API Key 和自訂請求標頭。僅用於在你自己的可信任裝置間移轉，請勿分享或上傳此檔案。`)
+	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案會包含明文 API 金鑰和自訂請求標頭。僅用於在你自己的可信任裝置間移轉，請勿分享或上傳此檔案。`)
 };
 
 const en_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {

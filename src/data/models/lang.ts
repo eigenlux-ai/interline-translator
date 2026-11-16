@@ -16,7 +16,8 @@ export function normalizeLanguageCode(code: string): LangCode | null {
       const traditional = locale.script ? locale.script === 'Hant' : ['TW', 'HK', 'MO'].includes(locale.region ?? '');
       return traditional ? 'zh-TW' : 'zh-CN';
     }
-    return locale.language === 'und' ? null : locale.language;
+    // Engines disagree on the undetermined tag: `'und'` or no language at all.
+    return !locale.language || locale.language === 'und' ? null : locale.language;
   } catch {
     return null;
   }

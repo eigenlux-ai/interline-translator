@@ -19,6 +19,7 @@ import { getTranslationService } from '@/services/translation/contract';
 import { classifyEditable, getDeepActiveElement, readEditableText, type EditableKind } from './active-element';
 import { InputHint } from './indicator';
 import { isMainWorldEditor, readViaMainWorld } from './injector-bridge';
+import { editorMessageOrigin } from './message-origin';
 import { stripTriggerSpaces, type RichSnapshot } from './protocol';
 import { replaceEditableText } from './replace';
 import { parseInputCommand, SpaceTrigger, type SpaceTriggerOptions } from './triggers';
@@ -38,6 +39,10 @@ export function effectiveHostname(win: Window = window): string {
   } catch {
     // Cross-origin parents may be unreadable; use the browser's origin list.
   }
+  // A top-level about:blank window (window.open('') compose popups) has no
+  // parent to walk, but it inherits its opener's origin.
+  const inherited = editorMessageOrigin(win);
+  if (inherited) return new URL(inherited).hostname;
   const ancestor = win.location.ancestorOrigins?.[0];
   if (ancestor) {
     try {

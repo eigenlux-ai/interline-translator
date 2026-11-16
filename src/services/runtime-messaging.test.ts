@@ -112,6 +112,22 @@ it('relays asynchronous failures and allows subsequent requests to succeed', asy
   await expect(getTranslationService().translate({ text: 'Fail', source: 'auto', target: 'en' })).rejects.toThrow(
     'Invalid API key'
   );
+  // Provider errors carry the request and response; only name and message leave the background.
+  const detailed = Object.assign(new Error('Invalid API key', { cause: new Error('upstream detail') }), {
+    name: 'AI_APICallError',
+    status: 401,
+    url: 'https://gateway.example.test/v1?api-key=secret',
+    requestBodyValues: { system: 'private prompt' },
+    responseBody: 'private response',
+  });
+  vi.mocked(executeTranslate).mockRejectedValueOnce(detailed);
+  const relayed = await getTranslationService()
+    .translate({ text: 'Fail', source: 'auto', target: 'en' })
+    .catch((error: Error) => error);
+  expect(relayed).toMatchObject({ name: 'AI_APICallError', message: 'Invalid API key' });
+  expect(Object.keys(relayed).filter((key) => key !== 'name')).toEqual([]);
+  expect((relayed as Error).cause).toBeUndefined();
+  expect((relayed as Error).stack).toBe('');
   await expect(
     getTranslationService().translate({ text: 'Recover', source: 'auto', target: 'en' })
   ).resolves.toMatchObject({

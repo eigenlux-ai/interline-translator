@@ -8,9 +8,10 @@
  * the `editor-injector` content script in the page realm: mark the target with
  * a nonce id, send the request, await the reply.
  *
- * Requests use the channel from ./port-handshake. An unresponsive port is
- * discarded so later gestures can reconnect. An uncertain write is never
- * replayed automatically: the first attempt may already have changed the model.
+ * Requests use the channel from ./port-handshake, which health-checks the port
+ * before each one and reconnects if it is dead. An unanswered request therefore
+ * keeps the port. An uncertain write is never re-sent to the editor model: the
+ * first attempt may already have changed it.
  */
 
 import { randomId } from '@/core/uid';
@@ -77,12 +78,15 @@ function request(
     };
 
     let channel: MessagePort | null = null;
+    // A port that throws is gone. One that merely stayed silent may belong to
+    // a slow editor still working on this request: keep it, since every
+    // request health-checks the port first and replaces a dead one.
     const failed = () => {
       if (settled) return;
       if (channel) invalidateInjectorPort(channel);
       finish(null);
     };
-    const timer = setTimeout(failed, timeoutMs);
+    const timer = setTimeout(() => finish(null), timeoutMs);
     void injectorPort()
       .then((port) => {
         if (settled) return;

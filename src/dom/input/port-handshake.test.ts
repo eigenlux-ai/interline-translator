@@ -128,6 +128,37 @@ describe('injectorPort', () => {
     expect(posted).not.toHaveBeenCalled();
   });
 
+  it('keeps a healthy port whose reply was delayed by a blocked main thread', async () => {
+    stopReceiver = receiveInjectorPortOffer();
+    const channel = new MessageChannel();
+    let ping: { id: string } | undefined;
+    channel.port1.onmessage = (e: MessageEvent) => {
+      if (e.data?.__omni === INJECT_PING) ping = e.data;
+    };
+    window.dispatchEvent(
+      new MessageEvent('message', {
+        data: { __omni: INJECT_PORT },
+        origin: location.origin,
+        source: window,
+        ports: [channel.port2],
+      })
+    );
+    const posted = vi.spyOn(window, 'postMessage');
+    const pending = injectorPort();
+    await settlePorts();
+    expect(ping).toBeDefined();
+
+    // The page blocks the thread past the probe deadline; the overdue timer
+    // then runs before the reply that was queued behind the same block.
+    const realNow = Date.now;
+    vi.spyOn(Date, 'now').mockImplementation(() => realNow() + 300);
+    await new Promise((resolve) => setTimeout(resolve, 170));
+    channel.port1.postMessage({ __omni: INJECT_PONG, id: ping!.id });
+
+    await expect(pending).resolves.toBe(channel.port2);
+    expect(posted).not.toHaveBeenCalled();
+  });
+
   it('shares one in-flight handshake between concurrent callers', async () => {
     vi.useFakeTimers();
     const hellos: unknown[] = [];
