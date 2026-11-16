@@ -2,9 +2,9 @@
 
 ## Uploads
 
-- Extension: `.output/interline-1.1.1-firefox.zip`.
-- Matching source: `.output/interline-1.1.1-sources.zip`.
-- Version: 1.1.1. Add-on ID: `interline@eigenlux.com`.
+- Extension: `.output/interline-1.2.0-firefox.zip`.
+- Matching source: `.output/interline-1.2.0-sources.zip`.
+- Version: 1.2.0. Add-on ID: `interline@eigenlux.com`.
 - Target: desktop Firefox 140 or later, using Manifest V3. Android is not declared supported.
 
 Submit this ID as a new AMO listing; it replaces the ID used for the initial submission and cannot update that listing.

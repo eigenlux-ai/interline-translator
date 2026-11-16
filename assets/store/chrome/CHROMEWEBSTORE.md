@@ -2,24 +2,18 @@
 
 Last updated: 2026-11-16
 
-## Pending fixes
-
-The next build excludes API keys and all custom headers from default configuration exports. The separate credential export retains its confirmation. It also fixes inherited site policy for blank editor frames, subtitle buffering with partial human captions, premature selection annotations, older-Chrome editor handshakes and localized provider-validation errors. No browser permissions are added. These changes have not been packaged as a new release.
-
-Input translation, settings-save confirmation, subtitle diagnostics export and subtitle cache clearing now receive reliable responses across browsers, including Chromium versions without native asynchronous message replies.
-
-Editor translation also recovers inside supported blank and embedded document frames, including frames whose editor rebuilds the document. Existing website-access permissions are unchanged.
-
 ## Release
 
-Version **1.1.1**, tag **v1.1.1**. Build the Chrome upload with `pnpm zip`; the upload file is `.output/interline-1.1.1-chrome.zip`. This records a prepared release, not a submission or approval in the store dashboard.
+Version **1.2.0**, tag **v1.2.0**. Build the Chrome upload with `pnpm zip`; the upload file is `.output/interline-1.2.0-chrome.zip`. This records a prepared release, not a submission or approval in the store dashboard.
 
-See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update adds subtitle lag prompts and optional translation buffering, preserves buffering through retries and fullscreen transitions, improves localized copy, and incorporates the upstream surface template update. No browser permissions are added.
+See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update initializes the translation target from the browser language on first use while preserving saved preferences, and changes the manifest default locale to English. Default configuration exports exclude API keys and all custom headers; the separate credential export retains its confirmation.
+
+Input translation, settings-save confirmation, subtitle diagnostics export and subtitle cache clearing receive reliable responses across browsers, including Chromium versions without native asynchronous message replies. Editor translation recovers inside supported blank and embedded document frames, including frames whose editor rebuilds the document, and failed translations return only an error name and message to the page. The update also fixes inherited site policy for blank editor frames, subtitle buffering with partial human captions, premature selection annotations, older-Chrome editor handshakes and localized provider-validation errors. No browser permissions are added.
 
 ## Listing and assets
 
 - Name: **Interline · 行间**, matching the manifest.
-- Default listing locale for the next build: English (`manifest.default_locale: en`). On first use, the translation target is initialized from the browser UI language and the interface follows that target. Input translation targets English and starts disabled for English browsers. Saved preferences are preserved. Rebuild upload archives to include this metadata change.
+- Default listing locale: English (`manifest.default_locale: en`). On first use, the translation target is initialized from the browser UI language and the interface follows that target. Input translation targets English and starts disabled for English browsers. Saved preferences are preserved.
 - Single purpose: bilingual reading and translation of web content, including available YouTube captions and user-triggered input translation.
 - Suggested category: Productivity. Existing dashboard distribution, language and publisher settings are retained; they are not managed by this release script.
 - Short and detailed descriptions: [English](./global/listing.txt), [Chinese](./zh_CN/listing.txt), [Japanese](./ja/listing.txt), [Korean](./ko/listing.txt). Each directory's `summary.txt` matches its manifest description.
@@ -33,7 +27,7 @@ See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update adds 
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `storage`                | Save language preferences, engine configuration and credentials locally.                                                                                                      |
 | `contextMenus`           | Offer page and selection translation from the right-click menu.                                                                                                               |
-| `alarms`                 | Schedule periodic cache cleanup and retry saving initial preferences after a temporary storage failure.                                                                                                                     |
+| `alarms`                 | Schedule periodic cache cleanup and retry saving initial preferences after a temporary storage failure.                                                                       |
 | `<all_urls>` host access | Translate supported pages, including automatic site rules, and contact the user's selected translation endpoint across origins. Browser-restricted pages remain inaccessible. |
 
 ## Privacy and data use
@@ -54,9 +48,10 @@ Dashboard disclosures must reflect website content and authentication informatio
 
 ## Version history
 
-| Version | Date       | Changes                                                      | Status              |
-| ------- | ---------- | ------------------------------------------------------------ | ------------------- |
-| 1.1.1   | 2026-11-13 | Subtitle buffering, recovery, localization and surface fixes | Prepared for upload |
+| Version | Date       | Changes                                                                       | Status              |
+| ------- | ---------- | ----------------------------------------------------------------------------- | ------------------- |
+| 1.2.0   | 2026-11-16 | Browser-language defaults, safer backups, messaging and editor recovery fixes | Prepared for upload |
+| 1.1.1   | 2026-11-13 | Subtitle buffering, recovery, localization and surface fixes                  | Prepared for upload |
 
 ## Review notes
 

@@ -1,12 +1,20 @@
 # Changelog
 
-## Unreleased
+## 1.2.0 — 2026-11-16
 
+- Initialize the translation target from the browser language on first use; the interface follows that target. Input translation targets English and starts disabled for English browsers. Settings from earlier versions are preserved, including profiles that never saved a change.
+- Build every browser target as Manifest V3. Firefox 140 or later declares its data permissions, keeps HTTP translation endpoints such as local Ollama reachable, and ships a reproducible source archive. Safari requires 18.4 or later.
+- Name every selectable language in pickers and AI prompts, and treat regional and script variants of a language consistently.
 - Exclude all custom headers as well as API keys from default backups; include them only in the confirmed credential export.
-- Apply inherited site restrictions to blank editor frames on older Firefox versions, and keep input translation disabled when the frame's site cannot be resolved.
+- Deliver input translation, settings saves, subtitle diagnostics export and subtitle cache clearing reliably on browsers without native asynchronous message replies.
+- Recover editor translation in blank and embedded document frames, including editors that rebuild their document, and keep it working when a busy page delays the editor channel or a request goes unanswered.
+- Apply inherited site restrictions to blank editor frames and to compose windows opened by a site; keep input translation disabled when a frame's site cannot be resolved.
+- Return only the error name and message to pages when a translation fails, without provider request or response details.
 - Let paused subtitle buffers finish when late human captions cover only part of a cue.
 - Wait for complete selection translations before offering vocabulary notes.
 - Restore editor handshake compatibility with Chrome 116–118 and localize provider-validation failures.
+
+No new browser permissions; `alarms` now also retries saving initial preferences after a temporary storage failure. Existing settings and cached translations remain compatible. The manifest default locale is now English.
 
 ## 1.1.1 — 2026-11-13
 
