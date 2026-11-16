@@ -12,6 +12,7 @@
  */
 
 import { createProxyService, type ProxyServiceKey } from '@webext-core/proxy-service';
+import { sendMessage } from '@/core/messaging';
 import type { LangCode, ProviderConfig, TranslateRequest, TranslateResult } from '@/data/models';
 
 /** Outcome of a provider "Validate" check (real key/model/endpoint round-trip). */
@@ -54,7 +55,7 @@ export function getTranslationService() {
   const proxy = createProxyService(TRANSLATION_SERVICE_KEY);
   return {
     translate(req: TranslateRequest): Promise<TranslateResult> {
-      return browser.runtime.sendMessage({ type: 'interline:translate:v1', request: req });
+      return sendMessage('translate', req);
     },
     detectLang: (text: string) => proxy.detectLang(text),
     summarizePage: (text: string, target: LangCode) => proxy.summarizePage(text, target),

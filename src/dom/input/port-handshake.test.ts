@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { closeInjectorPort, injectorPort, receiveInjectorPortOffer, resetInjectorPortForTests } from './port-handshake';
-import { INJECT_ACK, INJECT_BYE, INJECT_HELLO, INJECT_PORT } from './protocol';
+import { INJECT_ACK, INJECT_BYE, INJECT_HELLO, INJECT_PING, INJECT_PONG, INJECT_PORT } from './protocol';
 
 /** Ports deliver on the event loop, not on a timer — a few turns drain them. */
 const settlePorts = async () => {
@@ -15,7 +15,10 @@ const settlePorts = async () => {
 function offerPort(init: { origin?: string; source?: MessageEventSource | null; withPort?: boolean } = {}) {
   const channel = new MessageChannel();
   const received: unknown[] = [];
-  channel.port1.onmessage = (e: MessageEvent) => received.push(e.data);
+  channel.port1.onmessage = (e: MessageEvent) => {
+    received.push(e.data);
+    if (e.data?.__omni === INJECT_PING) channel.port1.postMessage({ __omni: INJECT_PONG, id: e.data.id });
+  };
   window.dispatchEvent(
     new MessageEvent('message', {
       data: { __omni: INJECT_PORT },
@@ -47,7 +50,7 @@ describe('receiveInjectorPortOffer', () => {
     const { offered, received } = offerPort();
     await settlePorts();
 
-    // The ack is what lets the responder close its spares and stop reading window.
+    // The ack is what lets the responder select this channel and close its spares.
     expect(received).toEqual([{ __omni: INJECT_ACK }]);
     const posted = vi.spyOn(window, 'postMessage');
     await expect(injectorPort()).resolves.toBe(offered);

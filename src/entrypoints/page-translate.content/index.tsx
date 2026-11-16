@@ -16,6 +16,7 @@ import {
 import { humanizeError } from '@/react-app/error-copy';
 import { SHADOW_ATTACH_SIGNAL } from '@/constants';
 import { effectiveHostname, InputTranslator } from '@/dom/input';
+import { closeInjectorPort } from '@/dom/input/port-handshake';
 import { PageTranslator } from '@/dom/page-translation';
 import { syncUiLocaleFrom } from '@/i18n';
 import { getPublicConfig, watchPublicConfig } from '@/services/config/public';
@@ -33,6 +34,7 @@ export default defineContentScript({
     let invalidated = false;
     ctx.onInvalidated(() => {
       invalidated = true;
+      closeInjectorPort();
     });
     // Keep input policy and gesture settings live in every frame.
     let inputTranslator: InputTranslator | null = null;

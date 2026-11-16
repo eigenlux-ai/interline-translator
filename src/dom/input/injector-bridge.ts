@@ -8,16 +8,13 @@
  * the `editor-injector` content script in the page realm: mark the target with
  * a nonce id, send the request, await the reply.
  *
- * Requests go over the private port from ./port-handshake, never over `window`:
- * an `apply` carries the model's translation, and the page is entitled to its
- * editors' content — not to our output. No port (no responder on this page, or a
- * handshake that missed) resolves 'miss' at once and RETRIES on the next
- * gesture; the `ping` probe this replaces cached a single 400ms timeout for the
- * page's lifetime and disabled the whole path behind the user's back.
+ * Requests use the channel from ./port-handshake. An unresponsive port is
+ * discarded so later gestures can reconnect. An uncertain write is never
+ * replayed automatically: the first attempt may already have changed the model.
  */
 
 import { randomId } from '@/core/uid';
-import { injectorPort } from './port-handshake';
+import { injectorPort, invalidateInjectorPort } from './port-handshake';
 import {
   asRichSnapshot,
   INJECT_ATTR,
@@ -80,20 +77,31 @@ function request(
     };
 
     let channel: MessagePort | null = null;
-    const timer = setTimeout(() => finish(null), timeoutMs);
-    void injectorPort().then((port) => {
+    const failed = () => {
       if (settled) return;
-      if (!port) {
-        finish(null);
-        return;
-      }
-      channel = port;
-      port.addEventListener('message', onMessage);
-      // Idempotent, and the ONLY thing that starts delivery on a port whose
-      // listeners come from addEventListener rather than onmessage.
-      port.start();
-      port.postMessage({ __omni: INJECT_REQ, id, op, ...extra });
-    });
+      if (channel) invalidateInjectorPort(channel);
+      finish(null);
+    };
+    const timer = setTimeout(failed, timeoutMs);
+    void injectorPort()
+      .then((port) => {
+        if (settled) return;
+        if (!port) {
+          finish(null);
+          return;
+        }
+        channel = port;
+        port.addEventListener('message', onMessage);
+        // Idempotent, and the ONLY thing that starts delivery on a port whose
+        // listeners come from addEventListener rather than onmessage.
+        try {
+          port.start();
+          port.postMessage({ __omni: INJECT_REQ, id, op, ...extra });
+        } catch {
+          failed();
+        }
+      })
+      .catch(failed);
   });
 }
 

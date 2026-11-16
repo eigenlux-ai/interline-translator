@@ -8,15 +8,10 @@
  *     virtualized editors like CodeMirror/Monaco — the model is the truth;
  *   - apply → replace the document, atomically guarded by `before` (see apply.ts).
  *
- * TRANSPORT. Both travel over a private MessagePort, offered in this script's
- * first task; after the isolated world acks it, this responder neither reads nor
- * writes `window` for the protocol again (dom/input/port-handshake explains why
- * the offer has to be that early; the registry's content-free attach signal is
- * the one window message this bundle still posts). The old design answered on
- * the window, which meant every page script heard the `apply` — i.e. the model's
- * completion, the one thing on this wire the page did NOT already own. There is
- * no `ping` op either: the handshake IS the availability answer, so this
- * responder is silent until a request arrives on its own channel.
+ * TRANSPORT. Editor data stays on a dedicated MessagePort. Window messages
+ * carry only offers and reconnect requests. Early and late injections share
+ * a resume callback, never the ports or shadow-root registry. The page owns
+ * this realm, so the transport cannot authenticate the page's editor state.
  *
  * TARGETING. Only a node the isolated world marked with its 128-bit nonce is
  * ever touched, and an ambiguous mark is refused (see findMarked). What remains
@@ -26,13 +21,18 @@
  * impersonation instead of three lines of `window` listener.
  */
 
+import { PROJECT_PREFIX } from '@/constants';
+import { watchDocumentRoot } from '@/dom/document-root';
 import { applyToEditor, readEditor } from '@/dom/input/main-world/apply';
+import { editorMessageOrigin } from '@/dom/input/message-origin';
 import {
   asRichSnapshot,
   INJECT_ACK,
   INJECT_ATTR,
   INJECT_BYE,
   INJECT_HELLO,
+  INJECT_PING,
+  INJECT_PONG,
   INJECT_PORT,
   INJECT_REQ,
   INJECT_RES,
@@ -42,6 +42,10 @@ import {
   type RichSnapshot,
 } from '@/dom/input/protocol';
 import { installShadowRegistry, type ShadowRegistry } from './shadow-registry';
+
+const RESUME_SLOT = Symbol.for(`${PROJECT_PREFIX}:editor-responder`);
+const OFFER_TIMEOUT_MS = 3000;
+const MAX_PENDING_OFFERS = 2;
 
 /** The deepest active element, descending through open AND registry-known closed roots. */
 function deepActiveElement(registry: ShadowRegistry): Element | null {
@@ -100,12 +104,28 @@ function findMarked(id: string, registry: ShadowRegistry): Element | null {
   return null;
 }
 
-export function startResponder(): void {
+export function startResponder(): (() => void) | undefined {
+  const origin = editorMessageOrigin();
+  if (!origin) return;
+  const slots = window as unknown as Record<symbol, unknown>;
+  const previous = slots[RESUME_SLOT];
+  if (typeof previous === 'function') {
+    previous();
+    return;
+  }
   // Before any page script runs: the hook has to see the FIRST attachShadow.
   const registry = installShadowRegistry();
-  /** Ports offered so far — normally one; a second only if a hello raced the first. */
-  const ports = new Set<MessagePort>();
-  let paired = false;
+  const ports = new Map<MessagePort, ReturnType<typeof setTimeout> | null>();
+  let active: MessagePort | null = null;
+  let disposed = false;
+
+  const closePort = (port: MessagePort) => {
+    const timer = ports.get(port);
+    if (timer) clearTimeout(timer);
+    ports.delete(port);
+    port.onmessage = null;
+    port.close();
+  };
 
   const serve = (port: MessagePort, req: InjectRequest) => {
     const reply = (status: InjectStatus, text?: string, rich?: RichSnapshot) => {
@@ -150,29 +170,32 @@ export function startResponder(): void {
   };
 
   const teardown = () => {
+    if (disposed) return;
+    disposed = true;
+    stopWatchingRoot();
     window.removeEventListener('message', onWindowMessage);
-    for (const port of ports) {
-      port.onmessage = null;
-      port.close();
-    }
-    ports.clear();
+    for (const port of ports.keys()) closePort(port);
+    active = null;
     registry.uninstall();
+    if (slots[RESUME_SLOT] === resume) delete slots[RESUME_SLOT];
   };
 
   const onPortMessage = (port: MessagePort, e: MessageEvent) => {
     const key = (e.data as { __omni?: string } | null)?.__omni;
 
     if (key === INJECT_ACK) {
-      // Paired. This is the port the isolated world kept, so the spares go and
-      // `window` stops being read at all: the channel is now the whole protocol.
-      paired = true;
-      window.removeEventListener('message', onWindowMessage);
-      for (const spare of ports) {
-        if (spare === port) continue;
-        spare.onmessage = null;
-        spare.close();
-        ports.delete(spare);
-      }
+      if (!ports.has(port)) return;
+      active = port;
+      const timer = ports.get(port);
+      if (timer) clearTimeout(timer);
+      ports.set(port, null);
+      // An unacknowledged reconnect offer never interrupts a healthy channel.
+      for (const spare of ports.keys()) if (spare !== port) closePort(spare);
+      return;
+    }
+    if (port !== active) return;
+    if (key === INJECT_PING) {
+      if (typeof e.data.id === 'string') port.postMessage({ __omni: INJECT_PONG, id: e.data.id });
       return;
     }
     if (key === INJECT_BYE) {
@@ -187,27 +210,40 @@ export function startResponder(): void {
   };
 
   const offerPort = () => {
+    // Page messages can be noisy. Bound both unanswered ports and their timers.
+    const pending = [...ports.keys()].filter((port) => port !== active);
+    while (pending.length >= MAX_PENDING_OFFERS) closePort(pending.shift()!);
     const channel = new MessageChannel();
-    ports.add(channel.port1);
+    ports.set(
+      channel.port1,
+      setTimeout(() => closePort(channel.port1), OFFER_TIMEOUT_MS)
+    );
     channel.port1.onmessage = (e: MessageEvent) => onPortMessage(channel.port1, e);
     try {
-      window.postMessage({ __omni: INJECT_PORT }, location.origin, [channel.port2]);
+      window.postMessage({ __omni: INJECT_PORT }, origin, [channel.port2]);
     } catch {
-      // Opaque origin (sandboxed frame): postMessage(…, location.origin) throws
-      // synchronously, so no isolated-world partner can ever be reached here.
-      ports.delete(channel.port1);
-      channel.port1.close();
+      closePort(channel.port1);
+      channel.port2.close();
     }
   };
 
   const onWindowMessage = (e: MessageEvent) => {
-    if (paired || e.source !== window || e.origin !== location.origin) return;
+    if (disposed || e.source !== window || e.origin !== origin) return;
     if ((e.data as { __omni?: string } | null)?.__omni !== INJECT_HELLO) return;
-    // The isolated world missed the document_start offer (injection-order
-    // surprise) and is asking for a replacement.
     offerPort();
   };
 
-  window.addEventListener('message', onWindowMessage);
-  offerPort();
+  const resume = () => {
+    if (disposed) return;
+    // addEventListener is idempotent for this callback, and reattaches it if
+    // document.open() erased the window's listeners.
+    window.addEventListener('message', onWindowMessage);
+    if (!active) offerPort();
+  };
+  const stopWatchingRoot = watchDocumentRoot(resume);
+  // Only a resume function is shared across bundles. It grants no access to
+  // ports, editor operations or collected closed roots.
+  Object.defineProperty(slots, RESUME_SLOT, { value: resume, configurable: true });
+  resume();
+  return teardown;
 }

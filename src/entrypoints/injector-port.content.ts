@@ -1,14 +1,9 @@
 /**
  * Isolated-world half of the editor-injector handshake, and nothing else.
  *
- * It exists purely for its TIMING. The main-world responder offers its private
- * MessagePort in its first task — the only moment a `window` handover cannot be
- * overheard, because the page has not run a line of script yet (a transferred
- * port shows up in `MessageEvent.ports` for every listener on the window) — and
- * somebody in the isolated world has to be listening right then. The bridge
- * that uses the port lives in `page-translate`, which starts at document_idle;
- * by then the offer is long gone. So this entrypoint takes the port at
- * document_start and parks it where the bridge finds it (dom/input/port-handshake).
+ * Capture an early offer for the bridge in page-translate, which starts at
+ * document_idle. If this listener is missed or erased, the bridge initiates
+ * its own handshake. Port health is checked before editor requests.
  *
  * All frames, about:blank included: `window.postMessage` never crosses frames,
  * so every frame's responder needs its own isolated-world partner — the same

@@ -37,6 +37,10 @@ WXT's Firefox MV2 default is an intentional upstream choice: the maintainer cite
 
 A `.env` file is optional. The `WXT_EXTENSION_KEY` field in `.env.example` controls the manifest's public key for a stable extension ID; it is **not an AI API key or a private signing key**. Translation provider keys are configured in the extension's settings, not in build-time environment variables.
 
+Use the typed `src/core/messaging` transport for runtime request/response handlers. It carries asynchronous replies and errors through `sendResponse` with `return true`; WXT's `browser` alias does not normalize native Promise-returning listeners. Keep sender authorization in each handler and cover it in transport tests.
+
+The editor bridge starts in the MAIN world at `document_start` and resumes at `document_end`. Both entrypoints reuse one responder and closed-root registry per frame. Document-root observers repair bridge and input-gesture listeners erased by `document.open()`, discarding pending input work and undo state from the old document. Handshakes use the document's inherited `window.origin` and reject opaque origins. Cached ports are checked before use; failed requests invalidate only their own port, and reconnecting never resends an earlier editor request. Window handshakes carry no editor text, but the page owns the MAIN world: early injection and transferred ports are not authentication boundaries.
+
 ## Subtitle diagnostics
 
 Reproduce a subtitle issue, then use **Video subtitles → Export subtitle diagnostics** in extension settings. The JSON contains recent source/parse/render/translation events, cache results, retry delays and anonymous context numbers (`0` is the background). It contains no caption text, URL, page title, provider credentials or raw exceptions. This is a best-effort in-memory history, not telemetry: at most 512 events survive in the background, batches are capped at 32 per frame per second, and restarting the background clears the history. Export soon after reproducing a problem. A missing event does not prove an operation never happened.

@@ -5,10 +5,9 @@
  * lives in ./responder, the closed-shadow-root registry it scans with in
  * ./shadow-registry.
  *
- * `document_start` is load-bearing twice over, which is why both of those live
- * in this one bundle: the attachShadow hook must see the page's first root, and
- * the port handover must happen before the page can hold a `window` listener
- * that would see the transferred port.
+ * Start early to capture the page's first closed shadow roots. The separate
+ * document_end entrypoint resumes this same responder, without rewrapping
+ * attachShadow or discarding roots collected here.
  */
 
 import { defineContentScript } from '#imports';

@@ -8,11 +8,9 @@
  * apart between the two bundles. Everything here must stay side-effect-free
  * and extension-API-free: it is compiled into the MAIN-world bundle.
  *
- * Requests and replies travel over a PRIVATE MessagePort, never over `window`:
- * an `apply` carries the model's translation into the page realm, and a window
- * message is heard by every script on the page (see dom/input/port-handshake
- * for how the port gets there). Only the handshake itself is a window message,
- * and it carries nothing but the port.
+ * Requests and replies travel over a dedicated MessagePort, not window
+ * broadcasts. The handshake carries no editor text. The MAIN world belongs
+ * to the page; neither early injection nor a transferred port authenticates it.
  */
 
 import { DATA_OMNI, PROJECT_PREFIX } from '@/constants';
@@ -22,30 +20,27 @@ export const INJECT_REQ = `${PROJECT_PREFIX}:inject-req`;
 export const INJECT_RES = `${PROJECT_PREFIX}:inject-res`;
 
 /**
- * Handshake keys, the only two that ride `window`. INJECT_PORT is the
- * responder's port offer (document_start, before the page can hold a listener
- * that would see `MessageEvent.ports`); INJECT_HELLO asks for a replacement
- * offer when the isolated world missed that one.
+ * Handshake keys, the only two that ride `window`. INJECT_PORT offers a port;
+ * INJECT_HELLO asks for a replacement after a missed offer or broken channel.
  */
 export const INJECT_PORT = `${PROJECT_PREFIX}:inject-port`;
 export const INJECT_HELLO = `${PROJECT_PREFIX}:inject-hello`;
 
 /**
- * Port control keys. ACK names the ONE port the isolated world kept, which
- * lets the responder close its spares and stop listening to `window` for
- * good; BYE is teardown — the responder unhooks `attachShadow` and forgets
- * every root, so a page whose extension went away is left as it was found.
+ * ACK selects the active port, closing its predecessors. PING/PONG checks a
+ * cached port without sending editor data. BYE tears down the responder.
  */
 export const INJECT_ACK = `${PROJECT_PREFIX}:inject-ack`;
 export const INJECT_BYE = `${PROJECT_PREFIX}:inject-bye`;
+export const INJECT_PING = `${PROJECT_PREFIX}:inject-ping`;
+export const INJECT_PONG = `${PROJECT_PREFIX}:inject-pong`;
 
 /** Nonce attribute marking the target editable (host DOM marker → DATA_OMNI). */
 export const INJECT_ATTR = DATA_OMNI.injectId;
 
 /**
- * What the main world is asked to do. No `ping`: availability is whether the
- * handshake produced a port, so the responder answers nothing at all until a
- * request arrives over that port.
+ * Editor operations. Channel health checks use separate control messages and
+ * never inspect the document or call editor adapters.
  */
 export type InjectOp = 'read' | 'apply';
 

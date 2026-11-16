@@ -17,6 +17,7 @@
 
 import { registerService } from '@webext-core/proxy-service';
 import { browser, storage } from '#imports';
+import { onMessage } from '@/core/messaging';
 import { PROJECT_PREFIX } from '@/constants';
 import type { Config, VideoSubtitlesPatch } from '@/data/models';
 import { mergeConfigEdits } from './merge';
@@ -28,7 +29,7 @@ import {
   type PublicConfigPatch,
 } from './public';
 import { configSchema, videoSubtitlesPatchSchema } from './schema';
-import { CONFIG_EDIT_MESSAGE, getConfig, initializeConfig, setConfig, watchConfig } from './storage';
+import { getConfig, initializeConfig, setConfig, watchConfig } from './storage';
 import { subtitleTranslationRevision } from './subtitle-revision';
 import { defaultVideoSubtitles, mergeVideoSubtitles } from './video-subtitles';
 
@@ -75,12 +76,11 @@ export function registerConfigGateway(): void {
   };
   // Trusted options saves use the SAME queue as player field patches. A base
   // snapshot makes an unrelated edit preserve fields changed in the meantime.
-  browser.runtime.onMessage.addListener((message, sender) => {
-    if (message?.type !== CONFIG_EDIT_MESSAGE) return;
+  onMessage('editConfig', ({ data: message, sender }) => {
     // Firefox supplies sender.tab for trusted options tabs too; the browser-
     // asserted extension URL is the trust boundary, not absence of a tab.
     const trusted = sender.id === browser.runtime.id && sender.url?.startsWith(browser.runtime.getURL(''));
-    if (!trusted) return Promise.resolve({ ok: false });
+    if (!trusted) return { ok: false };
     return enqueueWrite(async () => {
       const next = configSchema.parse(message.next);
       const base = configSchema.parse(message.base);

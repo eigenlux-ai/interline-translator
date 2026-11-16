@@ -10,8 +10,17 @@
  */
 
 import { defineExtensionMessaging } from '@webext-core/messaging';
+import type { SubtitleDiagnostic } from '@/core/subtitles/diagnostics';
+import type { Config, TranslateRequest, TranslateResult } from '@/data/models';
 
 interface ProtocolMap {
+  /** Sender-scoped input translation; the background supplies the admission owner. */
+  translate(request: TranslateRequest): TranslateResult;
+  /** Trusted extension settings only; serialized with content-side field patches. */
+  editConfig(edit: { next: Config; base: Config }): { ok: boolean };
+  /** Trusted extension settings only; diagnostic events never contain transcript text. */
+  exportSubtitleDiagnostics(): { version: 1; events: (SubtitleDiagnostic & { time: number })[] };
+  clearSubtitleCache(): { ok: boolean };
   /** Popup → active-tab content: turn whole-page translation on/off; returns the resulting state (e.g. false on a `never` site). */
   togglePageTranslation(enabled: boolean): boolean;
   /** Context menu / command → active-tab content: flip page translation; returns the new state. */
@@ -35,4 +44,6 @@ interface ProtocolMap {
   getSubtitleContext(): { hosts: string[] } | null;
 }
 
-export const { sendMessage, onMessage } = defineExtensionMessaging<ProtocolMap>();
+// The existing transport uses sendResponse + return true, including for Promise
+// handlers. Native Promise replies still depend on Chromium rollout state.
+export const { sendMessage, onMessage, removeAllListeners } = defineExtensionMessaging<ProtocolMap>();

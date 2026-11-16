@@ -1,9 +1,19 @@
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { beforeEach, vi } from 'vitest';
 
+// happy-dom omits Window.origin. Ordinary fixtures use their URL origin;
+// inherited frame origins are additionally verified in real browsers.
+if (typeof window !== 'undefined' && !('origin' in window)) {
+  Object.defineProperty(window, 'origin', { configurable: true, get: () => location.origin });
+}
+
 // Reset the in-memory extension APIs (storage, etc.) between tests so storage
 // state and onChanged listeners never leak across cases.
-beforeEach(() => {
+beforeEach(async () => {
+  // Reset the typed transport's module registry alongside the fake browser.
+  // importActual also works in suites that mock the messaging facade.
+  const { removeAllListeners } = await vi.importActual<typeof import('@/core/messaging')>('@/core/messaging');
+  removeAllListeners();
   fakeBrowser.reset();
   // Most existing fixtures model a Chinese browser. Locale-specific tests
   // override this explicitly rather than depending on the test host's locale.

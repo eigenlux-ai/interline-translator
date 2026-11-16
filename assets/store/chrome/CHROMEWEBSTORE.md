@@ -6,6 +6,10 @@ Last updated: 2026-11-16
 
 The next build excludes API keys and all custom headers from default configuration exports. The separate credential export retains its confirmation. It also fixes inherited site policy for blank editor frames, subtitle buffering with partial human captions, premature selection annotations, older-Chrome editor handshakes and localized provider-validation errors. No browser permissions are added. These changes have not been packaged as a new release.
 
+Input translation, settings-save confirmation, subtitle diagnostics export and subtitle cache clearing now receive reliable responses across browsers, including Chromium versions without native asynchronous message replies.
+
+Editor translation also recovers inside supported blank and embedded document frames, including frames whose editor rebuilds the document. Existing website-access permissions are unchanged.
+
 ## Release
 
 Version **1.1.1**, tag **v1.1.1**. Build the Chrome upload with `pnpm zip`; the upload file is `.output/interline-1.1.1-chrome.zip`. This records a prepared release, not a submission or approval in the store dashboard.

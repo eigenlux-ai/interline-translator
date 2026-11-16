@@ -4,6 +4,8 @@ import {
   INJECT_ATTR,
   INJECT_BYE,
   INJECT_HELLO,
+  INJECT_PING,
+  INJECT_PONG,
   INJECT_PORT,
   INJECT_REQ,
   INJECT_RES,
@@ -68,7 +70,7 @@ function startTestResponder(): TestChannel {
     windowTraffic.push({ message, transfer: transfer ?? [] });
   }) as typeof window.postMessage);
 
-  startResponder();
+  const stop = startResponder();
   const offered = windowTraffic.at(-1)?.transfer[0];
   if (!offered) throw new Error('the responder offered no port');
 
@@ -78,6 +80,7 @@ function startTestResponder(): TestChannel {
     port.start();
   };
   attach(offered);
+  offered.postMessage({ __omni: INJECT_ACK });
 
   const nextReply = () => {
     const { promise, resolve } = Promise.withResolvers<InjectResponse>();
@@ -104,6 +107,7 @@ function startTestResponder(): TestChannel {
     teardown: async () => {
       offered.postMessage({ __omni: INJECT_BYE });
       await settlePorts();
+      stop?.();
       posted.mockRestore();
     },
   };
@@ -116,14 +120,54 @@ beforeEach(() => {
 });
 
 afterEach(async () => {
+  vi.useRealTimers();
   await channel?.teardown();
   channel = null;
   Element.prototype.attachShadow = NATIVE_ATTACH_SHADOW;
   document.body.innerHTML = '';
   vi.restoreAllMocks();
+  vi.unstubAllGlobals();
 });
 
 describe('startResponder', () => {
+  it('bounds and expires unanswered offers while retaining the active channel', async () => {
+    const closed = vi.fn();
+    const NativeChannel = MessageChannel;
+    vi.stubGlobal(
+      'MessageChannel',
+      class extends NativeChannel {
+        constructor() {
+          super();
+          const close = this.port1.close.bind(this.port1);
+          vi.spyOn(this.port1, 'close').mockImplementation(() => {
+            closed();
+            close();
+          });
+        }
+      }
+    );
+    channel = startTestResponder();
+    await settlePorts();
+    vi.useFakeTimers();
+    for (let i = 0; i < 20; i++) channel.hello();
+    expect(closed).toHaveBeenCalledTimes(18);
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(closed).toHaveBeenCalledTimes(20);
+    const pong = channel.nextReply();
+    channel.send({ __omni: INJECT_PING, id: 'still-active' });
+    expect(await pong).toEqual({ __omni: INJECT_PONG, id: 'still-active' });
+  });
+
+  it('ignores reconnect requests from a different window or origin', () => {
+    channel = startTestResponder();
+    for (const candidate of [
+      { source: window, origin: 'https://unrelated.example' },
+      { source: null, origin: window.origin },
+    ]) {
+      window.dispatchEvent(new MessageEvent('message', { data: { __omni: INJECT_HELLO }, ...candidate }));
+    }
+    expect(channel.windowTraffic).toHaveLength(1);
+  });
   it('offers a port and nothing else — the handover carries no payload', () => {
     channel = startTestResponder();
     expect(channel.windowTraffic).toHaveLength(1);
@@ -194,7 +238,7 @@ describe('startResponder', () => {
     expect(channel.replies).toEqual([]);
   });
 
-  it('replaces a missed offer on hello, and stops reading the window once acked', async () => {
+  it('offers reconnects without interrupting the active channel', async () => {
     channel = startTestResponder();
 
     channel.hello();
@@ -203,7 +247,10 @@ describe('startResponder', () => {
     channel.ack();
     await settlePorts();
     channel.hello();
-    expect(channel.windowTraffic).toHaveLength(2); // paired: the window is done
+    expect(channel.windowTraffic).toHaveLength(3);
+    const pong = channel.nextReply();
+    channel.send({ __omni: INJECT_PING, id: 'health-check' });
+    expect(await pong).toEqual({ __omni: INJECT_PONG, id: 'health-check' });
   });
 
   it('unhooks attachShadow on BYE and goes quiet', async () => {

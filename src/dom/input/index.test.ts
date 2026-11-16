@@ -38,6 +38,40 @@ beforeEach(() => {
 });
 
 describe('InputTranslator', () => {
+  it('restores erased gesture listeners and resets the space streak after document replacement', async () => {
+    const input = document.createElement('input');
+    input.value = 'old draft';
+    document.body.append(input);
+    input.focus();
+    const added = vi.spyOn(document, 'addEventListener');
+    const t = new InputTranslator({ defaultTarget: 'en' });
+    t.start();
+    pressSpace(input);
+    pressSpace(input);
+    for (const [type, listener, options] of added.mock.calls) {
+      if (type === 'keydown' || type === 'pointerdown') document.removeEventListener(type, listener, options);
+    }
+    const root = document.createElement('html');
+    root.append(document.createElement('body'));
+    document.documentElement.remove();
+    document.append(root);
+    await tick();
+    const next = document.createElement('input');
+    next.value = 'new draft';
+    document.body.append(next);
+    next.focus();
+    pressSpace(next);
+    expect(translate).not.toHaveBeenCalled();
+    pressSpace(next);
+    pressSpace(next);
+    await tick();
+    expect(translate).toHaveBeenCalledOnce();
+    expect(translate.mock.calls[0][0].text).toBe('new draft');
+    expect(next.value).toBe('你好');
+    t.stop();
+    added.mockRestore();
+  });
+
   it('translates and replaces an input on the 3-space trigger', async () => {
     const input = document.createElement('input');
     input.value = 'hello';

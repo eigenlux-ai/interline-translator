@@ -1,10 +1,12 @@
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { expect, it, vi } from 'vitest';
+import { removeAllListeners } from '@/core/messaging';
 import { PROJECT_PREFIX } from '@/constants';
+import { dispatchMessage } from '@/test-utils/runtime-messaging';
 import { registerConfigGateway } from './gateway';
 import { getConfigService, getPublicConfig } from './public';
 import { defaultConfig } from './schema';
-import { CONFIG_EDIT_MESSAGE, getConfig, setConfig } from './storage';
+import { getConfig, setConfig } from './storage';
 
 it('a delayed options read never writes defaults over a newer save', async () => {
   await getConfig();
@@ -55,19 +57,20 @@ it('queues trusted settings saves behind a delayed background initialization', a
   const base = defaultConfig();
   const next = defaultConfig('ja');
   next.providers.push({ id: 'custom', kind: 'openai', model: 'test', apiKeys: ['saved-key'], enabled: true });
-  const save = fakeBrowser.runtime.onMessage.trigger(
-    { type: CONFIG_EDIT_MESSAGE, next, base },
-    { id: fakeBrowser.runtime.id, url: fakeBrowser.runtime.getURL('options.html') },
-    () => {}
+  const save = dispatchMessage(
+    'editConfig',
+    { next, base },
+    { id: fakeBrowser.runtime.id, url: fakeBrowser.runtime.getURL('options.html') }
   );
   release();
-  expect(await save).toContainEqual({ ok: true });
+  expect(await save).toEqual({ ok: true });
   spy.mockRestore();
   expect(await getConfig()).toEqual(next);
   expect((await getPublicConfig()).translate.target).toBe('ja');
 
   // A later background startup must reuse the saved configuration.
   vi.mocked(fakeBrowser.i18n.getUILanguage).mockReturnValue('en-US');
+  removeAllListeners();
   registerConfigGateway();
   await getConfigService().patch({});
   expect(await getConfig()).toEqual(next);

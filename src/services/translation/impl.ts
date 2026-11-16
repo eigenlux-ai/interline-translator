@@ -16,6 +16,7 @@
 
 import { registerService } from '@webext-core/proxy-service';
 import { generateText } from 'ai';
+import { onMessage } from '@/core/messaging';
 import {
   providerRunNeedsKey,
   type Config,
@@ -150,10 +151,10 @@ class TranslationServiceImpl implements TranslationService {
 /** Call exactly once from the background entrypoint. */
 export function registerTranslationService() {
   const service = new TranslationServiceImpl();
-  browser.runtime.onMessage.addListener((raw, sender) => {
-    if (raw?.type !== 'interline:translate:v1' || sender.id !== browser.runtime.id) return;
-    const req = raw.request as TranslateRequest;
-    if (!req || typeof req.text !== 'string' || req.text.length > 100_000 || typeof req.source !== 'string') return;
+  onMessage('translate', ({ data: req, sender }) => {
+    if (sender.id !== browser.runtime.id) throw new Error('Unauthorized translation request');
+    if (!req || typeof req.text !== 'string' || req.text.length > 100_000 || typeof req.source !== 'string')
+      throw new Error('Invalid translation request');
     const owner = `${sender.tab?.id ?? 'extension'}:${sender.documentId ?? sender.url ?? ''}`;
     return service.translate(req, { owner, kind: 'interactive' });
   });

@@ -1,7 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { injectViaMainWorld, readViaMainWorld } from './injector-bridge';
 import { receiveInjectorPortOffer, resetInjectorPortForTests } from './port-handshake';
-import { INJECT_ATTR, INJECT_HELLO, INJECT_PORT, INJECT_REQ, INJECT_RES, type InjectRequest } from './protocol';
+import {
+  INJECT_ATTR,
+  INJECT_HELLO,
+  INJECT_PING,
+  INJECT_PONG,
+  INJECT_PORT,
+  INJECT_REQ,
+  INJECT_RES,
+  type InjectRequest,
+} from './protocol';
 
 /**
  * A main-world responder, faked at the wire: it serves whatever arrives on its
@@ -9,13 +18,18 @@ import { INJECT_ATTR, INJECT_HELLO, INJECT_PORT, INJECT_REQ, INJECT_RES, type In
  * entrypoints/editor-injector.content/responder — this file is about the
  * isolated half.)
  */
-function fakeResponder() {
+function fakeResponder(reply = true) {
   const channel = new MessageChannel();
   const served: InjectRequest[] = [];
   channel.port1.onmessage = (e: MessageEvent) => {
+    if (e.data?.__omni === INJECT_PING) {
+      channel.port1.postMessage({ __omni: INJECT_PONG, id: e.data.id });
+      return;
+    }
     const req = e.data as InjectRequest;
     if (req.__omni !== INJECT_REQ) return;
     served.push(req);
+    if (!reply) return;
     channel.port1.postMessage({
       __omni: INJECT_RES,
       id: req.id,
@@ -79,7 +93,14 @@ afterEach(() => {
 });
 
 describe('injectViaMainWorld', () => {
-  it('never puts the translation where the page can hear it', async () => {
+  it('does not replay a write when its acknowledgement is lost', async () => {
+    const responder = fakeResponder(false);
+    responder.offer();
+    expect(await injectViaMainWorld(mountEditor(), 'Once only', { timeoutMs: 40 })).toBe('miss');
+    expect(responder.served).toHaveLength(1);
+    expect(responder.served[0]).toMatchObject({ op: 'apply', text: 'Once only' });
+  });
+  it('does not broadcast the translation through window messages', async () => {
     const el = mountEditor();
     const responder = fakeResponder();
     responder.offer();
@@ -93,7 +114,7 @@ describe('injectViaMainWorld', () => {
     expect(responder.served).toEqual([
       expect.objectContaining({ op: 'apply', text: 'THE MODEL OUTPUT', before: 'the source text' }),
     ]);
-    // Translation payload never crosses the window object, preventing page scripts from intercepting it.
+    // The payload stays off window messages; this is not authentication of the MAIN world.
     expect(JSON.stringify(page.seen)).not.toContain('THE MODEL OUTPUT');
   });
 

@@ -1,8 +1,8 @@
 // @vitest-environment happy-dom
-import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { MantineProvider } from '@mantine/core';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { sendMessage } from '@/core/messaging';
 import { m } from '@/paraglide/messages';
 import { defaultConfig } from '@/services/config/schema';
 import VideoSubtitleSettings from './VideoSubtitleSettings';
@@ -15,6 +15,7 @@ vi.mock('@/services/config/public', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/services/config/public')>()),
   getConfigService: () => gateway,
 }));
+vi.mock('@/core/messaging', () => ({ sendMessage: vi.fn() }));
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
@@ -37,7 +38,7 @@ describe('video subtitle settings', () => {
     expect(gateway.resetVideoSubtitles).toHaveBeenCalledOnce();
   });
   it('reports cache clearing only after the targeted backend operation succeeds', async () => {
-    const request = vi.spyOn(fakeBrowser.runtime, 'sendMessage').mockImplementation(async () => ({ ok: false }));
+    const request = vi.mocked(sendMessage).mockResolvedValue({ ok: false });
     const view = render(
       <MantineProvider>
         <VideoSubtitleSettings config={defaultConfig()} />
@@ -46,9 +47,9 @@ describe('video subtitle settings', () => {
     await act(async () => {
       fireEvent.click(view.getByRole('button', { name: m.video_subtitles_clear() }));
     });
-    expect(request).toHaveBeenCalledWith({ type: 'subtitle:clear-cache', version: 1 });
+    expect(request).toHaveBeenCalledWith('clearSubtitleCache', undefined);
     expect(view.getByRole('status').textContent).toBe(m.video_subtitles_operation_failed());
-    request.mockImplementationOnce(async () => ({ ok: true }));
+    request.mockResolvedValueOnce({ ok: true });
     await act(async () => {
       fireEvent.click(view.getByRole('button', { name: m.video_subtitles_clear() }));
     });

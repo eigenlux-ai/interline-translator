@@ -9,7 +9,8 @@
  * settings forms in the options entrypoint, not in content.
  */
 
-import { browser, storage } from '#imports';
+import { storage } from '#imports';
+import { sendMessage } from '@/core/messaging';
 import { PROJECT_PREFIX } from '@/constants';
 import type { Config, ProviderConfig } from '@/data/models';
 import { migrate } from './migrations/v001';
@@ -109,11 +110,9 @@ export async function getConfig(): Promise<Config> {
 }
 
 /** Persist a full config (validated first; throws on invalid input). */
-export const CONFIG_EDIT_MESSAGE = 'interline:config-edit';
-
 export async function setConfig(next: Config, base?: Config): Promise<void> {
   if (base) {
-    const result = await browser.runtime.sendMessage({ type: CONFIG_EDIT_MESSAGE, next, base });
+    const result = await sendMessage('editConfig', { next, base });
     if (!result?.ok) throw new Error('Configuration could not be saved');
     return;
   }

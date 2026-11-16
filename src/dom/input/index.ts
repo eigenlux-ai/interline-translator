@@ -13,6 +13,7 @@
  */
 
 import type { LangCode, SourceLang } from '@/data/models';
+import { watchDocumentRoot } from '@/dom/document-root';
 import { withKeepAlive } from '@/services/keep-alive';
 import { getTranslationService } from '@/services/translation/contract';
 import { classifyEditable, getDeepActiveElement, readEditableText, type EditableKind } from './active-element';
@@ -88,7 +89,14 @@ export class InputTranslator {
     };
     document.addEventListener('keydown', onKeyDown, true);
     document.addEventListener('pointerdown', onPointerDown, true);
+    const stopWatchingRoot = watchDocumentRoot(() => {
+      // document.open() erases these listeners as well as the editor bridge.
+      // Drop pending work/undo for the old document before accepting input.
+      this.stop();
+      this.start();
+    });
     this.stopFn = () => {
+      stopWatchingRoot();
       document.removeEventListener('keydown', onKeyDown, true);
       document.removeEventListener('pointerdown', onPointerDown, true);
     };

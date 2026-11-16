@@ -17,12 +17,13 @@
  * This also inherits the responder script's `allFrames` configuration across nested frames.
  *
  * Page-inert by contract: no reads of page state, no attributes written onto
- * host elements, and the signal targets `location.origin` (not `'*'`) to prevent
+ * host elements, and the signal targets the document's inherited origin to prevent
  * leaking extension state across embedded third-party frames. The patch is a Proxy
  * that preserves native stringification, and `uninstall()` restores the original method.
  */
 
 import { PROJECT_PREFIX, SHADOW_ATTACH_SIGNAL } from '@/constants';
+import { editorMessageOrigin } from '@/dom/input/message-origin';
 
 /**
  * Registry ceiling. WeakRefs allow discarded component trees to be garbage-collected.
@@ -107,7 +108,8 @@ export function installShadowRegistry(): ShadowRegistry {
         signalTimer = setTimeout(() => {
           signalTimer = null;
           try {
-            window.postMessage({ source: SHADOW_ATTACH_SIGNAL }, location.origin);
+            const origin = editorMessageOrigin();
+            if (origin) window.postMessage({ source: SHADOW_ATTACH_SIGNAL }, origin);
           } catch {
             /* opaque origin (sandboxed frame) — nothing to signal into */
           }

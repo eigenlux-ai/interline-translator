@@ -33,15 +33,16 @@ export function registerSubtitleServer(): void {
       }
       return;
     }
-    if (message.type !== 'subtitle:export-diagnostics') return;
+  });
+  onMessage('exportSubtitleDiagnostics', ({ sender }) => {
     const extensionOrigin = browser.runtime.getURL('');
     if (
       sender.id !== browser.runtime.id ||
       !sender.url?.startsWith(extensionOrigin) ||
       sender.tab?.url?.startsWith('https:')
     )
-      return;
-    return Promise.resolve({ version: 1, events: diagnostics.snapshot() });
+      throw new Error('Unauthorized diagnostics request');
+    return { version: 1, events: diagnostics.snapshot() };
   });
   onMessage('getSubtitleContext', ({ sender }) => {
     const context = subtitleSenderContext(sender, browser.runtime.id);
@@ -123,15 +124,14 @@ export function registerSubtitleServer(): void {
     });
     port.onDisconnect.addListener(close);
   });
-  browser.runtime.onMessage.addListener((message, sender) => {
-    if (message?.type !== 'subtitle:clear-cache' || message.version !== 1) return;
+  onMessage('clearSubtitleCache', ({ sender }) => {
     const extensionOrigin = browser.runtime.getURL('');
     if (
       sender.id !== browser.runtime.id ||
       sender.tab?.url?.startsWith('https:') ||
       !sender.url?.startsWith(extensionOrigin)
     )
-      return;
+      throw new Error('Unauthorized cache request');
     return clearSubtitleCache().then(() => ({ ok: true }));
   });
 }

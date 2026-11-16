@@ -14,7 +14,7 @@ import {
   Switch,
   Text,
 } from '@mantine/core';
-import { browser } from '#imports';
+import { sendMessage } from '@/core/messaging';
 import type { Config, VideoSubtitlesPatch } from '@/data/models';
 import { resolveUiLang } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
@@ -268,7 +268,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
             disabled={busy}
             onClick={() => {
               void run(async () => {
-                const response = await browser.runtime.sendMessage({ type: 'subtitle:export-diagnostics', version: 1 });
+                const response = await sendMessage('exportSubtitleDiagnostics', undefined);
                 if (response?.version !== 1 || !Array.isArray(response.events))
                   throw new Error('Diagnostics unavailable');
                 const url = URL.createObjectURL(
@@ -289,7 +289,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
             disabled={busy}
             onClick={() => {
               void run(async () => {
-                const response = await browser.runtime.sendMessage({ type: 'subtitle:clear-cache', version: 1 });
+                const response = await sendMessage('clearSubtitleCache', undefined);
                 if (!response?.ok) throw new Error('Subtitle cache could not be cleared');
               });
             }}

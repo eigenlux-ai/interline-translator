@@ -1,11 +1,12 @@
 import { fakeBrowser } from 'wxt/testing/fake-browser';
 import { describe, expect, it } from 'vitest';
+import { dispatchMessage } from '@/test-utils/runtime-messaging';
 import { registerConfigGateway } from './gateway';
 import { mergeConfigEdits } from './merge';
 import { migrate } from './migrations/v001';
 import { getConfigService, toPublicConfig } from './public';
 import { defaultConfig, videoSubtitlesPatchSchema, videoSubtitlesSchema } from './schema';
-import { CONFIG_EDIT_MESSAGE, getConfig, setConfig } from './storage';
+import { getConfig, setConfig } from './storage';
 import { defaultVideoSubtitles, resolveSubtitleProvider } from './video-subtitles';
 
 const trusted = () => ({ id: fakeBrowser.runtime.id, url: fakeBrowser.runtime.getURL('options.html') });
@@ -13,14 +14,7 @@ const edit = async (
   next: ReturnType<typeof defaultConfig>,
   base: ReturnType<typeof defaultConfig>,
   sender = trusted()
-) => {
-  const results = await fakeBrowser.runtime.onMessage.trigger(
-    { type: CONFIG_EDIT_MESSAGE, next, base },
-    sender,
-    () => {}
-  );
-  return results.find((r) => r !== undefined);
-};
+) => dispatchMessage('editConfig', { next, base }, sender);
 
 describe('video subtitle preferences', () => {
   it('migrates old backups to manual opt-in defaults and retains inheritance', () => {
