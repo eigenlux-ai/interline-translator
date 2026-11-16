@@ -23,7 +23,7 @@ export interface TranslateConfig {
    */
   skipLanguages: LangCode[];
   /**
-   * 通读全文: summarize the WHOLE page once and inject the overview into every
+   * Whole-page context: summarize the WHOLE page once and inject the overview into every
    * translation prompt for that page (consistent renderings, domain sense).
    * OPT-IN and default OFF deliberately — it sends content the user never
    * scrolled to off to the engine (a privacy boundary the user must cross
@@ -31,11 +31,11 @@ export interface TranslateConfig {
    */
   pageContext?: boolean;
   /**
-   * 带样式翻译: preserve inline formatting (links/bold/inline code) across
+   * Formatted translation: preserve inline formatting (links/bold/inline code) across
    * translation via the `{{n}}` placeholder protocol. Default ON (absent =
    * true). OFF is the quality escape hatch: placeholders can degrade the
    * translation itself (they interrupt the sentence the engine sees), and
-   * plain-text mode sidesteps every marker-mangling failure — the 译文 is
+   * plain-text mode sidesteps every marker-mangling failure — the translation is
    * then injected as unformatted text.
    */
   richText?: boolean;
@@ -78,7 +78,7 @@ export interface PromptExpertConfig {
 }
 
 /**
- * A named glossary collection — 「AI 术语集」,「建筑术语集」… Terms belong to
+ * A named glossary collection — "AI glossary", "Architecture glossary"… Terms belong to
  * a DOMAIN, and the domain (not the individual term) carries the scoping:
  * the whole set toggles on/off and optionally binds to matching sites (same
  * glob semantics as style/site rules; empty = everywhere).
@@ -102,7 +102,7 @@ export interface GlossarySet {
 export interface PromptConfig {
   /** User-created styles only (builtins ship in code). */
   styles: PromptStyle[];
-  /** Global default style; undefined = 素译 (no style injection). */
+  /** Global default style; undefined = plain translation (no style injection). */
   activeStyleId?: string;
   siteRules: PromptStyleSiteRule[];
   expert?: PromptExpertConfig;
@@ -162,10 +162,10 @@ export const BILINGUAL_STYLES = [
 export type BilingualStyle = (typeof BILINGUAL_STYLES)[number];
 
 /**
- * How a translated page presents original vs 译文 — a pure-CSS VIEW over the
+ * How a translated page presents original vs translation — a pure-CSS VIEW over the
  * already-injected glosses (switching never re-translates): `bilingual` shows
  * both (the default), `translation` collapses the original text (media stays),
- * `original` hides the 译文 for a quick peek at the source.
+ * `original` hides the translation for a quick peek at the source.
  */
 export const DISPLAY_MODES = ['bilingual', 'translation', 'original'] as const;
 export type DisplayMode = (typeof DISPLAY_MODES)[number];
@@ -176,18 +176,18 @@ export interface AppearanceConfig {
   /** Opt-in visual treatment of the translated node; `blend` = look like source. */
   bilingualStyle: BilingualStyle;
   /**
-   * Translation typeface: `kai` = the target language's written hand (楷体,
-   * 教科書体, serif italic, … — dom/inject/hand-face; system fonts only), or
+   * Translation typeface: `kai` = the target language's written hand (Kai calligraphy,
+   * textbook typefaces, serif italic, … — dom/inject/hand-face; system fonts only), or
    * inherit the host's.
    */
   translationFont: 'kai' | 'inherit';
   /** The three-state view of a translated page (bilingual/translation/original). */
   displayMode: DisplayMode;
   /**
-   * 逐段对照: when a single translation unit holds MULTIPLE paragraphs
+   * Paragraph interleaving: when a single translation unit holds MULTIPLE paragraphs
    * (<br>-separated runs — mail bodies, poems, forum posts), interleave each
    * translated paragraph right after its source paragraph instead of hanging
-   * the whole 译文 below the whole source. Pure placement — the unit is still
+   * the whole translation below the whole source. Pure placement — the unit is still
    * translated as ONE block (cross-paragraph context, unfragmented cache).
    */
   paragraphInterleave: boolean;

@@ -1,8 +1,8 @@
 /**
  * @module react-app/components/settings/StylePreview
  *
- * 所见即所得 pickers for the 译文's appearance. Instead of a text dropdown, each
- * bilingual-style preset is a small swatch that renders a real 原文/译文 pair
+ * WYSIWYG pickers for the translation's appearance. Instead of a text dropdown, each
+ * bilingual-style preset is a small swatch that renders a real source/translation pair
  * with the preset's ACTUAL declarations — pulled from `PRESET_VISUALS`, the same
  * data the injected stylesheet is generated from (src/dom/inject/styles.ts), so
  * a swatch can never drift from what lands on the page.
@@ -52,7 +52,7 @@ function presetSampleStyle(preset: BilingualStyle): CSSProperties {
   return { ...(v.common ?? {}), ...(layout ?? {}), ['--aie-omt-accent' as string]: PRESET_ACCENT } as CSSProperties;
 }
 
-/** One preset swatch: name on top, a live 原文/译文 sample below, 朱 ring + tick when active. */
+/** One preset swatch: name on top, a live source/translation sample below, cinnabar ring + tick when active. */
 function StyleSwatch({
   preset,
   active,
@@ -111,8 +111,8 @@ function StyleSwatch({
         {PRESET_LABEL[preset]()}
       </Text>
 
-      {/* Live sample — a faint 原文 echo (roomy only) over the styled 译文. The
-          pair is localized MIRRORED: the 译文 sample is in the reader's own
+      {/* Live sample — a faint source echo (roomy only) over the styled translation. The
+          pair is localized MIRRORED: the translation sample is in the reader's own
           language (zh UI demos en→zh, en UI demos zh→en), so the swatch always
           previews what a gloss would look like for THIS user; the compact
           gloss fits the narrow ball panel. */}
@@ -148,7 +148,7 @@ function StyleSwatch({
 export interface StylePreviewProps {
   value: BilingualStyle;
   onChange: (value: BilingualStyle) => void;
-  /** Render the samples in the currently-selected 译文 font, so the two pickers stay consistent. */
+  /** Render the samples in the currently-selected translation font, so the two pickers stay consistent. */
   font: 'kai' | 'inherit';
   /** Denser grid + smaller swatches for the floating-ball panel. */
   compact?: boolean;
@@ -220,7 +220,7 @@ const FACE_SAMPLE: Record<HandFace, string> = {
   naskh: 'نص حكيم له سر قاطع وذو شأن عظيم',
 };
 
-/** The 译文 font picker: two cards, each rendering the same phrase in that font. */
+/** The translation font picker: two cards, each rendering the same phrase in that font. */
 export function FontPreview({ value, onChange }: FontPreviewProps) {
   const theme = useMantineTheme();
   const scheme = useComputedColorScheme('light') as Scheme;

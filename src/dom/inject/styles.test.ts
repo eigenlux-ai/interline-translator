@@ -59,15 +59,15 @@ describe('generated preset stylesheet', () => {
     expect(css).not.toContain('@font-face');
   });
 
-  it('the three-state view: original hides the 译文; translation collapses the source and restores the gloss from its vars', () => {
-    // 仅原文 — one cheap rule, plus its :host-context twin for shadow-root copies.
+  it('the three-state view: original hides the translation; translation collapses the source and restores the gloss from its vars', () => {
+    // original-only — one cheap rule, plus its :host-context twin for shadow-root copies.
     expect(css).toContain('html[data-omni-display="original"] [data-omni-translated] { display: none !important; }');
     expect(css).toContain(':host-context(html[data-omni-display="original"]) [data-omni-translated]');
-    // 仅译文 — the collapse is GATED on :has(译文): a skipped unit keeps its text.
+    // translation-only — the collapse is GATED on :has(translation): a skipped unit keeps its text.
     expect(css).toContain(
       'html[data-omni-display="translation"] [data-omni-walked]:has([data-omni-translated]) { font-size: 0 !important; line-height: 0 !important; }'
     );
-    // Clipped-source fallback: the 译文 is an afterend SIBLING, invisible to
+    // Clipped-source fallback: the translation is an afterend SIBLING, invisible to
     // :has(descendant) — those sources collapse via their stamped attribute,
     // re-gated on the sibling gloss actually existing (a stale stamp whose
     // gloss was dropped must never vanish the source text).

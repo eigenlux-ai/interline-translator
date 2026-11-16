@@ -26,16 +26,16 @@
  *   syncUiLocale(config.uiLanguage, config.translate.target);
  */
 
-import { UI_LANGS, type LangCode, type UiLang, type UiLangSetting } from '@/data/models/lang';
+import { normalizeLanguageCode, UI_LANGS, type LangCode, type UiLang, type UiLangSetting } from '@/data/models/lang';
 import { overwriteGetLocale } from '@/paraglide/runtime.js';
 
 /**
- * The current UI locale, driven by config — never by cookie/url/browser
- * detection (the compile pins `strategy: [globalVariable]`, and this overwrite
- * replaces even that). One value per document is correct: every surface in a
- * page derives it from the same config.
+ * The current UI locale follows config once loaded, using English beforehand.
+ * Surfaces supply config when loaded; this module needs no browser API.
+ * One value per document is correct: every surface in a page derives it from
+ * the same config.
  */
-let current: UiLang = 'zh';
+let current: UiLang = 'en';
 overwriteGetLocale(() => current);
 
 const listeners = new Set<() => void>();
@@ -76,9 +76,6 @@ export function subscribeUiLocale(listener: () => void): () => void {
   };
 }
 
-/** What the UI speaks before any config has loaded — the product default target. */
-const PRE_CONFIG_TARGET: LangCode = 'zh-CN';
-
 /** Either config shape carries the interface-language pair: the content-safe
  *  projection (`uiLanguage`) or the full config (`language.ui`). */
 type UiLocaleSource =
@@ -89,10 +86,10 @@ type UiLocaleSource =
  * `syncUiLocale` fed straight from a (possibly not-yet-loaded) config — THE
  * one place that knows the pre-config fallback and which field each config
  * shape carries. Every surface calls this instead of hand-copying `?? 'auto'`
- * / `?? 'zh-CN'` defaults.
+ * / English loading-state defaults.
  */
 export function syncUiLocaleFrom(config: UiLocaleSource | null | undefined): UiLang {
-  if (!config) return syncUiLocale('auto', PRE_CONFIG_TARGET);
+  if (!config) return syncUiLocale('auto', 'en');
   return syncUiLocale('uiLanguage' in config ? config.uiLanguage : config.language.ui, config.translate.target);
 }
 
@@ -116,8 +113,8 @@ export function resolveUiLang(setting: UiLangSetting | string, target: LangCode)
  * en-GB → en).
  */
 function asUiLang(code: string): UiLang | null {
-  const c = code.toLowerCase();
-  if (/^zh(-|$)/.test(c)) return /^zh-(tw|hk|mo|hant)/.test(c) ? 'zh-TW' : 'zh';
-  const base = c.split('-')[0];
-  return (UI_LANGS as readonly string[]).includes(base) ? (base as UiLang) : null;
+  const base = normalizeLanguageCode(code);
+  if (base === 'zh-CN') return 'zh';
+  if (base === 'zh-TW') return 'zh-TW';
+  return base !== null && (UI_LANGS as readonly string[]).includes(base) ? (base as UiLang) : null;
 }

@@ -78,7 +78,7 @@ export async function googleFreeTranslate(
 }
 
 /**
- * Response shape: `[ [ ["译文","src",...], ... ], ..., "detectedLang", ... ]`.
+ * Response shape: `[ [ ["translation","src",...], ... ], ..., "detectedLang", ... ]`.
  * Concatenate every sentence segment's first element. Exported for unit tests.
  */
 export function parseSingle(data: unknown): MtResult {

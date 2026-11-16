@@ -4,7 +4,7 @@ Thanks for helping make reading across languages easier. **PRs welcome** — cod
 
 [Project](https://github.com/eigenlux-ai/interline-translator) · [Issues](https://github.com/eigenlux-ai/interline-translator/issues) · [Pull requests](https://github.com/eigenlux-ai/interline-translator/pulls) · [中文介绍](./README.zh-CN.md) · [日本語](./README.ja.md) · [한국어](./README.ko.md)
 
-欢迎用中文、英文、日文或韩文提问、反馈问题和提出功能需求。无需先会写代码；清楚的使用场景和复现步骤同样有帮助。
+Questions, bug reports and feature requests are welcome in Chinese, English, Japanese or Korean. Coding experience is not required; clear use cases and reproduction steps are equally helpful.
 
 ## Start with a problem or an idea
 
@@ -31,6 +31,10 @@ pnpm dev
 
 For a production build, run `pnpm build` and load `.output/chrome-mv3/` from `chrome://extensions`. Run `pnpm zip` to create a distributable archive. Firefox development/build targets are available through `pnpm dev:firefox` and `pnpm build:firefox`; verify browser-specific behavior before claiming compatibility.
 
+All browser targets use Manifest V3, set centrally with `manifestVersion: 3` in `wxt.config.ts`. This also applies when invoking WXT directly, overriding its Firefox/Safari defaults. Output directories are `.output/chrome-mv3/`, `.output/firefox-mv3/` and `.output/safari-mv3/`. Firefox uses background event pages; Chrome and Safari use service workers. Safari requires 18.4 or later for the MAIN-world and about:blank content-script features used by the editor bridge. See [Firefox review notes](./assets/store/firefox/REVIEW.md) for source packaging and review steps.
+
+WXT's Firefox MV2 default is an intentional upstream choice: the maintainer cites confusing MV3 host-permission prompts in [WXT #230](https://github.com/wxt-dev/wxt/issues/230#issuecomment-3888241840). Its earlier localhost script-loading/CSP development blocker was [fixed in Firefox 147](https://bugzilla.mozilla.org/show_bug.cgi?id=1864284), so use Firefox 147+ for Vite development; the production minimum remains 140. Test first-install website access and revoked permissions separately from build validation. Production Firefox builds explicitly omit `upgrade-insecure-requests` from their extension-page CSP so user-configured HTTP providers remain reachable; this is separate from the development script-loading fix. WXT's default does not prevent an explicit MV3 target. Its documented per-browser entrypoint options do not normalize every browser API or lifecycle difference.
+
 A `.env` file is optional. The `WXT_EXTENSION_KEY` field in `.env.example` controls the manifest's public key for a stable extension ID; it is **not an AI API key or a private signing key**. Translation provider keys are configured in the extension's settings, not in build-time environment variables.
 
 ## Subtitle diagnostics
@@ -43,7 +47,7 @@ Retry delay tests inject deterministic random values. Production retries use bou
 
 ## Experimental Safari subtitle testing
 
-On macOS with Xcode installed, run `pnpm build:safari:app`. This builds the Safari extension and generates a locally signed test app at `.output/safari-derived/Build/Products/Debug/Interline.app`. The generated Xcode project and app stay under ignored `.output/`; rerunning the command replaces this generated project. This is a local test build, not an App Store distribution package.
+On macOS with Xcode installed, run `pnpm build:safari:app`. This builds the Safari extension and generates a locally signed test app at `.output/safari-derived/Build/Products/Debug/Interline.app`. Bundle identifiers use the owned `eigenlux.com` domain: `com.eigenlux.Interline` for the app and `com.eigenlux.Interline.Extension` for the extension. The generated Xcode project and app stay under ignored `.output/`; rerunning the command replaces this generated project. This is a local test build, not an App Store distribution package.
 
 Open the app, enable Interline in Safari, and grant access to YouTube. Local signing may require Safari's Develop → Allow Unsigned Extensions setting. Configure a translation provider in Safari's own extension settings; settings and credentials are not copied from Chrome. Apple's [local testing guide](https://developer.apple.com/documentation/safariservices/running-your-safari-web-extension) describes the setup.
 
@@ -56,23 +60,23 @@ Before marking Safari support verified, test on the target Safari/device:
 - Exit and re-enter fullscreen three times; verify original native caption selection is restored and no duplicate Interline tracks accumulate.
 - Disable translation, switch videos through YouTube SPA navigation, and repeat. Test live/DVR separately because native in-band caption availability can differ from recorded videos.
 
-Desktop Safari native fullscreen and iOS are separate acceptance targets. Automated track-lifecycle tests and a successful Xcode build do not prove either. This experimental target adds a Safari-specific YouTube page bridge because Safari MV2 does not use `world: MAIN`; editor input injection and about:blank-frame behavior have not been validated for Safari. Do not infer general Safari compatibility from subtitle tests.
+Desktop Safari native fullscreen and iOS are separate acceptance targets. Automated track-lifecycle tests and a successful Xcode build do not prove either. The Safari-specific YouTube page bridge retains WXT's `injectScript` path, which supports MV3; editor input injection and about:blank-frame behavior have not been validated for Safari. Apple's converter may warn about `world` and `match_about_blank` despite their documented support in Safari 18 and 18.4 respectively. Keep these warnings visible and verify the behavior on the target Safari; do not infer general Safari compatibility from subtitle tests.
 
 ## Find the right part of the code
 
-| Area | Location |
-| --- | --- |
-| Extension entry points, background and content-script mounting | `src/entrypoints/` |
-| Settings, floating controls and selection UI | `src/react-app/` |
-| Translation providers, prompts, glossary, cache and request handling | `src/services/translation/` |
-| Streaming translation | `src/services/stream/` |
-| Configuration validation, migration and storage | `src/services/config/` |
-| Page traversal, translation insertion and input/editor integration | `src/dom/` |
-| Document and Shadow DOM surfaces | `src/surface/` |
-| Shared configuration and translation types | `src/data/models/` |
-| UI translations | `messages/*.json` |
-| Browser-rendered extension descriptions and menu labels | `public/_locales/*/messages.json` |
-| Store listing text, screenshots and capture instructions | `assets/store/` |
+| Area                                                                 | Location                          |
+| -------------------------------------------------------------------- | --------------------------------- |
+| Extension entry points, background and content-script mounting       | `src/entrypoints/`                |
+| Settings, floating controls and selection UI                         | `src/react-app/`                  |
+| Translation providers, prompts, glossary, cache and request handling | `src/services/translation/`       |
+| Streaming translation                                                | `src/services/stream/`            |
+| Configuration validation, migration and storage                      | `src/services/config/`            |
+| Page traversal, translation insertion and input/editor integration   | `src/dom/`                        |
+| Document and Shadow DOM surfaces                                     | `src/surface/`                    |
+| Shared configuration and translation types                           | `src/data/models/`                |
+| UI translations                                                      | `messages/*.json`                 |
+| Browser-rendered extension descriptions and menu labels              | `public/_locales/*/messages.json` |
+| Store listing text, screenshots and capture instructions             | `assets/store/`                   |
 
 The project uses WXT, React, Mantine and TypeScript, with [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) as its foundation.
 
@@ -107,7 +111,7 @@ Include the generated `src/paraglide/` changes. Avoid hardcoded UI copy in compo
 
 Keep the English, Chinese, Japanese and Korean READMEs aligned when changing feature descriptions. Explain capabilities and their limits; avoid guarantees such as “every website,” “perfect translation,” or “all data stays on device” when translation uses a remote provider.
 
-For store materials, see [the asset guide](./assets/store/README.md). Use the real built extension for screenshots. Keep summary text synchronized with the corresponding manifest locale, and update captures when the visible interface changes.
+For store materials, see [the asset guide](./assets/store/README.md). `assets/store/chrome/` is the shared baseline; Firefox, Edge and Safari directories contain only browser-specific overrides and review notes. Use the real built extension for screenshots. Keep summary text synchronized with the corresponding manifest locale, and update captures when the visible interface changes.
 
 ```sh
 pnpm build
@@ -130,10 +134,11 @@ pnpm audit:css
 pnpm audit:surface
 pnpm audit:ascii
 pnpm audit:bundle
-pnpm build:firefox
+pnpm zip:firefox
 pnpm audit:css:firefox
 pnpm audit:surface:firefox
 pnpm audit:ascii:firefox
+pnpm audit:repro:firefox
 ```
 
 The audits check CSS variable scoping, ASCII build output and content-script gzip budgets. They do not replace behavior checks on a real page. Use the applicable cases in `test-pages/` for changes involving host styles, selections, input events or editor integration.

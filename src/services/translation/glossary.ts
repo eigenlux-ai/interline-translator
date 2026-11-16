@@ -1,7 +1,7 @@
 /**
  * @module services/translation/glossary
  *
- * On-demand glossary resolution over NAMED SETS (「AI 术语集」…). An entry
+ * On-demand glossary resolution over NAMED SETS ("AI glossary"…). An entry
  * reaches the prompt only when ALL hold:
  *   - its set is enabled;
  *   - the set's site pattern matches the page host (absent = every site);

@@ -93,5 +93,10 @@
 @import '@mantine/core/styles/Title.layer.css';
 @import '@mantine/notifications/styles.layer.css';
 
-@import 'tailwindcss';
+/* Keep the scan identical in a full checkout and the AMO source archive. */
+@import 'tailwindcss' source(none);
 @import './global.css';
+@source '../../';
+@source not '../../**/*.test.*';
+@source not '../../**/*.spec.*';
+@source not '../../**/__tests__/**';

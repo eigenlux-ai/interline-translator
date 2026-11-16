@@ -21,7 +21,7 @@
 
 import type { MantineColorsTuple } from '@mantine/core';
 
-/** light 朱 — generated from #C2402A with @mantine/colors-generator. */
+/** Light cinnabar — generated from #C2402A with @mantine/colors-generator. */
 export const cinnabarLight: MantineColorsTuple = [
   '#ffeeea',
   '#f9dcd7',
@@ -35,7 +35,7 @@ export const cinnabarLight: MantineColorsTuple = [
   '#932a1a',
 ];
 
-/** dark 朱 (brighter/warmer, pops on dark) — generated from #E2614A with @mantine/colors-generator. */
+/** Dark cinnabar (brighter/warmer, pops on dark) — generated from #E2614A with @mantine/colors-generator. */
 export const cinnabarDark: MantineColorsTuple = [
   '#ffece7',
   '#fedad3',

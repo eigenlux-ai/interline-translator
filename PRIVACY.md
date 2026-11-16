@@ -51,7 +51,7 @@ Read-aloud uses the browser's speech synthesis service; processing depends on th
 | --- | --- |
 | `storage` | Save extension settings and credentials locally. |
 | `contextMenus` | Provide page and selection translation actions in the right-click menu. |
-| `alarms` | Schedule periodic local translation-cache cleanup. |
+| `alarms` | Schedule periodic local translation-cache cleanup and retry saving initial preferences after temporary storage failures. |
 | Host access (`<all_urls>`) | Run translation content scripts on supported pages and contact translation services across origins. Browser-restricted pages remain inaccessible to content scripts. |
 
 The extension does not request the separate `tabs` or `scripting` permissions. Its host access is still broad and is used for the page translation features above.
@@ -119,7 +119,7 @@ Interline（行间）是一款开源的浏览器双语阅读与翻译扩展。�
 | --- | --- |
 | `storage` | 在本地保存扩展设置和凭据。 |
 | `contextMenus` | 在右键菜单提供整页与选区翻译入口。 |
-| `alarms` | 定期清理本地翻译缓存。 |
+| `alarms` | 定期清理本地翻译缓存，并在临时存储故障后重试保存初始偏好。 |
 | 主机访问权限（`<all_urls>`） | 在支持的页面运行翻译内容脚本，并跨域访问翻译服务。浏览器限制页面仍无法注入内容脚本。 |
 
 扩展不申请单独的 `tabs` 或 `scripting` 权限，但仍具有用于上述网页翻译功能的广泛主机访问权限。

@@ -1,7 +1,7 @@
 /**
  * @module react-app/components/settings/GlossarySettings
  *
- * 「术语表」— named glossary SETS (「AI 术语集」,「建筑术语集」…), each an
+ * Glossary — named glossary SETS ("AI glossary", "Architecture glossary"…), each an
  * accordion item: header carries the name, entry count and the enable switch;
  * the panel holds the set's identity (rename / site scope / delete) and its
  * entry table. Set order matters (earlier set wins duplicate terms), so new

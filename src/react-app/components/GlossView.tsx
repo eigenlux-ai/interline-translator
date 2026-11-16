@@ -1,10 +1,10 @@
 /**
  * @module react-app/components/GlossView
  *
- * The shared 译文 presentation — the same 朱批 identity used in-page: a cinnabar
+ * The shared translation presentation — the same cinnabar annotation identity used in-page: a cinnabar
  * start-tick, the kai brush font, on a faint warm ground. Carries an optional
  * provider chip + copy affordance. Used by the popup result and (visually
- * echoed by) the 划词 card, so all three surfaces read as one language.
+ * echoed by) the selection card, so all three surfaces read as one language.
  */
 
 import { ActionIcon, Box, CopyButton, Group, Paper, Skeleton, Text, Tooltip, useMantineTheme } from '@mantine/core';
@@ -35,7 +35,7 @@ export default function GlossView({ text, provider, loading }: GlossViewProps) {
       p="sm"
       style={{
         borderInlineStart: '3px solid var(--mantine-color-cinnabar-6)',
-        // Scheme-agnostic 朱 wash: translucent, so it tints light AND dark grounds.
+        // Scheme-agnostic cinnabar wash: translucent, so it tints light AND dark grounds.
         background: 'color-mix(in srgb, var(--mantine-color-cinnabar-6) 7%, transparent)',
       }}
     >

@@ -69,7 +69,7 @@ export const Z_INDEX = {
 export const DATA_OMNI = {
   /** Marks an element whose subtree has been walked & labelled (idempotency). */
   walked: 'data-omni-walked',
-  /** Marks an injected translation node (the译文). */
+  /** Marks an injected translation node. */
   translated: 'data-omni-translated',
   /** Correlates a translation node back to its source via walkId. */
   walkId: 'data-omni-id',
@@ -79,17 +79,17 @@ export const DATA_OMNI = {
   state: 'data-omni-state',
   /** Opt-in visual preset (blend/underline/dashed/…) — drives the preset CSS. */
   style: 'data-omni-style',
-  /** Opt-in译文 font — 'kai' switches the 译文 to the brush/kai stack. */
+  /** Opt-in translation font — 'kai' switches the translation to the brush/kai stack. */
   font: 'data-omni-font',
   /** Three-state view of a translated page, stamped on <html> (absent =
-   *  bilingual; 'translation' collapses originals; 'original' hides the 译文). */
+   *  bilingual; 'translation' collapses originals; 'original' hides the translation). */
   display: 'data-omni-display',
-  /** Stamped on a SOURCE whose 译文 had to be an afterend SIBLING (the source
-   *  clips its overflow — line-clamp/max-height). The 仅译文 collapse targets
-   *  this attribute directly: its `:has(descendant 译文)` form cannot see an
+  /** Stamped on a SOURCE whose translation had to be an afterend SIBLING (the source
+   *  clips its overflow — line-clamp/max-height). The translation-only collapse targets
+   *  this attribute directly: its `:has(descendant translation)` form cannot see an
    *  outside gloss, and without it the clipped source never collapses. */
   clipped: 'data-omni-clipped',
-  /** 1-based paragraph index on an interleaved 译文 segment (逐段对照); the
+  /** 1-based paragraph index on an interleaved translation segment (paragraph interleaving); the
    *  primary gloss (paragraph 0) carries no marker — findGloss anchors on it. */
   seg: 'data-omni-seg',
   /** Marks a source element whose TEXT NODES we splitText()-ed to interleave
@@ -105,7 +105,7 @@ export const DATA_OMNI = {
   /** Transient nonce marking the editable an editor-injector request targets. */
   injectId: 'data-omni-inject-id',
   /** Marks the hidden per-root holder carrying the pending spinner's ONE copy
-   *  of its curve geometry (see dom/inject/petal-loader). Not a 译文, but ours
+   *  of its curve geometry (see dom/inject/petal-loader). Not a translation, but ours
    *  and in the host DOM, so removeAllGloss sweeps it on the same pass. */
   petalDefs: 'data-omni-petal-defs',
 } as const;

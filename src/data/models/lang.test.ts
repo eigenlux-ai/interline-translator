@@ -1,5 +1,28 @@
 import { describe, expect, it } from 'vitest';
-import { pairGlyphs } from './lang';
+import { languageName } from '@/services/translation/prompts';
+import { langOptions, normalizeLanguageCode, pairGlyphs } from './lang';
+
+it.each([
+  ['zh-Hant-CN', 'zh-TW'],
+  ['zh-Hans-HK', 'zh-CN'],
+  ['zh_MO', 'zh-TW'],
+  ['pt-BR', 'pt'],
+  ['nb-NO', 'nb'],
+  ['fil-PH', 'fil'],
+  ['und', null],
+  ['not a locale', null],
+])('normalizes %s to %s', (locale, expected) => {
+  expect(normalizeLanguageCode(locale)).toBe(expected);
+});
+
+it('names non-common languages in pickers and LLM prompts, preserving custom codes', () => {
+  expect(langOptions(['nl'])).toEqual([{ value: 'nl', label: 'Nederlands' }]);
+  expect(languageName('nl')).toBe('Dutch');
+  expect(languageName('nb')).toBe('Norwegian Bokmål');
+  expect(languageName('fil')).toBe('Filipino');
+  expect(langOptions(['custom-code!'])).toEqual([{ value: 'custom-code!', label: 'custom-code!' }]);
+  expect(languageName('custom-code!')).toBe('custom-code!');
+});
 
 describe('pairGlyphs — the seal face carries the language DIRECTION', () => {
   it('auto source → null src (the globe mark), target script as dst', () => {

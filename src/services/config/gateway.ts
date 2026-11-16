@@ -17,6 +17,7 @@
 
 import { registerService } from '@webext-core/proxy-service';
 import { browser, storage } from '#imports';
+import { PROJECT_PREFIX } from '@/constants';
 import type { Config, VideoSubtitlesPatch } from '@/data/models';
 import { mergeConfigEdits } from './merge';
 import {
@@ -27,12 +28,13 @@ import {
   type PublicConfigPatch,
 } from './public';
 import { configSchema, videoSubtitlesPatchSchema } from './schema';
-import { CONFIG_EDIT_MESSAGE, getConfig, setConfig, watchConfig } from './storage';
+import { CONFIG_EDIT_MESSAGE, getConfig, initializeConfig, setConfig, watchConfig } from './storage';
 import { subtitleTranslationRevision } from './subtitle-revision';
 import { defaultVideoSubtitles, mergeVideoSubtitles } from './video-subtitles';
 
 /** The sections a content surface may write. Never providers/version/language. */
 const PATCHABLE = ['translate', 'inputTranslation', 'siteControl', 'appearance'] as const;
+const INITIALIZATION_ALARM = `${PROJECT_PREFIX}:config-initialize`;
 
 async function mirror(config: Config): Promise<void> {
   await storage.setItem<PublicConfig>(
@@ -128,5 +130,20 @@ export function registerConfigGateway(): void {
   // Mirror now (covers install/update/migrations while the SW was down) and on
   // every subsequent change. storage.onChanged wakes the SW, so the projection
   // can't go stale while it sleeps.
-  void refreshMirror().catch(reportMirrorError);
+  // Only this background queue may seed defaults. An options-page read must
+  // never write a stale seed over a newer saved configuration.
+  const initialize = () =>
+    enqueueWrite(async () => {
+      await initializeConfig();
+      await refreshMirror();
+      await browser.alarms.clear(INITIALIZATION_ALARM);
+    }).catch(async () => {
+      console.warn('[config] configuration startup did not complete; scheduling a retry in one minute');
+      await browser.alarms.create(INITIALIZATION_ALARM, { delayInMinutes: 1 });
+    });
+  const reportRetryError = () => console.warn('[config] configuration retry could not be scheduled');
+  browser.alarms.onAlarm.addListener((alarm) => {
+    if (alarm.name === INITIALIZATION_ALARM) void initialize().catch(reportRetryError);
+  });
+  void initialize().catch(reportRetryError);
 }

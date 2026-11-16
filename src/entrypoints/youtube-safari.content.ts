@@ -1,7 +1,8 @@
 import { defineContentScript, injectScript } from '#imports';
 import { isYoutubeEmbed } from '@/dom/video-subtitles/youtube/bridge-protocol';
 
-// Safari MV2 ignores world: MAIN. Load only the public player bridge in the page.
+// Keep Safari's player bridge on WXT's cross-browser injectScript path.
+// This also supports MV3 and exposes only the public player bridge to the page.
 export default defineContentScript({
   include: ['safari'],
   matches: ['https://*.youtube.com/*', 'https://*.youtube-nocookie.com/embed/*'],

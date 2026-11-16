@@ -55,7 +55,7 @@ export const MIGRATIONS: Record<number, Migration> = {
       },
     };
   },
-  // 4: glossary grows SETS (「AI 术语集」…). The flat entry list (lived for
+  // 4: glossary grows SETS ("AI glossary"…). The flat entry list (lived for
   // one dev day) becomes sets grouped by each entry's old per-entry pattern:
   // patternless entries → one enabled default set; each distinct pattern →
   // its own set carrying that pattern (site scope moved to the set level).

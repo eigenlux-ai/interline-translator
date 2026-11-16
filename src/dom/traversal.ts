@@ -62,7 +62,7 @@ const makeId = (): string => randomId(); // not randomUUID — that throws on pl
  *   - A NON-phrasing tag does not become in-unit content on layout ALONE: a
  *     `<button>` is inline-block by UA DEFAULT (not a restyle), an old nav
  *     `li{display:inline}` is still an independent item. Keeping either
- *     in-unit would clone the control into the 译文 (a second fake button —
+ *     in-unit would clone the control into the translation (a second fake button —
  *     the exact disease the shell work eliminated) or merge independent items
  *     into one word-mashed unit. Only inside the parent's OWN sentence flow do
  *     two narrow shapes stay in-unit — `isInlineChip` and `isCustomPhrasing`,
@@ -106,13 +106,13 @@ function isLeafBlock(el: Element, probeShadow: (el: Element) => ShadowRoot | nul
     //   - a custom/unknown PHRASING tag (elyx.design's `<ink>` hand-drawn
     //     underline wrapping a few words of a headline) stays in-unit
     //     TRANSPARENT — its text translates with the sentence and the tag is
-    //     replayed around the 译文.
+    //     replayed around the translation.
     // The phrasing case also demands LEAF SHAPE, like the restyled-phrasing
     // exception below it. A custom element is `display:inline` by DEFAULT, so
     // the predicate alone would swallow any component host that never styled
     // itself — an Angular `<app-card><h3>…</h3><div>…</div></app-card>` beside
     // loose text — flattening a card into one word-mashed unit whose block
-    // children the 译文 then reproduces as a phantom row. Requiring leaf shape
+    // children the translation then reproduces as a phantom row. Requiring leaf shape
     // keeps that recursing; `<ink>relevant</ink>` has no element children at
     // all, so it passes trivially.
     if (!isInlineTag(child)) {
@@ -136,7 +136,7 @@ function isLeafBlock(el: Element, probeShadow: (el: Element) => ShadowRoot | nul
  * else (no prose direct text) — e.g. Previous/Next pager buttons, breadcrumbs, a
  * row of action links. Each link is an INDEPENDENT navigation target, so the
  * group must NOT be one leaf block: that would flatten both `<a href>`s into a
- * single unit and the 译文 would reproduce every card (duplicate links + the host
+ * single unit and the translation would reproduce every card (duplicate links + the host
  * card chrome overlapping). Recursing instead makes each link its own unit,
  * translated inline in place. A paragraph with inline links (`see <a>x</a> and
  * <a>y</a>`) has direct text, so it is NOT a link group and stays one unit.
@@ -154,18 +154,18 @@ function isLinkGroup(el: Element): boolean {
 /**
  * If a unit's content is ENTIRELY one link (`<li><a><span>text</span></a>` — a
  * nav/TOC item), serialize the link's INNER content, not the `<li>`. Otherwise
- * the whole `<a href>` gets flattened into placeholders and the 译文 reproduces a
+ * the whole `<a href>` gets flattened into placeholders and the translation reproduces a
  * SECOND working link; worse, since inlineHost appends the gloss inside the
  * original `<a>`, the reproduction nests as an invalid `<a>`-in-`<a>`. The
  * original link is untouched — the gloss (placed inside it) just carries the
  * translated text. A link that wraps only PART of a unit (`<p>see <a>x</a>
- * now</p>`) is left alone: it must stay a link in the 译文, on the right word.
+ * now</p>`) is left alone: it must stay a link in the translation, on the right word.
  *
  * The same rule covers a sole SHELL wrapper (a border/background pill —
  * `<div><span class="… border rounded">View Component</span></div>`): cloning
- * it into the 译文 renders a second fake control beside the real one, so the
+ * it into the translation renders a second fake control beside the real one, so the
  * shell is unwrapped exactly like a link. Text-style wrappers (`<b>`, `<em>`,
- * a plain coloured span) still reproduce — that's the 带样式 promise.
+ * a plain coloured span) still reproduce — that's the formatted translation promise.
  */
 function unwrapSoleWrapper(el: Element): Element {
   let cur = el;
@@ -229,11 +229,11 @@ export function* walkTranslationUnits(
 
     if (isLeafBlock(el, probeShadow) && !isLinkGroup(el)) {
       // Gate on VISIBLE text: an icon-only link whose only text is sr-only is
-      // skipped (no invisible 译文, no brand-name mangling).
+      // skipped (no invisible translation, no brand-name mangling).
       if (hasTranslatableText(visibleText(el))) {
         const id = idGen();
         // Serialize the link's inner content (not the wrapping <a>) so a nav/TOC
-        // item's 译文 doesn't reproduce a duplicate <a href>. The unit element
+        // item's translation doesn't reproduce a duplicate <a href>. The unit element
         // stays the leaf block — markers + inlineHost placement are unchanged.
         const content = unwrapSoleWrapper(el);
         yield {

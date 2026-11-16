@@ -15,15 +15,15 @@ import {
   Text,
 } from '@mantine/core';
 import { browser } from '#imports';
-import { langOptions, type Config, type VideoSubtitlesPatch } from '@/data/models';
+import type { Config, VideoSubtitlesPatch } from '@/data/models';
 import { resolveUiLang } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
+import { translationLanguageOptions } from '@/services/config/language-defaults';
 import { getConfigService, toPublicConfig } from '@/services/config/public';
 import { defaultVideoSubtitles, SUBTITLE_REQUEST_LIMITS } from '@/services/config/video-subtitles';
 import PreferenceNumberInput from './PreferenceNumberInput';
 import SettingsSection from './SettingsSection';
 
-const LANGUAGES = langOptions();
 const INHERIT = '__inherit__';
 
 export default function VideoSubtitleSettings({ config }: { config: Config }) {
@@ -50,7 +50,8 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
   const provider = preferences.translation.provider;
   const appearance = preferences.appearance;
   const effectiveTarget = target.mode === 'fixed' ? target.language : config.translate.target;
-  const languageName = LANGUAGES.find((l) => l.value === effectiveTarget)?.label ?? effectiveTarget;
+  const languages = translationLanguageOptions(effectiveTarget, config.translate.target);
+  const languageName = languages.find((l) => l.value === effectiveTarget)?.label ?? effectiveTarget;
   const available = projection.availableProviders.map((p) => ({ value: p.id, label: p.label }));
   if (provider.mode === 'fixed' && !available.some((p) => p.value === provider.providerId)) {
     available.push({ value: provider.providerId, label: m.video_subtitles_unavailable() });
@@ -103,7 +104,7 @@ export default function VideoSubtitleSettings({ config }: { config: Config }) {
           <Select
             label={m.settings_target_label()}
             description={m.video_subtitles_effective({ value: languageName })}
-            data={[{ value: INHERIT, label: m.video_subtitles_inherit() }, ...LANGUAGES]}
+            data={[{ value: INHERIT, label: m.video_subtitles_inherit() }, ...languages]}
             value={target.mode === 'inherit' ? INHERIT : target.language}
             allowDeselect={false}
             searchable

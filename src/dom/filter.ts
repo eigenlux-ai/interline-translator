@@ -50,7 +50,7 @@ export function isInlineTag(el: Element): boolean {
  * Computed-style test: an element that paints its own CHROME — border,
  * background, or shadow. A "shell" (pill button, badge, chip: aicanvas's
  * `<span class="inline-flex … border rounded-full">View Component</span>`).
- * The 译文 must treat shells specially on BOTH sides of injection: never
+ * The translation must treat shells specially on BOTH sides of injection: never
  * reproduce one (a cloned shell renders as a second fake control beside the
  * real one) and prefer to live INSIDE one (so the control itself reads
  * bilingual, instead of a caption dangling outside the chrome). Layout-engine
@@ -117,12 +117,12 @@ function isUndefinedTag(el: Element): boolean {
  * `isLeafBlock` treats it as a hard recurse boundary and the enclosing block's
  * own direct text is ORPHANED — the module's known non-leaf direct-text
  * limitation. On elyx.design that shipped as a half-translated headline:
- * `Are design tools still relevant息息相关 in the age of AI?` — the 译文 wedged
+ * `Are design tools still relevant息息相关 in the age of AI?` — the translation wedged
  * into the middle of an otherwise untouched English sentence.
  *
  * Unlike `isInlineChip` this is TRANSPARENT, not opaque: the element stays
  * in-unit as ordinary phrasing, so its own text is translated with the
- * sentence and `serializeInline` replays the tag around the 译文 (the 带样式
+ * sentence and `serializeInline` replays the tag around the translation (the formatted translation
  * promise — the host's decoration follows). That is why there is no length cap
  * here: a chip is an atomic token to ride through untranslated, this is prose.
  *
@@ -145,7 +145,7 @@ export function isCustomPhrasing(el: Element): boolean {
  * Tags whose text is CODE/DATA, never visible content (Reddit scatters bootstrap
  * `<script>SML.load(...)</script>` loaders through the light DOM). Unlike
  * `<code>`/`<kbd>` (inline code that IS visible and round-trips), these must be
- * excluded from translatable text AND dropped from the 译文 — never reproduced.
+ * excluded from translatable text AND dropped from the translation — never reproduced.
  */
 /** True for code/data tags whose text is never visible content. */
 export function isNonContent(el: Element): boolean {
@@ -194,7 +194,7 @@ export function isSkippableTag(el: Element): boolean {
 /**
  * True when the element declares itself non-content for the a11y tree.
  * Decoration by declaration: the walk skips such blocks, and the in-unit drop
- * (`visibleText` / `serializeInline`) excludes such inline subtrees — the 译文
+ * (`visibleText` / `serializeInline`) excludes such inline subtrees — the translation
  * must never reproduce decoration (a facepile of avatar <img>s cloned into a
  * gloss loses its CSS-variable sizing context and renders enormous).
  */
@@ -240,7 +240,7 @@ export function isOwnShadowHost(el: Element): boolean {
  * The walk prunes at ANCESTOR level, so descendants never carry any marker of
  * their own; but mutation records start INSIDE the subtree (typing produces
  * characterData on a line-div deep in the editor). Every dynamic entry point
- * must re-check the chain, or it injects 译文 into content the user is writing
+ * must re-check the chain, or it injects translation into content the user is writing
  * (and the editor fights it forever). Crosses shadow boundaries via the host.
  */
 export function inSkippedAncestry(el: Element, boundary?: Node): boolean {

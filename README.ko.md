@@ -14,7 +14,7 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 
 [MIT 라이선스](./LICENSE) · Chrome 116+ · 키 없는 기본 번역 엔진 · 내 AI 키 연결
 
-![영어 기사와 한국어 번역을 문단별로 함께 표시하는 Interline의 실제 화면](./assets/store/ko/screenshot-1-bilingual.png)
+![영어 기사와 한국어 번역을 문단별로 함께 표시하는 Interline의 실제 화면](./assets/store/chrome/ko/screenshot-1-bilingual.png)
 
 ## 읽고, 이해하고, 답하기
 
@@ -26,7 +26,7 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 | 편하게 읽기 | 이중 언어·번역만·원문만 보기를 전환하고, 10가지 표시 스타일과 밝은 화면·다크 모드를 선택하세요. |
 | 어조와 용어 통일하기 | AI 엔진의 번역 스타일, 프롬프트, 용어집을 설정하고 사이트별로 적용하세요. |
 
-실제 [선택 번역 카드](./assets/store/ko/screenshot-2-selection.png), [읽기 표시 설정](./assets/store/ko/screenshot-3-settings.png), [입력창 번역](./assets/store/ko/screenshot-4-input-translation.png), [영상 자막](./assets/store/ko/screenshot-5-subtitles.png)도 확인하세요. 처음 4장은 실제 확장 프로그램 화면입니다. 자막 이미지는 직접 생성한 AI 배경과 제품 예문을 조합한 표시 예시이며, 이를 명시했습니다.
+실제 [선택 번역 카드](./assets/store/chrome/ko/screenshot-2-selection.png), [읽기 표시 설정](./assets/store/chrome/ko/screenshot-3-settings.png), [입력창 번역](./assets/store/chrome/ko/screenshot-4-input-translation.png), [영상 자막](./assets/store/chrome/ko/screenshot-5-subtitles.png)도 확인하세요. 처음 4장은 실제 확장 프로그램 화면입니다. 자막 이미지는 직접 생성한 AI 배경과 제품 예문을 조합한 표시 예시이며, 이를 명시했습니다.
 
 ## 시작하기
 
@@ -108,6 +108,6 @@ pnpm build        # Chrome 프로덕션 빌드
 pnpm zip          # 확장 프로그램 패키징
 ```
 
-구조, 테스트 페이지, 다국어 관리, 빌드 검사는 [기여 안내(영어)](./CONTRIBUTING.md)에 정리되어 있습니다. 스토어 소개 문구, 실제 화면, 재생성 방법은 [스토어 자료 안내(중국어)](./assets/store/README.md)를 참고하세요.
+구조, 테스트 페이지, 다국어 관리, 빌드 검사는 [기여 안내(영어)](./CONTRIBUTING.md)에 정리되어 있습니다. 스토어 소개 문구, 실제 화면, 재생성 방법은 [스토어 자료 안내(영어)](./assets/store/README.md)를 참고하세요.
 
 WXT, React, Mantine, TypeScript를 사용하며 [aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template)을 기반으로 합니다.

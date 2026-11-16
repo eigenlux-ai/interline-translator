@@ -10,13 +10,13 @@ const run = (command, args) => {
 // Match the app name's case: Apple's packager derives the containing app ID from it.
 run('xcrun', [
   'safari-web-extension-converter',
-  '.output/safari-mv2',
+  '.output/safari-mv3',
   '--project-location',
   '.output/safari-xcode',
   '--app-name',
   'Interline',
   '--bundle-identifier',
-  'ai.eigenlux.Interline',
+  'com.eigenlux.Interline',
   '--swift',
   '--macos-only',
   '--copy-resources',

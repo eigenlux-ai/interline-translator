@@ -3,7 +3,7 @@
  *
  * It serves two ops for the isolated-world bridge:
  *
- *   - read  → the model text (+ 撤销 snapshot) of the editor owning the marked
+ *   - read  → the model text (+ undo snapshot) of the editor owning the marked
  *     element; the isolated world's DOM read sees only the rendered viewport of
  *     virtualized editors like CodeMirror/Monaco — the model is the truth;
  *   - apply → replace the document, atomically guarded by `before` (see apply.ts).

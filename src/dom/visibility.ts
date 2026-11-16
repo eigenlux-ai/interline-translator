@@ -9,7 +9,7 @@
  *      skips its whole subtree (display:none / [hidden] / clip-hidden trees).
  *   2. IN-UNIT DROP — `visibleText` (and `serializeInline`) exclude hidden /
  *      sr-only / non-content descendants, so a hidden panel deep inside a visible
- *      unit is neither counted as translatable text nor reproduced in the 译文.
+ *      unit is neither counted as translatable text nor reproduced in the translation.
  * Both layers are needed: hidden content can be its own block OR buried inline.
  *
  * Layout awareness: `isHidden` reads computed CSS VALUES (display/visibility/
@@ -26,7 +26,7 @@ import { DROP_FROM_GLOSS } from './policy';
  * Common "visually hidden" a11y utility classes: text exposed to screen readers
  * but NOT painted (icon-only links carry a brand name this way —
  * `<a><span class="sr-only">GitHub</span><svg/></a>`). Translating it is pure
- * noise: invisible (the 译文 inherits the same hidden class), brand names get
+ * noise: invisible (the translation inherits the same hidden class), brand names get
  * mangled (Discord → 不和谐), screen readers announce it twice.
  * NOTE: deliberately excludes RESPONSIVE hiders (Starlight's `sl-hidden` /
  * `md:sl-block`) — those DO show at some breakpoint and must stay translatable.
@@ -87,7 +87,7 @@ export function visibleText(el: Element): string {
       t += node.textContent ?? '';
     } else if (node.nodeType === 1 /* element */) {
       const e = node as Element;
-      // Our own 译文 is never part of the SOURCE's visible text — an inline
+      // Our own translation is never part of the SOURCE's visible text — an inline
       // gloss lives inside the unit, and counting it would (a) key/size the
       // unit by its own translation and (b) make every no-op text comparison
       // against the tracked unit text fail.
@@ -96,9 +96,9 @@ export function visibleText(el: Element): string {
       // carry only the prose AROUND a code block, never the code itself (and a
       // wrapper whose only content is code must produce no unit at all).
       // aria-hidden joins the drop set in lockstep with serializeInline: what
-      // the 译文 won't reproduce must not key/size the unit either. Same reason
+      // the translation won't reproduce must not key/size the unit either. Same reason
       // for DROP_FROM_GLOSS: a ruby reading (`<rt>かんじ`) or a `<select>`'s
-      // options are dropped from the 译文, so keying/sizing the unit by them —
+      // options are dropped from the translation, so keying/sizing the unit by them —
       // or sending them as the plain-text payload — would translate text the
       // gloss can never carry back.
       if (

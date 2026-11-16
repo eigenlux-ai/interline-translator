@@ -9,7 +9,7 @@ import FloatingBallApp from './App';
 
 /**
  * The seal's interaction contract: main seal = direct translate toggle (over
- * the in-page bridge), 押脚 sub seal = panel entry, tuck = idle half-hide with
+ * the in-page bridge), small settings seal = panel entry, tuck = idle half-hide with
  * press-to-reveal. Drag/snap geometry and the tuck DECISION are covered by
  * geometry.test; the carved visuals need a real browser. What can break
  * silently here is the wiring — pinned below.
@@ -180,7 +180,7 @@ describe('main seal — keyboard activation', () => {
   });
 });
 
-describe('押脚 sub seal — the panel entry', () => {
+describe('Small settings seal — the panel entry', () => {
   it('opens the panel; outside pointerdown and Escape both dismiss it', async () => {
     const { baseElement } = mountBall();
     await act(() => tick());
@@ -228,7 +228,7 @@ describe('tuck — born half-hidden, press to reveal', () => {
       clickMain(baseElement); // tucked press = reveal only
       expect(requests).toEqual([]);
       expect(mainSeal(baseElement).style.transform || '').not.toContain('translateX');
-      // the 押脚 arrives by 落印 — the stamp-down entrance rides the reveal
+      // the settings seal uses a stamp-down entrance during its reveal
       expect(subSeal(baseElement)!.style.animation).toContain('sub-stamp');
 
       clickMain(baseElement); // now revealed: the click acts
@@ -253,7 +253,7 @@ describe('tuck — born half-hidden, press to reveal', () => {
 });
 
 /**
- * Live-apply ordering: 译入/样式 changes re-translate the page, and the re-run
+ * Live-apply ordering: target language/style changes re-translate the page, and the re-run
  * must wait for the config write — the owner re-READS the config, so a re-run
  * that starts first silently repeats the previous language.
  */

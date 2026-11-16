@@ -1,7 +1,7 @@
 /**
  * @module react-app/apps/floating-ball/geometry
  *
- * Pure placement math for the 悬浮球, extracted so it can be unit-tested without
+ * Pure placement math for the floating launcher, extracted so it can be unit-tested without
  * a layout engine (the React component only wires these to pointer events and
  * `window` dimensions). No DOM, no React — just numbers in, numbers out.
  */
@@ -34,10 +34,9 @@ export function snapPlacement(x: number, y: number, vpW: number, vpH: number): B
   return { side, topRatio: clamp(y / vpH, 0, 1) };
 }
 
-/** Tucked, the seal waits 318ms after the pointer leaves (曾是黄金分割的
- *  618,实用后嫌慢减半再取整到 Brian 顺眼的数)… */
+/** Wait 318ms after the pointer leaves before tucking the seal. */
 export const TUCK_DELAY_MS = 318;
-/** …but a fresh state toggle lingers longer, so the ink↔朱 change is seen. */
+/** Keep a fresh state toggle visible longer so the ink-to-cinnabar transition can be seen. */
 export const TUCK_LINGER_MS = 1800;
 
 /**

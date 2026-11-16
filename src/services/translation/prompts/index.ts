@@ -24,6 +24,7 @@ import type {
   SourceLang,
   TranslateContext,
 } from '@/data/models';
+import { languageDisplayName } from '@/data/models/lang';
 import { mostSpecificMatch } from '@/services/config/site-control';
 import { findStyle } from './builtin-styles';
 
@@ -43,7 +44,7 @@ const DEFAULT_SYSTEM = [
 ].join('\n');
 
 export function languageName(code: LangCode): string {
-  // Minimal map; falls back to the raw code (LLMs understand BCP-47 fine).
+  // Preserve established prompt wording and use CLDR names for other languages.
   const map: Record<string, string> = {
     en: 'English',
     'zh-CN': 'Simplified Chinese',
@@ -58,12 +59,12 @@ export function languageName(code: LangCode): string {
     it: 'Italian',
     ar: 'Arabic',
   };
-  return map[code] ?? code;
+  return map[code] ?? languageDisplayName(code);
 }
 
 /**
  * Resolve which style applies to a call: site rule (specificity defined by
- * site-control.mostSpecificMatch) → global default → none (素译). A dangling
+ * site-control.mostSpecificMatch) → global default → none (plain translation). A dangling
  * styleId — the style was deleted — is skipped, never an error. Pure; callers
  * pass `context.domain` as host.
  */
@@ -210,7 +211,7 @@ export function expertDivergesBatchCache(prompt: PromptConfig): boolean {
 }
 
 /**
- * 通读全文 (page-context) summary prompt: ONE compact overview per page,
+ * Whole-page context summary prompt: ONE compact overview per page,
  * injected into every batch's reference block. Written in the TARGET language
  * (a same-language anchor steers renderings more reliably), entity-focused —
  * its whole job is consistent translation of names and terms of art.
@@ -228,9 +229,9 @@ export function buildSummaryPrompt(pageText: string, target: LangCode): BuiltPro
 }
 
 /**
- * 注疏 (reader's-companion notes) prompt — LENGTH-AWARE, two personas:
+ * Annotation (reader's-companion notes) prompt — LENGTH-AWARE, two personas:
  *
- *   - a WORD or short phrase gets a dictionary-style entry (词条式): reading,
+ *   - a WORD or short phrase gets a dictionary-style entry: reading,
  *     part of speech, numbered senses with the in-context one first, one line
  *     of nuance/near-synonym contrast;
  *   - a PASSAGE keeps the terse reader's notes, each ANCHORED by quoting the

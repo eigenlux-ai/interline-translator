@@ -49,7 +49,7 @@ import { detectSaysSkip, scriptSaysSkip, skipPolicy, type SkipPolicy } from './s
 import { walkTranslationUnits, type TranslationUnit } from './traversal';
 import { isHidden, isVisuallyHidden, visibleText } from './visibility';
 
-/** Source-text length at/below which the 译文 goes inline (same line) vs block (own line). */
+/** Source-text length at/below which the translation goes inline (same line) vs block (own line). */
 const INLINE_MAX_CHARS = 40;
 
 /** SPA re-injection attempts per source element before conceding to a hostile host. */
@@ -60,7 +60,7 @@ const MAX_PAGE_BATCHES = 2;
 const REINJECT_DECAY_MS = 5_000;
 
 /**
- * Caps on the re-injection HTML cache (`lastHtmlById`: one final rendered 译文
+ * Caps on the re-injection HTML cache (`lastHtmlById`: one final rendered translation
  * HTML string per translated unit, the zero-network source for SPA re-injection).
  * Uncapped it grows with every unit ever translated on a long session — a heavy
  * page easily pins megabytes of strings. Two bounds because they police
@@ -86,17 +86,17 @@ export interface PageTranslatorOptions {
   target: LangCode;
   /** Languages the user already reads — never translate text detected as one. */
   skipLanguages?: readonly LangCode[];
-  /** Opt-in visual treatment of the 译文 (blend/underline/highlight/…). */
+  /** Opt-in visual treatment of the translation (blend/underline/highlight/…). */
   bilingualStyle?: BilingualStyle;
-  /** Opt-in译文 font — 'kai' switches to the brush/kai stack; 'inherit' follows the host. */
+  /** Opt-in translation font — 'kai' switches to the brush/kai stack; 'inherit' follows the host. */
   translationFont?: 'kai' | 'inherit';
   /** Three-state view of the translated page (bilingual/translation/original). */
   displayMode?: DisplayMode;
-  /** 通读全文 — summarize the page once, inject the overview into every batch. */
+  /** Whole-page context — summarize the page once, inject the overview into every batch. */
   pageContext?: boolean;
-  /** 逐段对照 — interleave per-paragraph 译文 into multi-paragraph units (see AppearanceConfig). */
+  /** Paragraph interleaving — interleave per-paragraph translation into multi-paragraph units (see AppearanceConfig). */
   paragraphInterleave?: boolean;
-  /** 带样式翻译 — placeholder-preserve inline formatting. Default true; false sends/injects plain text. */
+  /** Formatted translation — placeholder-preserve inline formatting. Default true; false sends/injects plain text. */
   richText?: boolean;
   /**
    * Plain-language copy for a failed unit, in the INTERFACE language. Injected
@@ -218,7 +218,7 @@ export class PageTranslator {
   }
 
   /**
-   * What the engine sees for a unit — the single seam of 带样式翻译. Rich (default):
+   * What the engine sees for a unit — the single seam of formatted translation. Rich (default):
    * the placeholder serialization, restored to inline markup on fill. Plain: the
    * visible text with NO tags — cache keys derive from the sent text, so the two
    * modes never share cache entries. Plain mode sends no placeholders, so the
@@ -332,7 +332,7 @@ export class PageTranslator {
     this.streamAcc.clear();
     this.streamBuf.clear();
     this.fillQueue.clear();
-    // Restore the page: remove every injected 译文 + clear source markers,
+    // Restore the page: remove every injected translation + clear source markers,
     // anchored so the content the user is reading doesn't jump. Shadow roots
     // are their own querySelectorAll scopes — sweep each adopted one too, and
     // hand back their stylesheet: a sheet left adopted is still our fingerprint
@@ -493,7 +493,7 @@ export class PageTranslator {
   }
 
   /**
-   * The rescan half of SPA re-injection protection: a tracked unit whose 译文
+   * The rescan half of SPA re-injection protection: a tracked unit whose translation
    * is GONE (host deleted it) but whose final HTML is cached gets it back.
    * The walk itself can't help — the source still carries its walked marker,
    * so it is skipped as "done". This complements the eviction path
@@ -674,7 +674,7 @@ export class PageTranslator {
       // The walk prunes at ANCESTOR level (a contenteditable editor, a <pre>),
       // so nodes inside such subtrees carry no marker — but mutation records
       // START inside them (typing = characterData on a line-div deep in the
-      // editor). Without this chain re-check we'd inject 译文 into content the
+      // editor). Without this chain re-check we'd inject translation into content the
       // user is writing. Gates every dynamic entry below.
       const skippedContext = targetEl !== null && inSkippedAncestry(targetEl, this.root);
 
@@ -745,7 +745,7 @@ export class PageTranslator {
   }
 
   /**
-   * Gather unit ids whose 译文 the HOST deleted (a React keyed commit rewriting
+   * Gather unit ids whose translation the HOST deleted (a React keyed commit rewriting
    * children) — the gloss left the document while we did not remove it. Skips
    * moves (re-attached in the same batch → still connected) and our own
    * deliberate removals (the unchanged-drop marks itself in selfRemovedGloss).
@@ -762,7 +762,7 @@ export class PageTranslator {
   }
 
   /**
-   * SPA re-injection protection. A host re-render deleted our 译文 while its
+   * SPA re-injection protection. A host re-render deleted our translation while its
    * SOURCE stayed alive: without this, the source's surviving walked marker
    * makes every future walk skip it and the paragraph silently loses its
    * translation forever. Re-fill from the cached final HTML (zero network); a
@@ -848,7 +848,7 @@ export class PageTranslator {
 
   /**
    * A text-level change under `el`. Inside an already-walked unit the existing
-   * 译文 is now STALE — retranslate the unit. Anywhere else (an element that had
+   * translation is now STALE — retranslate the unit. Anywhere else (an element that had
    * no text when walked) it's brand-new content — rescan.
    */
   private onTextChanged(el: Element): void {
@@ -861,7 +861,7 @@ export class PageTranslator {
    * Markers surviving from a previous attachment (virtual-list node pools
    * detach → later re-attach across mutation batches; reconcileRemovals pruned
    * the tracking in between). Unit ids still tracked are MOVES — keep those.
-   * For the rest, drop the marks and any orphaned 译文 so the subtree walks
+   * For the rest, drop the marks and any orphaned translation so the subtree walks
    * fresh; the cache absorbs the re-translation.
    */
   private clearStaleMarks(el: Element): void {
@@ -982,7 +982,7 @@ export class PageTranslator {
   }
 
   /**
-   * The text under a walked unit changed in place: its 译文 (if any) describes
+   * The text under a walked unit changed in place: its translation (if any) describes
    * text that no longer exists. Drop gloss + tracking + marks, then re-walk the
    * element so it re-enters the normal pipeline as fresh content.
    */
@@ -1060,7 +1060,7 @@ export class PageTranslator {
   }
 
   /**
-   * Prune tracking for genuinely-removed units and sweep the 译文 they left
+   * Prune tracking for genuinely-removed units and sweep the translation they left
    * orphaned. An inline / inside gloss leaves WITH its source; only the
    * clipped-source `afterend` SIBLING fallback survives detached. One pass over
    * our own gloss nodes, matched against the id set by attribute (no walkId
@@ -1138,7 +1138,7 @@ export class PageTranslator {
    * Order a batch closest-to-viewport first, measured at FLUSH time — during a
    * scroll burst most of `pending` is content the user rushed past, not what
    * they stopped on. The model emits a batch's segments in prompt order, so
-   * this ordering directly decides which 译文 lands first. One rect read per
+   * this ordering directly decides which translation lands first. One rect read per
    * unit, then a stable sort: units already on screen (distance 0) keep
    * reading order.
    */
@@ -1187,7 +1187,7 @@ export class PageTranslator {
     });
     if (survivors.length === 0) return;
     // One display-mode neutralize around the whole batch: each gloss creation
-    // measures its inherited metrics, and under an active 仅译文 collapse the
+    // measures its inherited metrics, and under an active translation-only collapse the
     // per-node <html> attribute toggle would force a full-document style
     // recalc per unit (see withDisplayModeNeutralized).
     withDisplayModeNeutralized(this.root.ownerDocument, () => {
@@ -1387,7 +1387,7 @@ export class PageTranslator {
       this.dropCachedHtml(unit.id);
       node.remove();
       // Stamp lifetime == gloss lifetime: a clipped source whose gloss was
-      // just dropped must not stay armed for the 仅译文 collapse (the CSS is
+      // just dropped must not stay armed for the translation-only collapse (the CSS is
       // also :has-gated on the sibling gloss — this keeps the DOM honest).
       unit.element.removeAttribute(DATA_OMNI.clipped);
       return;
@@ -1400,7 +1400,7 @@ export class PageTranslator {
   }
 
   /**
-   * Final placement of a unit's rendered 译文 — the one seam 逐段对照 hooks
+   * Final placement of a unit's rendered translation — the one seam paragraph interleaving hooks
    * into, shared by the live fill and the SPA re-injection heal so the two
    * can never disagree on layout. Default: the whole HTML into the single
    * gloss node. With `paragraphInterleave` on, a multi-paragraph unit (source
@@ -1538,7 +1538,7 @@ export class PageTranslator {
         const seg = node.cloneNode(false) as HTMLElement;
         seg.setAttribute(DATA_OMNI.seg, String(i + 1));
         seg.appendChild(frag);
-        // Paragraph i+1's 译文 sits right after its SOURCE paragraph: before
+        // Paragraph i+1's translation sits right after its SOURCE paragraph: before
         // the NEXT separator's tail, or (for the last paragraph) at the
         // unit's end — the primary gloss still parks there but moves to its
         // own slot right after this loop.
@@ -1561,7 +1561,7 @@ export class PageTranslator {
     for (let i = 1; i < parts.length; i++) {
       if (!parts[i].trim()) continue; // empty paragraph — no gloss, slot kept
       // Clone the primary gloss shell: every attribute (walkId, lang, style
-      // preset, dir, the stamped font-size vars for the 仅译文 restore) rides
+      // preset, dir, the stamped font-size vars for the translation-only restore) rides
       // along for free; only the segment marker is added.
       const seg = node.cloneNode(false) as HTMLElement;
       seg.setAttribute(DATA_OMNI.seg, String(i));
@@ -1573,7 +1573,7 @@ export class PageTranslator {
   }
 }
 
-/** True when there's no useful 译文 to show: the engine returned nothing, or gave
+/** True when there's no useful translation to show: the engine returned nothing, or gave
  *  back the source unchanged (already target language / untranslatable). Compared
  *  whitespace-normalized so trivial reflow doesn't count.
  *

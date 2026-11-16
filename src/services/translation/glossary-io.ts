@@ -4,7 +4,7 @@
  * Import/export for glossary SETS. The portable file format is deliberately
  * minimal — people arrive with terminology lists, not with our config shapes:
  *
- *   - JSON set: `{ "name": "AI 术语集", "pattern": "*.x.com", "entries": [...] }`
+ *   - JSON set: `{ "name": "AI glossary", "pattern": "*.x.com", "entries": [...] }`
  *     (our own export; `id`/`enabled` are NOT portable — the importer mints a
  *     fresh id and enables the set);
  *   - bare JSON array: `[{ "source": "Pod", "target": "容器组", "note": "…" }]`;

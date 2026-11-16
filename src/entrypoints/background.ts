@@ -51,7 +51,7 @@ export default defineBackground(() => {
   });
 
   // Clicking the extension action icon directly opens options / settings in a tab
-  browser.action?.onClicked.addListener(() => {
+  browser.action.onClicked.addListener(() => {
     void browser.runtime.openOptionsPage();
   });
 

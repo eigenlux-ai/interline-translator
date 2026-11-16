@@ -1,5 +1,5 @@
 /** Capture production extension UI through CDP, then compose store artwork.
- * Run against an ISOLATED Chrome for Testing profile; see assets/store/README.md.
+ * Run against an ISOLATED Chrome for Testing profile; see assets/store/chrome/README.md.
  * No user credentials, mock controls, or injected translation results are used.
  */
 import { createHash } from 'node:crypto';
@@ -118,11 +118,14 @@ try {
     await delay(200);
     await article.evaluate(`${shadow}.querySelector('button[aria-pressed]').click()`);
     await until(
-      () => article.evaluate(`document.querySelectorAll('[data-omni-translated][data-omni-state="done"]').length === 3`),
+      () =>
+        article.evaluate(`document.querySelectorAll('[data-omni-translated][data-omni-state="done"]').length === 3`),
       `${locale} bilingual translation`,
       60000
     );
-    const fits = await article.evaluate(`Array.from(document.querySelectorAll('[data-omni-translated]')).every(e => e.textContent.trim().length > 0 && e.getBoundingClientRect().bottom <= innerHeight - 12)`);
+    const fits = await article.evaluate(
+      `Array.from(document.querySelectorAll('[data-omni-translated]')).every(e => e.textContent.trim().length > 0 && e.getBoundingClientRect().bottom <= innerHeight - 12)`
+    );
     if (!fits) throw new Error(`${locale}: article is clipped or has an empty translation`);
     await shot(article, locale, names[0]);
 
@@ -179,13 +182,13 @@ try {
     );
     await options.evaluate(`window.scrollTo(0,0);document.querySelectorAll('nav button')[1].click()`);
     await shot(options, locale, names[4]);
-    await mkdir(`assets/store/${locale}`, { recursive: true });
+    await mkdir(`assets/store/chrome/${locale}`, { recursive: true });
     for (const [i, name] of names.entries()) {
       files.set('/artwork', { type: 'text/html; charset=utf-8', data: artwork(l, locale, i, name) });
       const art = await open(`${host}/artwork`, 1280, 800);
       await until(() => art.evaluate('[...document.images].every(i=>i.complete&&i.naturalWidth>0)'), 'artwork images');
       const { data } = await art.call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
-      await writeFile(`assets/store/${locale}/${name}.png`, Buffer.from(data, 'base64'));
+      await writeFile(`assets/store/chrome/${locale}/${name}.png`, Buffer.from(data, 'base64'));
     }
     for (const [name, width, height, marquee] of [
       ['promo-small', 440, 280, false],
@@ -196,12 +199,12 @@ try {
       await until(() => promo.evaluate('[...document.images].every(i=>i.complete&&i.naturalWidth>0)'), 'promo images');
       await promo.evaluate('document.fonts.ready');
       const { data } = await promo.call('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });
-      await writeFile(`assets/store/${locale}/${name}.png`, Buffer.from(data, 'base64'));
+      await writeFile(`assets/store/chrome/${locale}/${name}.png`, Buffer.from(data, 'base64'));
     }
     console.log(`Captured and composed ${locale}: five real UI screenshots and two promo images`);
   }
   await writeFile(
-    'assets/store/capture-manifest.json',
+    'assets/store/chrome/capture-manifest.json',
     JSON.stringify(
       {
         capturedAt: new Date().toISOString(),

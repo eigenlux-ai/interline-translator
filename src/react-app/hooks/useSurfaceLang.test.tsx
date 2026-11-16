@@ -1,10 +1,10 @@
 // @vitest-environment happy-dom
 import type { PropsWithChildren } from 'react';
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { SurfaceProvider } from '@/surface/context';
 import { documentSurface } from '@/surface/document';
-import { syncUiLocale } from '@/i18n';
+import { syncUiLocale, syncUiLocaleFrom } from '@/i18n';
 import { useSurfaceLang } from './useSurfaceLang';
 
 /**
@@ -20,18 +20,21 @@ function wrapper({ children }: PropsWithChildren) {
 }
 
 describe('useSurfaceLang', () => {
-  it('stamps the pre-config default locale, spelling out the Chinese region', async () => {
+  beforeEach(() => syncUiLocaleFrom(undefined));
+  it('stamps English while config is loading', async () => {
     renderHook(() => useSurfaceLang(), { wrapper });
-    await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('zh-CN'));
+    await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('en'));
   });
 
   it('re-stamps when the UI locale switches under an open surface', async () => {
     renderHook(() => useSurfaceLang(), { wrapper });
-    await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('zh-CN'));
+    await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('en'));
 
     // The locale store notifies asynchronously (syncUiLocale runs in render
     // bodies), so poll rather than assume a single microtask.
     syncUiLocale('ar', 'en');
     await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('ar'));
+    syncUiLocale('auto', 'zh-Hans-HK');
+    await waitFor(() => expect(env.rootElement.getAttribute('lang')).toBe('zh-CN'));
   });
 });

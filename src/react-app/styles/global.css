@@ -50,7 +50,7 @@
      cascade after in-tree styles, so duplicating those tokens here would
      override the user's live theme. */
 
-  /* Error/destructive = the COOL `danger` ramp, not the warm brand 朱. One
+  /* Error/destructive = the COOL `danger` ramp, not the warm brand cinnabar. One
      declaration suffices: `danger` is a Mantine virtualColor, so
      --mantine-color-danger-6 already resolves to the light/dark ramp per
      [data-mantine-color-scheme]. Mantine reads --mantine-color-error for

@@ -71,7 +71,7 @@ const MODEL_HINT: Record<string, string> = Object.fromEntries(ADDABLE.map((a) =>
  * Presets whose EXAMPLE endpoint is somebody else's service rather than the
  * vendor's own: `anthropic-compatible` exists to reach Kimi / GLM / a local
  * proxy, so its real-world example is a third-party endpoint. The UI marks
- * these 「第三方服务」 so the example is never read as the built-in default —
+ * these "Third-party service" so the example is never read as the built-in default —
  * the request fallback (`DEFAULT_BASE` in core/rpc/provider-models, and the
  * ai-sdk default when Base URL is blank) stays the OFFICIAL endpoint, so a
  * blank field never ships the user's key to a third party. Exported for the
@@ -92,7 +92,7 @@ export const BASE_URL_HINT: Record<string, string> = {
   'anthropic-compatible': 'https://api.moonshot.cn/anthropic',
 };
 
-/** 「第三方服务」 chip shown wherever a {@link THIRD_PARTY_KINDS} preset appears. */
+/** "Third-party service" chip shown wherever a {@link THIRD_PARTY_KINDS} preset appears. */
 function ThirdPartyBadge({ size = 'xs' }: { size?: 'xs' | 'sm' }) {
   return (
     <Badge variant="light" color="sand" size={size} style={{ flexShrink: 0 }}>
@@ -195,7 +195,7 @@ function ProviderCard({
   const [open, setOpen] = useState(p.draft ?? false);
   // users never touch them, and an engine card is long enough already.
   const [paramsOpen, setParamsOpen] = useState(() => paramsSummary(p.params) !== '');
-  // "推理 开启" reads on its own in the folded chip; a bare "开启" would not.
+  // "Reasoning on" is self-contained in the collapsed chip; a bare "On" is not.
   const summary = paramsSummary(
     p.params,
     p.params?.reasoning === undefined

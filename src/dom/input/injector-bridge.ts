@@ -33,7 +33,7 @@ import {
 export type { InjectStatus } from './protocol';
 export type InjectOutcome = 'applied' | 'raced' | 'miss';
 
-/** One read of a main-world editor: its model text, plus the 撤销 snapshot when it has one. */
+/** One read of a main-world editor: its model text, plus the undo snapshot when it has one. */
 export interface EditorSnapshot {
   text: string;
   rich?: RichSnapshot;
@@ -98,7 +98,7 @@ function request(
 }
 
 /**
- * Read the target editor's MODEL text (virtualization-safe) plus its rich 撤销
+ * Read the target editor's MODEL text (virtualization-safe) plus its rich undo
  * snapshot, or null when the main world can't resolve it — callers fall back to
  * the DOM read (which has no rich half: see replace.ts's chain). `timeoutMs`
  * bounds the WHOLE call, a late handshake included: one gesture's budget is the
@@ -118,7 +118,7 @@ export async function readViaMainWorld(el: Element, timeoutMs = 600): Promise<Ed
  * injector re-reads at the last moment and reports 'raced' — without writing —
  * if the user kept typing. 'miss' → the caller may degrade to the DOM chain.
  * `rich` restores a snapshot from an earlier read instead of writing `text`
- * (撤销); the two options never come together — a translation is plain text.
+ * (undo); the two options never come together — a translation is plain text.
  */
 export async function injectViaMainWorld(
   el: Element,

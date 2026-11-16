@@ -252,7 +252,7 @@ describe('walkAndLabel — sentence chips (inline-restyled DIV amid running text
 describe('walkAndLabel — UA-default inline-block controls are never swallowed', () => {
   it('a non-flex button row stays per-button units (no "CancelOK" mash, no cloned buttons)', () => {
     // BUTTON is inline-block by UA DEFAULT — that is not a restyle, and the
-    // control must never become in-unit content (its clone in the 译文 would
+    // control must never become in-unit content (its clone in the translation would
     // render a second fake button).
     const r = root(
       '<div><button style="display:inline-block">Cancel</button><button style="display:inline-block">Confirm order</button></div>'
@@ -288,7 +288,7 @@ describe('walkAndLabel — ruby / edit-mark phrasing families', () => {
     const units = walkAndLabel(r, seqId);
     expect(units).toHaveLength(1);
     expect(units[0].text).toBe('日本語の漢字を読む');
-    // The annotation is dropped from the 译文 too: a reading of the SOURCE script
+    // The annotation is dropped from the translation too: a reading of the SOURCE script
     // painted over translated words is noise, so only <ruby> itself round-trips.
     expect(units[0].serialized.text).toBe('日本語の{{0}}漢字{{1}}を読む');
     expect(units[0].serialized.tags).toEqual(['<ruby>', '</ruby>']);
@@ -323,7 +323,7 @@ describe('walkAndLabel — custom/unknown phrasing tags amid running text', () =
   it("keeps an inline <ink> in-unit so the heading's own text is not orphaned (elyx.design h1)", () => {
     // elyx.design wraps a phrase in <ink> (an UNKNOWN tag — no hyphen) to paint a
     // hand-drawn underline. Recursing at it left the h1's direct text uncollected
-    // and wedged the 译文 into the middle of the English sentence.
+    // and wedged the translation into the middle of the English sentence.
     const r = root('<h1>Are design tools still <ink style="display:inline">relevant</ink> in the age of AI?</h1>');
     document.body.appendChild(r);
     try {
@@ -336,7 +336,7 @@ describe('walkAndLabel — custom/unknown phrasing tags amid running text', () =
     }
   });
 
-  it('replays the custom tag around the 译文 instead of riding it through opaque', () => {
+  it('replays the custom tag around the translation instead of riding it through opaque', () => {
     // Transparent, unlike a chip: the tag reopens as a placeholder PAIR with the
     // phrase's text between them, so the phrase translates and keeps its styling.
     const r = root('<p>More than ever, <my-ink style="display:inline">design drifts</my-ink> away.</p>');
@@ -364,7 +364,7 @@ describe('walkAndLabel — custom/unknown phrasing tags amid running text', () =
 
   it('a custom tag wrapping a control still recurses (no cloned-button disease)', () => {
     // The control guard wins over sentence flow: the wrapper is NOT kept in-unit,
-    // so the button stays its own unit and is never cloned into a 译文. The cost
+    // so the button stays its own unit and is never cloned into a translation. The cost
     // is the known one — the paragraph's own text is orphaned by the recurse —
     // which is the safe failure direction (lost text, never a second fake control).
     const r = root('<p>Then <x-wrap style="display:inline"><button>Go now</button></x-wrap> to continue.</p>');

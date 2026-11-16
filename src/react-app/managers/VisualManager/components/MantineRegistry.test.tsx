@@ -142,7 +142,7 @@ describe('MantineRegistry direction', () => {
 });
 
 /**
- * Custom HEX primary: an explicit user customization displaces the brand 朱
+ * Custom HEX primary: an explicit user customization displaces the brand cinnabar
  * with a generated palette. Since the generation moved to the LAZY
  * ../color-generation path (dynamic import keeps chroma-js out of the resident
  * bundle), the palette is not there on the first frame — the brand default

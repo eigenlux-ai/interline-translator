@@ -31,7 +31,7 @@ describe('selectionNeighbors', () => {
     expect(selectionNeighbors(selectIn(document.getElementById('b')!))).toEqual(['Only one.']);
   });
 
-  it('strips our injected 译文 from neighbor text (translated pages must not feed 译文 back)', () => {
+  it('strips our injected translation from neighbor text (translated pages must not feed translation back)', () => {
     document.body.innerHTML = `<p>Original neighbor.<span ${DATA_OMNI.translated}="1">邻居译文</span></p><p id="b">Sel.</p>`;
     expect(selectionNeighbors(selectIn(document.getElementById('b')!))).toEqual(['Original neighbor.']);
   });

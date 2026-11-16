@@ -14,7 +14,7 @@ describe('buildTranslatePrompt', () => {
 
 describe('buildAnnotatePrompt', () => {
   it('hands the model BOTH sides and demands terse target-language notes', () => {
-    // A full sentence → passage mode (a bare idiom now gets the词条 persona).
+    // A full sentence → passage mode (a bare idiom now gets the dictionary-entry persona).
     const { system, prompt } = buildAnnotatePrompt('Break a leg out there tonight!', '今晚祝你演出大获成功！', 'zh-CN');
     expect(prompt).toContain('原文:\nBreak a leg out there tonight!');
     expect(prompt).toContain('译文:\n今晚祝你演出大获成功！');

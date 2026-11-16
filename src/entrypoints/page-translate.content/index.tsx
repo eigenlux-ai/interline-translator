@@ -1,9 +1,9 @@
 /**
  * Host-page translation content script. Unlike the template's shadow-UI demo,
- * this injects 译文 into the HOST DOM (next to each source block), so it runs
+ * this injects translation into the HOST DOM (next to each source block), so it runs
  * with `cssInjectionMode: 'manual'` — the translation styles come via
  * adoptedStyleSheets (see dom/inject/styles), not a shadow surface. In-page
- * React UI (划词 popover + 悬浮球) lives in the separate `float-ui.content` entrypoint.
+ * React UI (selection popover + floating launcher) lives in the separate `float-ui.content` entrypoint.
  */
 
 import { defineContentScript } from '#imports';
@@ -68,7 +68,7 @@ export default defineContentScript({
     }
     let translator: PageTranslator | null = null;
     // Monotonic intent counter. `start()` reads config asynchronously, so two
-    // near-simultaneous triggers (e.g. the ball's 翻译此页 + a command toggle)
+    // near-simultaneous triggers (e.g. the ball's Translate this page + a command toggle)
     // could both pass the `if (translator)` guard before either assigns, each
     // `new PageTranslator()`, and the later write would ORPHAN the earlier
     // instance (a live, unstoppable MutationObserver). Every start/stop bumps
@@ -125,7 +125,7 @@ export default defineContentScript({
     // owner (extension update / dev HMR without a page reload) can't leave a
     // stale handler on the shared bus responding alongside the fresh one.
     const offSet = onSetPageTranslation((enabled) => {
-      // `true` always RE-applies (stop→start) so the ball's 翻译此页 re-translates
+      // `true` always RE-applies (stop→start) so the ball's Translate this page re-translates
       // with the latest target/style the panel just persisted.
       stop();
       if (enabled) void start();
@@ -142,7 +142,7 @@ export default defineContentScript({
     onMessage('flipPageTranslation', () => (translator ? (stop(), false) : start()));
     onMessage('getPageTranslationState', () => translator !== null);
 
-    // The three-state view (双语/仅译文/仅原文) switches LIVE on an active
+    // The three-state view (bilingual/translation-only/original-only) switches LIVE on an active
     // translation — one attribute write via setDisplayMode, never a
     // re-translate. (The ball/options edit appearance.displayMode; the
     // gateway's mirror echoes it here.)

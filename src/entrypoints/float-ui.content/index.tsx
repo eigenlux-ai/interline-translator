@@ -1,8 +1,8 @@
 /**
- * Floating-UI surface: the 划词 popover (SelectionApp) and the 悬浮球 + control
+ * Floating-UI surface: the selection popover (SelectionApp) and the floating launcher + control
  * panel (FloatingBallApp). A SHADOW content script with bundled inline CSS —
  * all of it lives fully isolated in a shadow root (unlike the host translation
- * script, which injects 译文 into the host DOM). `overlay` positioning keeps
+ * script, which injects translation into the host DOM). `overlay` positioning keeps
  * the host element at zero layout footprint; each app positions itself (fixed).
  */
 

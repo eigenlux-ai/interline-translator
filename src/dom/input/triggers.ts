@@ -79,7 +79,7 @@ export const LANG_ALIASES: Record<string, LangCode> = {
 /**
  * Aliases the colon form refuses: lowercase, yet ordinary English rather than
  * a command — "it: broken again" is a sentence, and lowercase "tw: food" is a
- * content warning, not 繁中. Demanding ≥3 characters would catch the same two
+ * content warning, not Traditional Chinese. Demanding ≥3 characters would catch the same two
  * words, but it also kills `ja:` / `fr:` / `cn:`, the form people actually
  * type; naming the two real words is the narrower cut. Neither language loses
  * the feature: `italian:` and `zh-tw:` still work, and so does the slash form.

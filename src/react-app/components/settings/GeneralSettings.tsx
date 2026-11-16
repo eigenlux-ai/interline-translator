@@ -9,15 +9,14 @@ import { Anchor, Badge, Group, MultiSelect, Paper, SegmentedControl, Select, Sta
 import { CheckCircleIcon } from '@/react-app/components/icons';
 import { useVisual } from '@/react-app/managers/VisualManager/context';
 import type { VisualColorScheme } from '@/react-app/managers/VisualManager/defs';
-import { langOptions, sourceOptions, type Config, type DisplayMode } from '@/data/models';
+import { sourceOptions, type Config, type DisplayMode } from '@/data/models';
 import { UI_LANG_NAMES, UI_LANGS, type UiLangSetting } from '@/data/models/lang';
 import { m } from '@/paraglide/messages.js';
+import { translationLanguageOptions } from '@/services/config/language-defaults';
 import { detectorStatus, downloadDetectorModel, type DetectorStatus } from '@/services/detect/model';
 import cls from './GeneralSettings.module.css';
 import SettingsSection from './SettingsSection';
 import StylePreview, { FontPreview } from './StylePreview';
-
-const TARGETS = langOptions();
 
 const DETECTOR_COPY: Record<DetectorStatus | 'checking', () => string> = {
   available: m.settings_detector_ready,
@@ -65,12 +64,13 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
   const setInput = (partial: Partial<Config['inputTranslation']>) =>
     onPatch({ inputTranslation: { ...config.inputTranslation, ...partial } });
   const input = config.inputTranslation;
+  const targets = translationLanguageOptions(config.translate.target, input.target, ...config.translate.skipLanguages);
 
   return (
     <SettingsSection title={m.settings_general_title()} description={m.settings_general_desc()}>
       <div className={cls.layout}>
         <div className={cls.column}>
-          {/* Card 1: 翻译与目标语言 */}
+          {/* Card 1: Translation and target language */}
           <Paper className={cls.section} radius={0}>
             <Stack gap="md">
               <Group gap={8} align="center">
@@ -89,7 +89,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
                 />
                 <Select
                   label={m.settings_target_label()}
-                  data={TARGETS}
+                  data={targets}
                   value={config.translate.target}
                   onChange={(v) => v && setTranslate({ target: v })}
                   allowDeselect={false}
@@ -153,7 +153,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
                 label={m.settings_skip_langs()}
                 description={m.settings_skip_langs_desc()}
                 placeholder={config.translate.skipLanguages.length ? undefined : m.settings_skip_langs_none()}
-                data={TARGETS}
+                data={targets}
                 value={config.translate.skipLanguages}
                 onChange={(v) => setTranslate({ skipLanguages: v })}
                 clearable
@@ -162,7 +162,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
             </Stack>
           </Paper>
 
-          {/* Card 3: 输入框就地翻译 */}
+          {/* Card 3: In-place input translation */}
           <Paper className={cls.section} radius={0}>
             <Stack gap="sm">
               <Group justify="space-between" align="flex-start" wrap="nowrap">
@@ -194,7 +194,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
                   <Select
                     label={m.settings_input_target()}
                     description={m.settings_input_target_desc()}
-                    data={TARGETS}
+                    data={targets}
                     value={input.target}
                     onChange={(v) => v && setInput({ target: v })}
                     allowDeselect={false}
@@ -216,7 +216,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
             </Stack>
           </Paper>
 
-          {/* Card 4: 端侧语言检测 */}
+          {/* Card 4: On-device language detection */}
           <Paper className={`${cls.section} ${cls.detector}`} radius={0}>
             <Group justify="space-between" align="center" wrap="nowrap">
               <Stack gap={2}>
@@ -243,7 +243,7 @@ export default function GeneralSettings({ config, onPatch }: GeneralSettingsProp
           </Paper>
         </div>
         <div className={cls.column}>
-          {/* Card 2: 排版与呈现预览 */}
+          {/* Card 2: Typography and display preview */}
           <Paper className={cls.section} radius={0}>
             <Stack gap="md">
               <Stack gap={8} className={cls.preview}>

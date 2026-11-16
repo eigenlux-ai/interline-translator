@@ -12,7 +12,7 @@
  * of how to write a style — the options UI offers "duplicate" so users start
  * from one of these.
  *
- * 素译 (faithful, the default) is NOT a style: it is the absence of one
+ * Plain translation (faithful, the default) is NOT a style: it is the absence of one
  * (`activeStyleId: undefined`), so the skeleton runs unmodified.
  */
 

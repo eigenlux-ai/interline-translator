@@ -136,7 +136,7 @@ describe('singleTranslationKey (the cross-path shared derivation)', () => {
     expect(unrelated2.key).toBe(unrelated1.key); // glossary growth doesn't bust unrelated cache
   });
 
-  it('the page overview (通读全文) enters the key through the system prompt', async () => {
+  it('the page overview (Whole-page context) enters the key through the system prompt', async () => {
     const plain = await singleTranslationKey('Hello', provider, 'auto', 'zh-CN', cfg);
     const withOverview = await singleTranslationKey('Hello', provider, 'auto', 'zh-CN', cfg, { summary: '概览' });
     expect(withOverview.key).not.toBe(plain.key);

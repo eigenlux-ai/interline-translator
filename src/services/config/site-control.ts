@@ -69,7 +69,7 @@ export function isSiteEnabled(config: SiteControlConfig, hostname: string): bool
 /**
  * Set an EXACT-hostname rule (no glob) for `hostname`, or clear it (`mode: null`
  * → the host falls back to `defaultMode`). Returns a new config; the input is
- * untouched. Used by the ball's 「总是翻译此站」 toggle to flip a site between
+ * untouched. Used by the ball's "Always translate this site" toggle to flip a site between
  * `always` and the default without touching the user's glob rules.
  */
 export function setSiteMode(config: SiteControlConfig, hostname: string, mode: SiteMode | null): SiteControlConfig {

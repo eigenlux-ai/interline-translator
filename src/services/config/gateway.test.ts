@@ -100,7 +100,7 @@ describe('toPublicConfig — annotate gate follows the RUNTIME provider selectio
     ];
     cfg.translate.defaultProviderId = 'oai';
     const pub = toPublicConfig(cfg);
-    // The runtime would fall back to the MT engine — the 注疏 gate must see MT,
+    // The runtime would fall back to the MT engine — the annotation gate must see MT,
     // not the disabled LLM (which rendered a button that could never work).
     expect(pub.defaultProviderKind).toBe('google-mt');
   });

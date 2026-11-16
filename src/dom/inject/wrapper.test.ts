@@ -36,7 +36,7 @@ describe('inlineHost descent (via ensureGlossNode inline)', () => {
     expect(r.querySelector('span.t')!.querySelector('aie-omt-inline')).toBeNull();
   });
 
-  it('does NOT descend into a link — 译文 is a sibling of <a>, not inside it', () => {
+  it('does NOT descend into a link — translation is a sibling of <a>, not inside it', () => {
     const r = root('<div><a href="/x">Documentation</a></div>');
     const [u] = walkAndLabel(r, seqId);
     setTranslatedHtml(ensureGlossNode(u, 'inline'), '文档');
@@ -57,7 +57,7 @@ describe('inlineHost descent (via ensureGlossNode inline)', () => {
 describe('shell wrappers (border/background pills)', () => {
   it('descends INTO a sole shell child — the control itself reads bilingual', () => {
     // aicanvas CTA shape: sole pill span inside the unit block. Outside the
-    // pill the 译文 dangles as a stray caption; inside, the pill is bilingual.
+    // pill the translation dangles as a stray caption; inside, the pill is bilingual.
     const r = root(
       '<div><span class="pill" style="display:inline-flex;border:1px solid #888">View Component</span></div>'
     );
@@ -68,7 +68,7 @@ describe('shell wrappers (border/background pills)', () => {
     expect(r.querySelector('span.pill')!.querySelector('aie-omt-inline')).not.toBeNull();
   });
 
-  it('serialization unwraps a sole shell — the 译文 never reproduces the chrome', () => {
+  it('serialization unwraps a sole shell — the translation never reproduces the chrome', () => {
     const r = root(
       '<div><span class="pill" style="display:inline-flex;border:1px solid #888">View Component</span></div>'
     );
@@ -79,7 +79,7 @@ describe('shell wrappers (border/background pills)', () => {
     expect(u.serialized.text).toBe('View Component');
   });
 
-  it('a plain text-style wrapper still reproduces (the 带样式 promise)', () => {
+  it('a plain text-style wrapper still reproduces (the formatted translation promise)', () => {
     const r = root('<div><b>Important</b></div>');
     const [u] = walkAndLabel(r, seqId);
     expect(u.serialized.text).toBe('{{0}}Important{{1}}');
@@ -87,7 +87,7 @@ describe('shell wrappers (border/background pills)', () => {
 });
 
 describe('clipped-source fallback (line-clamp / overflow hidden)', () => {
-  it('stamps the source for the 仅译文 collapse, and restore clears it', () => {
+  it('stamps the source for the translation-only collapse, and restore clears it', () => {
     const r = root(
       '<div><p style="overflow-y:hidden">A long clipped paragraph that will need a sibling gloss to stay visible</p></div>'
     );
@@ -120,7 +120,7 @@ describe('findGloss / dedup', () => {
     expect(r.querySelectorAll('aie-omt-inline[data-omni-translated]').length).toBe(1);
   });
 
-  it('stamps the target lang on the 译文 (CJK font / line-break / SR voice)', () => {
+  it('stamps the target lang on the translation (CJK font / line-break / SR voice)', () => {
     const r = root('<h2>Hello world</h2>');
     const [u] = walkAndLabel(r, seqId);
     expect(ensureGlossNode(u, 'inline', 'zh-CN').getAttribute('lang')).toBe('zh-CN');
@@ -138,7 +138,7 @@ describe('findGloss / dedup', () => {
     expect(ensureGlossNode(u, 'inline', 'zh-CN', 'underline').getAttribute(DATA_OMNI.style)).toBe('underline');
   });
 
-  it("stamps data-omni-font only for 'kai' — 'inherit' leaves the 译文 on the host font", () => {
+  it("stamps data-omni-font only for 'kai' — 'inherit' leaves the translation on the host font", () => {
     const r = root('<h2>One</h2><h2>Two</h2>');
     const [a, b] = walkAndLabel(r, seqId);
     expect(ensureGlossNode(a, 'inline', 'zh-CN', 'blend', 'kai').getAttribute(DATA_OMNI.font)).toBe('kai');

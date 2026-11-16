@@ -1,4 +1,4 @@
-/* Two equal segments (楷体 / 跟随页面): same layout-coordinate indicator as
+/* Two equal segments (Kai calligraphy / inherit from page): same layout-coordinate indicator as
    DisplayMode.module.css — FloatingIndicator's getBoundingClientRect
    measurements include the panel's genie transform. */
 .root {

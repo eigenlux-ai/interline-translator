@@ -1,7 +1,7 @@
 /**
  * @module dom/inject/viewport-anchor
  *
- * Anti-jump: when 译文 is injected above the current scroll position (or removed
+ * Anti-jump: when translation is injected above the current scroll position (or removed
  * on revert), the content the user is reading shifts. All three reference
  * translators wrap their DOM mutations in a viewport anchor — pick a stable
  * element at the top of the viewport, run the mutation, then scroll by the delta

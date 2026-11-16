@@ -19,7 +19,7 @@ export interface TuckControls {
   /** Float the seal out (the caller's event IS the reason — a hold or a linger usually follows). */
   reveal(): void;
   /** Float out AND hold the linger window — for reveals with no hover to pin
-   *  them (touch wake, translation-state toggle: 墨↔朱 must be seen). */
+   *  them (touch wake, translation-state toggle: ink↔cinnabar must be seen). */
   linger(): void;
 }
 

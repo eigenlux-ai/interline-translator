@@ -6,25 +6,26 @@ Last updated: 2026-11-13
 
 Version **1.1.1**, tag **v1.1.1**. Build the Chrome upload with `pnpm zip`; the upload file is `.output/interline-1.1.1-chrome.zip`. This records a prepared release, not a submission or approval in the store dashboard.
 
-See [CHANGELOG.md](./CHANGELOG.md) for release history. This update adds subtitle lag prompts and optional translation buffering, preserves buffering through retries and fullscreen transitions, improves localized copy, and incorporates the upstream surface template update. No browser permissions are added.
+See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update adds subtitle lag prompts and optional translation buffering, preserves buffering through retries and fullscreen transitions, improves localized copy, and incorporates the upstream surface template update. No browser permissions are added.
 
 ## Listing and assets
 
 - Name: **Interline · 行间**, matching the manifest.
+- Default listing locale for the next build: English (`manifest.default_locale: en`). On first use, the translation target is initialized from the browser UI language and the interface follows that target. Input translation targets English and starts disabled for English browsers. Saved preferences are preserved. Rebuild upload archives to include this metadata change.
 - Single purpose: bilingual reading and translation of web content, including available YouTube captions and user-triggered input translation.
 - Suggested category: Productivity. Existing dashboard distribution, language and publisher settings are retained; they are not managed by this release script.
-- Short and detailed descriptions: [English](./assets/store/global/listing.txt), [Chinese](./assets/store/zh_CN/listing.txt), [Japanese](./assets/store/ja/listing.txt), [Korean](./assets/store/ko/listing.txt). Each directory's `summary.txt` matches its manifest description.
-- Store icon: [128×128 PNG](./public/icon/128.png).
-- Screenshots and promotional images: [asset guide](./assets/store/README.md). The four language sets contain five 1280×800 screenshots/illustrations, a 440×280 tile and a 1400×560 marquee each.
+- Short and detailed descriptions: [English](./global/listing.txt), [Chinese](./zh_CN/listing.txt), [Japanese](./ja/listing.txt), [Korean](./ko/listing.txt). Each directory's `summary.txt` matches its manifest description.
+- Store icon: [128×128 PNG](../../../public/icon/128.png).
+- Screenshots and promotional images: [asset guide](./README.md). The four language sets contain five 1280×800 screenshots/illustrations, a 440×280 tile and a 1400×560 marquee each.
 - Existing images retain their 1.1.0 capture provenance; they do not demonstrate the new buffering prompt. The subtitle illustration is explicitly labeled as an illustration.
 
 ## Permissions justification
 
-| Permission | Purpose |
-| --- | --- |
-| `storage` | Save language preferences, engine configuration and credentials locally. |
-| `contextMenus` | Offer page and selection translation from the right-click menu. |
-| `alarms` | Schedule periodic cleanup of the local translation cache. |
+| Permission               | Purpose                                                                                                                                                                       |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`                | Save language preferences, engine configuration and credentials locally.                                                                                                      |
+| `contextMenus`           | Offer page and selection translation from the right-click menu.                                                                                                               |
+| `alarms`                 | Schedule periodic cache cleanup and retry saving initial preferences after a temporary storage failure.                                                                                                                     |
 | `<all_urls>` host access | Translate supported pages, including automatic site rules, and contact the user's selected translation endpoint across origins. Browser-restricted pages remain inaccessible. |
 
 ## Privacy and data use
@@ -43,9 +44,9 @@ Dashboard disclosures must reflect website content and authentication informatio
 
 ## Version history
 
-| Version | Date | Changes | Status |
-| --- | --- | --- | --- |
-| 1.1.1 | 2026-11-13 | Subtitle buffering, recovery, localization and surface fixes | Prepared for upload |
+| Version | Date       | Changes                                                      | Status              |
+| ------- | ---------- | ------------------------------------------------------------ | ------------------- |
+| 1.1.1   | 2026-11-13 | Subtitle buffering, recovery, localization and surface fixes | Prepared for upload |
 
 ## Review notes
 

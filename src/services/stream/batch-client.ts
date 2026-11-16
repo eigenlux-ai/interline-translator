@@ -3,7 +3,7 @@
  *
  * CLIENT side of BATCH streaming translation (whole-page). Opens the named Port,
  * sends a `batchStart`, and dispatches per-segment messages to callbacks so the
- * page can fill each 译文 progressively as the model streams. Import-safe: only
+ * page can fill each translation progressively as the model streams. Import-safe: only
  * browser APIs + `import type` (no ai-sdk).
  *
  * Callback-based rather than an async iterable because many segments stream

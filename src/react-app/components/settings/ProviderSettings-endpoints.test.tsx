@@ -3,7 +3,7 @@
  * Endpoint-invariant contract for the `anthropic-compatible` preset: the
  * request-side default stays the OFFICIAL Anthropic endpoint (a blank Base URL
  * must never ship the user's key to a third party), while the UI's real-world
- * example is a third-party endpoint that is visibly labeled 「第三方服务」 and
+ * example is a third-party endpoint that is visibly labeled "Third-party service" and
  * never used for a request.
  */
 import { MantineProvider } from '@mantine/core';

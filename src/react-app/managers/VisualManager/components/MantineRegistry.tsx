@@ -44,7 +44,7 @@ import type { VisualColorScheme, VisualPrimaryColor } from '../defs';
 import { interlineCssVariables, interlineTheme } from '../theme';
 
 /**
- * Base theme: the project's Interline design tokens (朱/纸/墨 + danger + fonts),
+ * Base theme: the project's Interline design tokens (cinnabar/paper/ink + danger + fonts),
  * plus surface-agnostic defaults. `focusRing: 'auto'` keeps the ring for
  * keyboard focus only. interlineTheme fixes the brand primary to `cinnabar`
  * (virtualColor) — the per-surface override below only displaces it when the
@@ -86,7 +86,7 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
   const [colorSchemeManager] = useState(() => extStorageColorSchemeManager(colorScheme));
 
   // A HEX primary color is an explicit user customization → generate a one-off
-  // palette and displace the brand 朱. A NAMED color (the default `cinnabar`,
+  // palette and displace the brand cinnabar. A NAMED color (the default `cinnabar`,
   // or any Mantine palette name) resolves from the merged base theme, which
   // preserves cinnabar's virtualColor (light/dark ramps) and primaryShade.
   // Generation goes through ../color-generation: a dynamic import keeps

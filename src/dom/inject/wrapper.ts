@@ -25,20 +25,20 @@ import { GLOSS_CLASS, PENDING_CLASS, SRC_FAMILY_VAR, SRC_FONT_VAR, SRC_LINE_VAR 
 export type InjectMode = 'block' | 'inline';
 
 /**
- * For inline mode, find where to append the 译文 so it reads on the SAME line as
+ * For inline mode, find where to append the translation so it reads on the SAME line as
  * the text. Descend through single-child wrappers until we reach the element
  * that DIRECTLY holds the text (or branches), and append there. This keeps the
- * 译文 on one line in the two cases the layout would otherwise break:
+ * translation on one line in the two cases the layout would otherwise break:
  *   - a flex/grid-COLUMN wrapper (MediaWiki radio: `<div flex-col><label><span>
- *     text</span></label>` → step down to the <span> so 译文 isn't a new flex
+ *     text</span></label>` → step down to the <span> so translation isn't a new flex
  *     item on its own line);
  *   - a BLOCK-level nav link (`<li><a class=block>Quick Start</a></li>` → step
- *     into the <a> so "Quick Start 快速入门" stays one line; the 译文 joining the
+ *     into the <a> so "Quick Start 快速入门" stays one line; the translation joining the
  *     clickable nav row is expected — same destination as the link. The inline
  *     gloss CSS strips text-decoration so it never masquerades as a link).
  *
- * It does NOT bury the 译文 inside a CONTENT link: a prose `<p>see <a>x</a></p>`
- * has direct text at the `<p>`, so descent stops there and the 译文 sits at the
+ * It does NOT bury the translation inside a CONTENT link: a prose `<p>see <a>x</a></p>`
+ * has direct text at the `<p>`, so descent stops there and the translation sits at the
  * paragraph level, never inside the inline link.
  */
 const TRACK_DISPLAYS = new Set(['flex', 'inline-flex', 'grid', 'inline-grid']);
@@ -58,7 +58,7 @@ function inlineHost(el: Element): Element {
     // Descend when appending HERE would break the line — `cur` is a flex/grid
     // track (gloss becomes a stray item — the radio-label case) or the single
     // child is block-level (gloss after it wraps — a block nav link) — or when
-    // the single child is a SHELL (border/background pill): a 译文 dangling
+    // the single child is a SHELL (border/background pill): a translation dangling
     // outside a control's chrome reads as a stray caption, INSIDE it the
     // control itself reads bilingual. Stop at a plain inline child (gloss
     // beside it is already same-line, and won't inherit its
@@ -69,11 +69,11 @@ function inlineHost(el: Element): Element {
 }
 
 /**
- * Find the existing 译文 node for a unit, if any. Inline AND inside-block glosses
+ * Find the existing translation node for a unit, if any. Inline AND inside-block glosses
  * live INSIDE the source, so look there first by per-unit walkId (UUID → no
  * cross-unit false match; position-independent, so a host SPA re-render appending
  * nodes after it doesn't lose it). The only out-of-source case is the block
- * clipped-source FALLBACK, where the 译文 is an afterend sibling.
+ * clipped-source FALLBACK, where the translation is an afterend sibling.
  */
 export function findGloss(unit: TranslationUnit, _mode: InjectMode): HTMLElement | null {
   // :not([seg]) — interleave SEGMENTS are satellites of the primary gloss; a
@@ -95,9 +95,9 @@ export function findGloss(unit: TranslationUnit, _mode: InjectMode): HTMLElement
   return sibling ?? null;
 }
 
-/** Every interleave SEGMENT gloss of a unit (paragraph 2..N of 逐段对照) —
+/** Every interleave SEGMENT gloss of a unit (paragraph 2..N of paragraph interleaving) —
  *  the primary gloss (no seg marker) is excluded; findGloss stays anchored on
- *  it. Used to sweep stale segments before a re-fill re-places the 译文. */
+ *  it. Used to sweep stale segments before a re-fill re-places the translation. */
 export function segGlosses(unit: TranslationUnit): HTMLElement[] {
   return Array.from(
     unit.element.querySelectorAll<HTMLElement>(
@@ -341,7 +341,7 @@ export function glossNewlineRuns(gloss: Element): NewlineRun[] {
 }
 
 /** Computed-overflow values that clip a too-tall child (a line-clamp / max-height
- *  box). An inside-block 译文 in such a source would be hidden, so we fall back to
+ *  box). An inside-block translation in such a source would be hidden, so we fall back to
  *  an afterend sibling there. Real-browser only — happy-dom reports '' (no clip). */
 const CLIPPING_OVERFLOWS = new Set(['hidden', 'clip', 'scroll', 'auto']);
 
@@ -353,8 +353,8 @@ function sourceClips(el: Element): boolean {
 }
 
 /**
- * Create (or return) the 译文 node for a unit and show the pending spinner.
- * `targetLang` (e.g. "zh-CN") is stamped as `lang` so the browser renders the 译文
+ * Create (or return) the translation node for a unit and show the pending spinner.
+ * `targetLang` (e.g. "zh-CN") is stamped as `lang` so the browser renders the translation
  * with the target script's fonts / line-breaking and a screen reader switches
  * voice — the source's own `lang` would otherwise mis-apply to the translation.
  */
@@ -377,13 +377,13 @@ export function ensureGlossNode(
   // keyed on this attribute. Always stamped (even 'blend', which has no rule) so
   // the active style is inspectable and a live toggle is one attribute write.
   if (style) node.setAttribute(DATA_OMNI.style, style);
-  // Opt-in译文 font — 'kai' resolves to the TARGET language's written hand
-  // (楷体 / 教科書体 / serif italic / …, see ./hand-face); 'inherit', or a
-  // language with no such face, leaves the 译文 on the host font (no attribute
+  // Opt-in translation font — 'kai' resolves to the TARGET language's written hand
+  // (Kai calligraphy / textbook typefaces / serif italic / …, see ./hand-face); 'inherit', or a
+  // language with no such face, leaves the translation on the host font (no attribute
   // → no override), so we stamp nothing for it.
   const face = font === 'kai' ? handFaceFor(targetLang) : null;
   if (face) node.setAttribute(DATA_OMNI.font, face);
-  // `dir="auto"` lets the browser pick writing direction from the 译文's own text,
+  // `dir="auto"` lets the browser pick writing direction from the translation's own text,
   // so an RTL target (ar/he/fa) renders right-to-left even though it inherits an
   // LTR source/host. Re-evaluates as the spinner is replaced by real text.
   node.setAttribute('dir', 'auto');
@@ -397,7 +397,7 @@ export function ensureGlossNode(
   // is about to go either way (inside it, or beside it under the same parent).
   setPending(node, glossTree(unit.element));
 
-  // Whose font the 译文 would wear without a face: its parent's for an inside
+  // Whose font the translation would wear without a face: its parent's for an inside
   // gloss, the source's for the clipped sibling (mirrorTypography copies it).
   let fontHost: Element | null = null;
   if (mode === 'inline') {
@@ -405,10 +405,10 @@ export function ensureGlossNode(
     // reads on the same line.
     inlineHost(unit.element).appendChild(node);
   } else if (sourceClips(unit.element)) {
-    // Source clips its overflow (line-clamp / max-height) → an inside 译文 would
+    // Source clips its overflow (line-clamp / max-height) → an inside translation would
     // be hidden. Fall back to an afterend sibling; a sibling inherits from the
     // PARENT not the source, so mirror the source's type onto it. Stamp the
-    // source: the 仅译文 collapse selects `:has(descendant 译文)`, which cannot
+    // source: the translation-only collapse selects `:has(descendant translation)`, which cannot
     // see this outside gloss — the attribute is its collapse handle.
     unit.element.setAttribute(DATA_OMNI.clipped, '');
     unit.element.insertAdjacentElement('afterend', node);
@@ -425,7 +425,7 @@ export function ensureGlossNode(
 }
 
 /**
- * Freeze the font the 译文 would otherwise inherit onto it as SRC_FAMILY_VAR —
+ * Freeze the font the translation would otherwise inherit onto it as SRC_FAMILY_VAR —
  * the tail of every hand-face stack (styles.buildHandFaceCss), so a machine
  * without the face (optional OS fonts are often absent) degrades to the page's
  * own font, not to a browser-default serif. Read from the host element, never
@@ -440,7 +440,7 @@ function stampSourceFamily(node: HTMLElement, host: Element | null): void {
 }
 
 /**
- * Freeze the 译文's inherited type metrics onto itself as CSS vars (post-insert,
+ * Freeze the translation's inherited type metrics onto itself as CSS vars (post-insert,
  * so the computed values reflect the real parent chain / mirrored typography).
  * The translation-only display mode collapses the source's text to font-size 0
  * and these vars are how the gloss keeps its size (styles.buildDisplayModeCss).
@@ -453,7 +453,7 @@ function stampSourceFamily(node: HTMLElement, host: Element | null): void {
 /**
  * Run `fn` with the three-state display attribute lifted off <html>, restored
  * afterwards — the BATCH counterpart of stampSourceMetrics' per-node
- * neutralize. Creating N glosses under an active 仅译文 collapse would
+ * neutralize. Creating N glosses under an active translation-only collapse would
  * otherwise toggle the attribute (each toggle invalidates style for the whole
  * document, and the interleaved getComputedStyle forces a recalc) once per
  * node; hoisting makes a 16-unit batch cost 2 invalidations instead of 32.
@@ -487,10 +487,10 @@ function stampSourceMetrics(node: HTMLElement): void {
 }
 
 /**
- * Copy the source's type identity onto a 译文 that is NOT inside the source (the
- * block clipped-source fallback) so a heading's 译文 still reads as a heading. An
- * inside 译文 needs none of this — it inherits. Colour is left to inherit (NOT
- * copied) so the 译文 keeps following the host's light/dark. Real-browser only.
+ * Copy the source's type identity onto a translation that is NOT inside the source (the
+ * block clipped-source fallback) so a heading's translation still reads as a heading. An
+ * inside translation needs none of this — it inherits. Colour is left to inherit (NOT
+ * copied) so the translation keeps following the host's light/dark. Real-browser only.
  */
 function mirrorTypography(node: HTMLElement, source: Element): void {
   const win = source.ownerDocument.defaultView;
@@ -524,7 +524,7 @@ function glossTree(node: Node): Document | ShadowRoot {
   return isTree ? (root as Document | ShadowRoot) : node.ownerDocument!;
 }
 
-/** Show the loading spinner (three-petal spiral) inside a 译文 node. `tree` is
+/** Show the loading spinner (three-petal spiral) inside a translation node. `tree` is
  *  where the gloss lives, so the spinner can share that tree's geometry. */
 export function setPending(node: HTMLElement, tree: Document | ShadowRoot): void {
   node.setAttribute(DATA_OMNI.state, 'pending');
@@ -536,13 +536,13 @@ export function setPending(node: HTMLElement, tree: Document | ShadowRoot): void
   node.appendChild(spinner);
 }
 
-/** Fill a 译文 node with translated HTML (already restored/escaped). */
+/** Fill a translation node with translated HTML (already restored/escaped). */
 export function setTranslatedHtml(node: HTMLElement, html: string): void {
   node.setAttribute(DATA_OMNI.state, 'done');
   node.innerHTML = html;
 }
 
-/** Show an error marker on a 译文 node (icon + message, never colour alone). */
+/** Show an error marker on a translation node (icon + message, never colour alone). */
 export function setError(node: HTMLElement, message: string): void {
   node.setAttribute(DATA_OMNI.state, 'error');
   node.textContent = `⚠ ${message}`;

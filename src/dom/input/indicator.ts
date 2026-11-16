@@ -2,13 +2,13 @@
  * @module dom/input/indicator
  *
  * The transient hint shown next to an editable while its text is being
- * translated in place, the brief "撤销" affordance offered afterwards, and a
+ * translated in place, the brief "undo" affordance offered afterwards, and a
  * short-lived failure notice (input translation must never fail silently, but
  * must not interrupt typing either).
  *
  * Unlike page-translation gloss (which lives in the host DOM and inherits its
  * styles), this is a floating overlay — so it speaks OUR manuscript language:
- * paper-raised ground, warm ink, kai label, 朱 petal spinner. It follows the
+ * paper-raised ground, warm ink, kai label, cinnabar petal spinner. It follows the
  * HOST page's painted scheme (not the OS): a dark pill over a light page reads
  * as a glitch. Renders inside its own shadow root on a single
  * `<aie-omt-input-hint>` element, fully isolated and self-removing.
@@ -24,7 +24,7 @@ import { m } from '@/paraglide/messages.js';
 
 const HINT_TAG = `${PROJECT_PREFIX}-input-hint`;
 const SPINNER_CLASS = `${PROJECT_PREFIX}-input-hint-spinner`;
-const UNDO_MS = 4500; // how long the 撤销 affordance lingers
+const UNDO_MS = 4500; // how long the undo affordance lingers
 const FAIL_MS = 1600; // failure notice: long enough to read, gone before it nags
 
 /** Place the host element just under an editable's bounding box (viewport-fixed). */
@@ -142,7 +142,7 @@ export class InputHint {
     return { shadow, pill };
   }
 
-  /** Show the "翻译中…" spinner pill under `anchor`. */
+  /** Show the "Translating…" spinner pill under `anchor`. */
   spinner(anchor: Element): void {
     const { shadow, pill } = this.swapPill(anchor);
     // The spinner's `<use href="#…">` layers resolve only inside their OWN
@@ -159,7 +159,7 @@ export class InputHint {
   }
 
   /**
-   * A brief "未能翻译" notice, then gone. Input translation fails QUIETLY, not
+   * A brief "Translation failed" notice, then gone. Input translation fails QUIETLY, not
    * silently: the user pressed the gesture and deserves to know it didn't land,
    * but their draft is untouched, so nothing needs doing — no button, no nag.
    */
@@ -173,7 +173,7 @@ export class InputHint {
   }
 
   /**
-   * Swap the spinner for a clickable "撤销" affordance that restores the
+   * Swap the spinner for a clickable "undo" affordance that restores the
    * original text. Auto-dismisses after {@link UNDO_MS}.
    */
   undo(anchor: Element, onUndo: () => void): void {

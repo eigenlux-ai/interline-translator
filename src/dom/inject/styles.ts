@@ -2,11 +2,11 @@
  * @module dom/inject/styles
  *
  * Styles for the in-page translation nodes. These live in the HOST DOM (the
- * 译文 is injected next to the source, NOT in the shadow surface), so they're
+ * translation is injected next to the source, NOT in the shadow surface), so they're
  * applied via a constructed `adoptedStyleSheet` on the document — one sheet,
  * namespaced classes, no <style> tag mutation of the host's <head>.
  *
- * The base style is deliberately minimal — the 译文 should read as the source's
+ * The base style is deliberately minimal — the translation should read as the source's
  * own text in the target language (it INHERITS / mirrors the source), not as a
  * decorated annotation. Any visual distinction (underline, dim, highlight…) is an
  * opt-in preset, not baked in. Idempotent install.
@@ -22,10 +22,10 @@ export const GLOSS_CLASS = `${PROJECT_PREFIX}-gloss`;
 /** Class while a unit is awaiting its translation. */
 export const PENDING_CLASS = `${PROJECT_PREFIX}-pending`;
 
-/** 朱 cinnabar — the brand accent behind the tinted presets. */
+/** Cinnabar — the brand accent behind the tinted presets. */
 export const PRESET_ACCENT = '#C2402A';
 /** Per-gloss CSS vars carrying the SOURCE's inherited type metrics, stamped at
- *  creation (see wrapper.ensureGlossNode) — how the 译文 keeps its size when the
+ *  creation (see wrapper.ensureGlossNode) — how the translation keeps its size when the
  *  translation-only mode collapses the source's own text to font-size 0. */
 export const SRC_FONT_VAR = '--aie-omt-src-fs';
 export const SRC_LINE_VAR = '--aie-omt-src-lh';
@@ -35,7 +35,7 @@ export const SRC_LINE_VAR = '--aie-omt-src-lh';
 export const SRC_FAMILY_VAR = '--aie-omt-src-ff';
 
 /**
- * The visual treatment of each 译文 style preset, as declarative data so the
+ * The visual treatment of each translation style preset, as declarative data so the
  * injected stylesheet (below) and the settings preview render from ONE source
  * and can never drift. `common` applies in both layouts (keyed on the style
  * attribute); `block`/`inline` add layout-specific decls (a left-bar or panel
@@ -147,12 +147,12 @@ function modeRules(mode: DisplayMode, inner: string, body: string): string {
 
 /**
  * The three-state view (data-omni-display on <html>; absent = bilingual).
- *   - original: hide every 译文 — a quick peek at the untranslated page.
+ *   - original: hide every translation — a quick peek at the untranslated page.
  *   - translation: COLLAPSE the source's own text (font-size/line-height 0)
- *     while the 译文 restores its inherited metrics from the per-gloss vars
+ *     while the translation restores its inherited metrics from the per-gloss vars
  *     stamped at creation. Text vanishes without reserving space; images,
  *     icons and other non-text content keep their size (they are not
- *     translated, so they should stay). Gated on :has(译文) — a source whose
+ *     translated, so they should stay). Gated on :has(translation) — a source whose
  *     unit was SKIPPED (already target language, unchanged result) has no
  *     gloss and must never be collapsed into nothing.
  * Pure attribute-driven CSS: switching modes re-translates nothing and the
@@ -161,8 +161,8 @@ function modeRules(mode: DisplayMode, inner: string, body: string): string {
 function buildDisplayModeCss(): string {
   const gloss = `[${DATA_OMNI.translated}]`;
   const src = `[${DATA_OMNI.walked}]:has(${gloss})`;
-  // The clipped-source fallback puts the 译文 OUTSIDE the source (afterend
-  // sibling) — `:has(descendant 译文)` can't see it, so those sources carry an
+  // The clipped-source fallback puts the translation OUTSIDE the source (afterend
+  // sibling) — `:has(descendant translation)` can't see it, so those sources carry an
   // explicit attribute stamped at injection (wrapper.ensureGlossNode) AND the
   // rule re-checks the sibling gloss actually exists. The attribute alone is
   // not enough: it can go stale (unchanged-drop removes the gloss, a rewalk
@@ -175,7 +175,7 @@ function buildDisplayModeCss(): string {
     modeRules('original', gloss, 'display: none !important;'),
     modeRules('translation', src, collapse),
     // Host descendants of the source collapse too (host rules with explicit
-    // px sizes would otherwise resist the inherited 0); the 译文 and its own
+    // px sizes would otherwise resist the inherited 0); the translation and its own
     // descendants are excluded — they restore below and inherit within.
     modeRules('translation', `${src} *:not(${gloss}):not(${gloss} *)`, collapse),
     // Clipped sources: the OWN gloss is outside, but keep the exclusions
@@ -193,7 +193,7 @@ function buildDisplayModeCss(): string {
 
 /**
  * Stamp the three-state view on the page: ONE attribute write on <html> flips
- * every source/译文 at once (shadow-root sheet copies match it via
+ * every source/translation at once (shadow-root sheet copies match it via
  * :host-context). `bilingual` removes the attribute — the resting state
  * carries no marker. A deliberate, minimal, reversible host mutation in the
  * same class as the walk markers; PageTranslator.stop() clears it.
@@ -204,11 +204,11 @@ export function applyDisplayMode(doc: Document, mode: DisplayMode): void {
 }
 
 const CSS = `
-/* The 译文 is page CONTENT, not our UI — its job is to look like the text it
+/* The translation is page CONTENT, not our UI — its job is to look like the text it
    translates and not break layout, NOT to be an isolated/decorated annotation.
-   So by default it carries almost no style of its own: a block 译文 mirrors the
+   So by default it carries almost no style of its own: a block translation mirrors the
    source's font/size/weight/align/line-height (set inline by mirrorTypography),
-   and colour INHERITS (so it follows the host's own light/dark). An inline 译文
+   and colour INHERITS (so it follows the host's own light/dark). An inline translation
    lives inside the source and inherits all of that for free. Visual distinction
    from the original is left to an opt-in style preset, not baked in here. */
 ${OMNI_BLOCK_TAG} {
@@ -222,13 +222,13 @@ ${OMNI_BLOCK_TAG} {
 ${OMNI_INLINE_TAG} {
   /* MUST stay inline: the gloss lives INSIDE host controls (flex buttons, nav
      items). Without this the host's own rules can compute it block and push the
-     译文 onto its own line. !important because we're in the host DOM with no
+     translation onto its own line. !important because we're in the host DOM with no
      shadow isolation — host selectors routinely outrank a bare tag selector. */
   display: inline !important;
   white-space: inherit;
-  /* A small gap so "原文译文" don't glue together on the same line. */
+  /* A small gap so "source and translation" don't glue together on the same line. */
   margin-inline-start: 0.375em;
-  /* When appended inside a nav/TOC link, don't pick up its underline — the 译文
+  /* When appended inside a nav/TOC link, don't pick up its underline — the translation
      shouldn't masquerade as a second link. */
   text-decoration: none;
 }
@@ -237,14 +237,14 @@ ${OMNI_INLINE_TAG} {
    display — e.g. a search button's <kbd class="md:sl-flex"> computes flex and a
    <span class="md:sl-block"> computes block, breaking the gloss out of its line
    (and sl-hidden could even hide it). Force every reproduced descendant inline
-   so the 译文 always flows as one line. Exclude our own pending spinner, which
+   so the translation always flows as one line. Exclude our own pending spinner, which
    needs inline-block for its box/animation. By construction a unit is a leaf
    block, so all gloss content is inline-level — forcing inline is always safe. */
 ${OMNI_INLINE_TAG} *:not(.${PENDING_CLASS}),
 ${OMNI_BLOCK_TAG} *:not(.${PENDING_CLASS}) {
   display: inline !important;
 }
-/* Pending spinner: the three-petal spiral (a 朱色彗星 sweeping a hypotrochoid).
+/* Pending spinner: the three-petal spiral (a cinnabar comet sweeping a hypotrochoid).
    Geometry + DOM factory live in ./petal-loader; this folds in its CSS (scoped
    under PENDING_CLASS). Runtime-free — pure CSS sweep, inherits currentColor. */
 ${buildPetalCss(PENDING_CLASS)}
@@ -257,11 +257,11 @@ ${buildPetalCss(PENDING_CLASS)}
         when injected into inline containers.
    Rules are generated from PRESET_VISUALS to keep on-page styling in sync with preview. */
 ${OMNI_BLOCK_TAG}, ${OMNI_INLINE_TAG} {
-  --aie-omt-accent: ${PRESET_ACCENT}; /* 朱 cinnabar — brand accent for the tinted presets */
+  --aie-omt-accent: ${PRESET_ACCENT}; /* Cinnabar — brand accent for the tinted presets */
 }
 ${buildPresetCss()}
 
-/* Opt-in译文 font: the 'kai' setting resolves per target language to that
+/* Opt-in translation font: the 'kai' setting resolves per target language to that
    language's written hand (see ./hand-face), stamped as data-omni-font.
    !important so it wins over the inline font-family mirrorTypography copies
    onto the block clipped-source fallback, and over host rules (no shadow
@@ -269,7 +269,7 @@ ${buildPresetCss()}
 ${buildHandFaceCss()}
 
 /* ─────────────────────────────────────────────────────────────────────────
-   Three-state view (双语/仅译文/仅原文) — see buildDisplayModeCss. */
+   Three-state view (bilingual/translation-only/original-only) — see buildDisplayModeCss. */
 ${buildDisplayModeCss()}
 `;
 

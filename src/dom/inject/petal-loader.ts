@@ -1,11 +1,11 @@
 /**
  * @module dom/inject/petal-loader
  *
- * The pending spinner shown inside a 译文 node while its translation is in flight.
+ * The pending spinner shown inside a translation node while its translation is in flight.
  *
  * Shape: a "three-petal spiral" — a hypotrochoid (R=3, r=1, d=3):
  *   x(t) = 2cos t + 3cos 2t ,  y(t) = 2sin t − 3sin 2t ,  t ∈ [0, 2π]
- * A 朱色彗星 sweeps along the curve, trailing a fade. It reads as our own quiet
+ * A cinnabar comet sweeps along the curve, trailing a fade. It reads as our own quiet
  * mark, not a generic ring.
  *
  * CHEAP by construction, which matters because the spinner lives in the HOST
@@ -25,7 +25,7 @@
  * spinner scale (~1em) they are sub-pixel and invisible.
  *
  * Colour is `currentColor`, so the spinner inherits the host's text colour just
- * like the 译文 it precedes — it blends into the page rather than asserting a hue.
+ * like the translation it precedes — it blends into the page rather than asserting a hue.
  */
 
 import { DATA_OMNI, PROJECT_PREFIX } from '@/constants';

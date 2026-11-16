@@ -13,6 +13,7 @@ const state = vi.hoisted(() => ({
 vi.mock('./subtitle-revision', () => ({ subtitleTranslationRevision: vi.fn(async () => 'test-revision') }));
 vi.mock('@webext-core/proxy-service', () => ({ registerService: vi.fn(), createProxyService: vi.fn() }));
 vi.mock('./storage', () => ({
+  initializeConfig: vi.fn(async () => {}),
   getConfig: state.read,
   setConfig: vi.fn(),
   watchConfig: (cb: (c: Config) => void) => {
@@ -34,6 +35,7 @@ it('does not mirror a stale startup read after a newer settings event', async ()
       })
   );
   registerConfigGateway();
+  await new Promise((r) => setTimeout(r, 0));
   const old = defaultConfig();
   const next = { ...old, siteControl: { ...old.siteControl, defaultMode: 'never' as const } };
   state.watch!(next);

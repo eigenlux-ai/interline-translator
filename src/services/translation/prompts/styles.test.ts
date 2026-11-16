@@ -39,7 +39,7 @@ describe('styleBlock injection (single pipeline)', () => {
     expect(system).toContain('scholarly register');
   });
 
-  it('素译 (no style) leaves the skeleton unmodified', () => {
+  it('plain translation (no style) leaves the skeleton unmodified', () => {
     const { system } = buildTranslatePrompt('Hi', 'auto', 'zh-CN', bare);
     expect(system).not.toContain('Style directives');
   });
@@ -136,7 +136,7 @@ describe('resolvePromptStyle', () => {
     expect(resolvePromptStyle(only, 'gone.example.com')?.id).toBe('builtin:academic');
   });
 
-  it('no style anywhere → undefined (素译)', () => {
+  it('no style anywhere → undefined (plain translation)', () => {
     expect(resolvePromptStyle({ styles: [], siteRules: [] })).toBeUndefined();
   });
 });
@@ -167,7 +167,7 @@ describe('builtin styles', () => {
   });
 });
 
-describe('注疏 length-aware modes', () => {
+describe('annotation length-aware modes', () => {
   it('isLexicalUnit: words and tight phrases yes, prose no', () => {
     expect(isLexicalUnit('serendipity')).toBe(true);
     expect(isLexicalUnit('break a leg')).toBe(true);
@@ -252,7 +252,7 @@ describe('expert templates — independence and placeholder safety', () => {
   });
 });
 
-describe('通读全文 — page overview context', () => {
+describe('Whole-page context — page overview context', () => {
   it('buildSummaryPrompt: target-language, entity-focused, page text as the user message', () => {
     const { system, prompt } = buildSummaryPrompt('Long page text …', 'zh-CN');
     expect(system).toContain('Simplified Chinese');

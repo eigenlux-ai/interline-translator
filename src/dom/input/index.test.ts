@@ -264,7 +264,7 @@ describe('InputTranslator', () => {
     t.stop();
   });
 
-  it("撤销 restores the editor's OWN markup, not the flattened text it read", async () => {
+  it("Undo restores the editor's OWN markup, not the flattened text it read", async () => {
     const editable = document.createElement('div');
     editable.className = 'ck-content';
     editable.setAttribute('contenteditable', 'true');

@@ -1,7 +1,7 @@
 /**
  * @module react-app/apps/selection
  *
- * 划词 translation: when the user selects text on the host page, a small 朱 pill
+ * Selection translation: when the user selects text on the host page, a small cinnabar pill
  * appears at the selection; clicking it streams the translation into a card
  * (kai font, translation only — no explanation). Lives in a shadow surface, so
  * its styles are fully isolated from the host page.
@@ -41,7 +41,7 @@ interface SelectionInfo {
   x: number;
   y: number;
   /** Paragraphs before/after the selection — captured at selection time (the
-   *  live Selection is gone by the time the user clicks 译). */
+   *  live Selection is gone by the time the user clicks Translate). */
   neighbors: string[];
 }
 
@@ -80,7 +80,7 @@ function isSelectionGesture(e: KeyboardEvent): boolean {
 }
 
 /**
- * Emphasize 「anchor」 quotes in 注疏 notes — the passage-mode prompt makes
+ * Emphasize "anchor" quotes in annotation notes — the passage-mode prompt makes
  * each note begin with the exact source fragment it explains, so the eye can
  * jump from note to word. Plain string transform over the streaming text;
  * unmatched/unclosed quotes pass through untouched.
@@ -130,7 +130,7 @@ function isOwnUi(e: Event): boolean {
 }
 
 /**
- * The selection's text EXCLUDING our own injected 译文. On a translated page a
+ * The selection's text EXCLUDING our own injected translation. On a translated page a
  * paragraph sweep drags the gloss along — `sel.toString()` would send a
  * Chinese-English mash back to the engine and present garbage as the result.
  */
@@ -164,7 +164,7 @@ export default function SelectionApp() {
   const [notesFailed, setNotesFailed] = useState(false);
   const [config] = usePublicConfig();
   const siteEnabled = !!config && isSiteEnabled(config.siteControl, location.hostname);
-  // 注疏 — the reader's-companion notes under the translation. LLM-only: with
+  // annotation — the reader's-companion notes under the translation. LLM-only: with
   // the free MT as the default engine the affordance simply doesn't exist.
   const canAnnotate = config ? config.defaultProviderKind !== '' && config.defaultProviderKind !== 'google-mt' : false;
   // The card speaks the language its user reads; synced before any m.*() below.
@@ -454,7 +454,7 @@ export default function SelectionApp() {
         </UnstyledButton>
       )}
 
-      {/* 夹笺卡片 */}
+      {/* Selection card */}
       {sel && (
         <Transition mounted={open} transition="fade-up" duration={180} timingFunction="cubic-bezier(0.22, 1, 0.36, 1)">
           {(enter) => (
@@ -475,7 +475,7 @@ export default function SelectionApp() {
                 overflow: 'hidden',
               }}
             >
-              {/* Header — the drag handle: its blank area (译 badge + Badge
+              {/* Header — the drag handle: its blank area (translation badge + Badge
                   included, the action buttons NOT) moves the card. */}
               <Group
                 justify="space-between"

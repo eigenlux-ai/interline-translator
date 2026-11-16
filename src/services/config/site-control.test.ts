@@ -61,7 +61,7 @@ describe('shouldAutoTranslate', () => {
 describe('setSiteMode', () => {
   const base = { defaultMode: 'auto' as const, rules: [{ pattern: '*.example.com', mode: 'never' as const }] };
 
-  it('adds an exact-host always rule (turn on 总是翻译此站)', () => {
+  it('adds an exact-host always rule (turn on Always translate this site)', () => {
     const next = setSiteMode(base, 'news.ycombinator.com', 'always');
     expect(resolveSiteMode(next, 'news.ycombinator.com')).toBe('always');
     expect(next.rules).toContainEqual({ pattern: 'news.ycombinator.com', mode: 'always' });

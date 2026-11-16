@@ -6,7 +6,7 @@ import { locales } from './fixtures.mjs';
 
 const sourceUrl = 'https://github.com/eigenlux-ai/interline-translator';
 for (const locale of Object.keys(locales)) {
-  const dir = `assets/store/${locale}`;
+  const dir = `assets/store/chrome/${locale}`;
   const files = await readdir(dir);
   const screenshots = files.filter((name) => /^screenshot-\d-.*\.png$/.test(name));
   assert.equal(screenshots.length, 5, `${locale}: five screenshots required`);
@@ -32,12 +32,12 @@ for (const locale of Object.keys(locales)) {
     `${locale}: 5 screenshots + 2 promo images; summary ${summary.length}/132; source/Issues/PR links present`
   );
 }
-const manifest = JSON.parse(await readFile('assets/store/capture-manifest.json', 'utf8'));
+const manifest = JSON.parse(await readFile('assets/store/chrome/capture-manifest.json', 'utf8'));
 assert.equal(manifest.evidence.length, 20, 'capture provenance for all screenshots');
 assert.equal(new Set(manifest.evidence.map((e) => e.file)).size, 20, 'unique capture provenance');
 for (const record of manifest.evidence) {
   assert.match(record.sourceSha256, /^[a-f0-9]{64}$/, record.file + ': source hash');
-  const bytes = await readFile('assets/store/' + record.file);
+  const bytes = await readFile('assets/store/chrome/' + record.file);
   if (record.outputSha256) {
     assert.equal(createHash('sha256').update(bytes).digest('hex'), record.outputSha256, record.file + ': output hash');
   }

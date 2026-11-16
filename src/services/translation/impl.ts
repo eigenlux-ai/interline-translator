@@ -9,7 +9,7 @@
  *
  * Every PROXY-path call (popup panel, input translation) funnels through one
  * shared RequestQueue: concurrency cap, in-flight dedup, retry with backoff.
- * The STREAMING paths (划词 / whole-page batch) deliberately do not — they need
+ * The STREAMING paths (selection / whole-page batch) deliberately do not — they need
  * incremental output, and their upstream pressure is bounded by the stream
  * shared actual-call admission + watchdog instead (services/stream/limiter).
  */

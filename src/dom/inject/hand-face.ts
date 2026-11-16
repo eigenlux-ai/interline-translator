@@ -2,13 +2,13 @@
  * @module dom/inject/hand-face
  *
  * The 'kai' translationFont, generalised: every target language gets the face
- * that holds 楷体's place in ITS own typographic culture — a written, bookish
+ * that plays the role of Kai calligraphy in its own typographic culture — a written, bookish
  * hand set against the page's (usually sans) UI type:
  *
- *   - zh (Hans)       楷体          LXGW WenKai / Kaiti SC / KaiTi
- *   - zh (Hant)       楷書          LXGW WenKai TC / Kaiti TC / BiauKai / DFKai-SB
- *   - ja              教科書体      Klee / YuKyokasho / UD Digi Kyokasho
- *   - ko              명조체        NanumMyeongjo / AppleMyungjo / Batang
+ *   - zh (Hans)         Kai calligraphy     LXGW WenKai / Kaiti SC / KaiTi
+ *   - zh (Hant)         Kai calligraphy     LXGW WenKai TC / Kaiti TC / BiauKai / DFKai-SB
+ *   - ja                textbook typefaces  Klee / YuKyokasho / UD Digi Kyokasho
+ *   - ko                Myeongjo            NanumMyeongjo / AppleMyungjo / Batang
  *   - Latin/Cyrillic/Greek  serif italic — the Western interlinear-gloss convention
  *   - ar              Naskh (the book hand)
  *   - anything else   no override (the page font)
@@ -18,7 +18,7 @@
  * host page. Many of these are optional OS assets (macOS downloadable fonts,
  * Windows supplemental-font features) and may be absent; every stack therefore
  * ends in the SOURCE's own computed font (SRC_FAMILY_VAR, stamped per gloss),
- * so a machine without the face degrades to exactly the 跟随页面 look instead
+ * so a machine without the face falls back to the page's inherited font instead
  * of a browser-default serif.
  *
  * Family names are kept ASCII (the bundle audit forbids non-ASCII); Chromium

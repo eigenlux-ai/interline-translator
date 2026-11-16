@@ -8,8 +8,8 @@
  *
  *   for await (const delta of streamTranslate(req)) appendToBubble(delta);
  *
- * Two starters share the machinery: `streamTranslate` (a selection's 译文) and
- * `streamAnnotate` (the 夹笺's 注疏 notes — LLM-only; the server errors on MT).
+ * Two starters share the machinery: `streamTranslate` (a selection's translation) and
+ * `streamAnnotate` (the selection card's annotation notes — LLM-only; the server errors on MT).
  */
 
 import { randomId } from '@/core/uid';
@@ -113,7 +113,7 @@ export function streamTranslate(
   return streamOverPort({ type: 'start', requestId, request }, signal);
 }
 
-/** Stream 注疏 notes for a translated selection. Throws on server error (incl. MT engines). */
+/** Stream annotation notes for a translated selection. Throws on server error (incl. MT engines). */
 export function streamAnnotate(
   input: Omit<AnnotateStart, 'type' | 'requestId'>,
   requestId: string = randomId(),

@@ -1,12 +1,35 @@
 /**
  * @module data/models/lang
  *
- * Language code primitives. Pure types + small literal tables — zero runtime
- * weight, safe to import from any surface (content/UI/background).
+ * Language code primitives, pure normalization helpers and small label tables.
+ * Safe to import from any surface (content/UI/background).
  */
 
 /** A language code (BCP-47-ish, e.g. 'en', 'zh-CN', 'ja'). */
 export type LangCode = string;
+
+/** Normalize BCP-47 language tags once for UI locale resolution and translation defaults. */
+export function normalizeLanguageCode(code: string): LangCode | null {
+  try {
+    const locale = new Intl.Locale(code.replaceAll('_', '-'));
+    if (locale.language === 'zh') {
+      const traditional = locale.script ? locale.script === 'Hant' : ['TW', 'HK', 'MO'].includes(locale.region ?? '');
+      return traditional ? 'zh-TW' : 'zh-CN';
+    }
+    return locale.language === 'und' ? null : locale.language;
+  } catch {
+    return null;
+  }
+}
+
+/** CLDR-backed names; preserve unknown or custom provider codes without throwing. */
+export function languageDisplayName(code: LangCode, locale = 'en'): string {
+  try {
+    return new Intl.DisplayNames([locale], { type: 'language', fallback: 'code' }).of(code) ?? code;
+  } catch {
+    return code;
+  }
+}
 
 /** UI locales the interface ships in (message bundles under `src/i18n`). */
 export const UI_LANGS = ['zh', 'zh-TW', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'ru', 'pt', 'it', 'ar'] as const;
@@ -55,8 +78,9 @@ export const COMMON_LANGS = [
 
 /**
  * Readable names for the seeded language pickers (each in its own script —
- * the way OS language lists do it). Any code still works; unknown codes fall
- * back to the bare code in `langOptions`.
+ * the way OS language lists do it). Other codes use Intl.DisplayNames, falling
+ * back to the bare code when the runtime has no name for it. Preserve native
+ * casing rather than title-casing labels.
  */
 export const LANG_LABELS: Record<string, string> = {
   en: 'English',
@@ -64,18 +88,18 @@ export const LANG_LABELS: Record<string, string> = {
   'zh-TW': '中文 (繁體)',
   ja: '日本語',
   ko: '한국어',
-  fr: 'Français',
+  fr: 'français',
   de: 'Deutsch',
-  es: 'Español',
-  ru: 'Русский',
-  pt: 'Português',
-  it: 'Italiano',
+  es: 'español',
+  ru: 'русский',
+  pt: 'português',
+  it: 'italiano',
   ar: 'العربية',
 };
 
-/** Picker options with readable labels (falls back to the bare code). */
+/** Picker labels use each language's own script, including languages outside COMMON_LANGS. */
 export function langOptions(langs: readonly LangCode[] = COMMON_LANGS): Array<{ value: string; label: string }> {
-  return langs.map((c) => ({ value: c, label: LANG_LABELS[c] ?? c }));
+  return langs.map((c) => ({ value: c, label: LANG_LABELS[c] ?? languageDisplayName(c, c) }));
 }
 
 /**

@@ -1,7 +1,7 @@
 /**
  * @module react-app/components/settings/style-options
  *
- * Shared UI projection of the style universe (素译 + builtins + user styles):
+ * Shared UI projection of the style universe (plain translation + builtins + user styles):
  * localized names for builtin ids and Select data — used by the options
  * management page AND the popup quick switcher, so the two lists can't drift.
  */
@@ -13,12 +13,12 @@ import { BUILTIN_STYLES } from '@/services/translation/prompts/builtin-styles';
 /** Sentinel Select value for "no style" — Config stores it as undefined. */
 export const PLAIN_STYLE = '';
 
-/** Config → Select value ('' represents 素译). */
+/** Config → Select value ('' represents plain translation). */
 export function toStyleSelectValue(id: string | undefined): string {
   return id ?? PLAIN_STYLE;
 }
 
-/** Select value → Config value (Select's null and the 素译 sentinel both mean undefined). */
+/** Select value → Config value (Select's null and the plain translation sentinel both mean undefined). */
 export function fromStyleSelectValue(v: string | null): string | undefined {
   return v && v !== PLAIN_STYLE ? v : undefined;
 }

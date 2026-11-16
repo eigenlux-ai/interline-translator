@@ -13,11 +13,46 @@ import { browser, storage } from '#imports';
 import { PROJECT_PREFIX } from '@/constants';
 import type { Config, ProviderConfig } from '@/data/models';
 import { migrate } from './migrations/v001';
+import { PUBLIC_CONFIG_KEY } from './public';
 import { configSchema, defaultConfig, providerConfigSchema } from './schema';
 
 const CONFIG_KEY = `local:${PROJECT_PREFIX}:config` as const;
 
-const configStorage = storage.defineItem<Config>(CONFIG_KEY, { fallback: defaultConfig() });
+// Reads must stay side-effect free in every context. Only the background
+// gateway initializes this item, serialized with all settings writes.
+const configStorage = storage.defineItem<Config>(CONFIG_KEY);
+
+// Keep the chosen seed stable through transient storage failures. It is only
+// a pending snapshot: persisted config always wins, in every extension context.
+let pendingSeed: Promise<Config> | undefined;
+
+function initialConfig(): Promise<Config> {
+  pendingSeed ??= (async () => {
+    const fresh = defaultConfig();
+    const previous = await storage.getItem<Record<string, unknown>>(PUBLIC_CONFIG_KEY);
+    if (!previous) return fresh;
+
+    // v1.1.1 always mirrored its defaults, even when the user never saved the
+    // full config. That snapshot distinguishes an upgrade from a fresh install.
+    const legacy = defaultConfig('zh-CN');
+    for (const key of ['translate', 'inputTranslation', 'siteControl', 'appearance', 'videoSubtitles'] as const) {
+      const parsed = configSchema.shape[key].safeParse(previous[key]);
+      if (parsed.success) Object.assign(legacy, { [key]: parsed.data });
+    }
+    const language = configSchema.shape.language.safeParse({ ui: previous.uiLanguage });
+    if (language.success) legacy.language = language.data;
+    return legacy;
+  })().catch((error) => {
+    pendingSeed = undefined;
+    throw error;
+  });
+  return pendingSeed.then((config) => structuredClone(config));
+}
+
+/** Background-only: call inside the gateway's write queue. Never overwrite an existing item. */
+export async function initializeConfig(): Promise<void> {
+  if ((await configStorage.getValue()) == null) await setConfig(await initialConfig());
+}
 
 /**
  * Salvage a corrupted `providers` array entry by entry. This section is the one
@@ -50,6 +85,8 @@ function salvageProviders(raw: unknown): ProviderConfig[] | undefined {
  */
 export async function getConfig(): Promise<Config> {
   const raw = await configStorage.getValue();
+  if (raw == null) return initialConfig();
+  pendingSeed = undefined;
   const migrated = migrate(raw as unknown as Record<string, unknown>);
   const parsed = configSchema.safeParse(migrated);
   if (parsed.success) return parsed.data;
@@ -82,6 +119,7 @@ export async function setConfig(next: Config, base?: Config): Promise<void> {
   }
   const parsed = configSchema.parse(next);
   await configStorage.setValue(parsed);
+  pendingSeed = undefined;
 }
 
 /** Subscribe to config changes from any context. Returns an unwatch fn. */

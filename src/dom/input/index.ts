@@ -53,7 +53,7 @@ export class InputTranslator {
   private pending: AbortController | null = null;
   private stopFn: (() => void) | null = null;
   /**
-   * The last in-place edit, kept so the 撤销 affordance can restore the original.
+   * The last in-place edit, kept so the undo affordance can restore the original.
    * `rich` is the editor's own serialization of that original when the adapter
    * had one — without it a restore writes back plain text, which silently
    * destroys the bold/links/lists the draft came with.
@@ -166,7 +166,7 @@ export class InputTranslator {
       // (CodeMirror/Monaco) render only the viewport into the DOM, so the DOM
       // read is a fragment — prefer the MODEL text via the main-world injector;
       // everything else (and injector miss) uses the DOM read. The same read
-      // brings back the rich snapshot 撤销 restores from.
+      // brings back the rich snapshot undo restores from.
       const model = isMainWorldEditor(el) ? await readViaMainWorld(el) : null;
       if (signal.aborted) return;
       const baseline = stripTriggerSpaces(model?.text ?? readEditableText(el));
@@ -225,7 +225,7 @@ export class InputTranslator {
       if (signal.aborted) return;
       if (applied) {
         this.lastEdit = { el, kind, original: baseline, ...(model?.rich ? { rich: model.rich } : {}) };
-        this.hint.undo(el, () => this.restoreLast()); // brief 撤销 affordance
+        this.hint.undo(el, () => this.restoreLast()); // brief undo affordance
       } else {
         // The write didn't land (editor fought every strategy). The draft is
         // intact — say so briefly instead of vanishing the spinner wordlessly.
@@ -234,7 +234,7 @@ export class InputTranslator {
     } catch {
       if (signal.aborted) return;
       // Quietly, not silently: the user pressed the gesture — a 1.6s notice
-      // ("未能翻译，原文未动") acknowledges it without interrupting typing.
+      // ("Translation failed; original unchanged") acknowledges it without interrupting typing.
       this.hint.fail(el);
     } finally {
       if (this.pending === controller) {

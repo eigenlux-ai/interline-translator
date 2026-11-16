@@ -14,7 +14,7 @@ Interline is a fully open-source Chrome extension for bilingual reading and tran
 
 [MIT licensed](./LICENSE) · Chrome 116+ · Built-in key-free translation · Bring your own AI key
 
-![Interline translating a French article into English, with original and translation paired by paragraph](./assets/store/global/screenshot-1-bilingual.png)
+![Interline translating a French article into English, with original and translation paired by paragraph](./assets/store/chrome/global/screenshot-1-bilingual.png)
 
 ## Read, understand, reply
 
@@ -26,7 +26,7 @@ Interline is a fully open-source Chrome extension for bilingual reading and tran
 | Make reading comfortable | Switch between bilingual, translation-only and original-only views; choose from 10 display styles and light or dark appearance. |
 | Keep wording consistent | With an AI engine, customize translation styles, prompts and glossaries. Apply preferences to specific sites. |
 
-See the actual [selection card](./assets/store/global/screenshot-2-selection.png), [reading appearance](./assets/store/global/screenshot-3-settings.png), [input translation](./assets/store/global/screenshot-4-input-translation.png) and [video subtitles](./assets/store/global/screenshot-5-subtitles.png). The first four images show the real extension. The subtitle illustration combines original AI-generated scenery with product sample captions and is labeled as a preview.
+See the actual [selection card](./assets/store/chrome/global/screenshot-2-selection.png), [reading appearance](./assets/store/chrome/global/screenshot-3-settings.png), [input translation](./assets/store/chrome/global/screenshot-4-input-translation.png) and [video subtitles](./assets/store/chrome/global/screenshot-5-subtitles.png). The first four images show the real extension. The subtitle illustration combines original AI-generated scenery with product sample captions and is labeled as a preview.
 
 ## Get started
 

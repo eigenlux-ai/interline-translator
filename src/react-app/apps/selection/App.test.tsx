@@ -91,7 +91,7 @@ function sendPointer(
   );
 }
 
-/** Click 译 and wait for the streamed card — the handle only exists when open. */
+/** Click Translate and wait for the streamed card — the handle only exists when open. */
 async function openCard(baseElement: HTMLElement) {
   await act(async () => {
     pill(baseElement)!.click();
@@ -141,7 +141,7 @@ describe('SelectionApp', () => {
     expect(pill(baseElement)).not.toBeNull();
   });
 
-  it('excludes our own injected 译文 from the selection source (translated-page sweep)', async () => {
+  it('excludes our own injected translation from the selection source (translated-page sweep)', async () => {
     // A translated paragraph: source text + an injected gloss INSIDE it. A
     // sweep selects both; the pill must translate only the source.
     const p = document.createElement('p');
@@ -211,7 +211,7 @@ describe('SelectionApp', () => {
     expect(parseInt(box.style.top, 10)).toBeLessThanOrEqual(600 - 40);
   });
 
-  it('注疏 affordance exists only for LLM engines; expanding streams the notes', async () => {
+  it('annotation affordance exists only for LLM engines; expanding streams the notes', async () => {
     // Seed the projection with an LLM default engine (real storage, no mock).
     await storage.setItem(PUBLIC_CONFIG_KEY, {
       ...defaultPublicConfig(),
@@ -237,7 +237,7 @@ describe('SelectionApp', () => {
     expect(vi.mocked(streamAnnotate)).toHaveBeenCalledOnce();
   });
 
-  it('a clean stream that yields NOTHING renders 重试, not an empty card', async () => {
+  it('a clean stream that yields NOTHING renders Retry, not an empty card', async () => {
     // ai-sdk swallows provider errors on textStream (they arrive via onError);
     // the server now re-throws, but a genuinely empty completion still ends
     // clean with zero deltas. Either way the card must not look finished-empty.
@@ -255,7 +255,7 @@ describe('SelectionApp', () => {
     expect([...baseElement.querySelectorAll('button')].some((b) => b.textContent === '重试')).toBe(true);
   });
 
-  it('with the free MT as default engine the 注疏 affordance does not exist', async () => {
+  it('with the free MT as default engine the annotation affordance does not exist', async () => {
     const { baseElement } = await mountWithSelection(); // empty storage → google-mt defaults
     await act(async () => {
       pill(baseElement)!.click();

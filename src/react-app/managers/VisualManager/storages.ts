@@ -17,6 +17,6 @@ export const visualColorSchemeStorage = storage.defineItem<VisualColorScheme>(
 
 export const visualPrimaryColorStorage = storage.defineItem<VisualPrimaryColor>(
   `local:${PROJECT_PREFIX}:visual:primary-color`,
-  // Brand 朱 (cinnabar) by default; the picker can override with any named/HEX color.
+  // Brand cinnabar by default; the picker can override with any named/HEX color.
   { fallback: 'cinnabar' }
 );

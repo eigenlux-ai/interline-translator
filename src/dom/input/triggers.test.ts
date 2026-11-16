@@ -53,7 +53,7 @@ describe('parseInputCommand', () => {
 
   it('the colon form refuses aliases that are ordinary English words', () => {
     // `it` is the Italian alias, and "it: broken again" is how people write a
-    // sentence; lowercase `tw:` is a trigger warning, not 繁中.
+    // sentence; lowercase `tw:` is a trigger warning, not Traditional Chinese.
     expect(parseInputCommand('it: broken again')).toEqual({ text: 'it: broken again' });
     expect(parseInputCommand('tw: food mention')).toEqual({ text: 'tw: food mention' });
     // The slash form is explicit intent, so it keeps both.

@@ -1,13 +1,13 @@
 /**
  * @module dom/selection-context
  *
- * Neighboring-paragraph extraction for 划词 translation. A lone selection has
+ * Neighboring-paragraph extraction for selection translation. A lone selection has
  * no self-context — the sentence before and after are what disambiguate
  * pronouns, ellipses and terminology — so we climb from the selection to its
  * containing block and take the visible text of the adjacent block siblings.
  *
  * Best-effort by design: no computed styles (works in non-layout DOMs), a
- * fixed block-tag list instead of display: queries, and our own injected 译文
+ * fixed block-tag list instead of display: queries, and our own injected translation
  * stripped so a translated page doesn't feed translations back as "context".
  */
 
@@ -50,7 +50,7 @@ function containingBlock(node: Node | null): Element | null {
   return null;
 }
 
-/** Visible text of an element with our injected 译文 removed. */
+/** Visible text of an element with our injected translation removed. */
 function textWithoutGloss(el: Element): string {
   const clone = el.cloneNode(true) as Element;
   clone.querySelectorAll(`[${DATA_OMNI.translated}]`).forEach((g) => g.remove());

@@ -32,7 +32,7 @@ export interface TranslationService {
   /** Best-effort source language detection. */
   detectLang(text: string): Promise<LangCode>;
   /**
-   * 通读全文: one compact page overview for translation context. Returns ''
+   * Whole-page context: one compact page overview for translation context. Returns ''
    * when the default engine can't reason (MT) or the call fails — callers
    * treat '' as "no overview", never as an error.
    */

@@ -29,8 +29,8 @@ export interface StreamCancel {
 }
 
 /**
- * content → background: open a streaming 注疏 (annotation) for a translated
- * selection — the reader's-companion notes under the 夹笺's translation.
+ * content → background: open a streaming annotation for a translated
+ * selection — the reader's-companion notes under the selection card's translation.
  * LLM-only: the server rejects when the resolved engine can't reason.
  */
 export interface AnnotateStart {

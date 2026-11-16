@@ -36,7 +36,7 @@ describe('serializeInline', () => {
       const { text, tags } = serializeInline(host);
       expect(text).toBe('ask {{0}} about it');
       expect(tags[0]).toContain('@kayla');
-      expect(tags[0]).not.toContain('<img'); // the avatar is never duplicated into the 译文
+      expect(tags[0]).not.toContain('<img'); // the avatar is never duplicated into the translation
     } finally {
       host.remove();
     }
@@ -44,7 +44,7 @@ describe('serializeInline', () => {
 
   it('drops aria-hidden subtrees entirely — decoration is never reproduced', () => {
     // nextjs.org's author row: an aria-hidden avatar facepile whose <img>s,
-    // cloned into the 译文, lost their --size context and rendered enormous.
+    // cloned into the translation, lost their --size context and rendered enormous.
     const { text, tags } = serializeInline(
       el('Posted by <span aria-hidden="true"><img src="a.png"><img src="b.png"></span>team')
     );
@@ -99,7 +99,7 @@ describe('serializeInline', () => {
   it('strips nested aria-hidden decoration out of opaque fragments too', () => {
     // aria-hidden one wrapper deep, inside an opaque translate=no span: the
     // per-child drop can't see it, so the opaque fragment must scrub it — else
-    // the 译文 reproduces decoration that visibleText already dropped from the key.
+    // the translation reproduces decoration that visibleText already dropped from the key.
     const { text, tags } = serializeInline(
       el('See <span translate="no">Brand <span aria-hidden="true">★</span></span> docs')
     );
@@ -120,7 +120,7 @@ describe('serialize → restore round-trip', () => {
   });
 
   it('reproduces formatting but never identity/behaviour attributes (no second id in the page)', () => {
-    // The 译文 stands BESIDE the source, so a replayed `id` gives the document
+    // The translation stands BESIDE the source, so a replayed `id` gives the document
     // two of something it has one of: getElementById still answers with the
     // original (document order), which is what makes it silent, while
     // querySelectorAll('#x'), aria-labelledby and host hooks see the twin.
@@ -131,7 +131,7 @@ describe('serialize → restore round-trip', () => {
     expect(tags[0]).toBe('<span class="hl" style="color:red">');
     const { html, ok } = restoreInline(text.replace('read ', '读').replace('this', '这个'), tags);
     expect(ok).toBe(true);
-    // Formatting survives — that is what 带样式翻译 promises …
+    // Formatting survives — that is what formatted translation promises …
     expect(html).toBe('读<span class="hl" style="color:red">这个</span>');
     // … the page's identity space does not gain a duplicate.
     const probe = document.createElement('div');
@@ -162,7 +162,7 @@ describe('serialize → restore round-trip', () => {
   it('strips MT-mangled placeholder braces in the fallback (no visible junk)', () => {
     // Some MT reformats the markers: inner whitespace, extra braces, or a brace
     // dropped on EITHER side (`{{0`, `0}}`, `0}`). The mismatch fallback must
-    // still leave NO brace debris in the 译文.
+    // still leave NO brace debris in the translation.
     const { tags } = serializeInline(el('a <b>b</b> c'));
     for (const mangled of [
       '你好 {{ 0 }} 世界',
@@ -215,7 +215,7 @@ describe('countPlaceholders', () => {
   });
 });
 
-describe('splitHtmlByBreaks — 逐段对照 translation-side paragraphing', () => {
+describe('splitHtmlByBreaks — Paragraph interleaving translation-side paragraphing', () => {
   it('splits at single and grouped <br> runs (a run is ONE separator)', () => {
     expect(splitHtmlByBreaks('one<br>two')).toEqual(['one', 'two']);
     expect(splitHtmlByBreaks('one<br><br>two<br>three')).toEqual(['one', 'two', 'three']);

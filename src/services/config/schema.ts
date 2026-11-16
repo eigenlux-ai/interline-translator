@@ -11,6 +11,7 @@
 import { z } from 'zod';
 import { BILINGUAL_STYLES, DISPLAY_MODES, type Config } from '@/data/models';
 import { UI_LANGS } from '@/data/models/lang';
+import { defaultInputTranslation, getBrowserTranslationTarget } from './language-defaults';
 import { CONFIG_VERSION } from './migrations/v001';
 import { defaultVideoSubtitles, SUBTITLE_REQUEST_LIMITS } from './video-subtitles';
 
@@ -226,7 +227,7 @@ export const FREE_MT_PROVIDER_ID = 'google-free';
  * Factory for a fresh default config. Seeds the free no-key MT provider as the
  * default so the extension translates out of the box; users add LLM keys later.
  */
-export function defaultConfig(): Config {
+export function defaultConfig(target = getBrowserTranslationTarget()): Config {
   return {
     version: CONFIG_VERSION,
     videoSubtitles: defaultVideoSubtitles(),
@@ -241,10 +242,10 @@ export function defaultConfig(): Config {
         enabled: true,
       },
     ],
-    translate: { defaultProviderId: FREE_MT_PROVIDER_ID, source: 'auto', target: 'zh-CN', skipLanguages: [] },
+    translate: { defaultProviderId: FREE_MT_PROVIDER_ID, source: 'auto', target, skipLanguages: [] },
     prompt: { styles: [], siteRules: [] },
     glossary: [],
-    inputTranslation: { enabled: true, triggerCount: 3, target: 'en' },
+    inputTranslation: defaultInputTranslation(target),
     siteControl: { defaultMode: 'auto', rules: [] },
     appearance: {
       colorScheme: 'auto',

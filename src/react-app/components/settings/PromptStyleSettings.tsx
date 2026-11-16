@@ -1,7 +1,7 @@
 /**
  * @module react-app/components/settings/PromptStyleSettings
  *
- * 「翻译风格」— the PromptStyle system's management surface: the global style
+ * Translation style — the PromptStyle system's management surface: the global style
  * picker, the style editor, per-site rules, and the expert escape hatch.
  *
  * Selection auto-saves like every other section. The expert templates are the
@@ -288,7 +288,7 @@ function StyleEditor({
 function SiteRules({ config, onSave }: PromptStyleSettingsProps) {
   const prompt = config.prompt;
   // New rules default to the first builtin — a rule always names a REAL style
-  // (pinning 素译 per site is not a thing; that's just "no rule").
+  // (pinning plain translation per site is not a thing; that's just "no rule").
   const [styleId, setStyleId] = useState(BUILTIN_STYLES[0].id);
   const selectData = styleSelectData(prompt, { includePlain: false });
 

@@ -215,7 +215,7 @@ export async function handleStart(
 }
 
 /**
- * 注疏 — reader's-companion notes for a translated selection. LLM-only by
+ * Annotation — reader's-companion notes for a translated selection. LLM-only by
  * nature (the free MT can't reason about nuance); the client hides the
  * affordance for MT engines, so an error here is a config drift, not a normal
  * path. Not behind the batch limiter: one user click, one stream — same

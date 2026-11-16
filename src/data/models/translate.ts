@@ -22,7 +22,7 @@ export interface GlossaryEntry {
 export interface TranslateContext {
   /** Page/article title. */
   title?: string;
-  /** One-paragraph whole-page overview (通读全文) — consistency anchor. */
+  /** One-paragraph whole-page overview (whole-page context) — consistency anchor. */
   summary?: string;
   /** Neighbouring paragraphs for coherence (kept short). */
   neighbors?: string[];

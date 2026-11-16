@@ -105,7 +105,7 @@ export const INLINE_TAGS = new Set([
 /** Tags whose text is CODE/DATA, never visible content (Reddit scatters
  *  bootstrap `<script>SML.load(...)</script>` loaders through the light DOM).
  *  Unlike `<code>`/`<kbd>` (inline code that IS visible and round-trips),
- *  these are excluded from translatable text AND dropped from the 译文. */
+ *  these are excluded from translatable text AND dropped from the translation. */
 export const NON_CONTENT_TAGS = new Set(['SCRIPT', 'STYLE', 'NOSCRIPT', 'TEMPLATE']);
 
 /** Syntax-highlighter class fingerprints — a <pre> carrying one (or wrapped
@@ -120,19 +120,19 @@ export const CHIP_MAX_CHARS = 40;
 /** Interactive descendants that disqualify an element from staying IN-unit
  *  (stage 1, isInlineChip + isCustomPhrasing). Both exceptions let a
  *  non-phrasing tag ride inside a sentence; a control among them would be
- *  reproduced into the 译文 as a second, fake one — the shell disease. Keeping
+ *  reproduced into the translation as a second, fake one — the shell disease. Keeping
  *  the list here means the two predicates can never drift apart. */
 export const CONTROL_SELECTOR = 'button, input, select, textarea';
 
-/** Controls + media that must be dropped from the 译文 (never duplicated —
+/** Controls + media that must be dropped from the translation (never duplicated —
  *  a cloned radio/avatar beside the real one is the shell disease), plus the
  *  ruby ANNOTATION tags. `<rt>`/`<rp>`/`<rtc>` carry a reading of the SOURCE
- *  script (漢字 → かんじ): painted over a 译文 it annotates words that are no
+ *  script (漢字 → かんじ): painted over a translation it annotates words that are no
  *  longer there, and left in the payload it makes the engine translate the
  *  same word twice. Only the ruby BASE is content, so only it survives.
  *  Consumed by stage 3 (serializeInline drops these, opaqueFragment scrubs
  *  them) and by visibleText — `<rt>` is the first member here that HAS text,
- *  so the two must now agree explicitly: text the 译文 won't carry must not
+ *  so the two must now agree explicitly: text the translation won't carry must not
  *  key or size the unit either. Failure direction: a dropped reading costs
  *  an annotation, never a sentence. */
 export const DROP_FROM_GLOSS = new Set([
@@ -154,16 +154,16 @@ export const DROP_FROM_GLOSS = new Set([
 ]);
 
 /** Everything that must be scrubbed from an opaque fragment before it
- *  re-enters the 译文: media/controls, ruby readings AND aria-hidden
+ *  re-enters the translation: media/controls, ruby readings AND aria-hidden
  *  decoration (the per-child drop can't see inside an element that rides
  *  through whole). */
 export const OPAQUE_SCRUB_SELECTOR = [...[...DROP_FROM_GLOSS].map((t) => t.toLowerCase()), '[aria-hidden="true"]'].join(
   ','
 );
 
-/** Attributes a reproduced inline open tag must NOT carry into the 译文
+/** Attributes a reproduced inline open tag must NOT carry into the translation
  *  (stage 3, openTag). serializeInline replays the source's inline tags so
- *  带样式翻译 keeps its formatting — but a tag is more than its look, and the
+ *  formatted translation keeps its formatting — but a tag is more than its look, and the
  *  replay is a COPY standing beside the original:
  *  - `id` / `name` are the document's IDENTITY space. A second `id="brand"`
  *    leaves getElementById resolving to the original (document order), which
@@ -171,12 +171,12 @@ export const OPAQUE_SCRUB_SELECTOR = [...[...DROP_FROM_GLOSS].map((t) => t.toLow
  *    querySelectorAll('#brand'), in-page anchor targets and any host script
  *    counting hooks now see two of something the page has one of.
  *  - the id-REFERENCING aria attributes and `for` point AT a real control the
- *    译文 does not own, so a copy re-labels / re-describes that widget from a
+ *    translation does not own, so a copy re-labels / re-describes that widget from a
  *    decorative twin (and `for` re-targets its click).
  *  - `on*` is host BEHAVIOUR: a reproduced handler fires the page's logic a
  *    second time from a node the page never created.
  *  `class` / `style` / `href` are deliberately KEPT — reproducing inline
- *  formatting (and a link's destination) is what 带样式翻译 promises. This is
+ *  formatting (and a link's destination) is what formatted translation promises. This is
  *  DROP_FROM_GLOSS's rule one level down: never clone a control, never clone
  *  a hook. Attribute-only, so it changes nothing about which TEXT a unit
  *  carries — visibleText has no stake in it. Failure direction: a gloss that
@@ -197,7 +197,7 @@ export const DROP_ATTRS_FROM_GLOSS = new Set([
 
 /** The `on*` handler family, which is a PREFIX rather than a list (a host page
  *  can carry any of them). Deliberately greedy: a non-handler attribute that
- *  happens to start with `on` costs the 译文 nothing, an unstripped handler
+ *  happens to start with `on` costs the translation nothing, an unstripped handler
  *  costs the host a second execution. */
 export const EVENT_HANDLER_ATTR = /^on[a-z]/;
 

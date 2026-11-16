@@ -1,5 +1,5 @@
 /**
- * Behavioral tests for the SINGLE stream server (划词 path): the shared cache
+ * Behavioral tests for the SINGLE stream server (selection path): the shared cache
  * (read hit → replay, write-back on success), and the same ai-sdk 6
  * error/abort semantics pinned for the batch server.
  */

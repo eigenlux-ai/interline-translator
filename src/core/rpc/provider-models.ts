@@ -80,7 +80,7 @@ export class ModelsService {
  * (same as the ai-sdk default in services/translation/provider/llm), while the
  * UI's third-party example endpoint lives only as a placeholder hint
  * (`BASE_URL_HINT` in react-app/components/settings/ProviderSettings, labeled
- * 「第三方服务」). Exported for the endpoint-invariant test.
+ * "Third-party service"). Exported for the endpoint-invariant test.
  */
 export const DEFAULT_BASE: Record<Exclude<LlmProviderKind, 'google'>, string> = {
   openai: 'https://api.openai.com/v1',

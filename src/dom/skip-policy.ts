@@ -50,7 +50,7 @@ function matchesPolicy(lang: string, policy: SkipPolicy): boolean {
  * The language a text's SCRIPT decisively indicates, or null when the script
  * isn't decisive (Latin could be any of dozens of languages). Conservative on
  * mixed text — only calls it Chinese when Han dominates, so a mostly-English line
- * with one 中文 word stays unknown (→ gets translated).
+ * with one Chinese word stays unknown (→ gets translated).
  */
 function scriptLang(text: string): 'ja' | 'ko' | 'zh' | null {
   if (/[぀-ヿ]/u.test(text)) return 'ja'; // hiragana + katakana

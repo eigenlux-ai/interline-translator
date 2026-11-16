@@ -14,7 +14,7 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 
 [MIT ライセンス](./LICENSE) · Chrome 116+ · キー不要の翻訳エンジン内蔵 · 自分の AI キーにも対応
 
-![英語の記事と日本語の訳文を段落ごとに表示する Interline の実際の画面](./assets/store/ja/screenshot-1-bilingual.png)
+![英語の記事と日本語の訳文を段落ごとに表示する Interline の実際の画面](./assets/store/chrome/ja/screenshot-1-bilingual.png)
 
 ## 読む、理解する、伝える
 
@@ -26,7 +26,7 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 | 読みやすく整える | 対訳・訳文のみ・原文のみを切り替え、10種類の表示スタイルやライト・ダーク表示を選べます。 |
 | 語調や用語をそろえる | AI エンジンで翻訳スタイル、プロンプト、用語集を設定し、サイトごとに適用できます。 |
 
-実際の[選択翻訳カード](./assets/store/ja/screenshot-2-selection.png)、[読書の表示設定](./assets/store/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/ja/screenshot-4-input-translation.png)、[動画字幕](./assets/store/ja/screenshot-5-subtitles.png)もご覧ください。最初の4枚は実際の拡張機能です。字幕画像は独自の AI 生成背景と製品の例文を組み合わせた表示イメージで、その旨を明記しています。
+実際の[選択翻訳カード](./assets/store/chrome/ja/screenshot-2-selection.png)、[読書の表示設定](./assets/store/chrome/ja/screenshot-3-settings.png)、[入力欄の翻訳](./assets/store/chrome/ja/screenshot-4-input-translation.png)、[動画字幕](./assets/store/chrome/ja/screenshot-5-subtitles.png)もご覧ください。最初の4枚は実際の拡張機能です。字幕画像は独自の AI 生成背景と製品の例文を組み合わせた表示イメージで、その旨を明記しています。
 
 ## 使い始める
 
@@ -108,6 +108,6 @@ pnpm build        # Chrome 本番ビルド
 pnpm zip          # 拡張機能のパッケージ化
 ```
 
-構成、テストページ、多言語対応、ビルド検査は[貢献ガイド（英語）](./CONTRIBUTING.md)へ。ストア紹介文、実際のスクリーンショット、再生成手順は[ストア素材ガイド（中国語）](./assets/store/README.md)にまとめています。
+構成、テストページ、多言語対応、ビルド検査は[貢献ガイド（英語）](./CONTRIBUTING.md)へ。ストア紹介文、実際のスクリーンショット、再生成手順は[ストア素材ガイド（英語）](./assets/store/README.md)にまとめています。
 
 WXT、React、Mantine、TypeScript を使用し、[aie-wxt-mantine-surface-template](https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template) を基盤としています。

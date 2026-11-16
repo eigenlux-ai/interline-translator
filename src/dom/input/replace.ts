@@ -71,7 +71,7 @@ function replaced(el: HTMLElement, value: string, before: string): boolean {
   // Exact match first: the field holds the translation and NOTHING else, so
   // whether the translation happens to contain the original is irrelevant. The
   // containment test below cannot tell "the model echoed the source / kept a
-  // proper noun / emitted 原文（译文）" apart from "the write appended after the
+  // proper noun / emitted source (translation)" apart from "the write appended after the
   // original", and reading a clean write as an append escalated the chain into
   // an editor that was already correct.
   if (now === wanted) return true;
@@ -270,7 +270,7 @@ async function replaceContentEditable(el: HTMLElement, value: string, signal?: A
  * `signal` invalidates pending fallback work when the feature stops. Undo omits
  * the baseline check, but still preserves edits made during an async fallback.
  *
- * `rich` is 撤销's snapshot of the document as the EDITOR serialized it, so a
+ * `rich` is undo's snapshot of the document as the EDITOR serialized it, so a
  * restore puts the bold/links/lists back instead of the flattened text. Only
  * the main-world route can honour it — the DOM chain below simulates typing and
  * has no way to say "this run of characters was bold", so it restores plain

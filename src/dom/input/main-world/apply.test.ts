@@ -385,7 +385,7 @@ describe('resolveEditor — wangEditor v5 via window.wangEditor.DomEditor', () =
   });
 });
 
-describe('rich undo snapshots — 撤销 must not flatten the document', () => {
+describe('rich undo snapshots — Undo must not flatten the document', () => {
   /** A CKEditor 5 stand-in wired through its real getData/setData round-trip. */
   function mountRichCk(html: string) {
     const editable = document.createElement('div');

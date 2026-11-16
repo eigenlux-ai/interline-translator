@@ -19,9 +19,9 @@ import {
 } from '@mantine/core';
 import { cinnabarDark, cinnabarLight, dangerDark, dangerLight } from './color-ramps';
 
-/* ── 朱 cinnabar: the single accent / primary.
+/* ── Cinnabar: the single accent / primary.
  *   The ramp generator emits ONE 10-step ramp (not light+dark); default
- *   light/dark difference is only a primaryShade index swap. Our 朱 must be
+ *   light/dark difference is only a primaryShade index swap. Our cinnabar must be
  *   precise in BOTH schemes, so each scheme has its own ramp, pinned with
  *   virtualColor (Mantine 7.7+), 10 steps each. The four ramps come PRECOMPUTED
  *   from ./color-ramps (generated once from @mantine/colors-generator) so this
@@ -33,7 +33,7 @@ import { cinnabarDark, cinnabarLight, dangerDark, dangerLight } from './color-ra
  *   Error states always pair icon + copy, never colour alone.
  *   In global.css we map `--mantine-color-error` → `--mantine-color-danger-6`
  *   (auto-follows scheme through virtualColor). dangerLight/dangerDark come
- *   precomputed from ./color-ramps like the 朱 ramps. ── */
+ *   precomputed from ./color-ramps like the cinnabar ramps. ── */
 
 /* Warm earth and amber roles around glacier daylight and obsidian night; cinnabar remains the primary action. */
 const sand: MantineColorsTuple = [
@@ -115,7 +115,7 @@ export const interlineTheme = createTheme({
 
   /* ── Custom identity tokens, shared across surfaces (via theme.other) ── */
   other: {
-    // Translation font = LXGW WenKai (classical annotation hand); used for all译文.
+    // Translation font = LXGW WenKai (classical annotation hand); used for all translation.
     fontKai: '"LXGW WenKai", "Kaiti SC", "Noto Serif SC", serif',
     fontSerif: '"EB Garamond", Georgia, "Songti SC", serif',
     gloss: { light: '#514233', dark: '#E0CFB7' },

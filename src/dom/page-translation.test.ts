@@ -134,7 +134,7 @@ afterEach(() => {
 });
 
 describe('PageTranslator', () => {
-  it('injects 译文 nodes with translated text for visible units', async () => {
+  it('injects translation nodes with translated text for visible units', async () => {
     // ControlledIO, not IOStub: packing is a property of ONE observer delivery
     // (see enqueue — the flush timer is not reset per arrival), and discovery
     // is chunked across 0ms tasks under a 6ms budget. With an auto-visible
@@ -369,7 +369,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('带样式翻译 off: the engine sees plain text and the 译文 carries no inline markup', async () => {
+  it('Formatted translation off: the engine sees plain text and the translation carries no inline markup', async () => {
     document.body.innerHTML = '<p>Hello <a href="/x">world</a> and <b>friends</b> of the web</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0, richText: false });
     pt.start();
@@ -386,7 +386,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('带样式翻译 default (on): placeholders flow to the engine and markup is restored', async () => {
+  it('Formatted translation default (on): placeholders flow to the engine and markup is restored', async () => {
     document.body.innerHTML = '<p>Hello <a href="/x">world</a> of links and other words</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -399,7 +399,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('通读全文 on: batches issued AFTER the overview lands carry it; SPA nav invalidates it', async () => {
+  it('Whole-page context on: batches issued AFTER the overview lands carry it; SPA nav invalidates it', async () => {
     summarizePage.mockResolvedValue('K8s 运维指南概览');
     // enough prose to clear the 600-char floor
     document.body.innerHTML = `<p>${'K8s operations '.repeat(50)}</p>`;
@@ -422,7 +422,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('通读全文 off (default): no summary call, no summary in context', async () => {
+  it('Whole-page context off (default): no summary call, no summary in context', async () => {
     document.body.innerHTML = '<p>Hello plain</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -466,7 +466,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('stop() restores the page exactly (removes 译文 + clears markers)', async () => {
+  it('stop() restores the page exactly (removes translation + clears markers)', async () => {
     document.body.innerHTML = '<p>Hello world</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -480,7 +480,7 @@ describe('PageTranslator', () => {
   });
 
   it('uses inline mode for flex children — appended inside, no block sibling', async () => {
-    // Block children of a flex row: each is its own unit; a block 译文 sibling
+    // Block children of a flex row: each is its own unit; a block translation sibling
     // would add a flex item and break the row → must inject inline.
     document.body.innerHTML = '<div id="row" style="display:flex"><div>Item one</div><div>Item two</div></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
@@ -493,12 +493,12 @@ describe('PageTranslator', () => {
     expect(document.querySelectorAll('aie-omt-block').length).toBe(0);
     const firstCell = row.children[0];
     expect(firstCell.lastElementChild?.getAttribute(DATA_OMNI.layout)).toBe('inline');
-    expect(firstCell.textContent).toContain('[t]Item one'); // 译文 lives inside the cell
+    expect(firstCell.textContent).toContain('[t]Item one'); // translation lives inside the cell
     pt.stop();
   });
 
   it('long table cell → inline (no stray block sibling inside the <tr>)', async () => {
-    // A block 译文 sibling of a <td> would be a stray non-cell node breaking the
+    // A block translation sibling of a <td> would be a stray non-cell node breaking the
     // table. Long cell text must therefore inject inline (appended inside the td).
     const long = 'This table cell holds a long sentence that exceeds the inline threshold for sure here.';
     document.body.innerHTML = `<table><tbody><tr><td>${long}</td></tr></tbody></table>`;
@@ -510,13 +510,13 @@ describe('PageTranslator', () => {
     expect(tr.querySelector('aie-omt-block')).toBeNull(); // no stray block node in the row
     const td = document.querySelector('td')!;
     expect(td.querySelector('aie-omt-inline[data-omni-translated]')).not.toBeNull();
-    expect(td.textContent).toContain(`[t]${long}`); // 译文 lives inside the cell
+    expect(td.textContent).toContain(`[t]${long}`); // translation lives inside the cell
     pt.stop();
   });
 
-  it('content link in prose → 译文 stays at the paragraph level, NOT inside the link', async () => {
+  it('content link in prose → translation stays at the paragraph level, NOT inside the link', async () => {
     // A prose link is not its own unit; the surrounding direct text stops the
-    // descent at the <p>, so the 译文 must never bury itself in the inline link
+    // descent at the <p>, so the translation must never bury itself in the inline link
     // (which would make it clickable / inherit link styling). Real-browser block
     // nav-link same-line descent is verified separately in the browser.
     document.body.innerHTML = '<p>see <a href="/x">this</a> now</p>'; // short → inline mode
@@ -531,9 +531,9 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('nav link unit (whole content is one <a>) → 译文 carries NO duplicate <a>', async () => {
+  it('nav link unit (whole content is one <a>) → translation carries NO duplicate <a>', async () => {
     // A TOC/sidebar item `<li><a><span>text</span></a>`: the link wraps the
-    // entire unit. The 译文 must reproduce only the text, never a second working
+    // entire unit. The translation must reproduce only the text, never a second working
     // <a href> (which, appended inside the original <a>, is an invalid a-in-a).
     document.body.innerHTML = '<li><a href="#prereq"><span>Prerequisites</span></a></li>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
@@ -541,7 +541,7 @@ describe('PageTranslator', () => {
     await waitForDone(1);
 
     const gloss = document.querySelector(`aie-omt-inline[${DATA_OMNI.translated}]`)!;
-    expect(gloss.querySelector('a')).toBeNull(); // no reproduced link inside the 译文
+    expect(gloss.querySelector('a')).toBeNull(); // no reproduced link inside the translation
     expect(gloss.textContent).toContain('[t]Prerequisites');
     // exactly one anchor on the page — the original, untouched
     expect(document.querySelectorAll('a[href="#prereq"]').length).toBe(1);
@@ -575,7 +575,7 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('partial content link (link wraps only part of the unit) → 译文 KEEPS the link', async () => {
+  it('partial content link (link wraps only part of the unit) → translation KEEPS the link', async () => {
     translateBatch.mockImplementation(async ({ items }: { items: string[] }) => ({
       items: items.map((s) => s.replace('see', '见').replace('this', '这个')),
       providerId: 'mock',
@@ -586,7 +586,7 @@ describe('PageTranslator', () => {
     await waitForDone(1);
 
     const gloss = document.querySelector(`[${DATA_OMNI.translated}]`)!;
-    expect(gloss.querySelector('a')?.getAttribute('href')).toBe('/x'); // link preserved in 译文
+    expect(gloss.querySelector('a')?.getAttribute('href')).toBe('/x'); // link preserved in translation
     pt.stop();
   });
 
@@ -632,15 +632,15 @@ describe('PageTranslator', () => {
     pt.start();
     await tick();
 
-    // No 译文 injected for icon-only links (the sr-only label is not visible text).
+    // No translation injected for icon-only links (the sr-only label is not visible text).
     expect(document.querySelectorAll('[data-omni-translated]').length).toBe(0);
     expect(translateBatch).not.toHaveBeenCalled();
     pt.stop();
   });
 
-  it('visible text + sr-only label → translates the visible text, drops sr-only from 译文', async () => {
+  it('visible text + sr-only label → translates the visible text, drops sr-only from translation', async () => {
     // A control with a real visible label AND an sr-only helper: translate the
-    // visible label only; the sr-only text must not enter the 译文.
+    // visible label only; the sr-only text must not enter the translation.
     document.body.innerHTML = '<button><span class="sr-only">extra context</span>Save</button>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -671,9 +671,9 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('already-target / untranslatable text (engine returns it unchanged) → no 译文', async () => {
+  it('already-target / untranslatable text (engine returns it unchanged) → no translation', async () => {
     // The engine echoes the input back (text is already the target language, or a
-    // bare proper noun). We must not inject a 译文 that just duplicates the source.
+    // bare proper noun). We must not inject a translation that just duplicates the source.
     translateBatch.mockImplementation(async ({ items }: { items: string[] }) => ({
       items: items.map((s) => s), // unchanged
       providerId: 'mock',
@@ -690,10 +690,10 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('already-target text that contained inline tags (engine drops placeholders) → no 译文', async () => {
+  it('already-target text that contained inline tags (engine drops placeholders) → no translation', async () => {
     // The engine returns the visible text unchanged but WITHOUT the placeholder
     // markers ({{0}}…) — so it equals unit.text, not unit.serialized.text. The
-    // guard must compare against the plain visible text too, or a duplicate 译文
+    // guard must compare against the plain visible text too, or a duplicate translation
     // survives. Source is already Chinese, with an inline <code> in the middle.
     translateBatch.mockImplementation(async ({ items }: { items: string[] }) => ({
       // strip the {{n}} placeholders the serializer inserted for <code> → plain text
@@ -709,8 +709,8 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('host removes a translated source → its orphaned afterend 译文 is swept', async () => {
-    // The clipped-source fallback puts the 译文 as an afterend SIBLING (not inside
+  it('host removes a translated source → its orphaned afterend translation is swept', async () => {
+    // The clipped-source fallback puts the translation as an afterend SIBLING (not inside
     // the source), so when a host surgically removes only the source element the
     // sibling would be left orphaned. onMutations(removedNodes) must sweep it by
     // walkId. (happy-dom has no layout, so we hand-build the afterend-sibling
@@ -740,11 +740,11 @@ describe('PageTranslator', () => {
     pt.stop();
   });
 
-  it('host MOVES a translated source (remove + re-add) → keeps its 译文, does not drop it', async () => {
+  it('host MOVES a translated source (remove + re-add) → keeps its translation, does not drop it', async () => {
     // A drag-reorder / virtual-list recycle / keyed reconcile moves a node: it
     // appears in removedNodes AND addedNodes of the same batch. By the time the
     // observer runs the source is re-attached (isConnected), so we must NOT treat
-    // it as removed — its inside 译文 moved with it and must survive, and the unit
+    // it as removed — its inside translation moved with it and must survive, and the unit
     // must stay tracked (not silently dropped from translation forever).
     document.body.innerHTML =
       '<div id="from"><p>A fairly long paragraph that goes into block mode for sure here please.</p></div>' +
@@ -759,7 +759,7 @@ describe('PageTranslator', () => {
     document.getElementById('to')!.appendChild(p); // MOVE the source across containers
     await tick();
 
-    // 译文 still present, still inside the moved source, still exactly one.
+    // translation still present, still inside the moved source, still exactly one.
     expect(p.parentElement?.id).toBe('to');
     expect(p.querySelector('[data-omni-translated]')).not.toBeNull();
     expect(document.querySelectorAll('[data-omni-translated]').length).toBe(1);
@@ -775,10 +775,10 @@ describe('PageTranslator', () => {
 
     const heading = document.querySelector('h2')!;
     const para = document.querySelector('p')!;
-    // Short heading → inline 译文 appended INSIDE, on the same line.
+    // Short heading → inline translation appended INSIDE, on the same line.
     expect(heading.querySelector('aie-omt-inline[data-omni-translated]')).not.toBeNull();
     expect(heading.querySelector('aie-omt-block')).toBeNull();
-    // Long paragraph → block 译文 appended INSIDE the source (groups with the
+    // Long paragraph → block translation appended INSIDE the source (groups with the
     // text, on its own line via display:block), NOT an afterend sibling.
     expect(para.querySelector('aie-omt-block[data-omni-translated]')).not.toBeNull();
     expect(para.nextElementSibling?.tagName.toLowerCase()).not.toBe('aie-omt-block');
@@ -849,7 +849,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     pt.stop();
   });
 
-  it('replaces a stale 译文 when the source TEXT changes in place (characterData)', async () => {
+  it('replaces a stale translation when the source TEXT changes in place (characterData)', async () => {
     document.body.innerHTML = '<p id="chat">First message</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -914,7 +914,7 @@ describe('PageTranslator — dynamic content (reveal / text change / node pool)'
     pt.stop();
   });
 
-  it('the rescan healer NEVER refills stale 译文 onto a recycled node (guard in refillFromCache)', async () => {
+  it('the rescan healer NEVER refills stale translation onto a recycled node (guard in refillFromCache)', async () => {
     document.body.innerHTML = '<p id="row">Original text</p>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -1082,7 +1082,7 @@ describe('PageTranslator — shadow DOM (open roots)', () => {
 });
 
 describe('PageTranslator — dynamic entries respect skip-context ancestors (final-review H1/H2)', () => {
-  it('typing inside a contenteditable editor NEVER injects 译文 (walk prunes at the ancestor; mutations start inside)', async () => {
+  it('typing inside a contenteditable editor NEVER injects translation (walk prunes at the ancestor; mutations start inside)', async () => {
     document.body.innerHTML =
       '<p>Normal page text</p><div id="editor" contenteditable="true"><div id="line">draft line</div></div>';
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
@@ -1518,10 +1518,10 @@ describe('re-injection cap hardening (element-keyed + decay + stale guard)', () 
   });
 });
 
-describe('逐段对照 paragraphInterleave', () => {
+describe('Paragraph interleaving paragraphInterleave', () => {
   const multiPara = '<p>First paragraph here<br><br>Second paragraph here<br>Third paragraph here</p>';
 
-  it('OFF (default): whole 译文 stays one gloss at the unit end', async () => {
+  it('OFF (default): whole translation stays one gloss at the unit end', async () => {
     document.body.innerHTML = multiPara;
     const pt = new PageTranslator(document.body, { source: 'auto', target: 'zh-CN', flushDelayMs: 0 });
     pt.start();
@@ -1625,7 +1625,7 @@ describe('逐段对照 paragraphInterleave', () => {
   });
 });
 
-describe('逐段对照 — structural safety (review fixes)', () => {
+describe('Paragraph interleaving — structural safety (review fixes)', () => {
   it('a <br> nested inside an inline child forces the whole-block fallback', async () => {
     // Counts LOOK equal (1 nested break both sides) but interleaving would
     // slice the reproduced <a> markup and insert a gloss inside the link.
@@ -1725,7 +1725,7 @@ describe('逐段对照 — structural safety (review fixes)', () => {
   });
 });
 
-describe('逐段对照 — self-eviction loop guard (oracle B-1)', () => {
+describe('Paragraph interleaving — self-eviction loop guard (oracle B-1)', () => {
   it('a SECOND partial eviction still heals (the re-place must not burn the quota on itself)', async () => {
     document.body.innerHTML = '<p>First paragraph here<br><br>Second paragraph here</p>';
     const pt = new PageTranslator(document.body, {
@@ -1751,7 +1751,7 @@ describe('逐段对照 — self-eviction loop guard (oracle B-1)', () => {
   });
 });
 
-describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
+describe('Paragraph interleaving — newline paragraphs (pre-wrap hosts, v2)', () => {
   const PRE = 'style="white-space:pre-wrap"';
 
   it('interleaves \\n-separated paragraphs of a single text node (the X/Threads shape)', async () => {
@@ -1861,7 +1861,7 @@ describe('逐段对照 — newline paragraphs (pre-wrap hosts, v2)', () => {
   });
 });
 
-describe('逐段对照 — paragraph interleave edge cases (evidence gate, nl refill)', () => {
+describe('Paragraph interleaving — edge cases (evidence gate, nl refill)', () => {
   const PRE = 'style="white-space:pre-wrap"';
 
   it('B-1: a text change ELSEWHERE in the unit must NOT delete minted host paragraphs', async () => {
@@ -1913,7 +1913,7 @@ describe('逐段对照 — paragraph interleave edge cases (evidence gate, nl re
   });
 });
 
-describe('逐段对照 — X multi-span shape (v2.1 DOM carving)', () => {
+describe('Paragraph interleaving — X multi-span shape (v2.1 DOM carving)', () => {
   it('interleaves newlines buried inside inline spans (the real tweetText shape)', async () => {
     // X slices tweet prose into multiple inline <span>s; the \n separators
     // live INSIDE span text nodes, never as direct children of the unit.
@@ -1944,7 +1944,7 @@ describe('逐段对照 — X multi-span shape (v2.1 DOM carving)', () => {
   });
 });
 
-describe('逐段对照 — no carving into interactive elements (v2.1 self-review)', () => {
+describe('Paragraph interleaving — no carving into interactive elements (v2.1 self-review)', () => {
   it('newlines inside an <a> never mint segments — gloss must not become link content', async () => {
     document.body.innerHTML =
       '<div style="white-space:pre-wrap">Intro text before the linked address here <a href="/x">First address line\n\nSecond address line</a> trailing text after</div>';
@@ -2378,7 +2378,7 @@ describe('re-injection HTML cache (lastHtmlById) LRU cap', () => {
     const cache = htmlCache(pt);
     expect([...cache.keys()]).toEqual([walkId('#u1'), walkId('#u2')]); // u1 is the oldest
 
-    // Host deletes u1's 译文 → the SPA re-injection path refills it FROM CACHE
+    // Host deletes u1's translation → the SPA re-injection path refills it FROM CACHE
     // (zero network, no new batch — the peek above is also its LRU touch).
     document.querySelector('#u1 [data-omni-translated]')!.remove();
     await waitFor(() => !!document.querySelector('#u1 [data-omni-translated]'));
@@ -2409,7 +2409,7 @@ describe('re-injection HTML cache (lastHtmlById) LRU cap', () => {
     const cache = htmlCache(pt);
     expect(cache.has(walkId('#u1'))).toBe(false); // u1's HTML was LRU-evicted
 
-    // Host deletes u1's 译文. Its cached HTML is gone, so the heal falls back to
+    // Host deletes u1's translation. Its cached HTML is gone, so the heal falls back to
     // re-entering the pipeline (rewalk → streamBatchTranslate). Production
     // serves that request from the Dexie translation cache — the payload is the
     // identical text, hence the identical cache key — and returns it with ZERO

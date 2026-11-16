@@ -37,7 +37,7 @@ const settle = (ms: number) => new Promise((r) => setTimeout(r, ms));
  * `readRich`/`writeRich` are the editor's OWN document round-trip, present only
  * on adapters whose instance exposes both halves (CKEditor's getData/setData,
  * TipTap's getHTML/setContent, Lexical's editor state…). They exist for ONE
- * caller — the 撤销 baseline — so a translated document can be put back with its
+ * caller — the undo baseline — so a translated document can be put back with its
  * bold/links/lists intact; translations themselves are always written as plain
  * text through `write`. An adapter that cannot round-trip its markup simply
  * omits the pair and undoes plain text, which is what every adapter did before.
@@ -52,7 +52,7 @@ export interface EditorHandle {
 /**
  * The rich half of a handle — `{}` unless BOTH ends of the round-trip are
  * reachable. Never half a pair: a snapshot we could not write back would make
- * 撤销 silently do nothing, which is worse than restoring plain text.
+ * undo silently do nothing, which is worse than restoring plain text.
  */
 function richIf(
   available: boolean,
@@ -540,7 +540,7 @@ export function resolveEditor(el: Element): { name: string; handle: EditorHandle
   return null;
 }
 
-/** What one read of an editor yields: its model text, plus the 撤销 snapshot when it has one. */
+/** What one read of an editor yields: its model text, plus the undo snapshot when it has one. */
 export interface EditorRead {
   text: string;
   rich?: RichSnapshot;
@@ -556,7 +556,7 @@ export function readEditor(el: Element): EditorRead | null {
   } catch {
     return null;
   }
-  // The rich snapshot is strictly best-effort: without it 撤销 restores the plain
+  // The rich snapshot is strictly best-effort: without it undo restores the plain
   // text, which is all this ever did — so a serializer that throws must not cost
   // us the read that the translation itself depends on.
   try {
@@ -580,7 +580,7 @@ export type ApplyOutcome = 'applied' | 'raced' | 'miss';
  *  - 'miss': no instance reachable, or the write didn't take. The bridge maps
  *    this to its DOM-chain fallback.
  *
- * `rich` is 撤销 putting back what it snapshotted: the adapter's own document
+ * `rich` is undo putting back what it snapshotted: the adapter's own document
  * serialization goes in instead of `text`, so formatting the plain write-back
  * had flattened comes back. `text` stays the verification truth either way —
  * it is the plain text OF that snapshot, so the read-back cycle is unchanged.

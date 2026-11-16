@@ -1,13 +1,13 @@
 /**
  * @module react-app/apps/floating-ball
  *
- * 悬浮翻译球 — a draggable launcher pinned to the page edge that toggles
- * whole-page translation, plus a compact control panel (target language, 译文
+ * Floating translation launcher — a draggable launcher pinned to the page edge that toggles
+ * whole-page translation, plus a compact control panel (target language, translation
  * style preset, translate/undo). Lives in the shared shadow surface (mounted
  * alongside SelectionApp by `entrypoints/float-ui.content`), so its styles are
  * fully isolated from the host page.
  *
- * It does NOT own translation state: clicking 翻译此页 only REQUESTS a state over
+ * It does NOT own translation state: clicking Translate this page only REQUESTS a state over
  * the in-page bridge; the single owner (`entrypoints/page-translate.content`) runs the
  * PageTranslator and broadcasts state back, which we render. See
  * `core/page-translation-bridge`.
@@ -42,9 +42,10 @@ import { GearIcon } from '@/react-app/components/icons';
 import StylePreview from '@/react-app/components/settings/StylePreview';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
 import { PROJECT_PREFIX, Z_INDEX } from '@/constants';
-import { langOptions, pairGlyphs, type DisplayMode } from '@/data/models';
+import { pairGlyphs, type DisplayMode } from '@/data/models';
 import { syncUiLocaleFrom } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
+import { getBrowserTranslationTarget, translationLanguageOptions } from '@/services/config/language-defaults';
 import { getConfigService, type PublicConfig, type PublicConfigPatch } from '@/services/config/public';
 import { isSiteEnabled, resolveSiteMode, setSiteMode } from '@/services/config/site-control';
 import displayModeClasses from './DisplayMode.module.css';
@@ -76,13 +77,12 @@ const PANEL_PALETTE = {
 };
 
 /**
- * 印蜕 palette: OFF = ink-wash grey (蘸墨待命), ON = seal-paste cinnabar
- * (染朱工作). Absolute colours on purpose — a stamped seal is an OBJECT laid
+ * Seal palette: OFF = ink-wash grey, ON = seal-paste cinnabar. Absolute colours on purpose — a stamped seal is an OBJECT laid
  * on the page, not themed chrome; it does not follow the host colour scheme.
  */
 const SEAL_INK = '#78736A';
 const SEAL_ZHU = '#A8241C';
-const SEAL_FACE = '#FAF6ED'; // 白文 — paper-white carving on the solid pad
+const SEAL_FACE = '#FAF6ED'; // Paper-white carving on the solid pad
 const SEAL_RADIUS = 8;
 const SEAL_PAD_INSET = 3.5;
 
@@ -99,7 +99,7 @@ const GLOBE_PATH =
   'M9.206 3.182A9.25 9.25 0 0 0 2.78 11.25h4.48c.033-1.096.135-2.176.305-3.2c.207-1.254.515-2.41.91-3.4a9.3 9.3 0 0 1 .731-1.468M12 1.25a10.75 10.75 0 1 0 0 21.5a10.75 10.75 0 0 0 0-21.5m0 1.5c-.261 0-.599.126-.991.532c-.396.41-.791 1.051-1.141 1.925c-.347.869-.63 1.917-.824 3.089c-.155.94-.25 1.937-.282 2.954h6.476a22.5 22.5 0 0 0-.282-2.954c-.194-1.172-.477-2.22-.824-3.089c-.35-.874-.745-1.515-1.14-1.925c-.393-.406-.73-.532-.992-.532m4.74 8.5a24 24 0 0 0-.305-3.2c-.207-1.254-.515-2.41-.91-3.4a9.3 9.3 0 0 0-.732-1.468a9.24 9.24 0 0 1 3.748 2.277a9.25 9.25 0 0 1 2.678 5.791zm-1.502 1.5H8.762c.031 1.017.127 2.014.282 2.954c.194 1.172.477 2.22.824 3.089c.35.874.745 1.515 1.14 1.925c.393.406.73.532.992.532c.261 0 .599-.126.991-.532c.396-.41.791-1.051 1.141-1.925c.347-.869.63-1.917.824-3.089c.155-.94.25-1.937.282-2.954m-.444 8.068c.27-.434.515-.929.73-1.468c.396-.99.704-2.146.911-3.4a24 24 0 0 0 .304-3.2h4.48a9.25 9.25 0 0 1-6.426 8.068m-5.588 0a9.3 9.3 0 0 1-.73-1.468c-.396-.99-.704-2.146-.911-3.4a24 24 0 0 1-.304-3.2H2.78a9.25 9.25 0 0 0 6.425 8.068';
 
 /** The seal face cuts CJK in KAITI FIRST — the approved spec's letterforms.
- *  (the 译文 kai stack in dom/inject/hand-face puts LXGW WenKai first; on machines
+ *  (the translation kai stack in dom/inject/hand-face puts LXGW WenKai first; on machines
  *  that have it, the seal would drift from the approved look.) Latin letters
  *  are cut in a serif; other scripts fall through the stack's tail cleanly. */
 const SEAL_KAI = '"Kaiti SC", "STKaiti", "Kaiti", "LXGW WenKai", serif';
@@ -113,8 +113,6 @@ const SETTINGS_PATH =
 const placementStore = storage.defineItem<BallPlacement>(`local:${PROJECT_PREFIX}:ball-placement`, {
   fallback: { side: 'right', topRatio: 0.82 },
 });
-
-const TARGET_OPTIONS = langOptions();
 
 export default function FloatingBallApp() {
   const theme = useMantineTheme();
@@ -155,14 +153,14 @@ export default function FloatingBallApp() {
   }, []);
 
   const [active, setActive] = useState(false);
-  // 半隐:印静置时滑进页缘半个身位。focusHold 让键盘焦点等同 hover。
+  // Tuck the idle seal halfway beyond the page edge; focusHold treats keyboard focus like hover.
   // `entered` gates a one-shot entrance: first paint sits fully beyond the
   // edge, then slides in half a body (skipped under prefers-reduced-motion:
   // born at rest instead).
   const [entered, setEntered] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const [focusHold, setFocusHold] = useState(false);
   const [subHover, setSubHover] = useState(false);
-  // 钤印: the press plays when translation turns ON (set from the state
+  // Seal press: the press plays when translation turns ON (set from the state
   // subscription below — any trigger, panel button or future direct click).
   const [stamping, setStamping] = useState(false);
 
@@ -231,7 +229,7 @@ export default function FloatingBallApp() {
   useEffect(() => {
     const off = onPageTranslationState((next) => {
       if (next !== prevActive.current) {
-        linger(); // both directions: 墨↔朱 must be seen
+        linger(); // both directions: ink↔cinnabar must be seen
         if (next && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
           setStamping(true);
           // Backstop: backgrounded tabs PAUSE CSS animations, so animationend
@@ -365,7 +363,7 @@ export default function FloatingBallApp() {
     if (d.mode === 'pressed') {
       // A click (released before the long-press) STAMPS: page translation
       // toggles directly — the highest-frequency action lives at zero depth.
-      // The panel moved to the 押脚 sub seal below.
+      // The panel moved to the small settings seal below.
       requestSetPageTranslation(!active);
       return;
     }
@@ -432,7 +430,7 @@ export default function FloatingBallApp() {
   });
 
   /**
-   * Settings apply LIVE: with the page already translated, changing 译入/样式
+   * Settings apply LIVE: with the page already translated, changing target language/style
    * re-runs the translation with the new values — the action button stays a
    * pure on/off toggle instead of doubling as a hidden "apply settings".
    * Sequenced after the patch resolves (the gateway mirrors before resolving,
@@ -452,7 +450,8 @@ export default function FloatingBallApp() {
   // config resolves we optimistically show it; a `never` site then hides it.)
   const siteEnabled = config ? isSiteEnabled(config.siteControl, location.hostname) : true;
 
-  const target = config?.translate.target ?? 'zh-CN';
+  const target = config?.translate.target ?? getBrowserTranslationTarget();
+  const targetOptions = translationLanguageOptions(target);
   const pair = pairGlyphs(config?.translate.source ?? 'auto', target);
   // The UI speaks the language its user READS; an optimistic target patch
   // reflips it instantly. Synced before the JSX below evaluates any m.*() —
@@ -498,7 +497,7 @@ export default function FloatingBallApp() {
     },
   };
 
-  // Ball = 印蜕: state picks the material (蘸墨 / 染朱).
+  // Ball = seal impression: state picks the material (ink wash / cinnabar).
   const seal = active ? SEAL_ZHU : SEAL_INK;
 
   if (!siteEnabled) return null;
@@ -585,7 +584,7 @@ export default function FloatingBallApp() {
                 <CloseButton onClick={() => setOpen(false)} size="sm" aria-label={m.ball_close_panel()} c={g.inkDim} />
               </Group>
               <Stack gap={4} px={16} pb={16}>
-                {/* Card 1: 阅读视图 (Reading View) */}
+                {/* Card 1: Reading view */}
                 <Box
                   py={12}
                   style={{
@@ -604,7 +603,7 @@ export default function FloatingBallApp() {
                     </Text>
                     <Select
                       aria-label={m.ball_target()}
-                      data={TARGET_OPTIONS}
+                      data={targetOptions}
                       value={target}
                       onChange={(v) => v && patchAndReapply((c) => ({ translate: { ...c.translate, target: v } }))}
                       allowDeselect={false}
@@ -618,7 +617,7 @@ export default function FloatingBallApp() {
                     />
                   </Box>
 
-                  {/* Three-state view (双语/仅译文/仅原文) */}
+                  {/* Three-state view (bilingual/translation-only/original-only) */}
                   <Box style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     <Text size="sm" fw={500} style={{ color: g.inkDim }}>
                       {m.display_label()}
@@ -639,7 +638,7 @@ export default function FloatingBallApp() {
                     />
                   </Box>
 
-                  {/* 逐段对照 */}
+                  {/* Paragraph interleaving */}
                   {(config.appearance.displayMode ?? 'bilingual') === 'bilingual' && (
                     <Box
                       style={{
@@ -667,7 +666,7 @@ export default function FloatingBallApp() {
                   )}
                 </Box>
 
-                {/* Card 2: 译文样式 (Translation Style) */}
+                {/* Card 2: Translation style */}
                 <Box
                   py={12}
                   style={{
@@ -695,7 +694,7 @@ export default function FloatingBallApp() {
                       accent: 'var(--interline-accent-ink)',
                     }}
                   />
-                  {/* 译文字体: 跟随页面 is the "use the site's own look" escape
+                  {/* Translation font: inherit from page is the "use the site's own look" escape
                       hatch for sites whose visual identity the kai stack breaks. */}
                   <Box style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 4 }}>
                     <Text size="sm" style={{ color: g.inkDim }}>
@@ -719,7 +718,7 @@ export default function FloatingBallApp() {
                   </Box>
                 </Box>
 
-                {/* Card 3: 站点规则 (Site Rules) */}
+                {/* Card 3: Site rules */}
                 <Box
                   py={12}
                   style={{
@@ -836,17 +835,20 @@ export default function FloatingBallApp() {
           <feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves={1} seed={7} result="noise" />
           <feDisplacementMap in="SourceGraphic" in2="noise" scale={1.8} xChannelSelector="R" yChannelSelector="G" />
         </filter>
-        {/* 边框专属:用频率换幅度。满幅(1.8)置换会被某些 Chromium 栅格化
-            路径把 1.5px 细环掰碎(ego lite 实测);单纯降幅到 1.0 又让长波
-            (0.05≈20px 波长)上的弯完全不可见。改高频双 octave + 幅度压在
-            环厚之内:起伏数量翻倍补回手刻随机感,幅度 1.25 < 1.5 物理上
-            断不了环。 */}
+        {/* Frame-only filter: use higher frequency with lower displacement.
+            At scale 1.8, some Chromium rasterization paths break the 1.5px ring
+            (observed in Ego Lite); reducing scale to 1.0 makes the long waves
+            at frequency 0.05 almost invisible. Two octaves at higher frequency
+            restore the carved texture, while scale 1.25 stays below the ring
+            thickness to reduce visible breaks. */}
         <filter id={SEAL_FILTER_FRAME} x="-20%" y="-20%" width="140%" height="140%">
           <feTurbulence type="fractalNoise" baseFrequency="0.095" numOctaves={2} seed={7} result="noise" />
           <feDisplacementMap in="SourceGraphic" in2="noise" scale={1.25} xChannelSelector="R" yChannelSelector="G" />
         </filter>
-        {/* 小印专属:0.05 的波长(~20px)在 22px 元素上近乎恒值 — 边只被平移
-            不起伏。频率提高 + 双 octave 才在小尺寸上显出同等的手刻歪扭。 */}
+        {/* Small-seal filter: a frequency of 0.05 has a roughly 20px wavelength,
+            nearly constant across a 22px element, so it shifts edges without
+            visible waviness. Higher frequency and two octaves preserve the
+            carved texture at this size. */}
         <filter id={SEAL_FILTER_SM} x="-20%" y="-20%" width="140%" height="140%">
           <feTurbulence type="fractalNoise" baseFrequency="0.085" numOctaves={2} seed={23} result="noise" />
           <feDisplacementMap in="SourceGraphic" in2="noise" scale={1.0} xChannelSelector="R" yChannelSelector="G" />
@@ -860,7 +862,7 @@ export default function FloatingBallApp() {
 @keyframes ${SUB_STAMP}{0%{opacity:0;scale:1.35;animation-timing-function:cubic-bezier(.5,0,.75,.35)}45%{opacity:1;scale:.96;animation-timing-function:cubic-bezier(.3,1,.36,1)}100%{opacity:1;scale:1}}
 `}</style>
 
-      {/* The control — a stamped seal (印蜕): carved frame, gap, solid pad.
+      {/* The control — a stamped seal: carved frame, gap, solid pad.
           Ink-grey at rest, seal-paste cinnabar when the page is translated. */}
       <UnstyledButton
         onPointerDown={onPointerDown}
@@ -934,7 +936,7 @@ export default function FloatingBallApp() {
           }}
         />
         {/* face — the language direction: source top-left (globe = any),
-            target bottom-right (dominant), two 界格 corner strokes filling the
+            target bottom-right (dominant), two grid corner strokes filling the
             empty diagonal. Filtered like the frame/pad + 0.3px soften — the
             glyphs must read as CARVED, not stickered on (approved-spec
             fidelity; re-evaluate on Windows fallback fonts when we get one). */}
@@ -1016,7 +1018,7 @@ export default function FloatingBallApp() {
         </Box>
       </UnstyledButton>
 
-      {/* 押脚小印「设」 — the panel entry, revealed with the float-out. Same
+      {/* Small settings seal — the panel entry, revealed with the float-out. Same
           intaglio language as the main seal (solid pad, paper glyph), constant
           cinnabar = "clickable", hierarchy carried by size (34 vs 22). Hidden
           AND untabbable while tucked (a focusable invisible button is a real
@@ -1057,8 +1059,8 @@ export default function FloatingBallApp() {
             visibility: tucked ? 'hidden' : 'visible',
             opacity: tucked ? 0 : 1,
             transform: subHover ? 'translateY(-1px)' : undefined,
-            // 落印 entrance: once the main seal visually settles (165ms into
-            // its 260ms sheet-spring slide), the 押脚 is pressed onto the
+            // stamp-down entrance: once the main seal visually settles (165ms into
+            // its 260ms sheet-spring slide), the settings seal is pressed onto the
             // paper from above — 1.35× soft ease-in fall, 0.96 press, then a
             // settle LONGER than the fall (108ms down, 132ms easing out) —
             // the Apple comfort: land early, sit down slowly. Independent

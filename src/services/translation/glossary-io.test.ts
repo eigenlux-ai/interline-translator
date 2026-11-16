@@ -79,7 +79,7 @@ describe('parseGlossaryImport — CSV/TSV', () => {
     expect(out.skipped).toBe(0); // header is dropped uncounted
   });
 
-  it('skips a 术语 header too', () => {
+  it('skips a Chinese term header too', () => {
     const out = parseGlossaryImport('术语,固定译法\nPod,容器组', 'terms');
     expect(out.entries).toEqual([{ source: 'Pod', target: '容器组' }]);
   });

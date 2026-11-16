@@ -77,7 +77,7 @@ for (const locale of ['zh_CN', 'global']) {
     'screenshot-2-selection.png',
     'screenshot-4-input-translation.png',
   ]) {
-    await cp(new URL(`assets/store/${locale}/${name}`, root), new URL(`assets/${locale}/${name}`, output));
+    await cp(new URL(`assets/store/chrome/${locale}/${name}`, root), new URL(`assets/${locale}/${name}`, output));
   }
 }
 await writeFile(new URL('index.html', output), page('zh'));

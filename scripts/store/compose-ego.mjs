@@ -6,7 +6,7 @@ import { locales } from './copy.mjs';
 
 export async function composeStoreAssets(page, root) {
   for (const locale of Object.keys(locales)) {
-    await mkdir(path.join(root, 'assets/store', locale), { recursive: true });
+    await mkdir(path.join(root, 'assets/store/chrome', locale), { recursive: true });
     for (const [index, name] of names.entries()) {
       await render(page, root, locale, name, 1280, 800, `/artwork?locale=${locale}&index=${index}`);
     }
@@ -30,7 +30,7 @@ async function render(page, root, locale, name, width, height, route) {
     new MutationObserver(clean).observe(document.documentElement, { childList: true, subtree: true });
     clean();
   });
-  await page.screenshot({ path: path.join(root, 'assets/store', locale, name + '.png') });
+  await page.screenshot({ path: path.join(root, 'assets/store/chrome', locale, name + '.png') });
 }
 
 export async function composePreview(page, root) {
@@ -40,7 +40,7 @@ export async function composePreview(page, root) {
   for (const [locale, label] of Object.entries({ global: 'ENGLISH', zh_CN: '简体中文', ja: '日本語', ko: '한국어' })) {
     html += '<section><h2>' + label + '</h2><div class="row">';
     for (const name of names) {
-      const bytes = await readFile(path.join(root, 'assets/store', locale, name + '.png'));
+      const bytes = await readFile(path.join(root, 'assets/store/chrome', locale, name + '.png'));
       html += '<img src="data:image/png;base64,' + bytes.toString('base64') + '">';
     }
     html += '</div></section>';
@@ -58,5 +58,5 @@ export async function composePreview(page, root) {
     clean();
   }, html);
   await page.waitForFunction(() => [...document.images].every((i) => i.complete && i.naturalWidth > 0));
-  await page.screenshot({ path: path.join(root, 'assets/store/preview.png') });
+  await page.screenshot({ path: path.join(root, 'assets/store/chrome/preview.png') });
 }

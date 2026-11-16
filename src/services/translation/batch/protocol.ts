@@ -113,7 +113,7 @@ export function buildBatchPrompt(
   // Expert template: everything else is the user's to own, but the ~n token
   // rule rides along unconditionally — items are encoded regardless, and a
   // model never told what the token means translates or drops it (the lenient
-  // decode sweep then merges paragraphs → 逐段对照 silently degrades).
+  // decode sweep then merges paragraphs → paragraph interleaving silently degrades).
   if (usable) system += '\n' + fillTemplate(NL_TOKEN_RULE, { salt });
 
   // Item-internal newlines are ENCODED as a salted token: a model that sees a

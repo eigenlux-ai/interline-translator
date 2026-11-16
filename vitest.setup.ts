@@ -1,10 +1,13 @@
 import { fakeBrowser } from 'wxt/testing/fake-browser';
-import { beforeEach } from 'vitest';
+import { beforeEach, vi } from 'vitest';
 
 // Reset the in-memory extension APIs (storage, etc.) between tests so storage
 // state and onChanged listeners never leak across cases.
 beforeEach(() => {
   fakeBrowser.reset();
+  // Most existing fixtures model a Chinese browser. Locale-specific tests
+  // override this explicitly rather than depending on the test host's locale.
+  vi.spyOn(fakeBrowser.i18n, 'getUILanguage').mockReturnValue('zh-CN');
 });
 
 /**

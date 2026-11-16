@@ -27,7 +27,7 @@ export interface SerializedInline {
 const PLACEHOLDER = /\{\{(\d+)\}\}/g;
 
 /**
- * outerHTML for the opaque-placeholder path, scrubbed of anything the 译文 must
+ * outerHTML for the opaque-placeholder path, scrubbed of anything the translation must
  * not reproduce. The per-child DROP / isAriaHidden checks above can't see inside
  * an element that rides through whole (translate=no, inline code, …) — without
  * this, a `<span translate="no">Next.js <img …></span>` smuggles a duplicate
@@ -77,24 +77,24 @@ export function serializeInline(el: Element): SerializedInline {
       } else if (child.nodeType === 1 /* element */) {
         const elc = child as Element;
         // Form controls + media (input/img/svg/…) are NOT translatable content
-        // and must NOT be duplicated into the 译文 — drop them entirely (e.g.
-        // `<label><input> Automatic</label>` → 译文 is just "自动", not a 2nd radio).
+        // and must NOT be duplicated into the translation — drop them entirely (e.g.
+        // `<label><input> Automatic</label>` → translation is just "自动", not a 2nd radio).
         if (DROP_FROM_GLOSS.has(elc.tagName.toUpperCase())) continue;
         // Screen-reader-only labels (sr-only) aren't visible content — don't pull
-        // them into the 译文 (the gloss would be invisible + brand names mangled).
+        // them into the translation (the gloss would be invisible + brand names mangled).
         if (isVisuallyHidden(elc)) continue;
         // Code/data tags (<script>/<style>/<noscript>/<template>) are never
         // visible content — drop them, never reproduce (Reddit's inline
-        // SML.load(...) loaders were leaking into the 译文 as raw text).
+        // SML.load(...) loaders were leaking into the translation as raw text).
         if (isNonContent(elc)) continue;
         // Hidden descendants (e.g. a [hidden] hovercard panel deep inside a unit):
         // walk-time pruning misses in-unit subtrees, so drop them here too —
-        // otherwise a normally-invisible block gets reproduced into the 译文.
+        // otherwise a normally-invisible block gets reproduced into the translation.
         if (isHidden(elc)) continue;
         // aria-hidden = decoration by declaration (avatar facepiles, icon
         // glyphs). Reproducing it opaquely duplicates visible decoration —
         // dropped, in lockstep with visibleText (nextjs.org's author avatars
-        // cloned into the 译文 lost their --size context and rendered huge).
+        // cloned into the translation lost their --size context and rendered huge).
         if (isAriaHidden(elc)) continue;
         if (isSkippedElement(elc) || elc.tagName === 'BR' || isInlineChip(elc)) {
           // Opaque: represent the whole element as one placeholder (BR line
@@ -121,7 +121,7 @@ export function serializeInline(el: Element): SerializedInline {
 
 /**
  * The reproduced inline tag, minus everything DROP_ATTRS_FROM_GLOSS /
- * EVENT_HANDLER_ATTR name: the 译文's `<span class="hl">` must look like the
+ * EVENT_HANDLER_ATTR name: the translation's `<span class="hl">` must look like the
  * source's without also BEING it (a second `id`, a second `onclick`).
  * Lowercased first — attribute names come back case-preserved from foreign
  * (SVG/MathML) elements, and those are the ones a host page hand-writes.
@@ -187,7 +187,7 @@ export function restoreInline(translated: string, tags: string[]): RestoreResult
 /**
  * Strip placeholder debris for the fallback path. MT engines mangle `{{n}}` in
  * varied ways — drop a brace on one side (`{{0`, `0}}`), reformat the inner gap
- * (`{{ 0 }}`, `{ {0} }`), or split the braces — leaving visible junk in the 译文.
+ * (`{{ 0 }}`, `{ {0} }`), or split the braces — leaving visible junk in the translation.
  *
  * We treat as debris any digit run that (a) still has at least ONE surviving
  * brace adjacent to it (a fully de-braced bare number is indistinguishable from
@@ -213,7 +213,7 @@ function stripPlaceholders(text: string, count: number): string {
  * Last-resort debris sweep: a `{{`/`}}` RUN whose index the engine swallowed
  * ENTIRELY, which the digit-bearing passes above cannot see. Google Translate
  * returned `更重要的是，}}他们贬低了设计的作用…` for an elyx.design paragraph —
- * the bare `}}` rendered as visible junk in the 译文.
+ * the bare `}}` rendered as visible junk in the translation.
  *
  * Only UNMATCHED runs go: a balanced `{{ … }}` is real content (a docs page
  * explaining a Handlebars/Jinja template), and this fallback — which already
@@ -251,7 +251,7 @@ function escapeText(v: string): string {
 }
 
 /**
- * Split rendered 译文 HTML into paragraphs at its <br> runs (逐段对照's
+ * Split rendered translation HTML into paragraphs at its <br> runs (paragraph interleaving's
  * translation-side counterpart of wrapper.sourceBreakGroups). A run of <br>s
  * with only whitespace between them is ONE separator. Safe on our HTML: text
  * is entity-escaped by restoreInline, so a literal "<br" can only be a real

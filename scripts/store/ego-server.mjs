@@ -24,7 +24,7 @@ const server = createServer(async (req, res) => {
     }
     if (u.pathname === '/subtitle-scene.png') {
       res.setHeader('Content-Type', 'image/png');
-      res.end(await readFile(path.join(root, 'assets/store/source/subtitle-scene.png')));
+      res.end(await readFile(path.join(root, 'assets/store/chrome/source/subtitle-scene.png')));
       return;
     }
     if (u.pathname === '/subtitle-illustration') {

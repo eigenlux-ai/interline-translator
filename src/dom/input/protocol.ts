@@ -54,7 +54,7 @@ export type InjectStatus = 'applied' | 'raced' | 'miss' | 'ok';
 
 /**
  * An adapter's OWN serialization of its document, taken before we overwrite it
- * so 撤销 can put back what was really there — bold, links, lists and all. The
+ * so undo can put back what was really there — bold, links, lists and all. The
  * payload is opaque and adapter-PRIVATE: CKEditor/TinyMCE/wangEditor hand back
  * their HTML, Quill semantic HTML, Lexical a serialized editor state. Nothing
  * on either side of the wire parses `data`; `adapter` is compared against the
@@ -86,7 +86,7 @@ export interface InjectRequest {
   text?: string;
   /** apply: expected current text (trigger-space-stripped) — atomic race check. */
   before?: string;
-  /** apply: restore this rich snapshot instead of `text` (撤销 only). */
+  /** apply: restore this rich snapshot instead of `text` (undo only). */
   rich?: RichSnapshot;
 }
 
