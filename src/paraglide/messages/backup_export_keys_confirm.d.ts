@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "Yes, export with API keys" |
+* | "Yes, export with credentials" |
 *
 * @param {Backup_Export_Keys_ConfirmInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

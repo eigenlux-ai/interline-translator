@@ -484,7 +484,10 @@ export function createSubtitleRuntime(
       if (canTranslate) {
         const add = (cue: SubtitleCue, priority: 'current' | 'prefetch') => {
           if (
-            (priority === 'current' && human) ||
+            // A paused buffer needs coverage of the whole cue, even when a
+            // human caption covers the current instant. Otherwise the clock
+            // cannot advance to request the uncovered part of this cue.
+            (!buffering && priority === 'current' && human) ||
             coversSubtitleInterval(targetTimeline, cue.startMs, cue.endMs) ||
             state.translation(cue) ||
             failures.has(cue.id)

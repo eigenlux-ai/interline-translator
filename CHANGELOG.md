@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+- Exclude all custom headers as well as API keys from default backups; include them only in the confirmed credential export.
+- Apply inherited site restrictions to blank editor frames on older Firefox versions, and keep input translation disabled when the frame's site cannot be resolved.
+- Let paused subtitle buffers finish when late human captions cover only part of a cue.
+- Wait for complete selection translations before offering vocabulary notes.
+- Restore editor handshake compatibility with Chrome 116–118 and localize provider-validation failures.
+
 ## 1.1.1 — 2026-11-13
 
 - Detect subtitle translation falling behind playback and offer an explicit pause to prepare upcoming translations for ordinary videos. Live streams suggest switching to a faster engine.

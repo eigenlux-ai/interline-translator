@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Export_Keys_ConfirmInputs */
 
 const zh_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`确认含密钥导出`)
+	return /** @type {LocalizedString} */ (`确认包含凭据导出`)
 };
 
 const zh_tw2_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`確認含金鑰匯出`)
+	return /** @type {LocalizedString} */ (`確認包含憑證匯出`)
 };
 
 const en_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Yes, export with API keys`)
+	return /** @type {LocalizedString} */ (`Yes, export with credentials`)
 };
 
 const ja_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`はい、API キーを含めて書き出す`)
+	return /** @type {LocalizedString} */ (`認証情報を含めて実行`)
 };
 
 const ko_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`네, API 키 포함 내보내기`)
+	return /** @type {LocalizedString} */ (`인증 정보를 포함하여 내보내기`)
 };
 
 const fr_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Oui, exporter avec les clés API`)
+	return /** @type {LocalizedString} */ (`Oui, exporter avec les identifiants`)
 };
 
 const de_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Ja, mit API-Schlüsseln exportieren`)
+	return /** @type {LocalizedString} */ (`Ja, mit Zugangsdaten exportieren`)
 };
 
 const es_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sí, exportar con claves API`)
+	return /** @type {LocalizedString} */ (`Sí, exportar con credenciales`)
 };
 
 const ru_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Да, экспортировать с API-ключами`)
+	return /** @type {LocalizedString} */ (`Да, экспортировать с учётными данными`)
 };
 
 const pt_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sim, exportar com chaves de API`)
+	return /** @type {LocalizedString} */ (`Sim, exportar com credenciais`)
 };
 
 const it_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Sì, esporta con chiavi API`)
+	return /** @type {LocalizedString} */ (`Sì, esporta con credenziali`)
 };
 
 const ar_backup_export_keys_confirm = /** @type {(inputs: Backup_Export_Keys_ConfirmInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`نعم، صدّر مع مفاتيح API`)
+	return /** @type {LocalizedString} */ (`نعم، تصدير مع بيانات الاعتماد`)
 };
 
 /**
 * | output |
 * | --- |
-* | "Yes, export with API keys" |
+* | "Yes, export with credentials" |
 *
 * @param {Backup_Export_Keys_ConfirmInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

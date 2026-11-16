@@ -1,6 +1,10 @@
 # Chrome Web Store — Interline · 行间
 
-Last updated: 2026-11-13
+Last updated: 2026-11-16
+
+## Pending fixes
+
+The next build excludes API keys and all custom headers from default configuration exports. The separate credential export retains its confirmation. It also fixes inherited site policy for blank editor frames, subtitle buffering with partial human captions, premature selection annotations, older-Chrome editor handshakes and localized provider-validation errors. No browser permissions are added. These changes have not been packaged as a new release.
 
 ## Release
 
@@ -33,6 +37,8 @@ See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update adds 
 The [privacy policy](https://github.com/eigenlux-ai/interline-translator/blob/main/PRIVACY.md) describes the data processed by each feature. Online translation sends the required text and language information directly to the selected provider; selected-text AI features may include page title and nearby context. Optional whole-page context is off by default. Credentials are stored locally and sent to the configured service for authenticated requests. Text may contain personal information supplied by the page or user.
 
 The project operates no translation relay or analytics service, does not sell this data, and does not use it for advertising, unrelated purposes or creditworthiness decisions. Translation results are cached locally. Subtitle diagnostics are local and omit caption text, URLs and credentials. Buffering prepares upcoming captions through the same selected provider; it does not introduce a new recipient or audio transcription.
+
+Default configuration exports omit API keys and all custom headers. A separate confirmed credential export includes them in plain text. Other configuration values may still contain private information.
 
 Dashboard disclosures must reflect website content and authentication information sent to selected providers. Existing account/contact details and disclosure selections are not verified or changed by packaging.
 

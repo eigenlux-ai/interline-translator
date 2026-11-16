@@ -1,6 +1,6 @@
 # Interline privacy policy / 行间隐私说明
 
-**Last updated / 更新日期：2026-11-12**
+**Last updated / 更新日期：2026-11-16**
 
 [English](#english) · [简体中文](#简体中文)
 
@@ -37,7 +37,7 @@ Interline uses this data to provide the translation features described above. Th
 - **Translation cache:** translated results and cache metadata are stored locally in IndexedDB. Cache keys are hashes of request inputs; API keys are excluded from the key calculation. The background maintenance task is scheduled daily to delete entries older than 30 days and trim the cache to 150,000 entries. Cleanup occurs when that task runs, not necessarily at the exact expiration time.
 - **Subtitle caches:** raw caption tracks and live timelines are retained in bounded page memory. Subtitle translations are cached locally; the subtitle settings page can clear them separately from page translations.
 - **Subtitle diagnostics:** a bounded in-memory buffer records event categories, anonymous context numbers, timings and retry/cache counters. The background keeps at most 512 recent events; its history is lost when the background process restarts. The subtitle settings page can export these records locally as JSON. They contain no subtitle text, page titles, URLs, cookies or API keys and are not uploaded.
-- **Exports:** exporting settings creates a JSON file containing prompts, glossaries and site rules. API keys are excluded by default; a separate confirmed export includes them in plain text. Interline does not upload this file. Anyone you share it with may be able to read those values. Importing it stores the configuration on the receiving browser.
+- **Exports:** exporting settings creates a JSON file containing prompts, glossaries and site rules. API keys and all custom headers are excluded by default; a separate confirmed export includes them in plain text. Other settings, such as endpoint URLs, prompts and glossaries, may still contain private information. Interline does not upload this file. Anyone you share it with may be able to read those values. Importing it stores the configuration on the receiving browser.
 
 ### Network and browser features
 
@@ -101,7 +101,7 @@ Interline（行间）是一款开源的浏览器双语阅读与翻译扩展。�
 - **设置与凭据：** 服务商配置、API Key、语言偏好、提示词、术语表和站点规则保存在扩展的本地浏览器存储（`chrome.storage.local`），外观偏好也保存在本地。行间不使用浏览器同步存储来保存这些设置。
 - **调用认证：** 发起需要认证的请求时，会将所需密钥和配置的认证请求头发送至所选服务。认证格式因服务商而异，不能理解为密钥在调用时也绝不离开设备。
 - **译文缓存：** 译文结果与缓存元数据保存在本地 IndexedDB。缓存索引由请求输入计算哈希，不将 API Key 纳入计算。后台维护任务按每天一次安排，清理超过 30 天的条目，并将条目数限制到 150,000；实际清理发生在任务执行时，并非到期瞬间。
-- **导出文件：** 配置导出会生成包含提示词、术语表和站点规则的 JSON 文件。默认不包含 API Key；单独选择并确认包含密钥的导出后，文件才会包含明文密钥。行间不会上传该文件；收到文件的人可能读到这些内容。导入操作会把配置保存到接收方浏览器。
+- **导出文件：** 配置导出会生成包含提示词、术语表和站点规则的 JSON 文件。默认不包含 API Key 和所有自定义请求头；单独选择并确认包含凭据的导出后，文件才会包含明文密钥和请求头。端点 URL、提示词、术语表等其他设置仍可能含有私密信息。行间不会上传该文件；收到文件的人可能读到这些内容。导入操作会把配置保存到接收方浏览器。
 
 原始字幕轨及直播时间轴保存在有容量限制的页面内存中。字幕译文在本地缓存，可在字幕设置页单独清除，不影响网页译文。
 

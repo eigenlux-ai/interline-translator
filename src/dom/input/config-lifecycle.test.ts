@@ -8,6 +8,7 @@ const state = vi.hoisted(() => ({
   stopped: vi.fn(),
   pageStarted: vi.fn(),
   pageStopped: vi.fn(),
+  hostname: undefined as string | undefined,
   config: {
     inputTranslation: { enabled: true, target: 'en', triggerCount: 3 },
     translate: { source: 'auto', target: 'zh-CN' },
@@ -24,7 +25,7 @@ vi.mock('@/services/config/public', () => ({
   },
 }));
 vi.mock('@/dom/input', () => ({
-  effectiveHostname: () => location.hostname,
+  effectiveHostname: () => state.hostname ?? location.hostname,
   InputTranslator: class {
     start() {
       state.started();
@@ -60,6 +61,21 @@ it('disabling input translation updates an already-open page', async () => {
     expect(state.stopped).toHaveBeenCalledOnce();
   } finally {
     cleanup.forEach((cb) => cb());
+  }
+});
+
+it('does not start input translation when the embedding host cannot be resolved', async () => {
+  state.hostname = '';
+  state.started.mockClear();
+  const cleanup: Array<() => void> = [];
+  try {
+    await (definition as unknown as { main: (ctx: unknown) => Promise<void> }).main({
+      onInvalidated: (cb: () => void) => cleanup.push(cb),
+    });
+    expect(state.started).not.toHaveBeenCalled();
+  } finally {
+    cleanup.forEach((cb) => cb());
+    state.hostname = undefined;
   }
 });
 

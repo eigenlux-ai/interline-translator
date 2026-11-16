@@ -80,6 +80,23 @@ describe('receiveInjectorPortOffer', () => {
 });
 
 describe('injectorPort', () => {
+  it('times out and retries successfully without Promise.withResolvers', async () => {
+    const original = Object.getOwnPropertyDescriptor(Promise, 'withResolvers')!;
+    Object.defineProperty(Promise, 'withResolvers', { ...original, value: undefined });
+    try {
+      vi.spyOn(window, 'postMessage').mockImplementation(() => {});
+      vi.useFakeTimers();
+      const first = injectorPort();
+      await vi.advanceTimersByTimeAsync(400);
+      await expect(first).resolves.toBeNull();
+      const second = injectorPort();
+      const { offered } = offerPort();
+      await expect(second).resolves.toBe(offered);
+    } finally {
+      Object.defineProperty(Promise, 'withResolvers', original);
+    }
+  });
+
   it('remembers SUCCESS only — a failed handshake is retried on the next gesture', async () => {
     // Gesture 1: nothing answers the hello. The `ping` probe this replaces
     // cached exactly this outcome for the rest of the page's life.

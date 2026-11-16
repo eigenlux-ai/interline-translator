@@ -17,6 +17,8 @@ import type { LangCode, ProviderConfig, TranslateRequest, TranslateResult } from
 /** Outcome of a provider "Validate" check (real key/model/endpoint round-trip). */
 export interface ProviderValidation {
   ok: boolean;
+  /** Stable local failure code; the settings surface owns its translated copy. */
+  errorCode?: 'missing-api-key' | 'missing-model' | 'timeout';
   /** Failure reason (network / auth / unknown model), surfaced in the UI. */
   error?: string;
   /** A short snippet of the model's reply on success (proof of life). */

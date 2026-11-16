@@ -8,6 +8,21 @@
  */
 
 import { m } from '@/paraglide/messages.js';
+import type { ProviderValidation } from '@/services/translation/contract';
+
+/** Resolve local validation failures in the UI locale; preserve provider diagnostics. */
+export function providerValidationError(result: ProviderValidation): string {
+  switch (result.errorCode) {
+    case 'missing-api-key':
+      return m.error_no_key();
+    case 'missing-model':
+      return m.provider_validate_hint_model();
+    case 'timeout':
+      return m.error_timeout();
+    default:
+      return result.error || m.provider_unknown_error();
+  }
+}
 
 /** A plain-language first line for a raw error message. */
 export function humanizeError(raw: string): string {

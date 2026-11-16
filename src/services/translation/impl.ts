@@ -116,8 +116,9 @@ class TranslationServiceImpl implements TranslationService {
   async validateProvider(provider: ProviderConfig): Promise<ProviderValidation> {
     if (provider.kind === 'google-mt') return { ok: true }; // keyless free MT — always usable
     const apiKey = provider.apiKeys[0];
-    if (!apiKey && providerRunNeedsKey(provider.kind)) return { ok: false, error: '需要填入 API key' };
-    if (!provider.model.trim()) return { ok: false, error: '需要设置模型' };
+    if (!apiKey && providerRunNeedsKey(provider.kind))
+      return { ok: false, errorCode: 'missing-api-key', error: 'An API key is required.' };
+    if (!provider.model.trim()) return { ok: false, errorCode: 'missing-model', error: 'A model is required.' };
     try {
       const model = await createLlmModel(provider, apiKey ?? '');
       // One tiny completion proves the key + model + endpoint all resolve.
@@ -139,7 +140,7 @@ class TranslationServiceImpl implements TranslationService {
       return { ok: true, sample: gen.text.trim().slice(0, 40) };
     } catch (e) {
       if (e instanceof DOMException && e.name === 'TimeoutError') {
-        return { ok: false, error: '验证超时(15 秒),端点无响应或不可达' };
+        return { ok: false, errorCode: 'timeout', error: 'Validation timed out after 15 seconds.' };
       }
       return { ok: false, error: e instanceof Error ? e.message : String(e) };
     }

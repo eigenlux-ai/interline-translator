@@ -25,12 +25,19 @@ import { parseInputCommand, SpaceTrigger, type SpaceTriggerOptions } from './tri
 /**
  * The hostname that policy checks (site control) should judge. In an
  * about:blank / srcdoc iframe (TinyMCE's iframe mode, many embeds)
- * `location.hostname` is '' — fall back to the embedding chain's origin, so a
- * site's rules keep applying inside the frames it spawns.
+ * `location.hostname` is empty. Walk accessible parents first: Firefox 140–147
+ * has no ancestorOrigins. Unresolvable frames return an empty hostname and
+ * must remain disabled rather than falling through to the default site rule.
  */
-export function effectiveHostname(): string {
-  if (location.hostname) return location.hostname;
-  const ancestor = location.ancestorOrigins?.[0];
+export function effectiveHostname(win: Window = window): string {
+  let frame = win;
+  try {
+    while (!frame.location.hostname && frame.parent !== frame) frame = frame.parent;
+    if (frame.location.hostname) return frame.location.hostname;
+  } catch {
+    // Cross-origin parents may be unreadable; use the browser's origin list.
+  }
+  const ancestor = win.location.ancestorOrigins?.[0];
   if (ancestor) {
     try {
       return new URL(ancestor).hostname;
@@ -189,7 +196,7 @@ export class InputTranslator {
             // styling what you WRITE on a site is a legitimate use; the title
             // hints at the venue's register (issue tracker vs forum).
             context: {
-              domain: location.hostname || undefined,
+              domain: effectiveHostname() || undefined,
               title: document.title.trim().slice(0, 200) || undefined,
             },
           }),

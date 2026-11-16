@@ -77,7 +77,7 @@ For input translation, prefix a draft with `/en` or `en:` to choose English for 
 - **Language:** 12 interface languages, including Arabic with RTL layout. By default the interface follows your reading target; you can choose it separately.
 - **Floating control:** drag it to either edge; its animated panel stays within the viewport and scrolls internally when space is limited. Reduced-motion preferences are respected.
 - **About:** find the version, project links, data/model source explanations and open-source license notices in settings.
-- **Backup:** export and import settings. API keys are excluded by default; including them requires a separate confirmed export. Keep backups private because they may contain sensitive configuration.
+- **Backup:** export and import settings. API keys and all custom headers are excluded by default; including them requires a separate confirmed export. Keep backups private because they may contain sensitive configuration.
 
 ## How your data is handled
 

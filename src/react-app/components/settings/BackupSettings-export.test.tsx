@@ -22,7 +22,12 @@ function withSecret(): Config {
     kind: 'openai',
     apiKeys: ['sk-secret'],
     model: 'gpt-4o-mini',
-    extraHeaders: { 'X-Team': 'reading' },
+    extraHeaders: {
+      'X-Team': 'reading',
+      Authorization: 'Bearer header-secret',
+      'x-aPi-kEy': 'header-api-key',
+      'X-Custom-Credential': 'custom-header-secret',
+    },
     params: { temperature: 0.2 },
     enabled: true,
   });
@@ -36,13 +41,15 @@ function withSecret(): Config {
 }
 
 describe('exportableConfig', () => {
-  it('drops API keys by default and keeps every other field', () => {
+  it('omits API keys and all custom headers without changing other settings', () => {
     const cfg = withSecret();
     const out = exportableConfig(cfg);
     const mine = out.providers.find((p) => p.id === 'my-openai')!;
     expect(mine.apiKeys).toEqual([]);
     expect(mine.model).toBe('gpt-4o-mini');
-    expect(mine.extraHeaders).toEqual({ 'X-Team': 'reading' });
+    expect(mine.extraHeaders).toBeUndefined();
+    expect(JSON.stringify(out)).not.toContain('header-secret');
+    expect(cfg.providers[1].extraHeaders?.Authorization).toBe('Bearer header-secret');
     expect(mine.params).toEqual({ temperature: 0.2 });
     expect(out.glossary).toEqual(cfg.glossary);
     // The caller's config is never mutated in place.
@@ -51,7 +58,7 @@ describe('exportableConfig', () => {
 
   it('keeps the keys only when explicitly asked to', () => {
     const cfg = withSecret();
-    expect(exportableConfig(cfg, true).providers.find((p) => p.id === 'my-openai')!.apiKeys).toEqual(['sk-secret']);
+    expect(exportableConfig(cfg, true)).toEqual(cfg);
   });
 });
 
@@ -89,6 +96,7 @@ describe('export UI', () => {
     const parsed = await exportedJson();
     expect(parsed.providers.every((p: { apiKeys: string[] }) => p.apiKeys.length === 0)).toBe(true);
     expect(JSON.stringify(parsed)).not.toContain('sk-secret');
+    expect(parsed.providers.every((p: { extraHeaders?: unknown }) => p.extraHeaders === undefined)).toBe(true);
     expect(parsed.providers.find((p: { id: string }) => p.id === 'my-openai').model).toBe('gpt-4o-mini');
   });
 
@@ -106,6 +114,7 @@ describe('export UI', () => {
     });
     const parsed = await exportedJson();
     expect(parsed.providers.find((p: { id: string }) => p.id === 'my-openai').apiKeys).toEqual(['sk-secret']);
+    expect(parsed.providers[1].extraHeaders).toEqual(withSecret().providers[1].extraHeaders);
   });
 
   it('cancelling the confirmation downloads nothing', async () => {
@@ -140,6 +149,7 @@ it('a legacy backup that contains API keys still imports, keys intact but gated 
   // The import path is untouched: keys survive the round-trip, the engine just
   // waits behind the validation gate.
   expect(imported.apiKeys).toEqual(['sk-secret']);
+  expect(imported.extraHeaders).toEqual(withSecret().providers[1].extraHeaders);
   expect(imported.draft).toBe(true);
   expect(imported.enabled).toBe(false);
 });

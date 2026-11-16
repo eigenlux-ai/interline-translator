@@ -6,7 +6,7 @@
  * or rejected cleanly — and its engines land as DRAFTS, because a file saying
  * `enabled: true` is no evidence that the key still works on this machine.
  *
- * Export leaves `apiKeys` OUT by default (see {@link exportableConfig}): a
+ * Export leaves API keys and custom headers OUT by default (see {@link exportableConfig}): a
  * downloaded file is exactly the kind of artifact that ends up in a chat log or
  * a sync folder, and the imported engine is a draft that needs re-validation
  * anyway. Carrying secrets along is an explicit, confirmed escape hatch for
@@ -43,17 +43,21 @@ export function draftImportedProviders(config: Config): Config {
 }
 
 /**
- * The payload written to `interline-config.json`. API keys are STRIPPED by
- * default — the file is a shareable artifact and a plaintext key inside it is a
- * secret the user never meant to hand over. Everything else (kind, model, base
- * URL, headers, params, rules, glossary) is kept verbatim, and an imported
- * engine re-enters through the validation gate as a draft either way
- * ({@link draftImportedProviders}), so the keys would have to be re-typed and
- * re-proven regardless. `includeApiKeys` is the one deliberate way out, and the
- * caller must have warned the user in plain words before passing it.
+ * The payload written to `interline-config.json`. Omit all custom headers as
+ * well as API keys: gateways can put credentials in arbitrary header names.
+ * Other settings may still contain private data. The confirmed credential
+ * export preserves the complete configuration for moving between devices.
  */
 export function exportableConfig(config: Config, includeApiKeys = false): Config {
-  return includeApiKeys ? config : { ...config, providers: config.providers.map((p) => ({ ...p, apiKeys: [] })) };
+  if (includeApiKeys) return config;
+  return {
+    ...config,
+    providers: config.providers.map((p) => {
+      const provider = { ...p, apiKeys: [] };
+      delete provider.extraHeaders;
+      return provider;
+    }),
+  };
 }
 
 export default function BackupSettings({ config, onSave }: BackupSettingsProps) {
@@ -81,7 +85,7 @@ export default function BackupSettings({ config, onSave }: BackupSettingsProps) 
     a.click();
     URL.revokeObjectURL(url);
   };
-  /** Default export: everything except the API keys (see {@link exportableConfig}). */
+  /** Default export omits API keys and custom headers. */
   const exportConfig = () => download(exportableConfig(config));
   /** The confirmed escape hatch: keys in plaintext, after the user opts in. */
   const exportConfigWithKeys = () => {

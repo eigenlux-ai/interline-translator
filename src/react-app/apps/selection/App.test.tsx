@@ -717,3 +717,45 @@ describe('dragging the card (manual position)', () => {
     });
   }
 });
+
+it('offers annotations only after the complete translation arrives', async () => {
+  await storage.setItem(PUBLIC_CONFIG_KEY, {
+    ...defaultPublicConfig('en'),
+    defaultProviderKind: 'openai',
+    defaultProviderLabel: 'Review engine',
+  });
+  const transport = await import('@/services/stream/client');
+  let translationSignal: AbortSignal | undefined;
+  let release = () => {};
+  vi.mocked(transport.streamTranslate).mockImplementationOnce(async function* (_request, _id, signal) {
+    translationSignal = signal;
+    yield 'First incomplete clause';
+    await new Promise<void>((resolve) => {
+      release = resolve;
+      signal?.addEventListener('abort', () => resolve(), { once: true });
+    });
+    if (!signal?.aborted) yield ', followed by the rest of the translation.';
+  });
+  onTestFinished(() => release());
+  const { baseElement } = await mountWithSelection();
+  await openCard(baseElement);
+  expect(baseElement.textContent).toContain('First incomplete clause');
+  const findNotes = () =>
+    [...baseElement.querySelectorAll('button')].find((button) => button.textContent?.includes(m.sel_notes()));
+  expect(findNotes()).toBeUndefined();
+  expect(translationSignal?.aborted).toBe(false);
+  await act(async () => {
+    release();
+    await tick();
+  });
+  expect(findNotes()).toBeTruthy();
+  vi.mocked(transport.streamAnnotate).mockClear();
+  await act(async () => {
+    findNotes()!.click();
+    await tick();
+  });
+  expect(transport.streamAnnotate).toHaveBeenCalledOnce();
+  expect(vi.mocked(transport.streamAnnotate).mock.calls[0][0].translation).toBe(
+    'First incomplete clause, followed by the rest of the translation.'
+  );
+});

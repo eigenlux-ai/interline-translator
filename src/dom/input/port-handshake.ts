@@ -78,7 +78,11 @@ export function receiveInjectorPortOffer(): () => void {
 }
 
 function hello(timeoutMs: number): Promise<MessagePort | null> {
-  const { promise, resolve } = Promise.withResolvers<MessagePort | null>();
+  // Promise.withResolvers is unavailable on supported Chrome 116–118.
+  let resolve!: (port: MessagePort | null) => void;
+  const promise = new Promise<MessagePort | null>((done) => {
+    resolve = done;
+  });
 
   const onOffer = (e: MessageEvent) => {
     const port = adopt(e);

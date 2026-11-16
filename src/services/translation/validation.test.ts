@@ -43,3 +43,36 @@ it('validation must not approve parameters that real translation rejects', async
   );
   expect(validation.ok).toBe(false);
 });
+
+it.each([
+  { apiKeys: [], model: 'model', errorCode: 'missing-api-key' },
+  { apiKeys: ['test'], model: ' ', errorCode: 'missing-model' },
+])(
+  'returns a locale-independent $errorCode failure without contacting a provider',
+  async ({ apiKeys, model, errorCode }) => {
+    generate.mockClear();
+    registerTranslationService();
+    const result = await captured.service!.validateProvider({
+      id: 'test',
+      kind: 'openai',
+      enabled: false,
+      apiKeys,
+      model,
+    });
+    expect(result).toMatchObject({ ok: false, errorCode });
+    expect(result.error).not.toMatch(/[\u3400-\u9fff]/);
+    expect(generate).not.toHaveBeenCalled();
+  }
+);
+
+it('returns a localizable timeout while preserving raw provider failures', async () => {
+  const provider: ProviderConfig = { id: 'test', kind: 'openai', enabled: false, apiKeys: ['test'], model: 'model' };
+  registerTranslationService();
+  generate.mockRejectedValueOnce(new DOMException('Expired', 'TimeoutError'));
+  expect(await captured.service!.validateProvider(provider)).toMatchObject({ ok: false, errorCode: 'timeout' });
+  generate.mockRejectedValueOnce(new Error('Model not available at this endpoint'));
+  expect(await captured.service!.validateProvider(provider)).toEqual({
+    ok: false,
+    error: 'Model not available at this endpoint',
+  });
+});

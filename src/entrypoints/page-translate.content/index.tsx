@@ -40,7 +40,8 @@ export default defineContentScript({
     const applyInputConfig = (config: Awaited<ReturnType<typeof getPublicConfig>>) => {
       if (invalidated) return;
       syncUiLocaleFrom(config);
-      const enabled = config.inputTranslation.enabled && isSiteEnabled(config.siteControl, effectiveHostname());
+      const hostname = effectiveHostname();
+      const enabled = config.inputTranslation.enabled && !!hostname && isSiteEnabled(config.siteControl, hostname);
       const signature = JSON.stringify([
         enabled,
         config.translate.source,

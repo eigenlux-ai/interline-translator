@@ -41,6 +41,7 @@ import {
 import { notifications } from '@mantine/notifications';
 import { getModelsService } from '@/core/rpc/provider-models';
 import { randomId } from '@/core/uid';
+import { providerValidationError } from '@/react-app/error-copy';
 import {
   providerModelsNeedKey,
   type Config,
@@ -308,7 +309,7 @@ function ProviderCard({
         notifications.show({
           color: 'danger',
           title: m.provider_validate_failed(),
-          message: res.error ?? m.provider_unknown_error(),
+          message: providerValidationError(res),
         });
       }
     } catch (e) {

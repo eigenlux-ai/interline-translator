@@ -1,7 +1,7 @@
 /**
 * | output |
 * | --- |
-* | "The exported JSON file will contain your API keys in plain text. Use this only to move between your own trusted devices — never share or upload the file." |
+* | "The exported JSON file will contain your API keys and custom headers in plain text. Use this only to move between your own trusted devices — never share or u..." |
 *
 * @param {Backup_Export_Keys_Confirm_TextInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

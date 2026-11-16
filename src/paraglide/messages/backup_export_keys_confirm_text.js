@@ -6,57 +6,57 @@ import { getLocale, experimentalStaticLocale } from '../runtime.js';
 /** @typedef {{}} Backup_Export_Keys_Confirm_TextInputs */
 
 const zh_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`导出的 JSON 文件将以明文包含 API 密钥。仅用于在自己信任的设备之间迁移，请勿分享或上传该文件。`)
+	return /** @type {LocalizedString} */ (`导出的 JSON 文件会包含明文 API Key 和自定义请求头。仅用于在你自己的可信设备间迁移，请勿分享或上传此文件。`)
 };
 
 const zh_tw2_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案將以明文包含 API 金鑰。僅用於在自己信任的裝置之間遷移，請勿分享或上傳該檔案。`)
+	return /** @type {LocalizedString} */ (`匯出的 JSON 檔案會包含明文 API Key 和自訂請求標頭。僅用於在你自己的可信任裝置間移轉，請勿分享或上傳此檔案。`)
 };
 
 const en_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`The exported JSON file will contain your API keys in plain text. Use this only to move between your own trusted devices — never share or upload the file.`)
+	return /** @type {LocalizedString} */ (`The exported JSON file will contain your API keys and custom headers in plain text. Use this only to move between your own trusted devices — never share or upload the file.`)
 };
 
 const ja_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`書き出した JSON ファイルには API キーが平文で含まれます。自分の信頼できる端末間の移行にのみ使用し、ファイルを共有・アップロードしないでください。`)
+	return /** @type {LocalizedString} */ (`エクスポートする JSON ファイルには、API キーとカスタムヘッダーが平文で含まれます。ご自身の信頼できる端末間での移行にのみ使用し、共有やアップロードはしないでください。`)
 };
 
 const ko_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`내보낸 JSON 파일에 API 키가 평문으로 포함됩니다. 본인이 신뢰하는 기기 간 이전에만 사용하고, 파일을 공유하거나 업로드하지 마세요.`)
+	return /** @type {LocalizedString} */ (`내보낸 JSON 파일에는 API 키와 사용자 지정 헤더가 일반 텍스트로 포함됩니다. 본인의 신뢰할 수 있는 기기 간 이전에만 사용하고 파일을 공유하거나 업로드하지 마세요.`)
 };
 
 const fr_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Le fichier JSON exporté contiendra vos clés API en clair. Utilisez-le uniquement pour passer d’un de vos appareils de confiance à un autre — ne partagez jamais ce fichier et ne le mettez jamais en ligne.`)
+	return /** @type {LocalizedString} */ (`Le fichier JSON exporté contiendra vos clés API et vos en-têtes personnalisés en clair. Utilisez-le uniquement pour un transfert entre vos propres appareils de confiance. Ne partagez ni ne téléversez jamais ce fichier.`)
 };
 
 const de_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Die exportierte JSON-Datei enthält Ihre API-Schlüssel im Klartext. Verwenden Sie sie nur, um Einstellungen zwischen Ihren eigenen vertrauenswürdigen Geräten zu übertragen — teilen Sie die Datei niemals und laden Sie sie nirgendwo hoch.`)
+	return /** @type {LocalizedString} */ (`Die exportierte JSON-Datei enthält Ihre API-Schlüssel und benutzerdefinierten Header im Klartext. Verwenden Sie sie nur zur Übertragung zwischen Ihren eigenen vertrauenswürdigen Geräten. Teilen Sie die Datei nicht und laden Sie sie nicht hoch.`)
 };
 
 const es_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`El archivo JSON exportado contendrá tus claves API en texto plano. Úsalo solo para migrar entre tus propios dispositivos de confianza; nunca compartas ni subas el archivo.`)
+	return /** @type {LocalizedString} */ (`El archivo JSON exportado contendrá tus claves API y cabeceras personalizadas en texto sin cifrar. Úsalo solo para transferir ajustes entre tus propios dispositivos de confianza. Nunca compartas ni subas el archivo.`)
 };
 
 const ru_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Экспортированный файл JSON будет содержать ваши API-ключи в открытом виде. Используйте его только для переноса настроек между своими доверенными устройствами — никому не передавайте файл и не выкладывайте его в сеть.`)
+	return /** @type {LocalizedString} */ (`Экспортируемый файл JSON будет содержать ключи API и пользовательские заголовки в открытом виде. Используйте его только для переноса между собственными доверенными устройствами. Не передавайте и не загружайте этот файл.`)
 };
 
 const pt_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`O arquivo JSON exportado conterá suas chaves de API em texto simples. Use-o apenas para migrar entre seus próprios dispositivos confiáveis; nunca compartilhe o arquivo nem faça upload dele.`)
+	return /** @type {LocalizedString} */ (`O arquivo JSON exportado conterá suas chaves de API e cabeçalhos personalizados em texto simples. Use-o apenas para transferir configurações entre seus próprios dispositivos confiáveis. Nunca compartilhe nem envie o arquivo.`)
 };
 
 const it_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`Il file JSON esportato conterrà le chiavi API in chiaro. Usalo solo per migrare tra i tuoi dispositivi fidati: non condividere né caricare mai il file.`)
+	return /** @type {LocalizedString} */ (`Il file JSON esportato conterrà le chiavi API e le intestazioni personalizzate in chiaro. Usalo solo per trasferire le impostazioni tra i tuoi dispositivi attendibili. Non condividere né caricare il file.`)
 };
 
 const ar_backup_export_keys_confirm_text = /** @type {(inputs: Backup_Export_Keys_Confirm_TextInputs) => LocalizedString} */ () => {
-	return /** @type {LocalizedString} */ (`سيحتوي ملف JSON المُصدَّر على مفاتيح API بنص غير مشفّر. استخدمه فقط لنقل الإعدادات بين أجهزتك الموثوقة، ولا تشارك الملف أو ترفعه إلى أي مكان أبدًا.`)
+	return /** @type {LocalizedString} */ (`سيحتوي ملف JSON المُصدَّر على مفاتيح API والترويسات المخصصة كنص صريح. استخدمه فقط للنقل بين أجهزتك الموثوقة، ولا تشارك الملف أو ترفعه مطلقًا.`)
 };
 
 /**
 * | output |
 * | --- |
-* | "The exported JSON file will contain your API keys in plain text. Use this only to move between your own trusted devices — never share or upload the file." |
+* | "The exported JSON file will contain your API keys and custom headers in plain text. Use this only to move between your own trusted devices — never share or u..." |
 *
 * @param {Backup_Export_Keys_Confirm_TextInputs} inputs
 * @param {{ locale?: "zh" | "zh-TW" | "en" | "ja" | "ko" | "fr" | "de" | "es" | "ru" | "pt" | "it" | "ar" }} options

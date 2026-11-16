@@ -2,6 +2,7 @@ import { MantineProvider } from '@mantine/core';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import type { Config } from '@/data/models';
+import { syncUiLocale } from '@/i18n';
 import { m } from '@/paraglide/messages.js';
 import { defaultConfig } from '@/services/config/schema';
 import ProviderSettings from './ProviderSettings';
@@ -15,7 +16,32 @@ vi.mock('@mantine/notifications', () => ({ notifications: { show: vi.fn() } }));
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  syncUiLocale('en', 'en');
 });
+
+it.each(['en', 'zh', 'ja', 'ko', 'de', 'fr', 'es', 'it', 'pt', 'ru', 'ar', 'zh-TW'])(
+  'shows validation failures in the %s interface language',
+  async (locale) => {
+    const { notifications } = await import('@mantine/notifications');
+    syncUiLocale(locale, 'en');
+    const view = render(
+      <MantineProvider>
+        <ProviderSettings config={fixture()} onSave={vi.fn()} />
+      </MantineProvider>
+    );
+    for (const [errorCode, message] of [
+      ['missing-api-key', m.error_no_key()],
+      ['missing-model', m.provider_validate_hint_model()],
+      ['timeout', m.error_timeout()],
+    ]) {
+      validateProvider.mockResolvedValueOnce({ ok: false, errorCode, error: 'English diagnostic fallback' });
+      await act(async () => {
+        fireEvent.click(view.getByText(m.provider_validate()));
+      });
+      expect(notifications.show).toHaveBeenLastCalledWith(expect.objectContaining({ message }));
+    }
+  }
+);
 
 function fixture() {
   const config = defaultConfig();

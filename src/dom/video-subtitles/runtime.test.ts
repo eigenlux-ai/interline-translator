@@ -1146,3 +1146,33 @@ it.each(['correction', 'seek', 'config'] as const)('discards deferred live growt
   expect(windows.some((w) => w.subscriptions.some((s) => s.text === 'A live sentence keeps growing'))).toBe(false);
   expect(latest.translation).toBe('');
 });
+
+it('finishes the paused buffer when a late human track covers only part of a cue', async () => {
+  const config = setup();
+  config.config.translation.preferHumanCaptions = true;
+  runtime.configure(config);
+  let paused = false;
+  Object.defineProperty(video, 'paused', { configurable: true, get: () => paused });
+  vi.spyOn(video, 'pause').mockImplementation(() => {
+    paused = true;
+    video.dispatchEvent(new Event('pause'));
+  });
+  actions.toggle();
+  track('Hello world', 'en', false, 20000);
+  for (let index = 0; index < 20; index++) {
+    video.currentTime = index * 0.5;
+    video.dispatchEvent(new Event('timeupdate'));
+    await vi.advanceTimersByTimeAsync(500);
+  }
+  expect(latest.assistance?.kind).toBe('slow');
+  actions.buffer!();
+  expect(latest.assistance?.kind).toBe('buffering');
+  targetTrack([
+    { tStartMs: 9000, dDurationMs: 2000, segs: [{ utf8: 'Partial human translation' }] },
+    { tStartMs: 21000, dDurationMs: 4000, segs: [{ utf8: 'Next human translation' }] },
+  ]);
+  expect(windows.at(-1)?.subscriptions.map((cue) => cue.text)).toEqual(['Hello world']);
+  complete();
+  expect(latest.assistance?.kind).toBe('buffer-ready');
+  expect(video.paused).toBe(true);
+});

@@ -616,7 +616,7 @@ export default function SelectionApp() {
                       {result}
                     </Text>
 
-                    {canAnnotate && result && (
+                    {canAnnotate && result && !loading && (
                       <Box mt={12} pt={8} style={{ borderTop: `1px solid ${other.hair[scheme]}` }}>
                         <UnstyledButton
                           onClick={() => {
