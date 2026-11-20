@@ -2,17 +2,17 @@
   <strong>English</strong> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间 — Open-source bilingual translation for Chrome
+# Interline · 行间 — Open-source bilingual translation for Chrome and Firefox
 
 **Read beyond language. Keep the original in sight.**
 
-Interline is a fully open-source Chrome extension for bilingual reading and translation. Read an article with translations beside each paragraph, look up a selected sentence, or translate a draft where you are already writing.
+Interline is a fully open-source extension for bilingual reading and translation in Chrome and Firefox. Read an article with translations beside each paragraph, look up a selected sentence, or translate a draft where you are already writing.
 
 **[Website](https://eigenlux-ai.github.io/interline-translator/en/?lang=en) · [Source code](https://github.com/eigenlux-ai/interline-translator) · [Request a feature](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [Report a bug](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [Contribute](./CONTRIBUTING.md)**
 
-**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-[MIT licensed](./LICENSE) · Chrome 116+ · Built-in key-free translation · Bring your own AI key
+[MIT licensed](./LICENSE) · Chrome 116+ · Firefox 140+ (desktop) · Built-in key-free translation · Bring your own AI key
 
 ![Interline translating a French article into English, with original and translation paired by paragraph](./assets/store/chrome/global/screenshot-1-bilingual.png)
 
@@ -30,9 +30,9 @@ See the actual [selection card](./assets/store/chrome/global/screenshot-2-select
 
 ## Get started
 
-**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Install from the Chrome Web Store](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Install from Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-Open the store page and click **Add to Chrome**. After installing, open an article and use the floating translation control or **Alt+T**. Click Interline’s toolbar icon to choose your reading language and translation engine.
+After installing Interline in your browser, open an article and use the floating translation control or **Alt+T**. Click Interline’s toolbar icon to choose your reading language and translation engine.
 
 ### Build from source
 
@@ -42,23 +42,20 @@ You need Git, Node.js 22.12+ and pnpm 10.7.1 (the version pinned in `package.jso
 git clone https://github.com/eigenlux-ai/interline-translator.git
 cd interline-translator
 pnpm install --frozen-lockfile
-pnpm build
 ```
 
-1. Open `chrome://extensions` in Chrome and enable **Developer mode**.
-2. Choose **Load unpacked** and select `.output/chrome-mv3/` inside the repository.
-3. Open an article, then use the floating translation control or **Alt+T**.
-4. Click Interline's toolbar icon to open settings. Choose your reading language; add an AI engine only if you want one.
+- **Chrome** — Run `pnpm build`. Open `chrome://extensions`, enable **Developer mode**, choose **Load unpacked**, and select `.output/chrome-mv3/`.
+- **Firefox** — Run `pnpm build:firefox`. Open `about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and select `.output/firefox-mv3/manifest.json`.
 
 The built-in Google Translate engine does not need an API key. It uses an online service, so availability depends on your network and the provider.
 
-Chrome's restricted pages, including `chrome://` pages, do not allow in-page translation. Site layouts and editor implementations vary; compatibility with every page is not guaranteed. Firefox build commands are included for development, but the screenshots here were captured in Chromium.
+Restricted browser pages, such as `chrome://extensions` and `about:addons`, do not allow in-page translation. Site layouts and editor implementations vary; compatibility with every page is not guaranteed. The screenshots here were captured in Chromium.
 
 ## YouTube subtitles
 
 Click **CC** in Interline's player controls to translate subtitles for the current playback; the adjacent settings button opens display, target-language and engine controls. **Settings → Video subtitles** also provides appearance, request limits, diagnostics export and subtitle translation-cache clearing. Automatic activation is off by default and separate from page translation.
 
-Watch pages, Shorts, embedded players and live/DVR captions are supported when YouTube provides captions. Interline can prefer existing human-created captions in the target language. Otherwise, subtitle text is sent to the selected translation provider; it does not transcribe audio. Caption availability and live updates depend on YouTube. Safari system-fullscreen output is an experimental development target, not part of the Chrome store package.
+Watch pages, Shorts, embedded players and live/DVR captions are supported when YouTube provides captions. Interline can prefer existing human-created captions in the target language. Otherwise, subtitle text is sent to the selected translation provider; it does not transcribe audio. Caption availability and live updates depend on YouTube. Safari system-fullscreen output is available in experimental Safari builds only.
 
 If subtitle translation repeatedly falls behind playback, Interline offers **Pause and buffer** for videos with a subtitle timeline. Upcoming captions continue translating while paused, with progress and a **Continue playing** control; playback never resumes automatically. Live captions instead suggest trying a faster engine. Buffering provides a head start, not a guarantee that a slow engine can sustain playback.
 

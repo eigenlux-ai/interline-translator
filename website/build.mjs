@@ -5,17 +5,18 @@ import { content } from './content.mjs';
 const root = new URL('../', import.meta.url);
 const output = new URL('./dist/', import.meta.url);
 const repo = 'https://github.com/eigenlux-ai/interline-translator';
-const install = 'https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid';
+const chromeStore = 'https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid';
 const arrow = '<span aria-hidden="true">↗</span>';
 const escape = (text) =>
   text.replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
-const button = (c) =>
-  `<a class="button button-primary" href="${install}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.8"/><path d="M12 8.2h8.7M8.7 13.9l-4.4-7.6m9.6 9-4.4 7"/></svg>${c.install}${arrow}</a>`;
 
 function page(locale) {
   const c = content[locale];
   const base = locale === 'zh' ? './' : '../';
   const assetLocale = locale === 'zh' ? 'zh_CN' : 'global';
+  const firefoxStore = `https://addons.mozilla.org/${locale === 'zh' ? 'zh-CN' : 'en-US'}/firefox/addon/interline-%E8%A1%8C%E9%97%B4/`;
+  const installButtons = `<a class="button button-primary" href="${chromeStore}">${c.installChrome}${arrow}</a>
+<a class="button button-primary" href="${firefoxStore}">${c.installFirefox}${arrow}</a>`;
   return `<!doctype html>
 <html lang="${c.lang}">
 <head>
@@ -40,7 +41,7 @@ function page(locale) {
 <section class="hero container" aria-labelledby="hero-title">
 <p class="eyebrow"><span class="status-dot" aria-hidden="true"></span>${c.eyebrow}</p>
 <h1 id="hero-title">${c.headline}</h1><p class="hero-intro">${c.intro}</p>
-<div class="hero-actions">${button(c)}<a class="button button-secondary" href="${repo}">${c.source}${arrow}</a></div>
+<div class="button-row hero-actions">${installButtons}<a class="button button-secondary" href="${repo}">${c.source}${arrow}</a></div>
 <p class="install-note">${c.note}</p>
 <a class="explore" href="#experience">${c.explore}<span aria-hidden="true">↓</span></a>
 <div class="hero-preview"><div class="window-bar" aria-hidden="true"><span class="window-dots">● ● ●</span><span>Interline · ${c.tabs[0].label}</span><span>↗</span></div><img src="${base}assets/${assetLocale}/screenshot-1-bilingual.png" width="1280" height="800" fetchpriority="high" alt="${c.tabs[0].alt}"></div>
@@ -57,7 +58,7 @@ function page(locale) {
 </div></section>
 <section class="section container trust-section" aria-labelledby="trust-title"><div class="section-heading"><p class="eyebrow">${c.trustLabel}</p><h2 id="trust-title">${c.trustTitle}</h2></div><div class="trust-grid">${c.trust.map(([title, text], i) => `<article><span class="trust-symbol" aria-hidden="true">${['&lt;/&gt;', '◎', '↗'][i]}</span><h3>${title}</h3><p>${text}</p></article>`).join('')}</div><a class="text-link" href="${repo}/blob/main/PRIVACY.md">${c.privacy}${arrow}</a></section>
 <section class="faq-section container" id="faq" aria-labelledby="faq-title"><div><p class="eyebrow">${c.faqLabel}</p><h2 id="faq-title">${c.faqTitle}</h2></div><div class="faq-list">${c.faqs.map(([q, a]) => `<details><summary>${q}<span class="faq-plus" aria-hidden="true">+</span></summary><p>${a}</p></details>`).join('')}</div></section>
-<section class="closing"><div class="container closing-inner"><div><p class="eyebrow">INTERLINE · 行间</p><h2>${c.closing}</h2><p>${c.closingText}</p></div><div>${button(c)}<p class="install-note">${c.note}</p></div></div></section>
+<section class="closing"><div class="container closing-inner"><div><p class="eyebrow">INTERLINE · 行间</p><h2>${c.closing}</h2><p>${c.closingText}</p></div><div><div class="button-row">${installButtons}</div><p class="install-note">${c.note}</p></div></div></section>
 </main>
 <footer class="container footer"><div><a class="brand" href="${base}"><img src="${base}assets/icon.png" width="28" height="28" alt=""><span>Interline <span class="brand-cn">行间</span></span></a><p>${c.footerTag}</p></div><div class="footer-links">${c.footer.map((label, i) => `<a href="${repo}${['', '/issues', '/blob/main/PRIVACY.md'][i]}">${label}${arrow}</a>`).join('')}<span class="license">MIT License</span></div></footer>
 </body></html>`;

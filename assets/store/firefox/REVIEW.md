@@ -7,7 +7,7 @@
 - Version: 1.2.0. Add-on ID: `interline@eigenlux.com`.
 - Target: desktop Firefox 140 or later, using Manifest V3. Android is not declared supported.
 
-Submit this ID as a new AMO listing; it replaces the ID used for the initial submission and cannot update that listing.
+Submit updates to the [published Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/interline-%E8%A1%8C%E9%97%B4/) using this ID.
 
 Upload the extension ZIP to AMO, then attach the source ZIP when asked whether this extension uses a build process. The ZIP is unsigned; AMO signs it after submission. The source archive includes this file, the lockfile, local build plugins, generated translations and their editable message sources. It excludes credentials, local browser profiles, captures and dependencies.
 

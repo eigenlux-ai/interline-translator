@@ -41,4 +41,4 @@ Build output is written to the Git-ignored `website/dist/` directory. The workfl
 - `language.js`: selects the language before rendering, restores manual preferences and handles language-switch links.
 - `../assets/store/chrome/{zh_CN,global}/`: the three real screenshots reused by the site. Update them through the store asset workflow, then rebuild the website.
 
-The FAQ uses native `details` elements without JavaScript. The site does not translate content or collect API keys; installation buttons link directly to the Chrome Web Store. Deployment uses GitHub's official Pages Actions; see the [custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).
+The FAQ uses native `details` elements without JavaScript. The site does not translate content or collect API keys. Installation buttons link directly to the Chrome Web Store and Firefox Add-ons. Deployment uses GitHub's official Pages Actions; see the [custom workflow documentation](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages).

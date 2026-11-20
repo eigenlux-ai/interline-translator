@@ -3,17 +3,18 @@ export const content = {
     lang: 'zh-CN',
     title: '行间 Interline — 读懂世界，留在原文里',
     description:
-      '行间是一款完全开源的 Chrome 双语阅读与翻译扩展。逐段对照原文、划词理解句子、原地翻译草稿。免 Key 开始，也可自备 AI 密钥。',
+      '行间是一款支持 Chrome 和 Firefox 的开源双语阅读与翻译扩展。逐段对照原文、划词理解句子、原地翻译草稿。免 Key 开始，也可自备 AI 密钥。',
     skip: '跳到正文',
     nav: ['阅读体验', '翻译引擎', '常见问题'],
-    install: '添加至 Chrome',
+    installChrome: '添加至 Chrome',
+    installFirefox: '添加至 Firefox',
     source: '查看源代码',
     language: 'English',
     alternate: 'en/',
     eyebrow: 'INTERLINE · 开源双语阅读扩展',
     headline: '读懂世界，<br><span>留在原文里。</span>',
     intro: '让译文跟随阅读，让表达跨越语言。<br>从一篇文章到一句回复，在你原本的页面里完成。',
-    note: '免费开源 · 无需注册 · Chrome 116+',
+    note: '免费开源 · 无需注册 · Chrome 116+ · Firefox 桌面版 140+',
     explore: '看看行间如何工作',
     strip: ['原文与译文，逐段相伴', '免 Key 即可开始', '你的模型，由你选择'],
     experienceLabel: '01 / 阅读 · 理解 · 表达',
@@ -75,11 +76,11 @@ export const content = {
       ],
       [
         '安装后怎么开始？',
-        '从 Chrome 应用商店安装后，打开一篇外语文章，使用悬浮翻译控件、右键菜单或 Alt+T 开始翻译。点击浏览器工具栏中的行间图标，可以选择阅读目标语言和引擎。',
+        '从 Chrome 应用商店或 Firefox 附加组件商店安装行间后，打开一篇外语文章，使用悬浮翻译控件、右键菜单或 Alt+T 开始翻译。点击浏览器工具栏中的行间图标，可以选择阅读目标语言和引擎。',
       ],
       [
         '所有网页都可以翻译吗？',
-        '支持 Chrome 116 及以上版本。chrome:// 等浏览器限制页面无法使用网页内翻译。网站排版和编辑器实现不同，兼容性可能有所差异；遇到问题欢迎通过 GitHub Issue 反馈。',
+        '支持 Chrome 116 及以上版本和 Firefox 桌面版 140 及以上版本。浏览器的扩展管理页等受限页面无法使用网页内翻译。网站排版和编辑器实现不同，兼容性可能有所差异；遇到问题欢迎通过 GitHub Issue 反馈。',
       ],
       [
         '网页内容会发送到哪里？',
@@ -99,10 +100,11 @@ export const content = {
     lang: 'en',
     title: 'Interline — Read beyond language. Keep the original in sight.',
     description:
-      'An open-source Chrome extension for bilingual reading, selection translation, and translating drafts in place. Start without an API key, or bring your own AI.',
+      'Read bilingually, translate selected text, and translate drafts in place with Interline, an open-source extension for Chrome and Firefox. Start without an API key, or bring your own AI.',
     skip: 'Skip to content',
     nav: ['Experience', 'Translation engines', 'FAQ'],
-    install: 'Add to Chrome',
+    installChrome: 'Add to Chrome',
+    installFirefox: 'Add to Firefox',
     source: 'View source',
     language: '简体中文',
     alternate: '../',
@@ -110,7 +112,7 @@ export const content = {
     headline: 'Read beyond language.<br><span>Keep the original.</span>',
     intro:
       'Translations that follow your reading. Words that travel further.<br>From an article to a reply, stay on the page you’re already on.',
-    note: 'Free & open source · No account · Chrome 116+',
+    note: 'Free & open source · No account · Chrome 116+ · Firefox 140+ (desktop)',
     explore: 'Explore Interline',
     strip: ['Original and translation, together', 'Start without an API key', 'Your choice of AI model'],
     experienceLabel: '01 / READ · UNDERSTAND · REPLY',
@@ -180,11 +182,11 @@ export const content = {
       ],
       [
         'How do I get started?',
-        'Install from the Chrome Web Store, open an article, then use the floating translation control, right-click menu, or Alt+T. Click Interline in your browser toolbar to choose your reading language and engine.',
+        'Install Interline from the Chrome Web Store or Firefox Add-ons. Open an article, then use the floating translation control, right-click menu, or Alt+T. Click Interline in your browser toolbar to choose your reading language and engine.',
       ],
       [
         'Does it work on every webpage?',
-        'Interline supports Chrome 116 and later. Restricted pages such as chrome:// cannot use in-page translation. Site layouts and editors vary, so compatibility is not guaranteed everywhere. Please report issues on GitHub.',
+        'Interline supports Chrome 116+ and Firefox 140+ on desktop. Restricted pages such as the browser’s extension manager cannot use in-page translation. Site layouts and editors vary, so compatibility is not guaranteed everywhere. Please report issues on GitHub.',
       ],
       [
         'Where does my page content go?',

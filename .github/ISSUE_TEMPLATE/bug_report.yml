@@ -52,12 +52,12 @@ body:
     id: environment
     attributes:
       label: Environment
-      description: Your browser + OS, and the extension version shown in chrome://extensions.
+      description: Your browser, OS, and the version shown in Interline’s About settings.
       placeholder: |
         - OS: macOS 15.5
         - Browser: Chrome 126
         - Interline: v1.0.0
-        - Installed from: Chrome Web Store / built from source
+        - Installed from: Chrome Web Store / Firefox Add-ons / built from source
     validations:
       required: true
   - type: textarea

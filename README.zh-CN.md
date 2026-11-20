@@ -2,17 +2,17 @@
   <a href="./README.md">English</a> · <strong>简体中文</strong> · <a href="./README.ja.md">日本語</a> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间 — 开源 Chrome 双语网页翻译扩展
+# Interline · 行间 — 适用于 Chrome 和 Firefox 的开源双语网页翻译扩展
 
 **读懂世界，留在原文里。**
 
-Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译扩展。读文章时逐段对照原文与译文，遇到不懂的句子随手划词，参与讨论时就在输入框里翻译草稿。
+Interline（行间）是一款支持 Chrome 和 Firefox 的开源双语阅读与翻译扩展。读文章时逐段对照原文与译文，遇到不懂的句子随手划词，参与讨论时就在输入框里翻译草稿。
 
 **[官方网站](https://eigenlux-ai.github.io/interline-translator/?lang=zh) · [完整源代码](https://github.com/eigenlux-ai/interline-translator) · [提出功能需求](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [反馈问题](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [参与贡献](./CONTRIBUTING.md)**
 
-**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[从 Firefox 附加组件商店安装](https://addons.mozilla.org/zh-CN/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-[MIT 许可](./LICENSE) · Chrome 116+ · 内置免 Key 翻译 · 支持自备 AI 密钥
+[MIT 许可](./LICENSE) · Chrome 116+ · Firefox 桌面版 140+ · 内置免 Key 翻译 · 支持自备 AI 密钥
 
 ![行间实际运行界面：英文文章与中文译文逐段相邻对照](./assets/store/chrome/zh_CN/screenshot-1-bilingual.png)
 
@@ -30,9 +30,9 @@ Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译
 
 ## 开始使用
 
-**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[从 Chrome 应用商店安装](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[从 Firefox 附加组件商店安装](https://addons.mozilla.org/zh-CN/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-打开商店页面，点击**添加至 Chrome**。安装后打开一篇文章，通过悬浮翻译控件或 **Alt+T** 开始翻译；点击工具栏中的行间图标，设置阅读目标语言和翻译引擎。
+从对应的浏览器商店安装行间后，打开一篇文章，通过悬浮翻译控件或 **Alt+T** 开始翻译；点击工具栏中的行间图标，设置阅读目标语言和翻译引擎。
 
 ### 从源码构建
 
@@ -42,23 +42,20 @@ Interline（行间）是一款代码完全开源的 Chrome 双语阅读与翻译
 git clone https://github.com/eigenlux-ai/interline-translator.git
 cd interline-translator
 pnpm install --frozen-lockfile
-pnpm build
 ```
 
-1. 在 Chrome 中打开 `chrome://extensions`，启用**开发者模式**。
-2. 点击**加载已解压的扩展程序**，选择仓库里的 `.output/chrome-mv3/` 目录。
-3. 打开一篇文章，通过悬浮翻译控件或 **Alt+T** 开始翻译。
-4. 点击浏览器工具栏中的行间图标打开设置，选择阅读目标语言；需要时再添加 AI 引擎。
+- **Chrome** — 运行 `pnpm build`。打开 `chrome://extensions`，启用**开发者模式**，点击**加载已解压的扩展程序**，选择 `.output/chrome-mv3/` 目录。
+- **Firefox** — 运行 `pnpm build:firefox`。打开 `about:debugging#/runtime/this-firefox`，将 `.output/firefox-mv3/manifest.json` 载入为临时附加组件。
 
 内置 Google Translate 引擎无需 API Key，但它是在线翻译服务，可用性取决于网络和服务商。
 
-`chrome://` 等浏览器限制页面无法使用网页内翻译。网站排版和编辑器实现各不相同，不能保证兼容所有页面。仓库提供 Firefox 开发与构建命令；这里的截图来自 Chromium 环境。
+`chrome://extensions` 和 `about:addons` 等浏览器受限页面无法使用网页内翻译。网站排版和编辑器实现各不相同，不能保证兼容所有页面。这里的截图来自 Chromium 环境。
 
 ## YouTube 字幕
 
 点击行间播放器控件中的 **CC**，为本次播放开启字幕翻译；旁边的设置按钮可调整显示模式、目标语言和翻译引擎。**设置 → 视频字幕**还提供外观、请求限制、诊断导出和字幕译文缓存清理。自动开启默认关闭，与整页翻译独立。
 
-支持有可用字幕的普通视频、Shorts、嵌入播放器及直播／DVR 回看。可以优先使用目标语言的人工字幕，否则将字幕文本发送给所选翻译服务商；不提供音频转写。字幕是否可用、直播字幕如何更新取决于 YouTube。Safari 系统全屏输出属于实验性开发功能，不包含在 Chrome 商店包中。
+支持有可用字幕的普通视频、Shorts、嵌入播放器及直播／DVR 回看。可以优先使用目标语言的人工字幕，否则将字幕文本发送给所选翻译服务商；不提供音频转写。字幕是否可用、直播字幕如何更新取决于 YouTube。Safari 系统全屏输出仅在实验性 Safari 构建中提供。
 
 字幕翻译持续跟不上播放时，有字幕时间轴的点播视频会提示**暂停并缓冲**。暂停后继续翻译接下来的字幕，显示完成进度，并可随时点击**继续播放**；不会自动恢复播放。直播则建议尝试更快的翻译引擎。缓冲可以争取提前量，但无法保证较慢的引擎持续跟上播放。
 

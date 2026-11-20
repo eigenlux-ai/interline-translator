@@ -2,17 +2,17 @@
   <a href="./README.md">English</a> · <a href="./README.zh-CN.md">简体中文</a> · <strong>日本語</strong> · <a href="./README.ko.md">한국어</a>
 </p>
 
-# Interline · 行间 — Chrome 向けオープンソース対訳・翻訳拡張機能
+# Interline · 行间 — Chrome と Firefox 向けオープンソース対訳・翻訳拡張機能
 
 **原文のそばで、世界を読む。**
 
-Interline は、コードをすべて公開している Chrome 向けの対訳・翻訳拡張機能です。記事を段落ごとに対訳で読み、気になる文を選択して意味を確かめ、返信の下書きを入力欄でそのまま翻訳できます。
+Interline は、コードをすべて公開している Chrome と Firefox 向けの対訳・翻訳拡張機能です。記事を段落ごとに対訳で読み、気になる文を選択して意味を確かめ、返信の下書きを入力欄でそのまま翻訳できます。
 
 **[公式サイト](https://eigenlux-ai.github.io/interline-translator/) · [ソースコード](https://github.com/eigenlux-ai/interline-translator) · [機能をリクエスト](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [不具合を報告](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [開発に参加](./CONTRIBUTING.md)**
 
-**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Firefox Add-ons からインストール](https://addons.mozilla.org/ja/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-[MIT ライセンス](./LICENSE) · Chrome 116+ · キー不要の翻訳エンジン内蔵 · 自分の AI キーにも対応
+[MIT ライセンス](./LICENSE) · Chrome 116+ · デスクトップ版 Firefox 140+ · キー不要の翻訳エンジン内蔵 · 自分の AI キーにも対応
 
 ![英語の記事と日本語の訳文を段落ごとに表示する Interline の実際の画面](./assets/store/chrome/ja/screenshot-1-bilingual.png)
 
@@ -30,9 +30,9 @@ Interline は、コードをすべて公開している Chrome 向けの対訳�
 
 ## 使い始める
 
-**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Chrome ウェブストアからインストール](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Firefox Add-ons からインストール](https://addons.mozilla.org/ja/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-ストアのページで **Chrome に追加**をクリックします。インストール後、記事を開き、フローティングコントロールか **Alt+T** で翻訳を開始できます。ツールバーの Interline アイコンから、読む言語と翻訳エンジンを設定してください。
+お使いのブラウザーのストアからインストールしたら、記事を開き、フローティングコントロールか **Alt+T** で翻訳を開始できます。ツールバーの Interline アイコンから、読む言語と翻訳エンジンを設定してください。
 
 ### ソースからビルド
 
@@ -42,23 +42,20 @@ Git、Node.js 22.12+、pnpm 10.7.1（`package.json` の指定バージョン）�
 git clone https://github.com/eigenlux-ai/interline-translator.git
 cd interline-translator
 pnpm install --frozen-lockfile
-pnpm build
 ```
 
-1. Chrome で `chrome://extensions` を開き、**デベロッパーモード**を有効にします。
-2. **パッケージ化されていない拡張機能を読み込む**を選び、リポジトリ内の `.output/chrome-mv3/` を指定します。
-3. 記事を開き、フローティングコントロールか **Alt+T** で翻訳します。
-4. ツールバーの Interline アイコンから設定を開き、読む言語を選びます。AI エンジンは必要に応じて追加できます。
+- **Chrome** — `pnpm build` を実行します。`chrome://extensions` で**デベロッパーモード**を有効にし、**パッケージ化されていない拡張機能を読み込む**を選んで `.output/chrome-mv3/` を指定します。
+- **Firefox** — `pnpm build:firefox` を実行します。`about:debugging#/runtime/this-firefox` を開き、一時的なアドオンとして `.output/firefox-mv3/manifest.json` を読み込みます。
 
 内蔵の Google Translate エンジンに API キーは不要です。ただしオンラインサービスのため、利用可否はネットワークと提供元の状況に左右されます。
 
-`chrome://` などブラウザが制限するページでは翻訳を挿入できません。サイトの構成やエディターによって動作は異なり、すべてのページとの互換性を保証するものではありません。Firefox 用の開発・ビルドコマンドも含まれていますが、掲載画像は Chromium 環境で撮影しています。
+`chrome://extensions` や `about:addons` などブラウザが制限するページでは翻訳を挿入できません。サイトの構成やエディターによって動作は異なり、すべてのページとの互換性を保証するものではありません。掲載画像は Chromium 環境で撮影しています。
 
 ## YouTube の字幕
 
 Interline のプレーヤー内の **CC** をクリックすると、現在の再生で字幕翻訳を開始します。隣の設定ボタンで表示、翻訳先の言語、エンジンを変更できます。**設定 → 動画字幕**では外観、リクエスト上限、診断の書き出し、字幕翻訳キャッシュの削除も行えます。自動開始は初期状態でオフで、ページ翻訳とは独立しています。
 
-YouTube が字幕を提供する通常の動画、Shorts、埋め込みプレーヤー、ライブ配信と DVR に対応します。翻訳先の言語の手動字幕を優先することもできます。それ以外は字幕テキストを選択した翻訳サービスへ送信します。音声の文字起こしは行いません。字幕の提供やライブ更新は YouTube に依存します。Safari のシステム全画面出力は実験的な開発機能で、Chrome ストア用パッケージには含まれません。
+YouTube が字幕を提供する通常の動画、Shorts、埋め込みプレーヤー、ライブ配信と DVR に対応します。翻訳先の言語の手動字幕を優先することもできます。それ以外は字幕テキストを選択した翻訳サービスへ送信します。音声の文字起こしは行いません。字幕の提供やライブ更新は YouTube に依存します。Safari のシステム全画面出力は、実験的な Safari ビルドでのみ利用できます。
 
 字幕翻訳が再生に継続して追いつかない場合、字幕タイムラインのある動画では**一時停止して準備**を提案します。一時停止中も次の字幕を翻訳し、進捗を表示します。**再生を続ける**はいつでも選べますが、自動では再開しません。ライブ配信では、より速い翻訳エンジンを提案します。事前の準備で余裕を確保できますが、遅いエンジンが継続して再生に追いつくことを保証するものではありません。
 

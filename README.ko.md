@@ -2,17 +2,17 @@
   <a href="./README.md">English</a> · <a href="./README.zh-CN.md">简体中文</a> · <a href="./README.ja.md">日本語</a> · <strong>한국어</strong>
 </p>
 
-# Interline · 行间 — Chrome용 오픈 소스 이중 언어 번역 확장 프로그램
+# Interline · 行间 — Chrome 및 Firefox용 오픈 소스 이중 언어 번역 확장 프로그램
 
 **원문 곁에서, 더 넓은 세상을.**
 
-Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 확장 프로그램입니다. 기사를 문단별로 대조해서 읽고, 궁금한 문장을 선택해 뜻을 확인하고, 답글 초안을 입력한 자리에서 번역하세요.
+Interline은 전체 코드를 공개한 Chrome 및 Firefox용 이중 언어 읽기·번역 확장 프로그램입니다. 기사를 문단별로 대조해서 읽고, 궁금한 문장을 선택해 뜻을 확인하고, 답글 초안을 입력한 자리에서 번역하세요.
 
 **[공식 웹사이트](https://eigenlux-ai.github.io/interline-translator/) · [전체 소스 코드](https://github.com/eigenlux-ai/interline-translator) · [기능 제안](https://github.com/eigenlux-ai/interline-translator/issues/new?template=feature_request.yml) · [버그 신고](https://github.com/eigenlux-ai/interline-translator/issues/new?template=bug_report.yml) · [기여하기](./CONTRIBUTING.md)**
 
-**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Firefox 부가 기능에서 설치](https://addons.mozilla.org/ko/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-[MIT 라이선스](./LICENSE) · Chrome 116+ · 키 없는 기본 번역 엔진 · 내 AI 키 연결
+[MIT 라이선스](./LICENSE) · Chrome 116+ · 데스크톱용 Firefox 140+ · 키 없는 기본 번역 엔진 · 내 AI 키 연결
 
 ![영어 기사와 한국어 번역을 문단별로 함께 표시하는 Interline의 실제 화면](./assets/store/chrome/ko/screenshot-1-bilingual.png)
 
@@ -30,9 +30,9 @@ Interline은 전체 코드를 공개한 Chrome용 이중 언어 읽기·번역 �
 
 ## 시작하기
 
-**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)**
+**[Chrome 웹 스토어에서 설치](https://chromewebstore.google.com/detail/mcefogikngeheopmdmaapfgpnnlgcoid)** · **[Firefox 부가 기능에서 설치](https://addons.mozilla.org/ko/firefox/addon/interline-%E8%A1%8C%E9%97%B4/)**
 
-스토어 페이지에서 **Chrome에 추가**를 클릭하세요. 설치 후 기사를 열고 플로팅 번역 컨트롤이나 **Alt+T**로 번역을 시작할 수 있습니다. 도구 모음의 Interline 아이콘에서 읽기 대상 언어와 번역 엔진을 설정하세요.
+사용 중인 브라우저의 스토어에서 설치한 후 기사를 열고 플로팅 번역 컨트롤이나 **Alt+T**로 번역을 시작할 수 있습니다. 도구 모음의 Interline 아이콘에서 읽기 대상 언어와 번역 엔진을 설정하세요.
 
 ### 소스에서 빌드
 
@@ -42,23 +42,20 @@ Git, Node.js 22.12+, pnpm 10.7.1(`package.json`에 지정된 버전)이 필요�
 git clone https://github.com/eigenlux-ai/interline-translator.git
 cd interline-translator
 pnpm install --frozen-lockfile
-pnpm build
 ```
 
-1. Chrome에서 `chrome://extensions`를 열고 **개발자 모드**를 켭니다.
-2. **압축해제된 확장 프로그램을 로드합니다**를 선택하고 저장소의 `.output/chrome-mv3/` 폴더를 지정합니다.
-3. 기사를 열고 플로팅 번역 컨트롤이나 **Alt+T**로 번역을 시작합니다.
-4. 도구 모음의 Interline 아이콘을 눌러 설정을 열고 읽기 대상 언어를 선택하세요. AI 엔진은 필요할 때 추가하면 됩니다.
+- **Chrome** — `pnpm build`를 실행하세요. `chrome://extensions`에서 **개발자 모드**를 켜고 **압축해제된 확장 프로그램을 로드합니다**를 선택한 뒤 `.output/chrome-mv3/` 폴더를 지정하세요.
+- **Firefox** — `pnpm build:firefox`를 실행하세요. `about:debugging#/runtime/this-firefox`를 열고 `.output/firefox-mv3/manifest.json`을 임시 부가 기능으로 로드하세요.
 
 기본 Google Translate 엔진은 API 키가 필요하지 않습니다. 다만 온라인 서비스이므로 네트워크와 제공업체 상황에 따라 이용 가능 여부가 달라집니다.
 
-`chrome://` 등 브라우저가 제한하는 페이지에는 번역을 삽입할 수 없습니다. 사이트 구성과 편집기 구현이 다양하므로 모든 페이지와의 호환성을 보장하지는 않습니다. Firefox 개발·빌드 명령도 포함되어 있지만, 여기에 실린 화면은 Chromium 환경에서 촬영했습니다.
+`chrome://extensions`, `about:addons` 등 브라우저가 제한하는 페이지에는 번역을 삽입할 수 없습니다. 사이트 구성과 편집기 구현이 다양하므로 모든 페이지와의 호환성을 보장하지는 않습니다. 여기에 실린 화면은 Chromium 환경에서 촬영했습니다.
 
 ## YouTube 자막
 
 Interline 플레이어 컨트롤의 **CC**를 클릭하면 현재 재생 중인 영상의 자막 번역을 시작합니다. 옆의 설정 버튼에서 표시 방식, 대상 언어와 엔진을 바꿀 수 있습니다. **설정 → 동영상 자막**에서는 외관, 요청 제한, 진단 내보내기와 자막 번역 캐시 삭제도 제공합니다. 자동 시작은 기본적으로 꺼져 있으며 페이지 번역과 독립적으로 작동합니다.
 
-YouTube가 자막을 제공하는 일반 영상, Shorts, 임베드 플레이어 및 라이브/DVR을 지원합니다. 대상 언어의 수동 자막을 우선 사용할 수도 있습니다. 그 외에는 자막 텍스트를 선택한 번역 제공업체로 전송하며, 음성을 직접 받아쓰지는 않습니다. 자막 제공 여부와 라이브 갱신은 YouTube에 따라 달라집니다. Safari 시스템 전체 화면 출력은 실험적인 개발 기능으로 Chrome 스토어 패키지에는 포함되지 않습니다.
+YouTube가 자막을 제공하는 일반 영상, Shorts, 임베드 플레이어 및 라이브/DVR을 지원합니다. 대상 언어의 수동 자막을 우선 사용할 수도 있습니다. 그 외에는 자막 텍스트를 선택한 번역 제공업체로 전송하며, 음성을 직접 받아쓰지는 않습니다. 자막 제공 여부와 라이브 갱신은 YouTube에 따라 달라집니다. Safari 시스템 전체 화면 출력은 실험용 Safari 빌드에서만 사용할 수 있습니다.
 
 자막 번역이 계속 재생을 따라가지 못하면 자막 타임라인이 있는 영상에서 **일시 정지하고 준비**를 제안합니다. 일시 정지 중에도 다음 자막을 번역하며 진행 상황을 표시합니다. 언제든 **계속 재생**을 선택할 수 있지만 자동으로 재생을 재개하지는 않습니다. 라이브에서는 더 빠른 번역 엔진을 제안합니다. 미리 번역하면 시간 여유를 확보할 수 있지만, 느린 엔진이 계속 재생을 따라갈 수 있다고 보장하지는 않습니다.
 

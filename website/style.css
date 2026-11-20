@@ -177,11 +177,14 @@ h1 span {
   line-height: 1.9;
   font-size: 18px;
 }
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .hero-actions {
   margin-top: 30px;
-  display: flex;
   justify-content: center;
-  gap: 12px;
 }
 .button {
   display: inline-flex;
@@ -200,10 +203,6 @@ h1 span {
 }
 .button:hover {
   transform: translateY(-2px);
-}
-.button svg {
-  width: 21px;
-  height: 21px;
 }
 .button > span {
   margin-left: 8px;
@@ -605,7 +604,6 @@ details p {
   background: #e9eff2;
 }
 .closing .install-note {
-  max-width: 290px;
   font-size: 12px;
 }
 .footer {
@@ -775,9 +773,6 @@ details p {
     align-items: flex-start;
     gap: 32px;
     padding-block: 55px;
-  }
-  .closing .install-note {
-    max-width: none;
   }
   .footer {
     flex-direction: column;
