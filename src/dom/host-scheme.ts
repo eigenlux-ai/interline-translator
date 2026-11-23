@@ -40,6 +40,9 @@ function normalizeViaCanvas(value: string): Rgba | null {
     }
     if (!colorCtx) return null;
     colorCtx.clearRect(0, 0, 1, 1);
+    // Reset fillStyle before assigning: Canvas 2D silently ignores invalid values
+    // and keeps the previous fillStyle, which would leak a prior sample's color.
+    colorCtx.fillStyle = 'rgba(0, 0, 0, 0)';
     colorCtx.fillStyle = value;
     colorCtx.fillRect(0, 0, 1, 1);
     const data = colorCtx.getImageData(0, 0, 1, 1)?.data;
@@ -174,8 +177,17 @@ let media: MediaQueryList | null = null;
 let rafId: number | null = null;
 let lastPaint = ''; // serialized painted color from the previous sample
 let settleFrames = 0;
+let bodyPending = false;
 
 const paintKey = ({ r, g, b, a }: Rgba): string => `${r},${g},${b},${a}`;
+
+function onDomContentLoaded(): void {
+  bodyPending = false;
+  if (observer && document.body) {
+    observer.observe(document.body, { attributes: true });
+  }
+  schedule();
+}
 
 function recheck(): void {
   rafId = null;
@@ -219,9 +231,14 @@ function start(): void {
   lastPaint = paintKey(painted);
   settleFrames = 0;
   observer = new MutationObserver(schedule);
-  observer.observe(document.documentElement, { attributes: true });
-  // Content scripts run at document_idle so body exists; guarded anyway.
-  if (document.body) observer.observe(document.body, { attributes: true });
+  if (document.documentElement) observer.observe(document.documentElement, { attributes: true });
+  // Attach once body exists if subscribed early (e.g. document_start).
+  if (document.body) {
+    observer.observe(document.body, { attributes: true });
+  } else if (document.readyState === 'loading') {
+    bodyPending = true;
+    document.addEventListener('DOMContentLoaded', onDomContentLoaded, { once: true });
+  }
   media = window.matchMedia?.('(prefers-color-scheme: dark)') ?? null;
   media?.addEventListener?.('change', schedule);
   document.addEventListener('visibilitychange', onVisibility);
@@ -231,6 +248,10 @@ function start(): void {
 function stop(): void {
   observer?.disconnect();
   observer = null;
+  if (bodyPending) {
+    document.removeEventListener('DOMContentLoaded', onDomContentLoaded);
+    bodyPending = false;
+  }
   media?.removeEventListener?.('change', schedule);
   media = null;
   if (rafId !== null) cancelAnimationFrame(rafId);

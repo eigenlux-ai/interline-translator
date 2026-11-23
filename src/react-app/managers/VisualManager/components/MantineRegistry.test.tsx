@@ -10,7 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createColorSchemeSource } from '@/surface/color-scheme';
 import { SurfaceProvider } from '@/surface/context';
 import type { SurfaceEnv } from '@/surface/defs';
-import { SURFACE_ROOT_CLASS } from '@/constants';
+import { SURFACE_ROOT_CLASS, Z_INDEX } from '@/constants';
 import { hostColorSchemeSource } from '@/dom/host-scheme';
 import { syncUiLocale } from '@/i18n';
 import { useVisual } from '../context';
@@ -283,4 +283,72 @@ it('a local change during the catch-up read wins over the read', async () => {
   await act(async () => finish('blue'));
   expect(view.getByRole('button').textContent).toBe('red');
   read.mockRestore();
+});
+
+it('configures shadow isolation defaults on ModalRoot, DrawerRoot, Affix, and FloatingWindow', () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  let theme!: ReturnType<typeof useMantineTheme>;
+  function Probe() {
+    theme = useMantineTheme();
+    return null;
+  }
+  render(
+    <SurfaceProvider env={env}>
+      <MantineRegistry colorScheme="light" primaryColor="blue">
+        <Probe />
+      </MantineRegistry>
+    </SurfaceProvider>,
+    { container: env.rootElement }
+  );
+  expect(theme.components.ModalRoot?.defaultProps).toMatchObject({ zIndex: Z_INDEX.modal, lockScroll: false });
+  expect(theme.components.DrawerRoot?.defaultProps).toMatchObject({ zIndex: Z_INDEX.modal, lockScroll: false });
+  expect(theme.components.Affix?.defaultProps).toMatchObject({ zIndex: Z_INDEX.modal });
+  expect(theme.components.FloatingWindow?.defaultProps).toMatchObject({ zIndex: Z_INDEX.popover });
+});
+
+it('writes color scheme preference to storage once per change in extension mode', async () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  const write = vi.spyOn(visualColorSchemeStorage, 'setValue');
+  function SchemeButton() {
+    const visual = useVisual();
+    return <button onClick={() => visual.setColorScheme('dark')}>dark</button>;
+  }
+  const view = render(
+    <SurfaceProvider env={env}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+        <SchemeButton />
+      </VisualManagerRegistry>
+    </SurfaceProvider>,
+    { container: env.rootElement }
+  );
+  try {
+    fireEvent.click(view.getByText('dark'));
+    await waitFor(() => expect(write).toHaveBeenCalledTimes(1));
+    expect(write).toHaveBeenCalledWith('dark');
+  } finally {
+    write.mockRestore();
+  }
+});
+
+it('updates visual.setColorScheme when strategy changes from forced to extension without visual diff', () => {
+  const env = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' as const };
+  function SchemeButton() {
+    const visual = useVisual();
+    return <button onClick={() => visual.setColorScheme('dark')}>dark</button>;
+  }
+  const app = (strategy: SurfaceEnv['colorSchemeStrategy']) => (
+    <SurfaceProvider env={{ ...env, colorSchemeStrategy: strategy }}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+        <SchemeButton />
+      </VisualManagerRegistry>
+    </SurfaceProvider>
+  );
+  const view = render(app('force-light'), { container: env.rootElement });
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('light');
+
+  // Active scheme remains 'light' across the strategy switch, so VisualContextProvider
+  // must refresh when setColorScheme changes from direct persistence to Mantine's setter.
+  view.rerender(app('extension'));
+  fireEvent.click(view.getByText('dark'));
+  expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark');
 });

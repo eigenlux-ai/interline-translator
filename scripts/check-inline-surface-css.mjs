@@ -41,6 +41,8 @@ for (const sheet of sheets) {
   assert(!shipped, `${injectedPath} exists; its CSS is embedded and must not also be emitted.`);
   assert(!injected.includes(injectedPath), `${injectedPath} must not be injected into the host by the manifest.`);
   assert(!exposed.some((pattern) => pattern.test(injectedPath)), `${injectedPath} must not be web-accessible.`);
+  assert(!injected.includes(cssPath), `${cssPath} must not be injected into the host by the manifest.`);
+  assert(!exposed.some((pattern) => pattern.test(cssPath)), `${cssPath} must not be web-accessible.`);
 }
 const scripts = (await readdir(join(directory, 'content-scripts'))).filter((file) => file.endsWith('.js'));
 for (const file of scripts) {

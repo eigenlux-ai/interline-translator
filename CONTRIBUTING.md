@@ -86,12 +86,12 @@ The project uses WXT, React, Mantine and TypeScript, with [aie-wxt-mantine-surfa
 
 ## Sync the foundation
 
-The shared infrastructure tracks template **v2.0.0**, commit `c067e00a6612a22f78e4b1e05453e6c95f067103`.
+The shared infrastructure tracks template `main` at commit `90cb561a72a2bc4e95ce364661fb93e95be70d33`.
 [.template-sync.json](./.template-sync.json) records the baseline and application adaptations. The repositories have independent histories: compare subsequent template commits and port the relevant changes, preserving Interline's entrypoints, theme, locale-owned direction, services and bundle limits.
 
 WXT 0.21 uses `@webext-core/isolated-element` 3.0.0 in the lockfile. Its container is a div directly inside the shadow root. Surface CSS is bundled through `virtual:surface-css` and adopted once by the host and satellites; `surface-css/` contains audit copies excluded from ZIP packages. Keep the Chrome and Firefox CSS audits in CI. Satellites capture dynamic theme styles only while needed, and release them when the last satellite is destroyed.
 
-`bridgeFocus` keeps Mantine's focus traps and focus return working behind keyboard isolation. It patches only the content script's own document wrapper. Do not move it into the page's MAIN world. ARIA ID references cannot cross sibling shadow roots: keep Select/Combobox triggers and their accessibility-related floating content in the same root. Test Tab/Shift+Tab, focus return, host keyboard isolation and strict CSP in a real browser after changing these surfaces.
+`bridgeFocus` keeps Mantine's focus traps and focus return working behind keyboard isolation. It patches only the content script's own document wrapper. Do not move it into the page's MAIN world. ARIA ID references cannot cross sibling shadow roots: keep Select/Combobox triggers and their accessibility-related floating content in the same root. Mantine handles Escape on the window capture phase, so closing a nested dropdown can also dismiss its shadow Modal or Drawer. Guard the outer close handler when only the dropdown should close. Test Tab/Shift+Tab, focus return, host keyboard isolation and strict CSP in a real browser after changing these surfaces.
 
 The application's existing host detector supplies `hostColorSchemeSource`; direction follows the UI locale rather than a new stored preference. `tsconfig.json` retains the previous `noUncheckedIndexedAccess: false` policy to keep a full indexed-access migration separate from template updates. WXT's other strict defaults stay enabled.
 
@@ -100,7 +100,7 @@ The application's existing host detector supplies `hostColorSchemeSource`; direc
 - Put floating extension UI in the existing Shadow DOM surface. Page translations intentionally sit beside source content in the host DOM; preserve links, formatting and interactions where supported, and check that turning translation off removes the extension's additions.
 - Keep provider authentication, AI SDK calls and persistent translation cache operations in the background layer. Content scripts use the typed messaging and public configuration interfaces; credentials also appear in the authorized settings/configuration layer, but must not be exposed to host pages.
 - Reuse the shared prompt, glossary and cache-key code across translation paths. Changes to request semantics may need matching cache invalidation changes.
-- Use `PROJECT_PREFIX` from `prefix.cjs` for namespaced classes, elements, storage and CSS variables. Build checks verify the CSS prefix mirror.
+- Use `PROJECT_PREFIX` from `prefix.cjs` for namespaced classes, elements, storage and CSS variables. Build checks verify the surface-root selector, z-index token and scrollbar variables in `global.css`.
 - Model capabilities and endpoint compatibility are inferred by implementation rules, not guaranteed for every model. When changing adaptation logic, add a focused case that reproduces the protocol difference.
 
 ## Update copy and screenshots together

@@ -27,8 +27,9 @@ jobs:
 
       - run: pnpm compile
       - run: pnpm lint
+      - run: pnpm prettier:check
       - run: pnpm test
-      - run: pnpm build # check-prefix-sync fails the build on prefix drift
+      - run: pnpm zip # check-prefix-sync fails the build on prefix drift
       - run: pnpm audit:css
       - run: pnpm audit:surface
       - run: pnpm audit:ascii
@@ -38,3 +39,18 @@ jobs:
       - run: pnpm audit:surface:firefox
       - run: pnpm audit:ascii:firefox
       - run: pnpm audit:repro:firefox
+      - name: Verify zip archives exist and exclude audit-only surface-css
+        run: |
+          node -e '
+            const { execFileSync } = require("node:child_process");
+            const { existsSync, readFileSync } = require("node:fs");
+            const { name, version } = JSON.parse(readFileSync("package.json", "utf8"));
+            for (const target of ["chrome", "firefox"]) {
+              const zip = `.output/${name}-${version}-${target}.zip`;
+              if (!existsSync(zip)) throw new Error(`Missing expected package archive: ${zip}`);
+              const list = execFileSync("unzip", ["-Z1", zip], { encoding: "utf8" });
+              if (list.split(/\r?\n/).some((entry) => entry.startsWith("surface-css/"))) {
+                throw new Error(`${zip} must exclude surface-css/`);
+              }
+            }
+          '

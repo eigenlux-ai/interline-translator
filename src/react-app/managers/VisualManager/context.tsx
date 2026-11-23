@@ -19,11 +19,25 @@ export function useVisual(): VisualContextValues {
   return context;
 }
 
-export default function VisualContextProvider({ children, ...values }: PropsWithChildren<VisualContextValues>) {
+export default function VisualContextProvider({
+  children,
+  colorScheme,
+  activeColorScheme,
+  primaryColor,
+  setColorScheme,
+  toggleColorScheme,
+  setPrimaryColor,
+}: PropsWithChildren<VisualContextValues>) {
   const memoized = useMemo(
-    () => values,
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- enumerate value fields; setters are stable per render cycle
-    [values.colorScheme, values.activeColorScheme, values.primaryColor]
+    () => ({
+      colorScheme,
+      activeColorScheme,
+      primaryColor,
+      setColorScheme,
+      toggleColorScheme,
+      setPrimaryColor,
+    }),
+    [colorScheme, activeColorScheme, primaryColor, setColorScheme, toggleColorScheme, setPrimaryColor]
   );
   return <VisualContext.Provider value={memoized}>{children}</VisualContext.Provider>;
 }

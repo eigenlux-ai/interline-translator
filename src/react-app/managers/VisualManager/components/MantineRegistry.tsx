@@ -121,7 +121,11 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
               // document.body) — never acceptable from an injected surface.
               // `centered` comes from baseTheme; mergeThemeOverrides deep-merges defaultProps.
               Modal: Modal.extend({ defaultProps: { zIndex: Z_INDEX.modal, lockScroll: false } }),
+              ModalRoot: Modal.Root.extend({ defaultProps: { zIndex: Z_INDEX.modal, lockScroll: false } }),
               Drawer: Drawer.extend({ defaultProps: { zIndex: Z_INDEX.modal, lockScroll: false } }),
+              DrawerRoot: Drawer.Root.extend({ defaultProps: { zIndex: Z_INDEX.modal, lockScroll: false } }),
+              Affix: { defaultProps: { zIndex: Z_INDEX.modal } },
+              FloatingWindow: { defaultProps: { zIndex: Z_INDEX.popover } },
               // Floating overlays portal to the surface root as SIBLINGS of
               // the main UI — Mantine's default z-index (300) would leave
               // them buried under the panel that opened them. The 'fixed'

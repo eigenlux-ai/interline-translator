@@ -20,13 +20,15 @@ export default defineContentScript({
       position: 'overlay',
       colorSchemeStrategy: hostColorSchemeSource,
       onMount: (container, env) => {
-        const app = renderSurfaceApp(container, env, <VideoSubtitleApp />);
+        const controller = new AbortController();
+        const app = renderSurfaceApp(container, env, <VideoSubtitleApp />, { signal: controller.signal });
         app.catch((error) => console.warn('[youtube-embed] failed to render the surface', error));
-        return app;
+        return { app, controller };
       },
       onRemove: (mounted) => {
-        void mounted?.then(
-          (root) => root.unmount(),
+        mounted?.controller.abort();
+        void mounted?.app.then(
+          (root) => root?.unmount(),
           () => {}
         );
       },

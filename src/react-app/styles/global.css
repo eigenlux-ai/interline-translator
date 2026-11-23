@@ -41,10 +41,10 @@
   --aie-omt-z-notification: 2146300000;
   --aie-omt-z-max: 2147400000;
 
-  --sb-track-color: transparent;
-  --sb-thumb-color: rgba(152, 131, 101, 0.28);
-  --sb-thumb-hover: rgba(124, 106, 82, 0.48);
-  --sb-size: 6px;
+  --aie-omt-sb-track-color: transparent;
+  --aie-omt-sb-thumb-color: rgba(152, 131, 101, 0.28);
+  --aie-omt-sb-thumb-hover: rgba(124, 106, 82, 0.48);
+  --aie-omt-sb-size: 6px;
 
   /* Theme colors come from interlineCssVariables. Static adopted sheets
      cascade after in-tree styles, so duplicating those tokens here would
@@ -60,27 +60,44 @@
 
 :root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *),
 .aie-omt-surface-root:where([data-mantine-color-scheme='dark'], [data-mantine-color-scheme='dark'] *) {
-  --sb-thumb-color: rgba(245, 222, 185, 0.22);
-  --sb-thumb-hover: rgba(245, 222, 185, 0.38);
+  --aie-omt-sb-thumb-color: rgba(245, 222, 185, 0.22);
+  --aie-omt-sb-thumb-hover: rgba(245, 222, 185, 0.38);
 }
 
-::-webkit-scrollbar {
-  width: var(--sb-size);
-  height: var(--sb-size);
-}
+@layer base {
+  ::-webkit-scrollbar {
+    width: var(--aie-omt-sb-size);
+    height: var(--aie-omt-sb-size);
+  }
 
-::-webkit-scrollbar-track {
-  background: var(--sb-track-color);
-  border-radius: 6px;
-}
+  ::-webkit-scrollbar-track {
+    background: var(--aie-omt-sb-track-color);
+    border-radius: 6px;
+  }
 
-::-webkit-scrollbar-thumb {
-  background: var(--sb-thumb-color);
-  border-radius: 6px;
-}
+  ::-webkit-scrollbar-thumb {
+    background: var(--aie-omt-sb-thumb-color);
+    border-radius: 6px;
+  }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-thumb-hover);
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--aie-omt-sb-thumb-hover);
+  }
+
+  /* Firefox et al. lack ::-webkit-scrollbar; gate standard properties so
+     Chromium keeps using the 6px rounded WebKit rules above (Chrome 121+
+     disables ::-webkit-scrollbar whenever scrollbar-color/width are set).
+     Layered in `base` so `@layer mantine` (e.g. ScrollArea `scrollbar-width: none`) wins. */
+  @supports not selector(::-webkit-scrollbar) {
+    :root,
+    .aie-omt-surface-root {
+      scrollbar-color: var(--aie-omt-sb-thumb-color) var(--aie-omt-sb-track-color);
+    }
+
+    :where(*) {
+      scrollbar-width: thin;
+    }
+  }
 }
 
 /* Composite pill inputs own their focus ring at the outer control, not the inner search field. */
@@ -127,6 +144,24 @@
   --text-2xl: calc(1.5rem * var(--mantine-scale, 1));
   --text-3xl: calc(1.875rem * var(--mantine-scale, 1));
   --text-4xl: calc(2.25rem * var(--mantine-scale, 1));
+  --text-5xl: calc(3rem * var(--mantine-scale, 1));
+  --text-6xl: calc(3.75rem * var(--mantine-scale, 1));
+  --text-7xl: calc(4.5rem * var(--mantine-scale, 1));
+  --text-8xl: calc(6rem * var(--mantine-scale, 1));
+  --text-9xl: calc(8rem * var(--mantine-scale, 1));
+  --container-3xs: calc(16rem * var(--mantine-scale, 1));
+  --container-2xs: calc(18rem * var(--mantine-scale, 1));
+  --container-xs: calc(20rem * var(--mantine-scale, 1));
+  --container-sm: calc(24rem * var(--mantine-scale, 1));
+  --container-md: calc(28rem * var(--mantine-scale, 1));
+  --container-lg: calc(32rem * var(--mantine-scale, 1));
+  --container-xl: calc(36rem * var(--mantine-scale, 1));
+  --container-2xl: calc(42rem * var(--mantine-scale, 1));
+  --container-3xl: calc(48rem * var(--mantine-scale, 1));
+  --container-4xl: calc(56rem * var(--mantine-scale, 1));
+  --container-5xl: calc(64rem * var(--mantine-scale, 1));
+  --container-6xl: calc(72rem * var(--mantine-scale, 1));
+  --container-7xl: calc(80rem * var(--mantine-scale, 1));
   --radius-xs: calc(0.125rem * var(--mantine-scale, 1));
   --radius-sm: calc(0.25rem * var(--mantine-scale, 1));
   --radius-md: calc(0.375rem * var(--mantine-scale, 1));

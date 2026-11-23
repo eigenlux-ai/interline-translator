@@ -71,6 +71,48 @@ describe('detectHostColorScheme', () => {
       document.body.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'; // still dark composite
       expect(detectHostColorScheme()).toBe('dark');
     });
+
+    it('resets canvas fillStyle so an invalid color cannot inherit a prior dark sample', async () => {
+      let currentFill = '#000000';
+      const fakeCtx = {
+        clearRect() {},
+        fillRect() {},
+        get fillStyle() {
+          return currentFill;
+        },
+        set fillStyle(val: string) {
+          if (val === 'rgba(0, 0, 0, 0)') currentFill = 'transparent';
+          else if (val === 'oklch(0.2 0 0)') currentFill = 'dark';
+          // Invalid color strings (like 'not-a-color') are silently ignored by Canvas 2D.
+        },
+        getImageData() {
+          if (currentFill === 'dark') return { data: new Uint8ClampedArray([15, 15, 15, 255]) };
+          return { data: new Uint8ClampedArray([0, 0, 0, 0]) };
+        },
+      };
+      const origGetContext = HTMLCanvasElement.prototype.getContext;
+      HTMLCanvasElement.prototype.getContext = (() => fakeCtx) as unknown as typeof origGetContext;
+      let bodyColor = 'oklch(0.2 0 0)';
+      const computedSpy = vi.spyOn(window, 'getComputedStyle').mockImplementation((el) => {
+        if (el === document.body) {
+          return { backgroundColor: bodyColor, colorScheme: 'normal' } as CSSStyleDeclaration;
+        }
+        return { backgroundColor: '', colorScheme: 'normal' } as CSSStyleDeclaration;
+      });
+      try {
+        // Isolate module-level colorCtx/colorCache so other tests are not polluted.
+        vi.resetModules();
+        const { detectHostColorScheme: detectIsolated } = await import('./host-scheme');
+        expect(detectIsolated()).toBe('dark');
+
+        bodyColor = 'not-a-color';
+        expect(detectIsolated()).toBe('light');
+      } finally {
+        computedSpy.mockRestore();
+        HTMLCanvasElement.prototype.getContext = origGetContext;
+        vi.resetModules();
+      }
+    });
   });
 });
 

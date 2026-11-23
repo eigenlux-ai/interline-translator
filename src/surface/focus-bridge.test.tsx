@@ -267,6 +267,36 @@ it('runs a once listener once across the relay and the document', async () => {
   tab();
   document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Tab' }));
   expect(removed).not.toHaveBeenCalled();
+
+  // An already-aborted signal must neither register nor poison a later registration.
+  const reused = vi.fn();
+  document.addEventListener('keydown', reused, { once: true, signal: AbortSignal.abort() });
+  tab();
+  expect(reused).not.toHaveBeenCalled();
+  document.addEventListener('keydown', reused, { once: true });
+  tab();
+  expect(reused).toHaveBeenCalledTimes(1);
+
+  expect(() => document.addEventListener('keydown', null as unknown as EventListener, { once: true })).not.toThrow();
+  expect(() => document.removeEventListener('keydown', null as unknown as EventListener)).not.toThrow();
+});
+
+it('does not relay a Tab keydown already prevented inside the shadow tree', async () => {
+  const { byId, tab } = await mount(<button id="inner">inner</button>);
+  const inner = byId('inner');
+  const onDocument = vi.fn();
+  inner.addEventListener('keydown', (event) => {
+    if (event.key === 'Tab') event.preventDefault();
+  });
+  document.addEventListener('keydown', onDocument);
+  try {
+    inner.focus();
+    const dispatched = tab();
+    expect(dispatched.defaultPrevented).toBe(true);
+    expect(onDocument).not.toHaveBeenCalled();
+  } finally {
+    document.removeEventListener('keydown', onDocument);
+  }
 });
 
 it('does not double-deliver where keydown is not isolated', async () => {

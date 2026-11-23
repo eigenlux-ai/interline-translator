@@ -25,13 +25,23 @@ function SurfaceLang(): null {
   return null;
 }
 
+export function renderSurfaceApp(container: HTMLElement, env: SurfaceEnv, app: React.ReactNode): Promise<ReactDOM.Root>;
+export function renderSurfaceApp(
+  container: HTMLElement,
+  env: SurfaceEnv,
+  app: React.ReactNode,
+  options: { signal?: AbortSignal }
+): Promise<ReactDOM.Root | null>;
 export async function renderSurfaceApp(
   container: HTMLElement,
   env: SurfaceEnv,
-  app: React.ReactNode
-): Promise<ReactDOM.Root> {
+  app: React.ReactNode,
+  options?: { signal?: AbortSignal }
+): Promise<ReactDOM.Root | null> {
+  if (options?.signal?.aborted) return null;
   // Hydrate persisted state before first paint — no theme flash.
   const persistentState = await getManagersPersistentState();
+  if (options?.signal?.aborted) return null;
 
   const root = ReactDOM.createRoot(container);
   root.render(

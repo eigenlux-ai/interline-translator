@@ -32,6 +32,7 @@ export default defineContentScript({
       // re-skins the mounted surface (see dom/host-scheme).
       colorSchemeStrategy: hostColorSchemeSource,
       onMount: (container, env) => {
+        const controller = new AbortController();
         const app = renderSurfaceApp(
           container,
           env,
@@ -39,14 +40,16 @@ export default defineContentScript({
             <SelectionApp />
             <FloatingBallApp />
             <VideoSubtitleApp />
-          </>
+          </>,
+          { signal: controller.signal }
         );
         app.catch((error) => console.warn('[float-ui] failed to render the surface', error));
-        return app;
+        return { app, controller };
       },
       onRemove: (mounted) => {
-        void mounted?.then(
-          (root) => root.unmount(),
+        mounted?.controller.abort();
+        void mounted?.app.then(
+          (root) => root?.unmount(),
           () => {}
         );
       },

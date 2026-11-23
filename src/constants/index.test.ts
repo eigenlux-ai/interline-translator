@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { findPrefixMismatches } from '../../vite-plugins/check-prefix-sync';
 import { PROJECT_PREFIX, Z_INDEX } from './index';
 
 /**
@@ -59,15 +60,11 @@ describe('Z_INDEX', () => {
     }
   });
 
-  it('global.css anchors styles on the prefixed surface-root class', () => {
+  it(`global.css matches PROJECT_PREFIX ('${PROJECT_PREFIX}') across surface root, z-index, and scrollbar vars`, () => {
     // global.css is the one place that mirrors PROJECT_PREFIX by hand (CSS can't
-    // import prefix.cjs). This guard turns a forgotten prefix update from a
-    // silent shadow-DOM styling breakage into a loud, located test failure.
+    // import prefix.cjs). Reusing findPrefixMismatches ensures the test suite and
+    // Vite build check apply the exact same CSS AST rules.
     const css = readFileSync(join(process.cwd(), 'src/react-app/styles/global.css'), 'utf8');
-    const selector = `.${PROJECT_PREFIX}-surface-root`;
-    expect(
-      css.includes(selector),
-      `global.css must anchor surface styles on ${selector} to match PROJECT_PREFIX ('${PROJECT_PREFIX}')`
-    ).toBe(true);
+    expect(findPrefixMismatches(css, PROJECT_PREFIX)).toEqual([]);
   });
 });

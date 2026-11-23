@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SATELLITE_TAG } from '@/constants';
 import { createSatellite } from './satellite';
 
@@ -100,5 +100,23 @@ describe('satellite lifecycle', () => {
     expect(sat(anchor.nextElementSibling)).toBe(true);
     expect(sat(anchor.nextElementSibling!.nextElementSibling)).toBe(true);
     expect(moves).toBeLessThanOrEqual(3);
+  });
+
+  it('continues reaping dead satellites even when re-attaching another satellite throws', async () => {
+    const badAnchor = document.createElement('p');
+    const deadAnchor = document.createElement('p');
+    const section = document.createElement('section');
+    document.body.append(badAnchor, deadAnchor, section);
+    createSatellite(badAnchor, null);
+    createSatellite(deadAnchor, null);
+
+    vi.spyOn(badAnchor, 'insertAdjacentElement').mockImplementation(() => {
+      throw new DOMException('cannot insert', 'NoModificationAllowedError');
+    });
+    section.append(badAnchor);
+    deadAnchor.remove();
+
+    await sweep();
+    expect(document.querySelectorAll(SATELLITE_TAG)).toHaveLength(0);
   });
 });

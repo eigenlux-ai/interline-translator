@@ -162,6 +162,40 @@ it('tears satellites down with the surface', async () => {
   expect(() => satellite.destroy()).not.toThrow();
 });
 
+it('applies color scheme and direction synchronously to satellites created after mount and releases multiple cleanly', async () => {
+  let env: SurfaceEnv | undefined;
+  const { ui } = await surface(
+    vi.fn((container: HTMLElement, surfaceEnv: SurfaceEnv) => {
+      env = surfaceEnv;
+      return container;
+    })
+  );
+  ui.mount();
+  const anchor = document.createElement('p');
+  document.body.append(anchor);
+  const view = render(
+    <SurfaceProvider env={env!}>
+      <MantineProvider forceColorScheme="dark" cssVariablesSelector={`.${SURFACE_ROOT_CLASS}`}>
+        <SatelliteOutlet />
+      </MantineProvider>
+    </SurfaceProvider>,
+    { container: env!.rootElement }
+  );
+
+  // Even before any microtask/effect flush after createSatellite, the new satellite
+  // root receives the mounted surface's appearance synchronously to avoid FOUC.
+  const first = createSatellite(anchor, null);
+  const second = createSatellite(anchor, null);
+  const rootOf = (handle: typeof first) => handle.hostElement.shadowRoot!.querySelector(`.${SURFACE_ROOT_CLASS}`)!;
+  expect(rootOf(first).getAttribute('data-mantine-color-scheme')).toBe('dark');
+  expect(rootOf(first).getAttribute('dir')).toBe('ltr');
+  expect(rootOf(second).getAttribute('data-mantine-color-scheme')).toBe('dark');
+
+  ui.remove();
+  expect(document.querySelectorAll(SATELLITE_TAG)).toHaveLength(0);
+  view.unmount();
+});
+
 it('keeps repeated host <style>s at their own cascade position in satellites', async () => {
   let env: SurfaceEnv | undefined;
   const { ui } = await surface(

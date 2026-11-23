@@ -1,9 +1,9 @@
-import { defineConfig } from 'eslint/config';
 import js from '@eslint/js';
+import eslintConfigPrettier from 'eslint-config-prettier';
+import reactHooks from 'eslint-plugin-react-hooks';
+import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
-import reactHooks from 'eslint-plugin-react-hooks';
-import eslintConfigPrettier from 'eslint-config-prettier';
 import autoImports from './.wxt/eslint-auto-imports.mjs';
 
 // Shared "engine internals" denylist for the bundle boundary: importing any of
@@ -37,8 +37,7 @@ const ENGINE_INTERNALS = [
       '@/services/**/execute',
       '@/services/**/preflight',
     ],
-    message:
-      'content/UI must not import engine internals (provider/queue/cache/execute) — these are background-only.',
+    message: 'content/UI must not import engine internals (provider/queue/cache/execute) — these are background-only.',
   },
   {
     group: ['ai', '@ai-sdk/*', '@ai-sdk/**', '@openrouter/ai-sdk-provider', 'dexie'],
@@ -80,7 +79,6 @@ export default defineConfig(
         ...globals.serviceworker,
         ...globals.browser,
         ...globals.webextensions,
-        ...globals.node,
       },
     },
     rules: {
@@ -175,6 +173,27 @@ export default defineConfig(
           ],
         },
       ],
+    },
+  },
+  {
+    files: [
+      '**/*.{cjs,mjs}',
+      'wxt.config.ts',
+      'vitest.config.ts',
+      'vite-plugins/**/*.ts',
+      'scripts/**/*.mjs',
+      '**/*.test.{ts,tsx}',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+    },
+  },
+  {
+    files: ['**/*.cjs'],
+    rules: {
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
   eslintConfigPrettier

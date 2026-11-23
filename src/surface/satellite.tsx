@@ -30,7 +30,7 @@
  *   call destroy() when you know the component's lifetime has ended.
  */
 
-import { useEffect, useSyncExternalStore, type ReactNode } from 'react';
+import { useEffect, useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
 import { useComputedColorScheme, useDirection, useMantineTheme } from '@mantine/core';
 import { createPortal } from 'react-dom';
 import { SATELLITE_TAG, SURFACE_ROOT_CLASS } from '@/constants';
@@ -129,6 +129,17 @@ class SatelliteRegistry {
   private observer: MutationObserver | null = null;
   private checkScheduled = false;
   private useConstructableSheets = true;
+  private colorScheme: 'light' | 'dark' | null = null;
+  private dir: 'ltr' | 'rtl' | null = null;
+
+  setAppearance(colorScheme: 'light' | 'dark', dir: 'ltr' | 'rtl') {
+    this.colorScheme = colorScheme;
+    this.dir = dir;
+    this.records.forEach((record) => {
+      record.rootElement.setAttribute('data-mantine-color-scheme', colorScheme);
+      record.rootElement.setAttribute('dir', dir);
+    });
+  }
 
   subscribe = (listener: () => void): (() => void) => {
     this.listeners.add(listener);
@@ -257,6 +268,8 @@ class SatelliteRegistry {
     bridgeFocus(shadowRoot, { relayTab: isolated.includes('keydown') });
     const rootElement = document.createElement('div');
     rootElement.classList.add(SURFACE_ROOT_CLASS);
+    if (this.colorScheme) rootElement.setAttribute('data-mantine-color-scheme', this.colorScheme);
+    if (this.dir) rootElement.setAttribute('dir', this.dir);
     shadowRoot.append(rootElement);
     this.records.set(id, { id, anchor, position, hostElement, rootElement, node });
     // Capture dynamic styles only while satellites need them.
@@ -288,11 +301,18 @@ class SatelliteRegistry {
    */
   release(surfaceShadowRoot: ShadowRoot) {
     if (this.styleSource !== null && this.styleSource !== surfaceShadowRoot) return;
-    for (const id of [...this.records.keys()]) this.destroy(id);
+    const hadRecords = this.records.size > 0;
+    for (const record of this.records.values()) record.hostElement.remove();
+    this.records.clear();
+    this.observer?.disconnect();
+    this.observer = null;
     this.styleSource = null;
     this.sheets = [];
     this.parsed.clear();
     this.cssTexts = [];
+    this.colorScheme = null;
+    this.dir = null;
+    if (hadRecords) this.commit();
   }
 
   destroy(id: string) {
@@ -354,7 +374,12 @@ class SatelliteRegistry {
           }
           const siblings = groups.get(record.anchor)!.get(record.position)!;
           if (!isSatelliteAdjacent(record.anchor, record.hostElement, record.position, siblings)) {
-            record.anchor.insertAdjacentElement(record.position, record.hostElement);
+            try {
+              const moved = record.anchor.insertAdjacentElement(record.position, record.hostElement);
+              if (!moved) dead.push(record.id);
+            } catch {
+              dead.push(record.id);
+            }
           }
         }
         for (const id of dead) this.destroy(id);
@@ -406,12 +431,16 @@ export function SatelliteOutlet() {
     satellites.refreshSheets();
   }, [theme, computedColorScheme]);
 
-  useEffect(() => {
-    records.forEach((record) => {
-      record.rootElement.setAttribute('data-mantine-color-scheme', computedColorScheme);
-      record.rootElement.setAttribute('dir', dir);
-    });
+  useLayoutEffect(() => {
+    satellites.setAppearance(computedColorScheme, dir);
   }, [records, computedColorScheme, dir]);
+
+  const hasRecords = records.length > 0;
+  useEffect(() => {
+    if (env.kind !== 'shadow' && hasRecords) {
+      console.warn('[surface/satellite] satellites require a shadow host surface for shared styles');
+    }
+  }, [env.kind, hasRecords]);
 
   return <>{records.map((record) => createPortal(record.node, record.rootElement, record.id))}</>;
 }

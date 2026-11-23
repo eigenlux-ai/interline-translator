@@ -8,8 +8,23 @@ $mantine-breakpoint-md: '62em';
 $mantine-breakpoint-lg: '75em';
 $mantine-breakpoint-xl: '88em';
 
+// Static rem (safe in @media queries, where CSS custom properties cannot be read).
+// For scalable CSS property values inside shadow surfaces, use scaled-rem() or PostCSS rem().
 @function rem($value) {
-  @return #{math.div(math.div($value, $value * 0 + 1), 16)}rem;
+  $unitless: math.div($value, $value * 0 + 1);
+  @if $unitless == 0 {
+    @return 0rem;
+  }
+  @return #{math.div($unitless, 16)}rem;
+}
+
+// Host-font-size compensated rem for CSS property values inside shadow surfaces.
+@function scaled-rem($value) {
+  $unitless: math.div($value, $value * 0 + 1);
+  @if $unitless == 0 {
+    @return 0rem;
+  }
+  @return calc(#{math.div($unitless, 16)}rem * var(--mantine-scale, 1));
 }
 
 @mixin light {

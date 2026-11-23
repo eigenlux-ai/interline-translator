@@ -8,15 +8,18 @@
 //     stylesheet as surfaces are added).
 //   - one or more FILE paths audit exactly those.
 //   - --allow-empty accepts finding NO css at all (see the exit below).
-import postcss from 'postcss';
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import postcss from 'postcss';
 import { PROJECT_PREFIX } from '../prefix.cjs';
 
 // A "root-level" selector is one that targets the document/shadow root or
 // every element — i.e. where a custom property becomes a design token for the
 // whole subtree. These are the ONLY ones the iron law governs.
 const ROOT_TOKENS = [':root', ':host', 'html', 'body', '*'];
+const SURFACE_CLASS_RE = new RegExp(
+  `\\.${PROJECT_PREFIX.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-surface-root(?![\\w-])`
+);
 const SURFACE = `.${PROJECT_PREFIX}-surface-root`;
 const TW_PREFIX = `--${PROJECT_PREFIX}-tw-`;
 
@@ -55,12 +58,12 @@ function selectorTargetsRoot(sel) {
   return sel.split(',').some((part) => {
     const s = part.trim();
     return ROOT_TOKENS.some(
-      (t) => s === t || s.startsWith(t + '[') || s.startsWith(t + ':') || s.startsWith(t + ' ') || s.startsWith(t + '.'),
+      (t) => s === t || s.startsWith(t + '[') || s.startsWith(t + ':') || s.startsWith(t + ' ') || s.startsWith(t + '.')
     );
   });
 }
 function selectorIncludesSurface(sel) {
-  return sel.split(',').some((p) => p.trim().split(/[ >+~]/)[0].includes(SURFACE.slice(1)));
+  return sel.split(',').some((p) => SURFACE_CLASS_RE.test(p.trim().split(/[ >+~]/)[0]));
 }
 
 /** Audit one CSS file; returns true if it holds the iron law. */
@@ -107,31 +110,44 @@ function auditFile(file) {
 
   console.log('=== DESIGN-TOKEN root rules (governed by the iron law) ===');
   console.log(`COMPLIANT (include ${SURFACE}): ${buckets.rootCompliant.length} rule(s)`);
-  for (const e of buckets.rootCompliant) console.log(`  ✓ [${e.chain || 'top'}] "${e.selector}" (${e.count} vars, e.g. ${e.sample.join(', ')})`);
+  for (const e of buckets.rootCompliant)
+    console.log(`  ✓ [${e.chain || 'top'}] "${e.selector}" (${e.count} vars, e.g. ${e.sample.join(', ')})`);
   console.log(`\nVIOLATIONS (design tokens on root, MISSING ${SURFACE}): ${buckets.rootViolation.length} rule(s)`);
-  for (const e of buckets.rootViolation) console.log(`  ✗ [${e.chain || 'top'}] "${e.selector}" (${e.count} vars, e.g. ${e.sample.join(', ')})`);
+  for (const e of buckets.rootViolation)
+    console.log(`  ✗ [${e.chain || 'top'}] "${e.selector}" (${e.count} vars, e.g. ${e.sample.join(', ')})`);
 
-  console.log(`\n=== Mantine color-scheme STATIC defaults (inert in shadow; real values via runtime <style> on ${SURFACE} — verify at runtime): ${buckets.schemeStatic.length} ===`);
+  console.log(
+    `\n=== Mantine color-scheme STATIC defaults (inert in shadow; real values via runtime <style> on ${SURFACE} — verify at runtime): ${buckets.schemeStatic.length} ===`
+  );
   for (const e of buckets.schemeStatic) console.log(`  ~ "${e.selector.slice(0, 70)}" (${e.count} vars)`);
 
-  console.log(`\n=== Tailwind ${TW_PREFIX}* per-element transient fallback (initial values, namespaced): ${buckets.twTransient.length} rule(s) ===`);
-  for (const e of buckets.twTransient) console.log(`  ~ [${e.chain ? e.chain.slice(0, 40) + '…' : 'top'}] "${e.selector}" (${e.count} vars)`);
+  console.log(
+    `\n=== Tailwind ${TW_PREFIX}* per-element transient fallback (initial values, namespaced): ${buckets.twTransient.length} rule(s) ===`
+  );
+  for (const e of buckets.twTransient)
+    console.log(`  ~ [${e.chain ? e.chain.slice(0, 40) + '…' : 'top'}] "${e.selector}" (${e.count} vars)`);
 
   console.log(`\n=== @property registrations (must be namespaced if present): ${propertyCount} ===`);
   const unprefixed = [...propertyNames].filter((n) => n.startsWith('--tw-'));
   const prefixed = [...propertyNames].filter((n) => n.startsWith(TW_PREFIX));
   const otherProp = [...propertyNames].filter((n) => !n.startsWith('--tw-') && !n.startsWith(TW_PREFIX));
   console.log(`  ${TW_PREFIX}* (namespaced): ${prefixed.length}`);
-  console.log(`  --tw-* (UNNAMESPACED — would collide!): ${unprefixed.length}${unprefixed.length ? ' → ' + unprefixed.join(', ') : ''}`);
+  console.log(
+    `  --tw-* (UNNAMESPACED — would collide!): ${unprefixed.length}${unprefixed.length ? ' → ' + unprefixed.join(', ') : ''}`
+  );
   console.log(`  other: ${otherProp.length}${otherProp.length ? ' → ' + otherProp.slice(0, 10).join(', ') : ''}`);
 
-  console.log(`\n=== SCOPED (component/utility, local — outside the law): ${buckets.scoped.size} distinct selectors ===`);
+  console.log(
+    `\n=== SCOPED (component/utility, local — outside the law): ${buckets.scoped.size} distinct selectors ===`
+  );
   let scopedTotal = 0;
   for (const [, c] of buckets.scoped) scopedTotal += c;
   console.log(`  total scoped custom-prop decls: ${scopedTotal} (these are element-local, not root tokens)`);
   // show any scoped selector that looks suspiciously root-ish or unprefixed-leaky
   const suspicious = [...buckets.scoped.keys()].filter((s) => /^(:root|:host|html|body|\*)/.test(s));
-  console.log(`  suspicious root-ish scoped selectors: ${suspicious.length}${suspicious.length ? ' → ' + suspicious.join(' | ') : ''}`);
+  console.log(
+    `  suspicious root-ish scoped selectors: ${suspicious.length}${suspicious.length ? ' → ' + suspicious.join(' | ') : ''}`
+  );
 
   const ok = buckets.rootViolation.length === 0 && unprefixed.length === 0;
   console.log(ok ? `→ ✅ holds for ${file}` : `→ ❌ violations in ${file}`);
@@ -162,7 +178,7 @@ if (files.length === 0) {
   console.error(
     `audit:css FAILED — no .css found under ${where}. Either the build did not run, or the style pipeline` +
       ` changed and this audit no longer sees the content-script CSS. If the build genuinely emits none,` +
-      ` re-run with ${ALLOW_EMPTY}.`,
+      ` re-run with ${ALLOW_EMPTY}.`
   );
   process.exit(1);
 }
@@ -173,6 +189,6 @@ console.log(`\n=== VERDICT (${files.length} file(s)) ===`);
 console.log(
   allOk
     ? `✅ Iron law holds across all content-script CSS; every root-level var rule includes ${SURFACE}.`
-    : '❌ Violations found above.',
+    : '❌ Violations found above.'
 );
 process.exit(allOk ? 0 : 1);
