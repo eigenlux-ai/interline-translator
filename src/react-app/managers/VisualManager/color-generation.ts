@@ -23,7 +23,8 @@
  */
 
 import { useEffect, useState } from 'react';
-import type { MantineColorShade, MantineColorsTuple } from '@mantine/core';
+import { DEFAULT_THEME, type MantineColorShade, type MantineColorsTuple } from '@mantine/core';
+import { interlineTheme } from './theme';
 
 /** A fully generated ramp (both fields always present). */
 export interface GeneratedPrimaryRamp {
@@ -44,6 +45,18 @@ const NO_RAMP: GeneratedPrimaryRampState = { colors: undefined, baseColorIndex: 
 /** A custom primary is an explicit HEX; named colours resolve from the theme. */
 export function isCustomPrimaryColor(primaryColor: string): boolean {
   return primaryColor.startsWith('#');
+}
+
+// Validate preferences before exposing or persisting them, without loading chroma-js.
+export function resolvePrimaryColor(value: unknown): string {
+  if (
+    typeof value === 'string' &&
+    (Object.hasOwn(DEFAULT_THEME.colors, value) ||
+      Object.hasOwn(interlineTheme.colors ?? {}, value) ||
+      /^#(?:[0-9a-f]{3,4}|[0-9a-f]{6}|[0-9a-f]{8})$/i.test(value))
+  )
+    return value;
+  return 'cinnabar';
 }
 
 const cache = new Map<string, GeneratedPrimaryRamp>();

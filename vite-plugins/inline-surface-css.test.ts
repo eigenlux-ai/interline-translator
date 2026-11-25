@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
 import { build } from 'vite';
 import { afterEach, describe, expect, it } from 'vitest';
-import inlineSurfaceCss, { keepAtRulesInShadow } from './inline-surface-css';
+import inlineSurfaceCss, { prepareShadowCss } from './inline-surface-css';
 
 const roots: string[] = [];
 afterEach(async () => {
@@ -157,13 +157,13 @@ it('keeps the written dev sourcemap aligned after the inserted CSS', async () =>
   }
 });
 
-describe('keepAtRulesInShadow', () => {
+describe('prepareShadowCss', () => {
   const tailwindShape =
     '@layer properties{@supports (((-webkit-hyphens:none)) and (not (margin-trim:inline))){*,:before,:after,::backdrop{--aie-tw-a:initial;--aie-tw-b:0px}}}' +
     '.x{color:red}@property --aie-tw-a{syntax:"*";inherits:false}@property --aie-tw-b{syntax:"<length>";inherits:false;initial-value:0}';
 
   it('drops @property and applies the Tailwind fallback unconditionally', () => {
-    const css = keepAtRulesInShadow(tailwindShape);
+    const css = prepareShadowCss(tailwindShape);
     expect(css).not.toContain('@property');
     expect(css).not.toContain('@supports');
     expect(css).toContain('@layer properties{*,:before,:after,::backdrop{--aie-tw-a:initial;--aie-tw-b:0px}}');
@@ -171,12 +171,33 @@ describe('keepAtRulesInShadow', () => {
   });
 
   it('refuses to drop a registration the fallback does not cover', () => {
-    expect(() => keepAtRulesInShadow(tailwindShape + '@property --aie-tw-c{syntax:"*";inherits:false}')).toThrow(
+    expect(() => prepareShadowCss(tailwindShape + '@property --aie-tw-c{syntax:"*";inherits:false}')).toThrow(
       '--aie-tw-c'
     );
   });
 
+  it('rewrites root pseudos and their qualifiers only inside rule selectors', () => {
+    const css = String.raw`@media (min-width: 1px) { :is(:root, .panel) > [title=":root"], .x\:root, :ROOT[data-mode="dark"]::before { content: ":root"; --url: url("x:root.svg"); } }`;
+    expect(prepareShadowCss(css)).toBe(
+      String.raw`@media (min-width: 1px) { :is(:host, .panel) > [title=":root"], .x\:root, :host([data-mode="dark"])::before { content: ":root"; --url: url("x:root.svg"); } }`
+    );
+  });
+
+  it('accepts comments alongside a root qualifier and before a combinator', () => {
+    const css = ':root/*x*/.foo, :root /* :root */ > .thing, :root/*note*/::before { color: red }';
+    expect(prepareShadowCss(css)).toMatch(/:host\((?:\/\*x\*\/)?\.foo\), :host/);
+    expect(prepareShadowCss(css)).not.toContain(':host(/*note*/)');
+  });
+
+  it('preserves opaque comments and comment-like attribute values during the root rewrite', () => {
+    const comment = String.raw`/* (note) "q" \x :root */`;
+    const css = `:root ${comment} .panel, :is(:root${comment}.dark, [title${comment}="/*0*/"]) { color: red }`;
+    expect(prepareShadowCss(css)).toBe(
+      `:host ${comment} .panel, :is(:host(${comment}.dark), [title${comment}="/*0*/"]) { color: red }`
+    );
+  });
+
   it('leaves CSS without @property untouched', () => {
-    expect(keepAtRulesInShadow('.x{color:red}')).toBe('.x{color:red}');
+    expect(prepareShadowCss('.x{color:red}')).toBe('.x{color:red}');
   });
 });

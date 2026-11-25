@@ -19,11 +19,12 @@
  * line; minified output with sourcemaps on drifts for the rest of that line,
  * because rolldown writes the map it built before this hook.
  *
- * `@property` rules are dropped from the embedded CSS (see keepAtRulesInShadow).
+ * `@property` rules are dropped from the embedded CSS (see prepareShadowCss).
  */
 import { posix } from 'node:path';
 import postcss, { type AtRule } from 'postcss';
 import type { Plugin } from 'vite';
+import { shadowRootSelector } from '../src/surface/root-selector';
 import { escapeNonAscii } from './to-utf8';
 
 const MODULE_ID = 'virtual:surface-css';
@@ -76,7 +77,7 @@ export default function inlineSurfaceCss(): Plugin {
         const raw = typeof sheet.source === 'string' ? sheet.source : new TextDecoder().decode(sheet.source);
         let css: string;
         try {
-          css = keepAtRulesInShadow(raw);
+          css = prepareShadowCss(raw);
         } catch (error) {
           this.error(error instanceof Error ? error.message : String(error));
         }
@@ -114,14 +115,17 @@ export default function inlineSurfaceCss(): Plugin {
  * the same values from the shared sheet. Fails when a registration has no
  * fallback (your own `@property`, or Tailwind changed its output shape).
  */
-export function keepAtRulesInShadow(css: string): string {
+export function prepareShadowCss(css: string): string {
   const root = postcss.parse(css);
+  root.walkRules((rule) => {
+    rule.selector = shadowRootSelector(rule.raws.selector?.raw ?? rule.selector);
+  });
   const registered: string[] = [];
   root.walkAtRules('property', (rule) => {
     registered.push(rule.params.trim());
     rule.remove();
   });
-  if (registered.length === 0) return css;
+  if (registered.length === 0) return root.toString();
 
   const covered = new Set<string>();
   root.walkAtRules('layer', (layer) => {

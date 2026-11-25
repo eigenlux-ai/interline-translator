@@ -352,3 +352,169 @@ it('updates visual.setColorScheme when strategy changes from forced to extension
   fireEvent.click(view.getByText('dark'));
   expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark');
 });
+
+it('falls back safely when a stored primaryColor is invalid, missing, or inherited', () => {
+  const env: SurfaceEnv = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' };
+  function Probe() {
+    return (
+      <output>
+        {useVisual().primaryColor} {useMantineTheme().primaryColor}
+      </output>
+    );
+  }
+  const invalidValues = ['#', '#xyz', '#12', 'legacyBrand', '', 'constructor', 42, null];
+  for (const value of invalidValues) {
+    const view = render(
+      <SurfaceProvider env={env}>
+        <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: value as string }}>
+          <Probe />
+        </VisualManagerRegistry>
+      </SurfaceProvider>
+    );
+    expect(view.getByRole('status').textContent).toBe('cinnabar cinnabar');
+    view.unmount();
+  }
+});
+
+it('persists the displayed fallback when a new primary color is invalid', async () => {
+  const env: SurfaceEnv = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' };
+  await visualPrimaryColorStorage.setValue('red');
+  function Probe() {
+    const visual = useVisual();
+    return <button onClick={() => visual.setPrimaryColor('removedPalette')}>{visual.primaryColor}</button>;
+  }
+  const view = render(
+    <SurfaceProvider env={env}>
+      <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'red' }}>
+        <Probe />
+      </VisualManagerRegistry>
+    </SurfaceProvider>
+  );
+  fireEvent.click(view.getByRole('button', { name: 'red' }));
+  expect(view.getByRole('button').textContent).toBe('cinnabar');
+  await waitFor(async () => expect(await visualPrimaryColorStorage.getValue()).toBe('cinnabar'));
+});
+
+it.each(['force-dark', 'external source'] as const)(
+  'toggles the saved preference independently of %s',
+  async (strategy) => {
+    const env: SurfaceEnv = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' };
+    env.colorSchemeStrategy = strategy === 'force-dark' ? strategy : createColorSchemeSource('dark');
+    const media = window.matchMedia('(prefers-color-scheme: dark)');
+    const matchMedia = vi
+      .spyOn(window, 'matchMedia')
+      .mockReturnValue({ ...media, matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    function Toggle() {
+      const visual = useVisual();
+      return <button onClick={visual.toggleColorScheme}>{visual.colorScheme}</button>;
+    }
+    try {
+      const view = render(
+        <SurfaceProvider env={env}>
+          <VisualManagerRegistry persistentState={{ colorScheme: 'auto', primaryColor: 'blue' }}>
+            <Toggle />
+          </VisualManagerRegistry>
+        </SurfaceProvider>,
+        { container: env.rootElement }
+      );
+      for (const [previous, next] of [
+        ['auto', 'dark'],
+        ['dark', 'light'],
+        ['light', 'dark'],
+      ] as const) {
+        fireEvent.click(view.getByText(previous));
+        await waitFor(async () => expect(await visualColorSchemeStorage.getValue()).toBe(next));
+        expect(view.getByText(next)).toBeTruthy();
+        expect(env.rootElement.getAttribute('data-mantine-color-scheme')).toBe('dark');
+      }
+    } finally {
+      matchMedia.mockRestore();
+    }
+  }
+);
+
+it('keeps the latest local preference during and after delayed storage notifications', async () => {
+  function control<T>(
+    item: {
+      watch: (cb: (next: T) => void) => () => void;
+      getValue: () => Promise<T>;
+      setValue: (next: T) => Promise<void>;
+    },
+    initial: T
+  ) {
+    let stored = initial;
+    const callbacks = new Set<(next: T) => void>();
+    const writes: (() => void)[] = [];
+    vi.spyOn(item, 'watch').mockImplementation((cb) => {
+      callbacks.add(cb);
+      return () => {
+        callbacks.delete(cb);
+      };
+    });
+    vi.spyOn(item, 'getValue').mockImplementation(async () => stored);
+    vi.spyOn(item, 'setValue').mockImplementation(
+      (next) =>
+        new Promise<void>((resolve) => {
+          writes.push(() => {
+            stored = next;
+            resolve();
+          });
+        })
+    );
+    return {
+      writes,
+      notify: (next: T) => callbacks.forEach((cb) => cb(next)),
+      remote: (next: T) => {
+        stored = next;
+        callbacks.forEach((cb) => cb(next));
+      },
+    };
+  }
+  const scheme = control(visualColorSchemeStorage, 'light');
+  const primary = control(visualPrimaryColorStorage, 'blue');
+  const env: SurfaceEnv = { ...makeShadowEnv(), colorSchemeStrategy: 'extension' };
+  let visual!: ReturnType<typeof useVisual>;
+  function Preferences() {
+    visual = useVisual();
+    return <output>{[visual.primaryColor, visual.colorScheme, visual.activeColorScheme].join(' ')}</output>;
+  }
+  try {
+    const view = render(
+      <SurfaceProvider env={env}>
+        <VisualManagerRegistry persistentState={{ colorScheme: 'light', primaryColor: 'blue' }}>
+          <Preferences />
+        </VisualManagerRegistry>
+      </SurfaceProvider>,
+      { container: env.rootElement }
+    );
+    await act(async () => {});
+    act(() => {
+      visual.setPrimaryColor('red');
+      visual.setColorScheme('dark');
+    });
+    act(() => {
+      visual.setPrimaryColor('grape');
+      visual.setColorScheme('light');
+    });
+    const notifyFirst = () => {
+      scheme.notify('dark');
+      primary.notify('red');
+    };
+    for (let write = 0; write < 2; write++) {
+      await act(async () => {
+        scheme.writes[write]!();
+        primary.writes[write]!();
+      });
+      await act(async () => notifyFirst());
+      expect(view.getByRole('status').textContent).toBe('grape light light');
+    }
+    await act(async () => {
+      scheme.remote('dark');
+      primary.remote('teal');
+    });
+    expect(view.getByRole('status').textContent).toBe('teal dark dark');
+  } finally {
+    cleanup();
+    vi.restoreAllMocks();
+  }
+});

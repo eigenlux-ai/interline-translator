@@ -29,6 +29,7 @@ import { join } from 'node:path';
 import postcss from 'postcss';
 import valueParser from 'postcss-value-parser';
 import type { PluginOption } from 'vite';
+import { Z_INDEX } from '../src/constants';
 
 const GLOBAL_CSS = 'src/react-app/styles/global.css';
 
@@ -46,6 +47,14 @@ export function readProjectPrefix(rootDir = process.cwd()): string {
     throw new Error(`prefix.cjs must export a non-empty PROJECT_PREFIX string (${prefixPath}).`);
   }
   return mod.PROJECT_PREFIX;
+}
+
+/** CSS mirrors use the kebab-case spelling of each Z_INDEX key. */
+export function zIndexVariables(prefix: string) {
+  return Object.entries(Z_INDEX).map(([key, value]) => ({
+    name: `--${prefix}-z-${key.replace(/[A-Z]/g, (letter) => '-' + letter.toLowerCase())}`,
+    value,
+  }));
 }
 
 /**
@@ -85,18 +94,17 @@ export function findPrefixMismatches(globalCss: string, prefix: string): string[
     );
   }
 
-  const zVar = `--${prefix}-z-main-ui`;
+  const missingZVars = new Set(zIndexVariables(prefix).map(({ name }) => name));
   const sbVars = ['track-color', 'thumb-color', 'size'].map((suffix) => `--${prefix}-sb-${suffix}`);
   const sbPattern = /^--(?:([a-z0-9-]+)-)?sb-(?:track-color|thumb-color|size)$/i;
 
-  let hasZVar = false;
   const declaredSbVars = new Set<string>();
   const staleDecl = new Set<string>();
   const varRefSet = new Set<string>();
   const staleRef = new Set<string>();
 
   root.walkDecls((decl) => {
-    if (decl.prop === zVar) hasZVar = true;
+    missingZVars.delete(decl.prop);
     const propMatch = sbPattern.exec(decl.prop);
     if (propMatch) {
       if (propMatch[1] === prefix) declaredSbVars.add(decl.prop);
@@ -113,8 +121,10 @@ export function findPrefixMismatches(globalCss: string, prefix: string): string[
     });
   });
 
-  if (!hasZVar) {
-    errors.push(`global.css is missing ${zVar} — its --<prefix>-z-* block does not match PROJECT_PREFIX ('${prefix}')`);
+  if (missingZVars.size) {
+    errors.push(
+      `global.css is missing z-index declarations for PROJECT_PREFIX ('${prefix}'): ${[...missingZVars].join(', ')}`
+    );
   }
 
   const missingDecl = sbVars.filter((name) => !declaredSbVars.has(name));

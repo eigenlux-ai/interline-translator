@@ -8,7 +8,7 @@
  */
 
 import type { MantineColorScheme, MantineColorSchemeManager } from '@mantine/core';
-import { visualColorSchemeStorage } from './storages';
+import { colorSchemePreference } from './storages';
 
 export function extStorageColorSchemeManager(initialColorScheme?: MantineColorScheme): MantineColorSchemeManager {
   // Mantine's `get` is synchronous while WXT storage is async; track the
@@ -38,7 +38,7 @@ export function extStorageColorSchemeManager(initialColorScheme?: MantineColorSc
       revision++;
       currentColorScheme = value;
       if (applyingStoredValue) return;
-      visualColorSchemeStorage.setValue(value).catch((error) => {
+      colorSchemePreference.setValue(value).catch((error) => {
         console.warn('[VisualManager] failed to persist color scheme', error);
       });
     },
@@ -46,14 +46,14 @@ export function extStorageColorSchemeManager(initialColorScheme?: MantineColorSc
       // Defensive: a second subscribe without an interleaved unsubscribe
       // (StrictMode double-effects) must not leak the previous watcher.
       unwatch?.();
-      unwatch = visualColorSchemeStorage.watch((value) => {
+      unwatch = colorSchemePreference.watch((value) => {
         revision++;
         applyStored(onUpdate, value);
       });
       // The initial value was read before this subscription existed; catch
       // up on a change another surface made in between.
       const readRevision = ++revision;
-      visualColorSchemeStorage
+      colorSchemePreference
         .getValue()
         .then((value) => {
           if (revision !== readRevision || value === currentColorScheme) return;
@@ -71,7 +71,7 @@ export function extStorageColorSchemeManager(initialColorScheme?: MantineColorSc
     clear: () => {
       revision++;
       currentColorScheme = undefined;
-      visualColorSchemeStorage.removeValue().catch((error) => {
+      colorSchemePreference.removeValue().catch((error) => {
         console.warn('[VisualManager] failed to clear color scheme', error);
       });
     },

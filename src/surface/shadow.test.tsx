@@ -15,7 +15,8 @@ import { createShadowSurfaceUi } from './shadow';
  * fails here instead of silently shifting which selectors match.
  */
 
-const CSS = ':root { --probe: 1px; } @property --aie-tw-probe { syntax: "*"; inherits: false; }';
+const CSS =
+  ':root { --probe: 1px; } @media (min-width: 0px) { :root[data-token=":root"]::before { content: ":root"; } }';
 const contexts: ContentScriptContext[] = [];
 
 afterEach(() => {
@@ -53,7 +54,9 @@ it('mounts style + div directly under the shadow root and adopts the static CSS 
   expect(wxtStyle).not.toContain('--probe');
   expect(ui.shadow.adoptedStyleSheets).toHaveLength(1);
   expect(staticText(ui.shadow.adoptedStyleSheets[0]!)).toContain('--probe');
-  expect(staticText(ui.shadow.adoptedStyleSheets[0]!)).not.toContain(':root');
+  expect(staticText(ui.shadow.adoptedStyleSheets[0]!)).toContain(':host { --probe: 1px; }');
+  expect(staticText(ui.shadow.adoptedStyleSheets[0]!)).toContain(':host([data-token=":root"])::before');
+  expect(staticText(ui.shadow.adoptedStyleSheets[0]!)).toContain('content: ":root"');
 
   const root = onMount.mock.calls[0]![0];
   expect(root.classList.contains(SURFACE_ROOT_CLASS)).toBe(true);
@@ -62,6 +65,24 @@ it('mounts style + div directly under the shadow root and adopts the static CSS 
   ui.remove();
   ui.mount();
   expect(ui.shadow.adoptedStyleSheets).toHaveLength(1);
+});
+
+it('measures rem at each fresh mount, after the host applies its font size', async () => {
+  const html = document.documentElement;
+  const previous = html.style.fontSize;
+  try {
+    html.style.fontSize = '16px';
+    const { ui, onMount } = await surface();
+    html.style.fontSize = '10px';
+    ui.mount();
+    expect(onMount.mock.calls[0]![1].scale).toBe(1.6);
+    ui.remove();
+    html.style.fontSize = '20px';
+    ui.mount();
+    expect(onMount.mock.calls[1]![1].scale).toBe(0.8);
+  } finally {
+    html.style.fontSize = previous;
+  }
 });
 
 it('adds nothing to the host <head>', async () => {
@@ -88,10 +109,40 @@ it('falls back to a <style> when the sheet cannot be adopted', async () => {
     const styles = [...ui.shadow.querySelectorAll('style')];
     expect(styles).toHaveLength(2);
     expect(styles[1]!.textContent).toContain(':host { --probe: 1px; }');
+    expect(styles[1]!.textContent).toContain(':host([data-token=":root"])::before');
+    expect(styles[1]!.textContent).toContain('content: ":root"');
     expect(styles[1]!.nextElementSibling).toBe(ui.uiContainer);
   } finally {
     Object.defineProperty(ShadowRoot.prototype, 'adoptedStyleSheets', descriptor);
     warn.mockRestore();
+  }
+});
+
+it.each([false, true])('preserves a rejected rule and scopes later rules (fallback=%s)', async (fallback) => {
+  const { ui, onMount } = await surface();
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  if (fallback) {
+    vi.spyOn(CSSStyleSheet.prototype, 'replaceSync').mockImplementationOnce(() => {
+      throw new TypeError('constructable sheet unavailable');
+    });
+  }
+  const insert = CSSStyleSheet.prototype.insertRule;
+  vi.spyOn(CSSStyleSheet.prototype, 'insertRule').mockImplementation(function (this: CSSStyleSheet, rule, index) {
+    if (rule.startsWith(':host { --probe')) throw new DOMException('unsupported selector', 'SyntaxError');
+    return insert.call(this, rule, index);
+  });
+  try {
+    ui.mount();
+    expect(onMount).toHaveBeenCalledOnce();
+    const css = fallback
+      ? ui.shadow.querySelectorAll('style')[1]!.textContent
+      : staticText(ui.shadow.adoptedStyleSheets[0]!);
+    expect(css).toContain(':root { --probe: 1px; }');
+    expect(css).toContain(':host([data-token=":root"])::before');
+    expect(warn).toHaveBeenCalledWith('[surface/shadow] could not rewrite selector', ':root', expect.anything());
+    expect(warn).toHaveBeenCalledTimes(fallback ? 2 : 1);
+  } finally {
+    vi.restoreAllMocks();
   }
 });
 
@@ -115,7 +166,9 @@ it('shares the host surface sheet object with satellites across theme changes', 
       </MantineProvider>
     </SurfaceProvider>
   );
+  const scan = vi.spyOn(ui.shadow, 'querySelectorAll');
   const view = render(tree('blue'), { container: env!.rootElement });
+  expect(scan.mock.calls.filter(([selector]) => selector === 'style')).toHaveLength(1);
   const sheetsOf = (handle: typeof first) => handle.hostElement.shadowRoot!.adoptedStyleSheets;
   const hostSheet = ui.shadow.adoptedStyleSheets[0]!;
   const before = [...sheetsOf(first)];

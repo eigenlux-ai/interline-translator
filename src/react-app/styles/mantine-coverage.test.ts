@@ -287,6 +287,7 @@ const STYLE_FILE_MAP: Record<string, string[]> = {
  * must be explicitly classified.
  */
 const STYLELESS_CORE_EXPORTS = new Set([
+  'DEFAULT_THEME',
   'Box',
   'Collapse',
   'CopyButton',

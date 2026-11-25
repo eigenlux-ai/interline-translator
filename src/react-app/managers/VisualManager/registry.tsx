@@ -10,11 +10,12 @@
 import { useCallback, useEffect, useRef, useState, type PropsWithChildren } from 'react';
 import { useComputedColorScheme, useMantineColorScheme } from '@mantine/core';
 import { useSurface } from '@/surface/context';
+import { resolvePrimaryColor } from './color-generation';
 import MantineRegistry from './components/MantineRegistry';
 import VisualContextProvider from './context';
 import type { VisualColorScheme, VisualPrimaryColor } from './defs';
 import type { VisualPersistentState } from './persistent-util';
-import { visualColorSchemeStorage, visualPrimaryColorStorage } from './storages';
+import { colorSchemePreference, primaryColorPreference } from './storages';
 
 interface VisualStateBridgeProps extends PropsWithChildren {
   colorScheme: VisualColorScheme;
@@ -56,7 +57,7 @@ function VisualStateBridge({
       // colorSchemeManager.set never runs; persist directly there and let
       // Mantine handle the single storage write in `'extension'` mode.
       if (persistDirectly) {
-        visualColorSchemeStorage.setValue(next).catch((error) => {
+        colorSchemePreference.setValue(next).catch((error) => {
           console.warn('[VisualManager] failed to persist color scheme', error);
         });
       } else {
@@ -65,14 +66,17 @@ function VisualStateBridge({
     },
     [onColorSchemeChange, persistDirectly, mantineSetColorScheme]
   );
-  const toggleColorScheme = useCallback(
-    () => setColorScheme(activeColorScheme === 'light' ? 'dark' : 'light'),
-    [setColorScheme, activeColorScheme]
-  );
+  const toggleColorScheme = useCallback(() => {
+    // Resolve the saved 'auto' preference at click time, even on a forced surface.
+    const dark =
+      colorScheme === 'auto' ? window.matchMedia('(prefers-color-scheme: dark)').matches : colorScheme === 'dark';
+    setColorScheme(dark ? 'light' : 'dark');
+  }, [setColorScheme, colorScheme]);
   const setPrimaryColor = useCallback(
     (next: VisualPrimaryColor) => {
-      onPrimaryColorChange(next);
-      visualPrimaryColorStorage.setValue(next).catch((error) => {
+      const preference = resolvePrimaryColor(next);
+      onPrimaryColorChange(preference);
+      primaryColorPreference.setValue(preference).catch((error) => {
         console.warn('[VisualManager] failed to persist primary color', error);
       });
     },
@@ -101,6 +105,7 @@ type VisualKey = keyof VisualPersistentState;
 
 const VisualManagerRegistry = ({ persistentState, children }: VisualManagerRegistryProps) => {
   const [state, setState] = useState(persistentState);
+  const primaryColor = resolvePrimaryColor(state.primaryColor);
   // Per preference: bumped by every newer value (watch event, local change)
   // so a catch-up read cannot overwrite it.
   const revisions = useRef<Record<VisualKey, number>>({ colorScheme: 0, primaryColor: 0 });
@@ -134,10 +139,7 @@ const VisualManagerRegistry = ({ persistentState, children }: VisualManagerRegis
         });
       return unwatch;
     };
-    const unwatchers = [
-      follow('colorScheme', visualColorSchemeStorage),
-      follow('primaryColor', visualPrimaryColorStorage),
-    ];
+    const unwatchers = [follow('colorScheme', colorSchemePreference), follow('primaryColor', primaryColorPreference)];
     return () => {
       active = false;
       unwatchers.forEach((unwatch) => unwatch());
@@ -155,10 +157,10 @@ const VisualManagerRegistry = ({ persistentState, children }: VisualManagerRegis
   );
 
   return (
-    <MantineRegistry colorScheme={state.colorScheme} primaryColor={state.primaryColor}>
+    <MantineRegistry colorScheme={state.colorScheme} primaryColor={primaryColor}>
       <VisualStateBridge
         colorScheme={state.colorScheme}
-        primaryColor={state.primaryColor}
+        primaryColor={primaryColor}
         onColorSchemeChange={onColorSchemeChange}
         onPrimaryColorChange={onPrimaryColorChange}
       >

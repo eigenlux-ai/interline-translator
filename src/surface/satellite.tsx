@@ -153,15 +153,6 @@ class SatelliteRegistry {
     this.listeners.forEach((listener) => listener());
   }
 
-  /** Called by SatelliteOutlet once the host surface is mounted. */
-  setStyleSource(shadowRoot: ShadowRoot) {
-    if (this.styleSource === shadowRoot) return;
-    this.styleSource = shadowRoot;
-    this.sheets = [];
-    this.parsed.clear();
-    if (this.records.size > 0) this.refreshSheets();
-  }
-
   /**
    * Rebuild the satellites' sheets in the host surface's cascade order: every
    * <style> in the host shadow root (WXT's `:host` reset, the Mantine
@@ -176,9 +167,13 @@ class SatelliteRegistry {
    * This allows satellites to inherit the host surface's rem scale automatically,
    * matching the shared-variable dependency that the host surface uses.
    */
-  refreshSheets() {
-    const source = this.styleSource;
-    if (!source || this.records.size === 0) return;
+  refreshSheets(source: ShadowRoot) {
+    if (source !== this.styleSource) {
+      this.styleSource = source;
+      this.parsed.clear();
+    }
+
+    if (this.records.size === 0) return;
 
     this.cssTexts = [...source.querySelectorAll('style')].flatMap((styleEl) => styleEl.textContent || []);
     if (this.useConstructableSheets) {
@@ -273,7 +268,7 @@ class SatelliteRegistry {
     shadowRoot.append(rootElement);
     this.records.set(id, { id, anchor, position, hostElement, rootElement, node });
     // Capture dynamic styles only while satellites need them.
-    if (this.records.size === 1) this.refreshSheets();
+    if (this.records.size === 1 && this.styleSource) this.refreshSheets(this.styleSource);
     this.applySheets(shadowRoot);
     this.ensureObserver();
     this.commit();
@@ -420,16 +415,12 @@ export function SatelliteOutlet() {
   const theme = useMantineTheme();
   const { dir } = useDirection();
 
-  useEffect(() => {
-    if (env.kind === 'shadow' && env.shadowRoot) satellites.setStyleSource(env.shadowRoot);
-  }, [env]);
-
   // Theme object identity changes on primary-color/theme updates, and the
   // in-tree Mantine variables <style> may also be rewritten on color-scheme
   // flips — re-capture the shared sheets on either signal.
   useEffect(() => {
-    satellites.refreshSheets();
-  }, [theme, computedColorScheme]);
+    if (env.kind === 'shadow' && env.shadowRoot) satellites.refreshSheets(env.shadowRoot);
+  }, [env.kind, env.shadowRoot, theme, computedColorScheme]);
 
   useLayoutEffect(() => {
     satellites.setAppearance(computedColorScheme, dir);

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { extStorageColorSchemeManager } from './colorSchemeManager';
 import { visualColorSchemeStorage } from './storages';
 
@@ -12,17 +12,23 @@ import { visualColorSchemeStorage } from './storages';
 // fake-browser's onChanged dispatch may be async; flush microtasks + a macrotask.
 const flush = () => new Promise((resolve) => setTimeout(resolve, 0));
 
+function createManager(...args: Parameters<typeof extStorageColorSchemeManager>) {
+  const manager = extStorageColorSchemeManager(...args);
+  onTestFinished(manager.unsubscribe);
+  return manager;
+}
+
 describe('extStorageColorSchemeManager', () => {
   it('get returns the seeded initial value, then the default fallback', () => {
-    const mgr = extStorageColorSchemeManager('dark');
+    const mgr = createManager('dark');
     expect(mgr.get('light')).toBe('dark');
 
-    const empty = extStorageColorSchemeManager();
+    const empty = createManager();
     expect(empty.get('light')).toBe('light');
   });
 
   it('set persists to storage and updates get', async () => {
-    const mgr = extStorageColorSchemeManager('light');
+    const mgr = createManager('light');
     mgr.set('dark');
     expect(mgr.get('light')).toBe('dark');
     await flush();
@@ -30,7 +36,7 @@ describe('extStorageColorSchemeManager', () => {
   });
 
   it('subscribe fires onUpdate when storage changes from elsewhere', async () => {
-    const mgr = extStorageColorSchemeManager('light');
+    const mgr = createManager('light');
     const onUpdate = vi.fn();
     mgr.subscribe(onUpdate);
 
@@ -41,7 +47,7 @@ describe('extStorageColorSchemeManager', () => {
   });
 
   it('a second subscribe without an interleaved unsubscribe does not leak the first watcher', async () => {
-    const mgr = extStorageColorSchemeManager('light');
+    const mgr = createManager('light');
     const first = vi.fn();
     const second = vi.fn();
     mgr.subscribe(first); // StrictMode-style double-invoke without cleanup
@@ -55,7 +61,7 @@ describe('extStorageColorSchemeManager', () => {
   });
 
   it('unsubscribe stops further updates', async () => {
-    const mgr = extStorageColorSchemeManager('light');
+    const mgr = createManager('light');
     const onUpdate = vi.fn();
     mgr.subscribe(onUpdate);
     mgr.unsubscribe();
@@ -67,7 +73,7 @@ describe('extStorageColorSchemeManager', () => {
   });
 
   it('subscribe catches up on a change made after the initial read', async () => {
-    const mgr = extStorageColorSchemeManager('light'); // seeded from an earlier read
+    const mgr = createManager('light'); // seeded from an earlier read
     await visualColorSchemeStorage.setValue('dark'); // before anyone subscribed
     const onUpdate = vi.fn();
     mgr.subscribe(onUpdate);
@@ -81,7 +87,7 @@ describe('extStorageColorSchemeManager', () => {
     const read = vi
       .spyOn(visualColorSchemeStorage, 'getValue')
       .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
-    const mgr = extStorageColorSchemeManager('light');
+    const mgr = createManager('light');
     const onUpdate = vi.fn();
     mgr.subscribe(onUpdate);
     mgr.set('dark');
@@ -97,7 +103,7 @@ describe('extStorageColorSchemeManager', () => {
     const read = vi
       .spyOn(visualColorSchemeStorage, 'getValue')
       .mockImplementationOnce(() => new Promise((resolve) => (finish = resolve)));
-    const mgr = extStorageColorSchemeManager('dark');
+    const mgr = createManager('dark');
     const onUpdate = vi.fn();
     mgr.subscribe(onUpdate);
     mgr.clear();
@@ -111,7 +117,7 @@ describe('extStorageColorSchemeManager', () => {
   it('does not write values received from storage back (no echo loop between surfaces)', async () => {
     const write = vi.spyOn(visualColorSchemeStorage, 'setValue');
     // Mantine subscribes with its own setter, which calls manager.set.
-    const surfaces = [extStorageColorSchemeManager('light'), extStorageColorSchemeManager('light')];
+    const surfaces = [createManager('light'), createManager('light')];
     for (const mgr of surfaces) mgr.subscribe((value) => mgr.set(value));
     await flush();
     surfaces[0]!.set('dark');

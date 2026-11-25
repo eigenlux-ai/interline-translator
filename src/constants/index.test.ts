@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { findPrefixMismatches } from '../../vite-plugins/check-prefix-sync';
+import { findPrefixMismatches, zIndexVariables } from '../../vite-plugins/check-prefix-sync';
 import { PROJECT_PREFIX, Z_INDEX } from './index';
 
 /**
@@ -15,19 +15,6 @@ import { PROJECT_PREFIX, Z_INDEX } from './index';
  * derived from PROJECT_PREFIX so this suite follows the prefix automatically —
  * fork the template, change the prefix, and these tests still guard global.css.
  */
-
-const Z_VAR_SUFFIX: Record<keyof typeof Z_INDEX, string> = {
-  floatUi: 'float-ui',
-  mainUi: 'main-ui',
-  modal: 'modal',
-  popover: 'popover',
-  notification: 'notification',
-  max: 'max',
-};
-
-const Z_TO_CSS_VAR = Object.fromEntries(
-  Object.entries(Z_VAR_SUFFIX).map(([key, suffix]) => [key, `--${PROJECT_PREFIX}-z-${suffix}`])
-) as Record<keyof typeof Z_INDEX, string>;
 
 const LAYER_ORDER: (keyof typeof Z_INDEX)[] = ['floatUi', 'mainUi', 'modal', 'popover', 'notification', 'max'];
 
@@ -50,13 +37,13 @@ describe('Z_INDEX', () => {
   it(`mirrors the --${PROJECT_PREFIX}-z-* values declared in global.css`, () => {
     // cwd is the project root under vitest — env-agnostic (happy-dom rewrites import.meta.url).
     const css = readFileSync(join(process.cwd(), 'src/react-app/styles/global.css'), 'utf8');
-    for (const [key, cssVar] of Object.entries(Z_TO_CSS_VAR)) {
+    for (const { name: cssVar, value } of zIndexVariables(PROJECT_PREFIX)) {
       const match = css.match(new RegExp(`${cssVar}:\\s*(\\d+)`));
       expect(
         match,
         `${cssVar} missing from global.css — did the prefix change without updating global.css?`
       ).not.toBeNull();
-      expect(Number(match![1]), `${cssVar} drifted from Z_INDEX.${key}`).toBe(Z_INDEX[key as keyof typeof Z_INDEX]);
+      expect(Number(match![1]), `${cssVar} drifted from Z_INDEX`).toBe(value);
     }
   });
 

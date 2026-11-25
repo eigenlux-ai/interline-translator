@@ -16,6 +16,7 @@ export interface VisualContextValues {
   activeColorScheme: 'light' | 'dark';
   primaryColor: VisualPrimaryColor;
   setColorScheme: (colorScheme: VisualColorScheme) => void;
+  /** Toggle the saved preference, resolving 'auto' from the system scheme. */
   toggleColorScheme: () => void;
   setPrimaryColor: (primaryColor: VisualPrimaryColor) => void;
 }

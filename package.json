@@ -16,7 +16,7 @@
     "zip:firefox": "pnpm notices && wxt zip -b firefox",
     "compile": "tsc --noEmit",
     "i18n": "node scripts/compile-i18n.mjs",
-    "audit:css": "node scripts/audit-css-vars.mjs .output/chrome-mv3/surface-css",
+    "audit:css": "node scripts/audit-css-vars.mjs .output/chrome-mv3/surface-css --document-assets .output/chrome-mv3/assets",
     "audit:ascii": "node scripts/audit-ascii.mjs .output/chrome-mv3",
     "audit:bundle": "node scripts/check-content-bundle-size.mjs .output/chrome-mv3",
     "postinstall": "wxt prepare",
@@ -32,7 +32,7 @@
     "audit:surface:firefox": "node scripts/check-inline-surface-css.mjs .output/firefox-mv3",
     "build:safari": "pnpm notices && wxt build -b safari",
     "build:safari:app": "pnpm build:safari && node scripts/build-safari-app.mjs",
-    "audit:css:firefox": "node scripts/audit-css-vars.mjs .output/firefox-mv3/surface-css",
+    "audit:css:firefox": "node scripts/audit-css-vars.mjs .output/firefox-mv3/surface-css --document-assets .output/firefox-mv3/assets",
     "audit:ascii:firefox": "node scripts/audit-ascii.mjs .output/firefox-mv3",
     "audit:repro:firefox": "node scripts/check-firefox-reproducibility.mjs"
   },
@@ -51,6 +51,7 @@
     "@webext-core/proxy-service": "^3.0.2",
     "ai": "^6.0.315",
     "dexie": "^4.4.4",
+    "parsel-js": "^1.2.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "zod": "^4.6.7"
@@ -74,6 +75,7 @@
     "postcss": "^8.5.6",
     "postcss-preset-mantine": "^1.18.0",
     "postcss-replace": "^2.0.1",
+    "postcss-selector-parser": "^7.1.4",
     "postcss-simple-vars": "^7.0.1",
     "postcss-value-parser": "^4.2.0",
     "prettier": "3.6.2",

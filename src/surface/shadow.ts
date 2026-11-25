@@ -18,6 +18,7 @@ import { PROJECT_PREFIX, SURFACE_ROOT_CLASS } from '@/constants';
 import type { ColorSchemeStrategy, SurfaceEnv } from './defs';
 import { bridgeFocus } from './focus-bridge';
 import { resolveIsolatedEvents } from './isolate-events';
+import { shadowRootSelector } from './root-selector';
 import { releaseSatellites } from './satellite';
 
 type ShadowRootUiCtx = Parameters<typeof createShadowRootUi>[0];
@@ -60,20 +61,41 @@ export interface ShadowSurfaceOptions<TMounted> {
  * its computed width is exactly what 1rem resolves to.
  */
 // Internal to shadow-surface creation; not part of the public API.
-function computeHostRemScale(): number {
-  // document_start scripts may run before documentElement exists.
-  const parent = document.documentElement ?? document.body ?? document.head;
-  if (!parent) return 1;
+function computeHostRemScale(parent: HTMLElement): number {
   const probe = document.createElement(`${PROJECT_PREFIX}-rem-probe`);
-  probe.style.cssText = 'position:absolute;visibility:hidden;';
+  probe.style.position = 'absolute';
+  probe.style.visibility = 'hidden';
   const ruler = document.createElement('div');
-  ruler.style.cssText = 'width:1rem;';
+  ruler.style.width = '1rem';
   probe.attachShadow({ mode: 'closed' }).append(ruler);
   parent.appendChild(probe);
   const remPx = Number.parseFloat(window.getComputedStyle(ruler).width);
   probe.remove();
   if (!Number.isFinite(remPx) || remPx <= 0) return 1;
   return 16 / remPx;
+}
+
+// Bundled CSS already has shadow selectors. For raw CSS supplied by callers,
+// let CSSOM identify style rules (including nested rules) before editing selectors.
+function scopeRawRules(group: CSSStyleSheet | CSSGroupingRule): boolean {
+  let changed = false;
+  for (const [index, rule] of Array.from(group.cssRules).entries()) {
+    if ('cssRules' in rule) changed = scopeRawRules(rule as CSSGroupingRule) || changed;
+    if (rule.type !== CSSRule.STYLE_RULE) continue;
+    const { selectorText } = rule as CSSStyleRule;
+    try {
+      const selector = shadowRootSelector(selectorText);
+      if (selector === selectorText) continue;
+      const replacement = selector + rule.cssText.slice(selectorText.length);
+      // Validate and insert first so a rejected replacement leaves the original intact.
+      group.insertRule(replacement, index);
+      group.deleteRule(index + 1);
+      changed = true;
+    } catch (error) {
+      console.warn('[surface/shadow] could not rewrite selector', selectorText, error);
+    }
+  }
+  return changed;
 }
 
 /**
@@ -87,9 +109,11 @@ function computeHostRemScale(): number {
  * Mantine's — see the cascade note in global.css.
  */
 function attachStaticStyles(shadowRoot: ShadowRoot, before: Node, css: string) {
+  const mayContainRoot = /:root\b/i.test(css);
   try {
     const sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
+    if (mayContainRoot) scopeRawRules(sheet);
     shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, sheet];
     return;
   } catch (error) {
@@ -98,12 +122,15 @@ function attachStaticStyles(shadowRoot: ShadowRoot, before: Node, css: string) {
   const style = document.createElement('style');
   style.textContent = css;
   shadowRoot.insertBefore(style, before);
+  // Satellites clone fallback <style> text. Include any CSSOM-only edits.
+  if (mayContainRoot && style.sheet && scopeRawRules(style.sheet)) {
+    style.textContent = Array.from(style.sheet.cssRules, (rule) => rule.cssText).join('\n');
+  }
 }
 
 export async function createShadowSurfaceUi<TMounted>(ctx: ShadowRootUiCtx, options: ShadowSurfaceOptions<TMounted>) {
-  const scale = computeHostRemScale();
   // Attached by us rather than passed to WXT, so the sheet can be shared.
-  const css = options.css?.replaceAll(':root', ':host');
+  const css = options.css;
   let stylesAttached = false;
   // WXT calls onMount on every mount(); remembered so a repeated mount()
   // without remove() reuses the app instead of starting a second one.
@@ -138,7 +165,7 @@ export async function createShadowSurfaceUi<TMounted>(ctx: ShadowRootUiCtx, opti
         shadowRoot,
         rootElement,
         portalTarget: rootElement,
-        scale,
+        scale: computeHostRemScale(container),
         colorSchemeStrategy: options.colorSchemeStrategy ?? 'extension',
       };
 

@@ -181,6 +181,58 @@ describe('subscribeHostColorScheme', () => {
     expect(seen).toHaveBeenCalledWith('dark');
   });
 
+  it('bounds continuous repaint sampling and follows the next transition with a fresh budget', () => {
+    let gray = 255;
+    const frames: FrameRequestCallback[] = [];
+    const raf = vi.spyOn(window, 'requestAnimationFrame').mockImplementation((cb) => frames.push(cb));
+    const style = vi
+      .spyOn(window, 'getComputedStyle')
+      .mockImplementation(
+        () => ({ backgroundColor: `rgb(${gray}, ${gray}, ${gray})`, colorScheme: 'light' }) as CSSStyleDeclaration
+      );
+    const unsub = subscribe(() => {});
+    try {
+      document.body.dispatchEvent(new Event('transitionend', { bubbles: true }));
+      for (let i = 0; i < 121; i++) {
+        gray--;
+        expect(frames).toHaveLength(1);
+        frames.shift()!(i);
+      }
+      expect(frames).toHaveLength(0);
+      document.body.dispatchEvent(new Event('transitionend', { bubbles: true }));
+      // The external signal can precede the first visibly changed frame.
+      frames.shift()!(122);
+      expect(frames).toHaveLength(1);
+      gray = 255;
+      frames.shift()!(123);
+      expect(getHostColorScheme()).toBe('light');
+      frames.shift()!(124);
+      expect(frames).toHaveLength(0);
+    } finally {
+      unsub();
+      style.mockRestore();
+      raf.mockRestore();
+    }
+  });
+
+  it('observes html after subscribing before the document root exists', () => {
+    const observe = vi.spyOn(MutationObserver.prototype, 'observe');
+    const html = vi.spyOn(document, 'documentElement', 'get').mockReturnValue(null!);
+    const body = vi.spyOn(document, 'body', 'get').mockReturnValue(null!);
+    vi.spyOn(document, 'readyState', 'get').mockReturnValue('loading');
+    try {
+      subscribe(() => {});
+      expect(observe).not.toHaveBeenCalled();
+      html.mockRestore();
+      body.mockRestore();
+      document.dispatchEvent(new Event('DOMContentLoaded'));
+      expect(observe).toHaveBeenCalledWith(document.documentElement, { attributes: true });
+      expect(observe).toHaveBeenCalledWith(document.body, { attributes: true });
+    } finally {
+      vi.restoreAllMocks();
+    }
+  });
+
   it('serves getHostColorScheme from the live cache while subscribed', async () => {
     subscribe(() => {});
     paintBody('rgb(18, 18, 18)');

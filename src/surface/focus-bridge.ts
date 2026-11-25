@@ -25,11 +25,10 @@
  *
  * - `document.addEventListener` / `removeEventListener` are wrapped.
  *   Bubble-phase `keydown` registrations are mirrored onto a private, detached
- *   element, so order, `signal` and removal follow the browser's own
- *   bookkeeping; a `once` listener shares one wrapper between both places
- *   and runs once in all. At an isolating shadow root, a copy of each Tab keydown is
- *   dispatched on that private target, and `preventDefault()` is carried back
- *   to the real event.
+ *   element. A once callback is removed from both targets before invocation.
+ *   At an isolating shadow root, a copy of each unhandled, non-composing
+ *   Tab keydown is dispatched on the private target, and `preventDefault()`
+ *   is carried back to the real event.
  * - `document.activeElement` gets an own accessor that takes the native value
  *   and, while it is the host of a shadow root bridged here, continues with
  *   that root's `activeElement` (nested bridged roots included; closed roots
@@ -64,36 +63,46 @@ function mirrorDocumentKeydown(): EventTarget {
   const add = document.addEventListener.bind(document);
   const remove = document.removeEventListener.bind(document);
   const mirrored = (type: string, options: Options) => type === 'keydown' && !isCapture(options);
-  // One registration per callback, regardless of `once`/signal options, just
-  // like the native target. Both copies share removal and once semantics.
-  const registrations = new WeakMap<EventListenerOrEventListenerObject, () => void>();
+  // Only bubble-phase keydown reaches this map, so the callback alone is the
+  // DOM registration key. The first registration owns its once/passive/signal.
+  const registrations = new WeakMap<EventListenerOrEventListenerObject, { signal?: AbortSignal; forget: () => void }>();
   document.addEventListener = (type: string, listener: Listener, options?: Options) => {
     if (!listener) return;
     if (!mirrored(type, options)) return add(type, listener, options);
-    const settings = typeof options === 'object' ? { ...options } : {};
-    if (settings.signal?.aborted || registrations.has(listener)) return;
-    const shared = { ...settings, once: false };
+    const { once, passive, signal } = typeof options === 'object' ? (options ?? {}) : {};
+    if (signal?.aborted) return;
+    const existing = registrations.get(listener);
+    if (existing) {
+      // The native signal has already removed both callbacks even if our
+      // abort handler hasn't run yet (e.g. re-registering in an abort handler).
+      if (!existing.signal?.aborted) return;
+      existing.forget();
+    }
+
     const wrapper: EventListener = (event) => {
-      if (settings.once) forget();
+      if (once) forget();
       if (typeof listener === 'function') listener.call(document, event);
       else listener.handleEvent(event);
     };
     const forget = () => {
+      signal?.removeEventListener('abort', forget);
       registrations.delete(listener);
-      remove(type, wrapper, shared);
-      target.removeEventListener(type, wrapper, shared);
-      settings.signal?.removeEventListener('abort', forget);
+      if (once) remove(type, wrapper);
+      target.removeEventListener(type, wrapper);
     };
-    registrations.set(listener, forget);
-    settings.signal?.addEventListener('abort', forget, { once: true });
-    add(type, wrapper, shared);
+    const shared = { passive, signal };
+    // Keep the original identity for ordinary native dispatch: a listener
+    // installed before bridging still deduplicates if it is registered again.
+    add(type, once ? wrapper : listener, shared);
     target.addEventListener(type, wrapper, shared);
+    registrations.set(listener, { signal, forget });
+    signal?.addEventListener('abort', forget, { once: true });
   };
   document.removeEventListener = (type: string, listener: Listener, options?: Options) => {
     if (!listener) return;
+    // Also honor removal of native listeners registered before the bridge.
     remove(type, listener, options);
-    if (!mirrored(type, options)) return;
-    registrations.get(listener)?.();
+    if (mirrored(type, options)) registrations.get(listener)?.forget();
   };
   return target;
 }
@@ -105,8 +114,8 @@ function relayTabKeydown(shadowRoot: ShadowRoot): void {
   if (relayed.has(shadowRoot)) return;
   relayed.add(shadowRoot);
   shadowRoot.addEventListener('keydown', (event) => {
-    const { key, code, shiftKey, ctrlKey, altKey, metaKey, repeat } = event as KeyboardEvent;
-    if (key !== 'Tab' || event.defaultPrevented) return;
+    const { key, code, shiftKey, ctrlKey, altKey, metaKey, repeat, isComposing } = event as KeyboardEvent;
+    if (key !== 'Tab' || isComposing || event.defaultPrevented) return;
     const init = { key, code, shiftKey, ctrlKey, altKey, metaKey, repeat, cancelable: true };
     const copy = new KeyboardEvent('keydown', init);
     target.dispatchEvent(copy);

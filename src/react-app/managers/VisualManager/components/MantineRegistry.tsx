@@ -171,7 +171,7 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
       };
     }
     return merged;
-  }, [env, isShadow, colors, baseColorIndex, primaryColor]);
+  }, [env.portalTarget, env.scale, isShadow, colors, baseColorIndex, primaryColor]);
 
   // Host detection is supplied by the content entry, keeping the surface core generic.
   const source = typeof env.colorSchemeStrategy === 'object' ? env.colorSchemeStrategy : undefined;

@@ -1,7 +1,7 @@
 {
   "repository": "https://github.com/AIEPhoenix/aie-wxt-mantine-surface-template",
   "ref": "main",
-  "commit": "90cb561a72a2bc4e95ce364661fb93e95be70d33",
+  "commit": "94fce9889c860cf69690897486c7da350df4376c",
   "strategy": "Port shared infrastructure; preserve application-specific behavior.",
   "adaptations": [
     "Interline theme, lazy color generation, locale-owned direction, and per-component shadow CSS are retained.",

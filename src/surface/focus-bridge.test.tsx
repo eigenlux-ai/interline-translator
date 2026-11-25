@@ -281,6 +281,84 @@ it('runs a once listener once across the relay and the document', async () => {
   expect(() => document.removeEventListener('keydown', null as unknown as EventListener)).not.toThrow();
 });
 
+it('deduplicates ordinary document listeners installed before bridging', () => {
+  // The module also serves other tests in this realm. Bypass any existing
+  // bridge to reproduce a native registration made before the patch.
+  const listener = vi.fn();
+  EventTarget.prototype.addEventListener.call(document, 'keydown', listener);
+  const { shadowRoot } = surfaceShadowRoot();
+  try {
+    document.addEventListener('keydown', listener, null as unknown as AddEventListenerOptions);
+    document.dispatchEvent(new KeyboardEvent('keydown'));
+    tab(shadowRoot);
+    expect(listener).toHaveBeenCalledTimes(2);
+  } finally {
+    document.removeEventListener('keydown', listener);
+  }
+  document.dispatchEvent(new KeyboardEvent('keydown'));
+  tab(shadowRoot);
+  expect(listener).toHaveBeenCalledTimes(2);
+});
+
+it.each([true, false])('keeps the first registration when once starts as %s', (once) => {
+  const { shadowRoot } = surfaceShadowRoot();
+  const listener = vi.fn();
+  const ignoredSignal = new AbortController();
+  document.addEventListener('keydown', listener, { once });
+  document.addEventListener('keydown', listener, { once: !once, signal: ignoredSignal.signal });
+  try {
+    tab(shadowRoot);
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener.mock.contexts[0]).toBe(document);
+    ignoredSignal.abort();
+    document.dispatchEvent(new KeyboardEvent('keydown'));
+    expect(listener).toHaveBeenCalledTimes(once ? 1 : 2);
+  } finally {
+    document.removeEventListener('keydown', listener);
+  }
+});
+
+it.each(['run', 'remove', 'abort'])('releases the old signal after %s and allows listener reuse', (action) => {
+  const { shadowRoot } = surfaceShadowRoot();
+  const listener = { handleEvent: vi.fn() };
+  const old = new AbortController();
+  document.addEventListener('keydown', listener, { once: true, signal: old.signal });
+  if (action === 'run') tab(shadowRoot);
+  if (action === 'remove') document.removeEventListener('keydown', listener);
+  if (action === 'abort') old.abort();
+
+  const next = new AbortController();
+  document.addEventListener('keydown', listener, { once: true, signal: next.signal });
+  old.abort();
+  document.removeEventListener('keydown', listener);
+  tab(shadowRoot);
+  document.dispatchEvent(new KeyboardEvent('keydown'));
+  expect(listener.handleEvent).toHaveBeenCalledTimes(action === 'run' ? 1 : 0);
+  next.abort();
+});
+
+it('leaves Tab to the IME while an input inside a focus trap is composing', async () => {
+  const { shadowRoot, byId } = await mount(
+    <Modal opened onClose={() => {}} withCloseButton={false}>
+      <button>first</button>
+      <input id="last" />
+    </Modal>
+  );
+  const input = byId('last');
+  input.focus();
+  const event = new KeyboardEvent('keydown', {
+    key: 'Tab',
+    isComposing: true,
+    bubbles: true,
+    composed: true,
+    cancelable: true,
+  });
+  input.dispatchEvent(event);
+  expect(shadowRoot.activeElement).toBe(input);
+  expect(event.defaultPrevented).toBe(false);
+  expect(tab(shadowRoot).defaultPrevented).toBe(true);
+});
+
 it('does not relay a Tab keydown already prevented inside the shadow tree', async () => {
   const { byId, tab } = await mount(<button id="inner">inner</button>);
   const inner = byId('inner');

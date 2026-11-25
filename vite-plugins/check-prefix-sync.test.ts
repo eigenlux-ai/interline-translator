@@ -2,15 +2,16 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { findPrefixMismatches, readProjectPrefix } from './check-prefix-sync';
+import { findPrefixMismatches, readProjectPrefix, zIndexVariables } from './check-prefix-sync';
 
 // A minimal global.css stand-in templated on a prefix, so we can assert the
 // detector fires only when the file and the prefix disagree.
 const cssFor = (prefix: string) => `
 :root,
 .${prefix}-surface-root {
-  --${prefix}-z-float-ui: 2146000000;
-  --${prefix}-z-main-ui: 2146100000;
+  ${zIndexVariables(prefix)
+    .map(({ name, value }) => `${name}: ${value};`)
+    .join('\n  ')}
   --${prefix}-sb-track-color: transparent;
   --${prefix}-sb-thumb-color: #868e96;
   --${prefix}-sb-size: 5px;
@@ -25,6 +26,14 @@ describe('findPrefixMismatches', () => {
   it('returns no errors when global.css matches the prefix', () => {
     expect(findPrefixMismatches(cssFor('aie'), 'aie')).toEqual([]);
     expect(findPrefixMismatches(cssFor('zzz'), 'zzz')).toEqual([]);
+  });
+
+  it('reports each missing layer even when main-ui still matches', () => {
+    const css = cssFor('new').replace('--new-z-popover:', '--old-z-popover:').replace('--new-z-max:', '--old-z-max:');
+    const errors = findPrefixMismatches(css, 'new');
+    expect(errors).toHaveLength(1);
+    expect(errors[0]).toContain('--new-z-popover, --new-z-max');
+    expect(errors[0]).not.toContain('--new-z-main-ui');
   });
 
   it('flags all anchors and names the stale prefix when out of sync', () => {
