@@ -13,7 +13,8 @@
  */
 
 import type { CSSProperties } from 'react';
-import { Box, SimpleGrid, Text, UnstyledButton, useComputedColorScheme, useMantineTheme } from '@mantine/core';
+import { Box, SimpleGrid, Text, UnstyledButton, useMantineContext, useMantineTheme } from '@mantine/core';
+import { useSurfaceColorScheme } from '@/surface/use-color-scheme';
 import { CheckIcon } from '@/react-app/components/icons';
 import { BILINGUAL_STYLES, type BilingualStyle } from '@/data/models';
 import { handFaceFor, handFaceStyle, type HandFace } from '@/dom/inject/hand-face';
@@ -162,7 +163,7 @@ export interface StylePreviewProps {
  */
 export default function StylePreview({ value, onChange, font, compact = false, palette }: StylePreviewProps) {
   const theme = useMantineTheme();
-  const scheme = useComputedColorScheme('light') as Scheme;
+  const scheme = useSurfaceColorScheme(useMantineContext().colorScheme);
   const other = theme.other as {
     gloss: Record<Scheme, string>;
     inkFaint: Record<Scheme, string>;
@@ -223,7 +224,7 @@ const FACE_SAMPLE: Record<HandFace, string> = {
 /** The translation font picker: two cards, each rendering the same phrase in that font. */
 export function FontPreview({ value, onChange }: FontPreviewProps) {
   const theme = useMantineTheme();
-  const scheme = useComputedColorScheme('light') as Scheme;
+  const scheme = useSurfaceColorScheme(useMantineContext().colorScheme);
   const other = theme.other as {
     gloss: Record<Scheme, string>;
     inkFaint: Record<Scheme, string>;

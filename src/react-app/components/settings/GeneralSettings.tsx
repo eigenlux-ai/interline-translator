@@ -32,10 +32,6 @@ export interface GeneralSettingsProps {
 }
 
 export default function GeneralSettings({ config, onPatch }: GeneralSettingsProps) {
-  // Through the VisualManager wrapper, NOT raw useMantineColorScheme(): the
-  // wrapper pins keepTransitions:true (no transition-killing <style> appended
-  // to document.head — the registry's documented invariant) and keeps the
-  // VisualManager persistence in sync.
   const { colorScheme, setColorScheme } = useVisual();
   const [detector, setDetector] = useState<DetectorStatus | 'checking'>('checking');
   useEffect(() => {

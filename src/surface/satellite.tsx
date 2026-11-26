@@ -31,12 +31,13 @@
  */
 
 import { useEffect, useLayoutEffect, useSyncExternalStore, type ReactNode } from 'react';
-import { useComputedColorScheme, useDirection, useMantineTheme } from '@mantine/core';
+import { useDirection, useMantineContext, useMantineTheme } from '@mantine/core';
 import { createPortal } from 'react-dom';
 import { SATELLITE_TAG, SURFACE_ROOT_CLASS } from '@/constants';
 import { useSurface } from './context';
 import { bridgeFocus } from './focus-bridge';
 import { resolveIsolatedEvents } from './isolate-events';
+import { useSurfaceColorScheme } from './use-color-scheme';
 
 export interface SatelliteHandle {
   id: string;
@@ -83,32 +84,17 @@ interface SatelliteRecord {
   node: ReactNode;
 }
 
-/**
- * Whether the satellite still sits at `position` relative to its anchor.
- * Satellites sharing the same anchor and position (`siblings`) may sit between
- * it and the anchor: each counts as adjacent while the run is unbroken, so
- * several satellites on one anchor settle instead of displacing each other on
- * every sweep.
- */
-function isSatelliteAdjacent(
-  anchor: Element,
-  host: HTMLElement,
-  position: InsertPosition,
-  siblings: ReadonlySet<Element>
-): boolean {
-  const [start, step]: [Element | null, 'next' | 'previous'] =
-    position === 'beforebegin'
-      ? [anchor.previousElementSibling, 'previous']
-      : position === 'afterbegin'
-        ? [anchor.firstElementChild, 'next']
-        : position === 'beforeend'
-          ? [anchor.lastElementChild, 'previous']
-          : [anchor.nextElementSibling, 'next'];
-  let node = start;
-  while (node && node !== host && siblings.has(node)) {
-    node = step === 'next' ? node.nextElementSibling : node.previousElementSibling;
+function adjacentElement(anchor: Element, position: InsertPosition): Element | null {
+  switch (position) {
+    case 'beforebegin':
+      return anchor.previousElementSibling;
+    case 'afterbegin':
+      return anchor.firstElementChild;
+    case 'beforeend':
+      return anchor.lastElementChild;
+    case 'afterend':
+      return anchor.nextElementSibling;
   }
-  return node === host;
 }
 
 let nextSatelliteId = 0;
@@ -150,7 +136,7 @@ class SatelliteRegistry {
 
   private commit() {
     this.snapshot = [...this.records.values()];
-    this.listeners.forEach((listener) => listener());
+    [...this.listeners].forEach((listener) => listener());
   }
 
   /**
@@ -354,28 +340,39 @@ class SatelliteRegistry {
         // observer + commit) — collecting the dead ids up front keeps this loop
         // independent of iteration-during-mutation and commit side effects.
         const dead: string[] = [];
-        const groups = new Map<Element, Map<InsertPosition, Set<Element>>>();
-        for (const record of this.records.values()) {
-          const byPosition = groups.get(record.anchor) ?? new Map<InsertPosition, Set<Element>>();
-          groups.set(record.anchor, byPosition);
-          const group = byPosition.get(record.position) ?? new Set<Element>();
-          byPosition.set(record.position, group);
-          group.add(record.hostElement);
-        }
-        for (const record of this.records.values()) {
-          if (!record.hostElement.isConnected || !record.anchor.isConnected) {
-            dead.push(record.id);
+        // insertAdjacentElement puts the newest satellite closest to its anchor
+        // at all four positions. Walk outward in that same order on every repair.
+        const nearest = new Map<Element, Map<InsertPosition, Element>>();
+        for (const record of [...this.records.values()].reverse()) {
+          const { anchor, position, hostElement, id } = record;
+          if (!hostElement.isConnected || !anchor.isConnected) {
+            dead.push(id);
             continue;
           }
-          const siblings = groups.get(record.anchor)!.get(record.position)!;
-          if (!isSatelliteAdjacent(record.anchor, record.hostElement, record.position, siblings)) {
+          let byPosition = nearest.get(anchor);
+          if (!byPosition) {
+            byPosition = new Map();
+            nearest.set(anchor, byPosition);
+          }
+          const previous = byPosition.get(position);
+          const target = previous ?? anchor;
+          const side = previous
+            ? position === 'afterbegin' || position === 'afterend'
+              ? 'afterend'
+              : 'beforebegin'
+            : position;
+          if (adjacentElement(target, side) !== hostElement) {
             try {
-              const moved = record.anchor.insertAdjacentElement(record.position, record.hostElement);
-              if (!moved) dead.push(record.id);
+              if (!target.insertAdjacentElement(side, hostElement)) {
+                dead.push(id);
+                continue;
+              }
             } catch {
-              dead.push(record.id);
+              dead.push(id);
+              continue;
             }
           }
+          byPosition.set(position, hostElement);
         }
         for (const id of dead) this.destroy(id);
       });
@@ -411,20 +408,20 @@ export function releaseSatellites(surfaceShadowRoot: ShadowRoot): void {
 export function SatelliteOutlet() {
   const env = useSurface();
   const records = useSyncExternalStore(satellites.subscribe, satellites.getSnapshot);
-  const computedColorScheme = useComputedColorScheme('light');
+  const computedColorScheme = useSurfaceColorScheme(useMantineContext().colorScheme);
   const theme = useMantineTheme();
   const { dir } = useDirection();
 
   // Theme object identity changes on primary-color/theme updates, and the
   // in-tree Mantine variables <style> may also be rewritten on color-scheme
   // flips — re-capture the shared sheets on either signal.
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (env.kind === 'shadow' && env.shadowRoot) satellites.refreshSheets(env.shadowRoot);
   }, [env.kind, env.shadowRoot, theme, computedColorScheme]);
 
   useLayoutEffect(() => {
     satellites.setAppearance(computedColorScheme, dir);
-  }, [records, computedColorScheme, dir]);
+  }, [computedColorScheme, dir]);
 
   const hasRecords = records.length > 0;
   useEffect(() => {

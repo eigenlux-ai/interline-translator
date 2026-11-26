@@ -21,14 +21,14 @@ function jsFiles(root) {
   for (const entry of readdirSync(root)) {
     const full = join(root, entry);
     if (statSync(full).isDirectory()) out.push(...jsFiles(full));
-    else if (entry.endsWith('.js')) out.push(full);
+    else if (/\.[cm]?js$/.test(entry)) out.push(full);
   }
   return out;
 }
 
 const files = jsFiles(dir);
 if (files.length === 0) {
-  console.error(`no .js files under ${dir} -- did you run \`pnpm build\` first?`);
+  console.error(`no JavaScript files under ${dir} -- did you run \`pnpm build\` first?`);
   process.exit(2);
 }
 

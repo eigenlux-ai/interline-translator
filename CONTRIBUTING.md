@@ -27,7 +27,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-`pnpm dev` runs WXT's Chrome development environment with HMR on port 3012. `test-pages/` contains sample articles, input fields and editor/host compatibility cases. For example, open `http://localhost:3012/test-pages/article-sample.html` while the dev server is running.
+`pnpm dev` runs WXT's Chrome development environment with HMR on port 3012 by default. If that port is busy, use the address WXT prints or choose a port with `pnpm dev --port 3013`. `test-pages/` contains sample articles, input fields and editor/host compatibility cases. For example, open `/test-pages/article-sample.html` on the running dev server.
 
 For a production build, run `pnpm build` and load `.output/chrome-mv3/` from `chrome://extensions`. Run `pnpm zip` to create a distributable archive. Firefox development/build targets are available through `pnpm dev:firefox` and `pnpm build:firefox`; verify browser-specific behavior before claiming compatibility.
 
@@ -86,14 +86,16 @@ The project uses WXT, React, Mantine and TypeScript, with [aie-wxt-mantine-surfa
 
 ## Sync the foundation
 
-The shared infrastructure tracks template `main` at commit `94fce9889c860cf69690897486c7da350df4376c`.
+The shared infrastructure tracks template `main` at commit `f80a14879378189836e115b5e98e875ac906e2dd`.
 [.template-sync.json](./.template-sync.json) records the baseline and application adaptations. The repositories have independent histories: compare subsequent template commits and port the relevant changes, preserving Interline's entrypoints, theme, locale-owned direction, services and bundle limits.
 
 WXT 0.21 uses `@webext-core/isolated-element` 3.0.0 in the lockfile. Its container is a div directly inside the shadow root. Surface CSS is bundled through `virtual:surface-css` and adopted once by the host and satellites; `surface-css/` contains audit copies excluded from ZIP packages. Keep the Chrome and Firefox CSS audits in CI. Satellites capture dynamic theme styles only while needed, and release them when the last satellite is destroyed.
 
+Add Mantine component styles and their dependencies to `src/react-app/styles/shadow-surface.css` in Mantine's import order. PostCSS anchors plain `:root, :host` rules automatically. When a vendor stylesheet declares variables on a standalone `:root`, add `.aie-omt-surface-root` to that selector list with the same theme qualifiers and cascade layer.
+
 `bridgeFocus` keeps Mantine's focus traps and focus return working behind keyboard isolation. It patches only the content script's own document wrapper. Do not move it into the page's MAIN world. ARIA ID references cannot cross sibling shadow roots: keep Select/Combobox triggers and their accessibility-related floating content in the same root. Mantine handles Escape on the window capture phase, so closing a nested dropdown can also dismiss its shadow Modal or Drawer. Guard the outer close handler when only the dropdown should close. Test Tab/Shift+Tab, focus return, host keyboard isolation and strict CSP in a real browser after changing these surfaces.
 
-The application's existing host detector supplies `hostColorSchemeSource`; direction follows the UI locale rather than a new stored preference. `tsconfig.json` retains the previous `noUncheckedIndexedAccess: false` policy to keep a full indexed-access migration separate from template updates. WXT's other strict defaults stay enabled.
+Use `useVisual().setColorScheme()` to change the saved extension preference. Mantine's native setters can inject transition styles into the host head. In-page surfaces follow `hostColorSchemeSource`, and the settings page follows the saved preference. The UI locale controls text direction. `tsconfig.json` retains the previous `noUncheckedIndexedAccess: false` policy to keep a full indexed-access migration separate from template updates. WXT's other strict defaults stay enabled.
 
 ## Keep the page and translation layers separate
 

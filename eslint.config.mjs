@@ -115,6 +115,11 @@ export default defineConfig(
       'no-restricted-syntax': [
         'error',
         {
+          selector:
+            "ImportDeclaration[source.value='@mantine/core'] > ImportSpecifier[imported.name='useMantineColorScheme']",
+          message: 'Use useVisual() for the surface color scheme. Native setters can inject styles into the host head.',
+        },
+        {
           selector: "MemberExpression[object.name='document'][property.name='body']",
           message: 'Surface UI must not assume its mount point — use useSurface().portalTarget instead.',
         },

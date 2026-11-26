@@ -23,9 +23,10 @@ import {
   Tooltip,
   Transition,
   UnstyledButton,
-  useComputedColorScheme,
+  useMantineContext,
   useMantineTheme,
 } from '@mantine/core';
+import { useSurfaceColorScheme } from '@/surface/use-color-scheme';
 import { CheckIcon, CloseIcon, CopyIcon, PinIcon, SparklesIcon, VolumeIcon } from '@/react-app/components/icons';
 import { usePointerDrag, type DragPoint } from '@/react-app/hooks/usePointerDrag';
 import { usePublicConfig } from '@/react-app/hooks/usePublicConfig';
@@ -146,7 +147,7 @@ function selectionSourceText(sel: Selection): string {
 
 export default function SelectionApp() {
   const theme = useMantineTheme();
-  const scheme = useComputedColorScheme('light');
+  const scheme = useSurfaceColorScheme(useMantineContext().colorScheme);
   const [sel, setSel] = useState<SelectionInfo | null>(null);
   const [open, setOpen] = useState(false);
   const [pinned, setPinned] = useState(false);

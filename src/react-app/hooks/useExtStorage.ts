@@ -1,8 +1,7 @@
 /**
  * @module hooks/useExtStorage
  *
- * Reactive React binding for a WXT storage item — the generic version of the
- * pattern the VisualManager hand-rolls for color scheme. Read/write an
+ * Reactive React binding for a WXT storage item. Read/write an
  * extension-storage value from any surface and have EVERY surface (popup,
  * sidepanel, options, in-page shadow UI) re-render live when it changes,
  * because `browser.storage.onChanged` fires across every extension context.
@@ -22,10 +21,6 @@
  * this context has writes in flight, watch events (echoes of its own earlier,
  * now stale values) are ignored; once the last write settles, one fresh read
  * reconciles with anything another surface wrote meanwhile.
- *
- * Scope note: this is the business-agnostic primitive. Mantine's color scheme
- * keeps its own `MantineColorSchemeManager` (a different, library-mandated
- * shape) — see colorSchemeManager.ts.
  */
 
 import { useCallback, useSyncExternalStore } from 'react';
@@ -65,7 +60,7 @@ function getStore<T>(item: ReactiveStorageItem<T>): SnapshotStore<T> {
   const publish = (value: T) => {
     if (Object.is(store.value, value)) return;
     store.value = value;
-    for (const listener of listeners) listener();
+    for (const listener of [...listeners]) listener();
   };
   const read = () => {
     const readRevision = ++revision;

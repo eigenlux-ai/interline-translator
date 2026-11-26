@@ -90,6 +90,42 @@ it('fails the build when an entry forgets its CSS instead of shipping an unstyle
   ).rejects.toThrow('exactly one emitted CSS asset');
 });
 
+it('rejects an unused virtual import on a watch rebuild and recovers when the import is removed', async () => {
+  const root = await fixture(true);
+  const entry = join(root, 'entry.js');
+  const watcher = await build({
+    root,
+    configFile: false,
+    logLevel: 'silent',
+    plugins: [inlineSurfaceCss()],
+    build: { watch: {}, rollupOptions: { input: entry } },
+  });
+  if (!('on' in watcher)) throw new Error('Expected a build watcher');
+  // Install each listener before editing the entry. END follows both success and error.
+  const nextBuild = () =>
+    new Promise<string | undefined>((resolve) => {
+      let error: string | undefined;
+      watcher.on('event', function listener(event) {
+        if (event.code === 'ERROR') error = event.error.message;
+        if (event.code === 'END') {
+          watcher.off('event', listener);
+          resolve(error);
+        }
+      });
+    });
+  try {
+    expect(await nextBuild()).toBeUndefined();
+    const unused = nextBuild();
+    await writeFile(entry, "import css from 'virtual:surface-css'; import './global.css'; globalThis.result = 1;");
+    expect(await unused).toContain('imported but its value never reaches the bundle');
+    const ordinary = nextBuild();
+    await writeFile(entry, "import './global.css'; globalThis.result = 2;");
+    expect(await ordinary).toBeUndefined();
+  } finally {
+    await watcher.close();
+  }
+});
+
 // Each body is a pattern the minifier would fold against a plain placeholder
 // string before the real CSS is substituted.
 it.each([
@@ -180,6 +216,12 @@ describe('prepareShadowCss', () => {
     const css = String.raw`@media (min-width: 1px) { :is(:root, .panel) > [title=":root"], .x\:root, :ROOT[data-mode="dark"]::before { content: ":root"; --url: url("x:root.svg"); } }`;
     expect(prepareShadowCss(css)).toBe(
       String.raw`@media (min-width: 1px) { :is(:host, .panel) > [title=":root"], .x\:root, :host([data-mode="dark"])::before { content: ":root"; --url: url("x:root.svg"); } }`
+    );
+  });
+
+  it('deduplicates rewritten selector branches without splitting nested or quoted commas', () => {
+    expect(prepareShadowCss(':root,:host,:is(.x,.y),:root[data-x="a,b"],:host([data-x="a,b"]){color:red}')).toBe(
+      ':host,:is(.x,.y),:host([data-x="a,b"]){color:red}'
     );
   });
 

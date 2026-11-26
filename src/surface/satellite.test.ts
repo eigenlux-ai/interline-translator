@@ -102,6 +102,25 @@ describe('satellite lifecycle', () => {
     expect(moves).toBeLessThanOrEqual(3);
   });
 
+  it.each(['beforebegin', 'afterbegin', 'beforeend', 'afterend'] as const)(
+    'preserves the initial DOM order across partial displacement and relocation (%s)',
+    async (position) => {
+      const anchor = document.createElement('section');
+      const destination = document.createElement('main');
+      document.body.append(anchor, destination);
+      const handles = Array.from({ length: 3 }, () => createSatellite(anchor, null, { position }));
+      const hosts = () => [...document.querySelectorAll(SATELLITE_TAG)];
+      const initial = hosts();
+      const middle = handles[1]!.hostElement;
+      destination.append(middle);
+      await sweep();
+      expect(hosts().map((host) => initial.indexOf(host))).toEqual([0, 1, 2]);
+      destination.append(anchor);
+      await sweep();
+      expect([...destination.querySelectorAll(SATELLITE_TAG)].map((host) => initial.indexOf(host))).toEqual([0, 1, 2]);
+    }
+  );
+
   it('continues reaping dead satellites even when re-attaching another satellite throws', async () => {
     const badAnchor = document.createElement('p');
     const deadAnchor = document.createElement('p');

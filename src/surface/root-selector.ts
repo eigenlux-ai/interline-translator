@@ -33,17 +33,33 @@ function renderCompound(compound: Token[]): string {
 
 function rewriteSelector(selector: string): string {
   if (!/:root\b/i.test(selector)) return selector;
+  const branches = new Set<string>();
   let result = '';
+  let branch = '';
+  let separator = '';
   let compound: Token[] = [];
+  const finishBranch = () => {
+    branch += renderCompound(compound);
+    if (!branches.has(branch)) {
+      branches.add(branch);
+      result += separator + branch;
+    }
+    branch = '';
+    compound = [];
+  };
   for (const token of tokenize(selector, tokens)) {
-    if (token.type === 'comma' || token.type === 'combinator') {
-      result += renderCompound(compound) + selector.trim().slice(...token.pos);
+    if (token.type === 'comma') {
+      finishBranch();
+      separator = selector.trim().slice(...token.pos);
+    } else if (token.type === 'combinator') {
+      branch += renderCompound(compound) + selector.trim().slice(...token.pos);
       compound = [];
     } else {
       compound.push(token);
     }
   }
-  return result + renderCompound(compound);
+  finishBranch();
+  return result;
 }
 
 // Treat complete attributes as opaque too: a comment may occur between an

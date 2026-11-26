@@ -66,6 +66,7 @@ export default defineConfig({
   },
   dev: {
     server: {
+      // WXT falls back to an available port when busy. Use pnpm dev --port 3013 to pick one.
       port: 3012,
     },
   },

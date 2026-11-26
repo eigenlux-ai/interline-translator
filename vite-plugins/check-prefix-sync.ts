@@ -27,6 +27,7 @@ import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import postcss from 'postcss';
+import selectorParser from 'postcss-selector-parser';
 import valueParser from 'postcss-value-parser';
 import type { PluginOption } from 'vite';
 import { Z_INDEX } from '../src/constants';
@@ -69,28 +70,21 @@ export function zIndexVariables(prefix: string) {
 export function findPrefixMismatches(globalCss: string, prefix: string): string[] {
   const errors: string[] = [];
   const root = postcss.parse(globalCss);
-  const escapeRe = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  const selectors: string[] = [];
+  const surfaceClass = `${prefix}-surface-root`;
+  const surfaceClasses = new Set<string>();
   root.walkRules((rule) => {
-    selectors.push(...rule.selectors);
+    if (!rule.selector.includes('surface-root')) return;
+    selectorParser((selectors) => {
+      selectors.walkClasses(({ value }) => {
+        if (value === 'surface-root' || value.endsWith('-surface-root')) surfaceClasses.add(value);
+      });
+    }).processSync(rule.selector);
   });
-
-  const surfaceClass = `.${prefix}-surface-root`;
-  const surfaceRe = new RegExp(`\\.${escapeRe(prefix)}-surface-root(?![\\w-])`);
-  if (!selectors.some((sel) => surfaceRe.test(sel))) {
-    // Character class includes `-` so a hyphenated stale prefix (e.g. a fork
-    // that used `.my-ext-surface-root`) is reported in full, not truncated.
-    const found = [
-      ...new Set(
-        selectors.flatMap((sel) => [...sel.matchAll(/\.([a-z0-9-]+)-surface-root(?![\w-])/gi)].map((m) => m[1]!))
-      ),
-    ].filter((p) => p !== prefix);
-    const hint = found.length
-      ? ` (global.css currently uses ${found.map((p) => `.${p}-surface-root`).join(', ')})`
-      : '';
+  const stale = [...surfaceClasses].filter((name) => name !== surfaceClass);
+  if (!surfaceClasses.has(surfaceClass) || stale.length) {
+    const hint = stale.length ? ` (stale selectors: ${stale.map((name) => `.${name}`).join(', ')})` : '';
     errors.push(
-      `global.css must anchor surface styles on ${surfaceClass} to match PROJECT_PREFIX ('${prefix}')${hint}`
+      `global.css must anchor surface styles on .${surfaceClass} to match PROJECT_PREFIX ('${prefix}')${hint}`
     );
   }
 

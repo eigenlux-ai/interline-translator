@@ -1,3 +1,4 @@
+import { useLayoutEffect } from 'react';
 import { ContentScriptContext } from 'wxt/utils/content-script-context';
 import { MantineProvider } from '@mantine/core';
 import { render, waitFor } from '@testing-library/react';
@@ -159,19 +160,28 @@ it('shares the host surface sheet object with satellites across theme changes', 
   document.body.append(anchor);
   const first = createSatellite(anchor, null);
   const second = createSatellite(anchor, null, { position: 'beforebegin' });
+  const sheetsOf = (handle: typeof first) => handle.hostElement.shadowRoot!.adoptedStyleSheets;
+  let layoutSheets: CSSStyleSheet[] = [];
+  function LayoutProbe() {
+    useLayoutEffect(() => {
+      layoutSheets = [...sheetsOf(first)];
+    });
+    return null;
+  }
   const tree = (primaryColor: string) => (
     <SurfaceProvider env={env!}>
       <MantineProvider theme={{ primaryColor }} cssVariablesSelector={`.${SURFACE_ROOT_CLASS}`}>
         <SatelliteOutlet />
+        <LayoutProbe />
       </MantineProvider>
     </SurfaceProvider>
   );
   const scan = vi.spyOn(ui.shadow, 'querySelectorAll');
   const view = render(tree('blue'), { container: env!.rootElement });
   expect(scan.mock.calls.filter(([selector]) => selector === 'style')).toHaveLength(1);
-  const sheetsOf = (handle: typeof first) => handle.hostElement.shadowRoot!.adoptedStyleSheets;
   const hostSheet = ui.shadow.adoptedStyleSheets[0]!;
   const before = [...sheetsOf(first)];
+  expect(layoutSheets).toEqual(before);
   // Same cascade order as the host: its <style>s first, the adopted static sheet last.
   expect(before.at(-1)).toBe(hostSheet);
   expect(before.indexOf(hostSheet)).toBe(before.length - 1);
@@ -181,7 +191,8 @@ it('shares the host surface sheet object with satellites across theme changes', 
   expect(reset).toBeDefined();
 
   view.rerender(tree('red'));
-  await waitFor(() => expect([...sheetsOf(first)]).not.toEqual(before));
+  expect(layoutSheets).not.toEqual(before);
+  expect(layoutSheets).toEqual([...sheetsOf(first)]);
   // Only the changed theme-variables style was re-parsed; the rest are the same objects.
   expect(sheetsOf(first).at(-1)).toBe(hostSheet);
   expect(sheetsOf(first)).toContain(reset);

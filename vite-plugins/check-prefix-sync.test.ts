@@ -67,6 +67,18 @@ describe('findPrefixMismatches', () => {
     expect(errors[0]).toContain('.old-surface-root'); // stale prefix surfaced
   });
 
+  it('rejects mixed prefixes while ignoring class-like text inside attributes', () => {
+    const css = cssFor('new') + '[title=".example-surface-root"] {}';
+    expect(findPrefixMismatches(css, 'new')).toEqual([]);
+    const partial = css.replace('.new-surface-root { color', ':is(.old-ext-surface-root, .new-surface-root) { color');
+    expect(findPrefixMismatches(partial, 'new')).toEqual([expect.stringContaining('.old-ext-surface-root')]);
+  });
+
+  it('flags a bare surface-root class alongside the prefixed class', () => {
+    const css = cssFor('new') + '.surface-root { color: red; }';
+    expect(findPrefixMismatches(css, 'new')).toEqual([expect.stringContaining('stale selectors: .surface-root')]);
+  });
+
   it('flags scrollbar variable declaration or var() reference drift independently', () => {
     const missingDecl = cssFor('new').replace('--new-sb-thumb-color: #868e96;', '--old-sb-thumb-color: #868e96;');
     const declErrors = findPrefixMismatches(missingDecl, 'new');

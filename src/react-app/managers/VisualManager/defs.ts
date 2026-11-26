@@ -12,7 +12,7 @@ export type VisualPrimaryColor = string;
 
 export interface VisualContextValues {
   colorScheme: VisualColorScheme;
-  /** Resolved scheme after 'auto' is applied. */
+  /** Visible scheme after applying the surface strategy and system preference. */
   activeColorScheme: 'light' | 'dark';
   primaryColor: VisualPrimaryColor;
   setColorScheme: (colorScheme: VisualColorScheme) => void;

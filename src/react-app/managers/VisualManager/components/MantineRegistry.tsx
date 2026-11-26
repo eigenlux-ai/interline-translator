@@ -8,15 +8,14 @@
  * - cssVariablesSelector / getRootElement → theme root inside the shadow
  * - Portal defaultProps target            → floating layers stay in-shadow
  * - theme.scale                            → rem compensation
- * - forceColorScheme                       → colorSchemeStrategy (external sources
- *   subscribe to the host's painted scheme and re-pin live)
+ * - forceColorScheme                       → the scheme resolved by VisualManagerRegistry
  * - dir attribute + direction context      → the UI locale (rtl for Arabic),
  *   written on OUR root, never on the host's <html>
  *
  * Internal component; application code renders ManagersRegistry instead.
  */
 
-import { useLayoutEffect, useMemo, useState, useSyncExternalStore, type PropsWithChildren } from 'react';
+import { useLayoutEffect, useMemo, useSyncExternalStore, type PropsWithChildren } from 'react';
 import {
   Combobox,
   createTheme,
@@ -30,18 +29,33 @@ import {
   Popover,
   Tooltip,
   type Direction,
+  type MantineColorSchemeManager,
   type MantineThemeOverride,
 } from '@mantine/core';
 import { ModalsProvider } from '@mantine/modals';
 import { Notifications } from '@mantine/notifications';
 import { useSurface } from '@/surface/context';
+import type { SurfaceColorScheme } from '@/surface/defs';
 import { SURFACE_ROOT_CLASS, Z_INDEX } from '@/constants';
 import { RTL_UI_LANGS } from '@/data/models/lang';
 import { getUiLocale, subscribeUiLocale } from '@/i18n';
 import { isCustomPrimaryColor, useGeneratedPrimaryRamp } from '../color-generation';
-import { extStorageColorSchemeManager } from '../colorSchemeManager';
-import type { VisualColorScheme, VisualPrimaryColor } from '../defs';
+import type { VisualPrimaryColor } from '../defs';
 import { interlineCssVariables, interlineTheme } from '../theme';
+
+// VisualManager owns persistence. Mantine's default manager reads the host's localStorage.
+const noopColorSchemeManager: MantineColorSchemeManager = {
+  get: (fallback) => fallback,
+  set: () => {},
+  clear: () => {},
+  subscribe: () => {},
+  unsubscribe: () => {},
+};
+
+// Mantine's DirectionContext also carries imperative setters; ours is derived
+// from the locale, so there is nothing to set. No @mantine/* component calls
+// them (they only read `dir`) — the field exists to satisfy the context type.
+const noopSetDirection = () => {};
 
 /**
  * Base theme: the project's Interline design tokens (cinnabar/paper/ink + danger + fonts),
@@ -50,17 +64,6 @@ import { interlineCssVariables, interlineTheme } from '../theme';
  * (virtualColor) — the per-surface override below only displaces it when the
  * user explicitly picks a custom HEX color.
  */
-// Stable no-op pair for the strategies that don't watch the host. The
-// colorSchemeStrategy is fixed for a surface's lifetime, so the hook's
-// subscribe/getSnapshot identity never actually flips at runtime.
-const noopSubscribe = () => () => {};
-const lightSnapshot = () => 'light' as const;
-
-// Mantine's DirectionContext also carries imperative setters; ours is derived
-// from the locale, so there is nothing to set. No @mantine/* component calls
-// them (they only read `dir`) — the field exists to satisfy the context type.
-const noopSetDirection = () => {};
-
 const baseTheme = mergeThemeOverrides(
   interlineTheme,
   createTheme({
@@ -76,14 +79,13 @@ const baseTheme = mergeThemeOverrides(
 );
 
 export interface MantineRegistryProps extends PropsWithChildren {
-  colorScheme: VisualColorScheme;
+  colorScheme: SurfaceColorScheme;
   primaryColor: VisualPrimaryColor;
 }
 
 export default function MantineRegistry({ colorScheme, primaryColor, children }: MantineRegistryProps) {
   const env = useSurface();
   const isShadow = env.kind === 'shadow';
-  const [colorSchemeManager] = useState(() => extStorageColorSchemeManager(colorScheme));
 
   // A HEX primary color is an explicit user customization → generate a one-off
   // palette and displace the brand cinnabar. A NAMED color (the default `cinnabar`,
@@ -173,20 +175,11 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
     return merged;
   }, [env.portalTarget, env.scale, isShadow, colors, baseColorIndex, primaryColor]);
 
-  // Host detection is supplied by the content entry, keeping the surface core generic.
-  const source = typeof env.colorSchemeStrategy === 'object' ? env.colorSchemeStrategy : undefined;
-  const externalScheme = useSyncExternalStore(
-    source?.subscribe ?? noopSubscribe,
-    source?.getSnapshot ?? lightSnapshot,
-    source?.getSnapshot ?? lightSnapshot
-  );
-  const forceColorScheme = source
-    ? externalScheme
-    : env.colorSchemeStrategy === 'force-light'
-      ? 'light'
-      : env.colorSchemeStrategy === 'force-dark'
-        ? 'dark'
-        : undefined;
+  // Mantine updates forceColorScheme in a passive effect. Switch both the
+  // surface and its satellites during layout so they paint the same scheme.
+  useLayoutEffect(() => {
+    env.rootElement.setAttribute('data-mantine-color-scheme', colorScheme);
+  }, [env.rootElement, colorScheme]);
 
   // The interface's writing direction belongs to the UI LOCALE: an `ar` UI is
   // rtl, and it must flip the moment the locale switches (the locale follows
@@ -219,8 +212,8 @@ export default function MantineRegistry({ colorScheme, primaryColor, children }:
         theme={theme}
         cssVariablesResolver={interlineCssVariables}
         defaultColorScheme={colorScheme}
-        forceColorScheme={forceColorScheme}
-        colorSchemeManager={colorSchemeManager}
+        forceColorScheme={colorScheme}
+        colorSchemeManager={noopColorSchemeManager}
         cssVariablesSelector={isShadow ? `.${SURFACE_ROOT_CLASS}` : ':root'}
         getRootElement={() => env.rootElement}
       >

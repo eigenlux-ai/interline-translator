@@ -35,28 +35,26 @@ const OPAQUE_KEY = 'surface-css:unset';
 export const SURFACE_CSS_DIR = 'surface-css';
 
 export default function inlineSurfaceCss(): Plugin {
-  let loaded = false;
   return {
     name: 'inline-surface-css',
     apply: 'build',
     enforce: 'post',
-    buildStart() {
-      loaded = false;
-    },
     resolveId(id) {
       if (id === MODULE_ID) return RESOLVED_ID;
     },
     load(id) {
       if (id !== RESOLVED_ID) return;
-      loaded = true;
-      return `export default String(globalThis[Symbol.for(${JSON.stringify(OPAQUE_KEY)})] ?? ${JSON.stringify(MARKER)});`;
+      return {
+        moduleSideEffects: false,
+        code: `export default String(globalThis[Symbol.for(${JSON.stringify(OPAQUE_KEY)})] ?? ${JSON.stringify(MARKER)});`,
+      };
     },
     generateBundle: {
       order: 'post',
       handler(_options, bundle) {
         const consumers = Object.values(bundle).filter((item) => item.type === 'chunk' && item.code.includes(MARKER));
         if (consumers.length === 0) {
-          if (loaded) {
+          if (this.getModuleInfo(RESOLVED_ID)) {
             this.error(
               'virtual:surface-css is imported but its value never reaches the bundle; pass it to the surface or remove the import.'
             );
