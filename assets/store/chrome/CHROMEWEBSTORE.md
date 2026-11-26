@@ -1,14 +1,12 @@
 # Chrome Web Store — Interline · 行间
 
-Last updated: 2026-11-16
+Last updated: 2026-11-26
 
 ## Release
 
-Version **1.2.0**, tag **v1.2.0**. Build the Chrome upload with `pnpm zip`; the upload file is `.output/interline-1.2.0-chrome.zip`. This records a prepared release, not a submission or approval in the store dashboard.
+Version **1.2.1**, tag **v1.2.1**. Run `pnpm zip` to build the Chrome upload at `.output/interline-1.2.1-chrome.zip`.
 
-See [CHANGELOG.md](../../../CHANGELOG.md) for release history. This update initializes the translation target from the browser language on first use while preserving saved preferences, and changes the manifest default locale to English. Default configuration exports exclude API keys and all custom headers; the separate credential export retains its confirmation.
-
-Input translation, settings-save confirmation, subtitle diagnostics export and subtitle cache clearing receive reliable responses across browsers, including Chromium versions without native asynchronous message replies. Editor translation recovers inside supported blank and embedded document frames, including frames whose editor rebuilds the document, and failed translations return only an error name and message to the page. The update also fixes inherited site policy for blank editor frames, subtitle buffering with partial human captions, premature selection annotations, older-Chrome editor handshakes and localized provider-validation errors. No browser permissions are added.
+Translated navigation tabs now keep their translation when a site folds them into an overflow menu. This fixes the flickering license tab on GitHub repository pages. In-page panels also follow site theme changes more reliably, and keyboard input methods can use Tab while composing text in extension dialogs. See the [changelog](../../../CHANGELOG.md) for release history.
 
 ## Listing and assets
 
@@ -50,6 +48,7 @@ Dashboard disclosures must reflect website content and authentication informatio
 
 | Version | Date       | Changes                                                                       | Status              |
 | ------- | ---------- | ----------------------------------------------------------------------------- | ------------------- |
+| 1.2.1   | 2026-11-26 | Stable translated navigation tabs, theme updates and keyboard focus fixes     | Prepared for upload |
 | 1.2.0   | 2026-11-16 | Browser-language defaults, safer backups, messaging and editor recovery fixes | Prepared for upload |
 | 1.1.1   | 2026-11-13 | Subtitle buffering, recovery, localization and surface fixes                  | Prepared for upload |
 

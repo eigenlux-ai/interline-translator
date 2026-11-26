@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.1 — 2026-11-26
+
+- Fix a loop that made translated navigation tabs flicker as they moved into an overflow menu. On GitHub, the license tab now keeps its translation when it folds into **More** and when it returns to the tab bar.
+- Keep in-page panels in sync with sites that switch between light and dark themes. Apply the latest saved appearance preference across open extension views.
+- Let input methods handle Tab while composing text in extension dialogs and respect Tab presses already handled by a control.
+
 ## 1.2.0 — 2026-11-16
 
 - Initialize the translation target from the browser language on first use; the interface follows that target. Input translation targets English and starts disabled for English browsers. Settings from earlier versions are preserved, including profiles that never saved a change.

@@ -2,9 +2,9 @@
 
 ## Uploads
 
-- Extension: `.output/interline-1.2.0-firefox.zip`.
-- Matching source: `.output/interline-1.2.0-sources.zip`.
-- Version: 1.2.0. Add-on ID: `interline@eigenlux.com`.
+- Extension: `.output/interline-1.2.1-firefox.zip`.
+- Matching source: `.output/interline-1.2.1-sources.zip`.
+- Version: 1.2.1. Add-on ID: `interline@eigenlux.com`.
 - Target: desktop Firefox 140 or later, using Manifest V3. Android is not declared supported.
 
 Submit updates to the [published Firefox Add-ons listing](https://addons.mozilla.org/en-US/firefox/addon/interline-%E8%A1%8C%E9%97%B4/) using this ID.
@@ -13,7 +13,7 @@ Upload the extension ZIP to AMO, then attach the source ZIP when asked whether t
 
 ## Reproduce the extension
 
-The release was built on macOS arm64 with Node.js 26.13.1 and pnpm 10.7.1. Use the same tool versions for comparison. The project requires Node.js 22.12 or later; the build does not depend on Xcode or a Safari SDK.
+The release was built on macOS arm64 with Node.js 22.23.5 and pnpm 10.7.1. Use the same tool versions for comparison. The project requires Node.js 22.12 or later.
 
 Install [Node.js](https://nodejs.org/en/download), then install the pinned package manager:
 
