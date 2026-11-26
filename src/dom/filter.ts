@@ -242,15 +242,17 @@ export function isOwnShadowHost(el: Element): boolean {
  * characterData on a line-div deep in the editor). Every dynamic entry point
  * must re-check the chain, or it injects translation into content the user is writing
  * (and the editor fights it forever). Crosses shadow boundaries via the host.
+ * ignoreAriaHidden lets a caller check for other exclusions on a gloss the host
+ * already hides with its source.
  */
-export function inSkippedAncestry(el: Element, boundary?: Node): boolean {
+export function inSkippedAncestry(el: Element, boundary?: Node, { ignoreAriaHidden = false } = {}): boolean {
   // Inherited contenteditable resolves without a chain walk where supported.
   if ((el as HTMLElement).isContentEditable) return true;
   for (let cur: Element | null = el; cur && cur !== boundary; ) {
     if (SKIP_TAGS.has(tag(cur)) || isCodePre(cur) || isVideoCaptionContainer(cur)) return true;
     if (cur.getAttribute('translate') === 'no') return true;
     if (cur.classList?.contains('notranslate')) return true;
-    if (cur.getAttribute('aria-hidden') === 'true') return true;
+    if (!ignoreAriaHidden && isAriaHidden(cur)) return true;
     const editable = cur.getAttribute('contenteditable');
     if (editable === '' || editable === 'true' || editable === 'plaintext-only') return true;
     const root = cur.getRootNode();

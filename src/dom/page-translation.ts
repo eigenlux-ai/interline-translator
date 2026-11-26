@@ -817,8 +817,7 @@ export class PageTranslator {
     this.dropCachedHtml(id);
   }
 
-  private sourceUnavailable(el: Element): boolean {
-    if (inSkippedAncestry(el)) return true;
+  private sourceHidden(el: Element): boolean {
     // display:none does not inherit as a computed value. Check the source's
     // ancestors too, including shadow hosts, before rescanning a retired unit.
     for (let cur: Element | null = el; cur; ) {
@@ -828,6 +827,22 @@ export class PageTranslator {
       cur = cur.parentElement ?? (tree instanceof ShadowRoot ? tree.host : null);
     }
     return false;
+  }
+
+  private shouldRetireUnit(el: Element, unit: TranslationUnit): boolean {
+    if (inSkippedAncestry(el)) {
+      // Overflow menus (e.g. GitHub's repository tabs) hide wrapped items with
+      // aria-hidden and visibility:hidden, then keep measuring their width.
+      // Removing an in-flow gloss makes the tab fit again and restarts translation.
+      const win = el.ownerDocument.defaultView;
+      if (win?.getComputedStyle(el).visibility !== 'hidden') return true;
+      const gloss = el.querySelector(`[${DATA_OMNI.translated}][${DATA_OMNI.walkId}="${unit.id}"]`);
+      if (!gloss || win.getComputedStyle(gloss).visibility !== 'hidden') return true;
+      // A reveal rechecks the source text. Explicit exclusions (editors,
+      // translate=no, etc.) still retire it, even while the tab is hidden.
+      return inSkippedAncestry(el, undefined, { ignoreAriaHidden: true });
+    }
+    return this.sourceHidden(el) || visibleText(el).replace(/\s+/g, ' ').trim() !== unit.text;
   }
 
   /**
@@ -843,7 +858,7 @@ export class PageTranslator {
     // The clipped stamp belongs to the RETIRED unit's sibling gloss — the
     // fresh walk re-stamps if (and only if) the new unit clips again.
     el.removeAttribute(DATA_OMNI.clipped);
-    if (!this.sourceUnavailable(el)) this.scan(el);
+    if (!inSkippedAncestry(el) && !this.sourceHidden(el)) this.scan(el);
   }
 
   /**
@@ -949,7 +964,7 @@ export class PageTranslator {
         const id = el.getAttribute(DATA_OMNI.walkId);
         if (!id) return false;
         const tracked = this.unitsById.get(id);
-        return !tracked || this.sourceUnavailable(el) || visibleText(el).replace(/\s+/g, ' ').trim() !== tracked.text;
+        return !tracked || this.shouldRetireUnit(el, tracked);
       });
       const staleIds = new Set<string>();
       for (const el of changed) {

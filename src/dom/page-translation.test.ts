@@ -2231,6 +2231,83 @@ it('retires changed tracked descendants under aria-hidden and rediscovers them o
   }
 });
 
+it.each(['bilingual', 'translation'] as const)(
+  'keeps a translated overflow tab stable in %s mode',
+  async (displayMode) => {
+    vi.useFakeTimers();
+    let finish!: (result: { items: string[] }) => void;
+    translateBatch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        })
+    );
+    const sheet = document.createElement('style');
+    sheet.textContent = 'nav a { display: flex } nav [aria-hidden="true"] { visibility: hidden }';
+    document.head.append(sheet);
+    document.body.innerHTML = '<nav><ul><li><a href="#license"><b>GPL-3.0</b> license</a></li></ul></nav>';
+    const tab = document.querySelector('li')!;
+    const link = tab.querySelector('a')!;
+    const gloss = () => link.querySelector(`[${DATA_OMNI.translated}]`);
+    let narrow = true;
+    // Model the host measuring an item that fits alone but wraps with a gloss.
+    // The hidden row still takes up space and participates in the next measurement.
+    const measure = () => {
+      const overflow = narrow && !!gloss();
+      if (overflow === tab.hasAttribute('aria-hidden')) return;
+      if (overflow) tab.setAttribute('aria-hidden', 'true');
+      else tab.removeAttribute('aria-hidden');
+    };
+    const host = new MutationObserver(measure);
+    host.observe(tab, { childList: true, subtree: true });
+    const pt = new PageTranslator(document.body, { source: 'en', target: 'zh-CN', flushDelayMs: 0, displayMode });
+    try {
+      pt.start();
+      await vi.waitFor(() => expect(tab.getAttribute('aria-hidden')).toBe('true'));
+      const first = gloss();
+      expect(first?.getAttribute(DATA_OMNI.state)).toBe('pending');
+      await vi.advanceTimersByTimeAsync(400);
+      finish({ items: ['GPL-3.0 许可证'] });
+      await vi.advanceTimersByTimeAsync(1500);
+      expect(translateBatch).toHaveBeenCalledTimes(1);
+      expect(tab.getAttribute('aria-hidden')).toBe('true');
+      expect(gloss()).toBe(first);
+      expect(first?.textContent).toBe('GPL-3.0 许可证');
+
+      narrow = false;
+      measure();
+      await vi.advanceTimersByTimeAsync(400);
+      expect(gloss()).toBe(first);
+      expect(translateBatch).toHaveBeenCalledTimes(1);
+
+      narrow = true;
+      measure();
+      await vi.advanceTimersByTimeAsync(400);
+      link.querySelector('b')!.textContent = 'MIT';
+      await vi.advanceTimersByTimeAsync(400);
+      expect(translateBatch).toHaveBeenCalledTimes(1);
+      narrow = false;
+      measure();
+      await vi.waitFor(() => expect(gloss()?.textContent).toContain('MIT'));
+      expect(translateBatch).toHaveBeenCalledTimes(2);
+      expect(link.querySelectorAll(`[${DATA_OMNI.translated}]`)).toHaveLength(1);
+
+      // An explicit opt-out still takes effect while the tab is folded away.
+      narrow = true;
+      measure();
+      tab.closest('nav')!.setAttribute('translate', 'no');
+      await vi.advanceTimersByTimeAsync(400);
+      expect(gloss()).toBeNull();
+      expect(translateBatch).toHaveBeenCalledTimes(2);
+    } finally {
+      host.disconnect();
+      pt.stop();
+      sheet.remove();
+      vi.useRealTimers();
+    }
+  }
+);
+
 // Drive discovery, the visibility debounce and render frames on the same clock.
 // Wait for marker retirement as well as gloss removal before revealing a source.
 it.each(
