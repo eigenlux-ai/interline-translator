@@ -71,10 +71,15 @@ const selectorLiterals = new RegExp(`${literal.source}|${attribute}`, 'g');
 /** Shield comment contents from Parsel's string, escape and parenthesis preprocessing. */
 export function shadowRootSelector(selector: string): string {
   if (!selector.includes('/*') || !/:root\b/i.test(selector)) return rewriteSelector(selector);
+  const placeholders = new Map<string, string>();
   const originals = new Map<string, string>();
   const masked = selector.replace(selectorLiterals, (value) => {
     if (!value.startsWith('/*') && !value.startsWith('[')) return value;
+    // Matching literals must still compare equal when rewriteSelector deduplicates branches.
+    const existing = placeholders.get(value);
+    if (existing !== undefined) return existing;
     const placeholder = value.startsWith('[') ? `[a${originals.size}]` : `/*${originals.size}*/`;
+    placeholders.set(value, placeholder);
     originals.set(placeholder, value);
     return placeholder;
   });

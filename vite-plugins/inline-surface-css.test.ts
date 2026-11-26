@@ -225,6 +225,13 @@ describe('prepareShadowCss', () => {
     );
   });
 
+  it('deduplicates rewritten branches containing matching comments and attributes', () => {
+    const dark = ':host(/*theme*/[data-theme="dark,dim"])';
+    const light = ':host(/*theme*/[data-theme="light"])';
+    const css = `:root/*theme*/[data-theme="dark,dim"],${dark},${light}{color:red}`;
+    expect(prepareShadowCss(css)).toBe(`${dark},${light}{color:red}`);
+  });
+
   it('accepts comments alongside a root qualifier and before a combinator', () => {
     const css = ':root/*x*/.foo, :root /* :root */ > .thing, :root/*note*/::before { color: red }';
     expect(prepareShadowCss(css)).toMatch(/:host\((?:\/\*x\*\/)?\.foo\), :host/);

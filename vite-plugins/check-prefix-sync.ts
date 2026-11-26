@@ -72,13 +72,13 @@ export function findPrefixMismatches(globalCss: string, prefix: string): string[
   const root = postcss.parse(globalCss);
   const surfaceClass = `${prefix}-surface-root`;
   const surfaceClasses = new Set<string>();
+  const parser = selectorParser();
   root.walkRules((rule) => {
-    if (!rule.selector.includes('surface-root')) return;
-    selectorParser((selectors) => {
-      selectors.walkClasses(({ value }) => {
-        if (value === 'surface-root' || value.endsWith('-surface-root')) surfaceClasses.add(value);
-      });
-    }).processSync(rule.selector);
+    // An escaped identifier can spell the suffix without containing it as literal text.
+    if (!rule.selector.includes('surface-root') && !rule.selector.includes('\\')) return;
+    parser.astSync(rule.selector).walkClasses(({ value }) => {
+      if (value === 'surface-root' || value.endsWith('-surface-root')) surfaceClasses.add(value);
+    });
   });
   const stale = [...surfaceClasses].filter((name) => name !== surfaceClass);
   if (!surfaceClasses.has(surfaceClass) || stale.length) {

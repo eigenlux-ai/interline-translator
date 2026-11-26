@@ -79,6 +79,14 @@ describe('findPrefixMismatches', () => {
     expect(findPrefixMismatches(css, 'new')).toEqual([expect.stringContaining('stale selectors: .surface-root')]);
   });
 
+  it('recognizes escaped surface-root class names and reports mixed prefixes', () => {
+    const css = cssFor('new').replaceAll('.new-surface-root', String.raw`.new-surface\2d root`);
+    expect(findPrefixMismatches(css, 'new')).toEqual([]);
+    expect(findPrefixMismatches(css + String.raw`.old-surface\-root {}`, 'new')).toEqual([
+      expect.stringContaining('stale selectors: .old-surface-root'),
+    ]);
+  });
+
   it('flags scrollbar variable declaration or var() reference drift independently', () => {
     const missingDecl = cssFor('new').replace('--new-sb-thumb-color: #868e96;', '--old-sb-thumb-color: #868e96;');
     const declErrors = findPrefixMismatches(missingDecl, 'new');
